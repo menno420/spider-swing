@@ -3,7 +3,10 @@ extends SceneTree
 
 const MAIN_SCENE_PATH := "res://game/bootstrap/main.tscn"
 const EXPORT_PRESETS_PATH := "res://export_presets.cfg"
-const BUILD_VERSION := "0.2.1-anchor-pull-test"
+const ANDROID_WORKFLOW_PATH := "res://.github/workflows/android-debug.yml"
+const BUILD_VERSION := "0.2.2-responsive-pull-test"
+const ANDROID_VERSION_CODE := 6
+const ANDROID_APP_NAME := "Spider Swing Responsive Pull (dev)"
 const REQUIRED_INPUT_ACTIONS := [
 	"web_action", "reel_in", "burst_action", "pause", "restart_run",
 	"toggle_debug"]
@@ -138,10 +141,23 @@ func _check_android_preset() -> void:
 				"com.menno420.spiderswing.dev":
 			_fail("development package identifier drifted")
 			return
-		if int(config.get_value(options, "version/code", 0)) != 5 or \
+		if int(config.get_value(options, "version/code", 0)) != \
+				ANDROID_VERSION_CODE or \
 				str(config.get_value(options, "version/name", "")) != \
 				BUILD_VERSION:
 			_fail("Android Debug build identity drifted")
+			return
+		var workflow := FileAccess.open(ANDROID_WORKFLOW_PATH, FileAccess.READ)
+		if workflow == null:
+			_fail("Android debug workflow cannot be read")
+			return
+		var workflow_text := workflow.get_as_text()
+		if not workflow_text.contains("BUILD_VERSION: %s" % BUILD_VERSION) or \
+				not workflow_text.contains(
+					"version/code=%d" % ANDROID_VERSION_CODE) or \
+				not workflow_text.contains(
+					"package/name=\"%s\"" % ANDROID_APP_NAME):
+			_fail("Android debug workflow build assertions drifted")
 			return
 		_ok("Android Debug preset is development-only and uniquely versioned")
 		return

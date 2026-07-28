@@ -30,8 +30,10 @@ telemetry, platform integration.
 
 ## Current contents
 
-- `input_router.gd` owns GUI-consumed Reel, DEBUG, and Menu input before world
-  taps reach `_unhandled_input`.
+- `input_router.gd` owns GUI-consumed Reel, Burst, DEBUG, and Menu input before
+  world taps reach `_unhandled_input`. It derives the rope-action hit rectangles
+  from `LabLayout` and converts accepted Reel/Burst events into distinct handheld
+  haptics.
 - `save_repository.gd` is the exclusive persistent writer. It currently stores
   versioned PlayerSettings through a recoverable temp/backup rotation and is the
   seam future progression persistence must extend rather than duplicate.

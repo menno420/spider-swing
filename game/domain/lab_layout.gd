@@ -7,14 +7,27 @@ class_name LabLayout
 
 const REFERENCE_SIZE := Vector2(1280.0, 720.0)
 const TUNING_PARAMETERS := [&"gravity", &"drive", &"reel_rate", &"rope_damping"]
+const ACTION_TARGET_SIZE := Vector2(228.0, 228.0)
+const ACTION_SIDE_MARGIN := 36.0
+const ACTION_BOTTOM_MARGIN := 32.0
 
 
 static func reel_rect(viewport_size: Vector2) -> Rect2:
-	return Rect2(28.0, viewport_size.y - 218.0, 190.0, 190.0)
+	return Rect2(
+		ACTION_SIDE_MARGIN,
+		viewport_size.y - ACTION_BOTTOM_MARGIN - ACTION_TARGET_SIZE.y,
+		ACTION_TARGET_SIZE.x,
+		ACTION_TARGET_SIZE.y,
+	)
 
 
 static func burst_rect(viewport_size: Vector2) -> Rect2:
-	return Rect2(viewport_size.x - 206.0, viewport_size.y - 206.0, 178.0, 178.0)
+	return Rect2(
+		viewport_size.x - ACTION_SIDE_MARGIN - ACTION_TARGET_SIZE.x,
+		viewport_size.y - ACTION_BOTTOM_MARGIN - ACTION_TARGET_SIZE.y,
+		ACTION_TARGET_SIZE.x,
+		ACTION_TARGET_SIZE.y,
+	)
 
 
 static func menu_rect(_viewport_size: Vector2) -> Rect2:

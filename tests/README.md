@@ -19,21 +19,21 @@ failure never hides the rest.
 
 | Path | Purpose |
 | --- | --- |
-| `test_runner.gd` | Headless entry point. Currently asserts the 15 bootstrap contracts. |
-| `unit/` | Per-system tests. |
-| `integration/` | Cross-system tests. |
+| `test_runner.gd` | Headless entry point and bootstrap/build contracts. |
+| `unit/phase0_physics_tests.gd` | Fixed-step movement, web, rope actions, course, collision, and trajectory contracts. |
+| `unit/mobile_hud_layout_tests.gd` | GUI ownership, shared hit geometry, gesture separation, and action-feedback wiring. |
+| `integration/front_end_flow_tests.gd` | Home, Tutorial, Settings, persistence, and run-mounting contracts. |
 | `fixtures/` | Deterministic inputs — fixed seeds, recorded input traces, save files. |
 
 ## What exists now
 
-15 configuration and architecture contracts: engine version, main scene resolves
-and instantiates, the five input actions, 60 Hz fixed tick (on disk *and* as the
-engine reports it), 4 catch-up steps, Compatibility renderer, 1280×720 viewport,
-landscape orientation, the `Android Debug` preset and its development-only package
-identifier, inward dependency direction, and no autoload singletons.
-
-**No gameplay tests, because there is no gameplay.** That is the bootstrap scope
-boundary, not an omission.
+42 runtime contracts: bootstrap/build truth plus fifteen deterministic physics,
+ten mobile HUD, and eight front-end checks. The physics group proves continuous
+ceiling targeting, momentum-preserving release, immediate/sustained Reel behavior,
+anchor-directed Burst decomposition and cooldown, bounded endless geometry,
+authoritative obstacles/boundaries, and equivalent trajectories through simulated
+30/60/90/120 Hz render loops. The HUD group proves the 228×228 thumb targets,
+event consumption, shared geometry, gesture separation, and success feedback.
 
 ## Writing tests
 

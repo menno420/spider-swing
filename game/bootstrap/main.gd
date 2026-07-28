@@ -103,6 +103,7 @@ func _mount_swing_lab(settings: PlayerSettings) -> PackedStringArray:
 
 	_session.snapshot_published.connect(_view.present)
 	_session.event_published.connect(_view.present_event)
+	_session.event_published.connect(_input_router.present_simulation_event)
 	_input_router.web_tapped.connect(_on_web_tapped)
 	_input_router.reel_changed.connect(_session.set_reel_active)
 	_input_router.burst_requested.connect(_session.request_burst)

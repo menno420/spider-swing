@@ -16,12 +16,12 @@ The product *is* the swinging. Everything else exists to support it.
 > `com.menno420.spiderswing.dev` are all development identifiers and are all
 > expected to change.
 
-## Current phase: Phase 0.6 anchor-pull feel test
+## Current phase: Phase 0.7 responsive rope-actions feel test
 
 **The first playable traversal test is implemented.** The project opens on a
 player-facing Home screen with Play, a six-step Tutorial, and readable scrolling
 Settings. Play enters an endless graybox laboratory with extended-range continuous ceiling
-attachment, momentum-preserving release, first-tick left-thumb Reel pull,
+attachment, momentum-preserving release, immediate left-thumb Reel pull,
 anchor-directed Burst, and a small static obstacle vocabulary.
 
 ### What exists
@@ -37,11 +37,11 @@ anchor-directed Burst, and a small static obstacle vocabulary.
 - Three named tuning candidates: `balanced_candidate`, `weighty_candidate`, and
   `agile_candidate`.
 - A deterministic bounded course stream, striped static test obstacles, a distinct
-  cooldown-limited anchor-directed Burst, and a code-drawn view with camera follow, Reel
-  and Burst rings, pause/frame-step/slow-motion, runtime tuning,
+  cooldown-limited anchor-directed Burst, and a code-drawn view with camera follow,
+  228-pixel thumb targets, action flashes/haptics, pause/frame-step/slow-motion, runtime tuning,
   deterministic input recording/replay, and diagnostic export.
-- Fifteen deterministic physics tests (41 runtime contracts total), including
-  first-tick Reel response, anchor-directed Burst, extended reach, and identical
+- Fifteen deterministic physics tests (42 runtime contracts total), including
+  first-tick Reel fall arrest, radial/tangential Burst decomposition, extended reach, and identical
   results from simulated 30/60/90/120 Hz render loops.
 - The existing headless, architecture, CI, and Android debug build substrate.
 

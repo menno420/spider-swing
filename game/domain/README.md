@@ -19,7 +19,7 @@ expected; importing `game/simulation/`, `game/application/`, `game/adapters/`, o
   scene names or display text.
 - Versioned gameplay configuration contracts — the tunable-parameter set in
   GDD § 6.6, including shared web range and the authoritative Reel/Burst pull
-  strengths.
+  strengths, minimum response speeds, and Burst tangential retention.
 - `RunSettlement` and its identity, so idempotent settlement is expressible in one
   place (GDD § 15.1, § 20).
 
@@ -27,4 +27,7 @@ expected; importing `game/simulation/`, `game/application/`, `game/adapters/`, o
 
 Anything that touches the scene tree, physics bodies, files, or rendering.
 
-`InputCommand`, `CourseGeometry`, `SimulationEvent`, `SimulationSnapshot`, `SwingConfig`, and shared layout contracts are live. See ADR 0002.
+`InputCommand`, `CourseGeometry`, `SimulationEvent`, `SimulationSnapshot`,
+`SwingConfig`, and shared layout contracts are live. The shared layout contract
+owns both drawn and interactive rope-action geometry so tests and adapters cannot
+silently disagree. See ADR 0002.

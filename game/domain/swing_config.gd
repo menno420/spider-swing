@@ -6,7 +6,7 @@ class_name SwingConfig
 ## are deliberately not called "baseline": only the owner can approve that
 ## label after real-device playtesting.
 
-const SCHEMA_VERSION := 2
+const SCHEMA_VERSION := 3
 const PRESET_BALANCED := &"balanced_candidate"
 const PRESET_WEIGHTY := &"weighty_candidate"
 const PRESET_AGILE := &"agile_candidate"
@@ -28,15 +28,18 @@ const PRESET_AGILE := &"agile_candidate"
 @export var attachment_correction_cap: float = 720.0
 @export var rope_elasticity_allowance: float = 10.0
 @export var rope_damping: float = 0.035
-@export var reel_retraction_rate: float = 300.0
-@export var reel_engage_impulse: float = 170.0
-@export var reel_pull_acceleration: float = 1200.0
-@export var reel_maximum_pull_speed: float = 720.0
+@export var reel_retraction_rate: float = 340.0
+@export var reel_engage_minimum_speed: float = 300.0
+@export var reel_pull_acceleration: float = 1500.0
+@export var reel_maximum_pull_speed: float = 820.0
 @export var reel_energy_capacity: float = 100.0
 @export var reel_drain_rate: float = 30.0
 @export var reel_regeneration_rate: float = 18.0
 @export var reel_empty_lockout: float = 0.75
-@export var burst_pull_impulse: float = 440.0
+@export var burst_pull_impulse: float = 500.0
+@export var burst_minimum_pull_speed: float = 660.0
+@export var burst_maximum_pull_speed: float = 940.0
+@export var burst_tangential_retention: float = 0.74
 @export var burst_cooldown: float = 1.65
 @export var camera_follow_strength: float = 8.0
 @export var camera_look_ahead: float = 0.22
@@ -61,8 +64,11 @@ static func from_preset(name: StringName) -> SwingConfig:
 func apply_preset(name: StringName) -> void:
 	preset_name = name
 	web_maximum_length = 820.0
-	burst_pull_impulse = 440.0
-	reel_maximum_pull_speed = 720.0
+	burst_pull_impulse = 500.0
+	burst_minimum_pull_speed = 660.0
+	burst_maximum_pull_speed = 940.0
+	burst_tangential_retention = 0.74
+	reel_maximum_pull_speed = 820.0
 	match name:
 		PRESET_WEIGHTY:
 			gravity = 1240.0
@@ -73,9 +79,9 @@ func apply_preset(name: StringName) -> void:
 			air_drag = 0.04
 			rope_elasticity_allowance = 7.0
 			rope_damping = 0.025
-			reel_retraction_rate = 280.0
-			reel_engage_impulse = 185.0
-			reel_pull_acceleration = 1150.0
+			reel_retraction_rate = 320.0
+			reel_engage_minimum_speed = 310.0
+			reel_pull_acceleration = 1660.0
 			reel_drain_rate = 32.0
 		PRESET_AGILE:
 			gravity = 940.0
@@ -86,9 +92,9 @@ func apply_preset(name: StringName) -> void:
 			air_drag = 0.07
 			rope_elasticity_allowance = 13.0
 			rope_damping = 0.05
-			reel_retraction_rate = 335.0
-			reel_engage_impulse = 165.0
-			reel_pull_acceleration = 1350.0
+			reel_retraction_rate = 370.0
+			reel_engage_minimum_speed = 290.0
+			reel_pull_acceleration = 1440.0
 			reel_drain_rate = 35.0
 		_:
 			preset_name = PRESET_BALANCED
@@ -100,9 +106,9 @@ func apply_preset(name: StringName) -> void:
 			air_drag = 0.055
 			rope_elasticity_allowance = 10.0
 			rope_damping = 0.035
-			reel_retraction_rate = 300.0
-			reel_engage_impulse = 170.0
-			reel_pull_acceleration = 1200.0
+			reel_retraction_rate = 340.0
+			reel_engage_minimum_speed = 300.0
+			reel_pull_acceleration = 1500.0
 			reel_drain_rate = 30.0
 
 
@@ -129,9 +135,9 @@ func adjust(parameter: StringName, direction: float) -> float:
 				reel_retraction_rate + 15.0 * direction, 60.0, 500.0)
 			return reel_retraction_rate
 		&"reel_engage":
-			reel_engage_impulse = clampf(
-				reel_engage_impulse + 15.0 * direction, 0.0, 400.0)
-			return reel_engage_impulse
+			reel_engage_minimum_speed = clampf(
+				reel_engage_minimum_speed + 15.0 * direction, 100.0, 600.0)
+			return reel_engage_minimum_speed
 		&"burst_pull":
 			burst_pull_impulse = clampf(
 				burst_pull_impulse + 20.0 * direction, 200.0, 800.0)
@@ -153,7 +159,7 @@ func value_for(parameter: StringName) -> float:
 		&"reel_rate":
 			return reel_retraction_rate
 		&"reel_engage":
-			return reel_engage_impulse
+			return reel_engage_minimum_speed
 		&"burst_pull":
 			return burst_pull_impulse
 		&"rope_damping":
@@ -171,11 +177,15 @@ func validate() -> PackedStringArray:
 		failures.append("web length range is invalid")
 	if reel_energy_capacity <= 0.0:
 		failures.append("Reel energy capacity must be positive")
-	if reel_retraction_rate <= 0.0 or reel_engage_impulse < 0.0 or \
-			reel_pull_acceleration <= 0.0 or reel_maximum_pull_speed <= 0.0:
+	if reel_retraction_rate <= 0.0 or reel_engage_minimum_speed <= 0.0 or \
+			reel_pull_acceleration <= 0.0 or \
+			reel_maximum_pull_speed < reel_engage_minimum_speed:
 		failures.append("Reel response values are invalid")
-	if burst_pull_impulse <= 0.0 or burst_cooldown <= 0.0:
-		failures.append("Burst pull impulse and cooldown must be positive")
+	if burst_pull_impulse <= 0.0 or burst_minimum_pull_speed <= 0.0 or \
+			burst_maximum_pull_speed < burst_minimum_pull_speed or \
+			burst_tangential_retention < 0.0 or \
+			burst_tangential_retention > 1.0 or burst_cooldown <= 0.0:
+		failures.append("Burst response values are invalid")
 	if attachment_correction_cap <= 0.0:
 		failures.append("attachment correction cap must be positive")
 	if input_buffer_duration <= 0.0:

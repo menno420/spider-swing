@@ -10,6 +10,7 @@ static func run() -> Dictionary:
 	passed += _test_thumb_controls_are_large_and_separated(failures)
 	passed += _test_reel_button_emits_only_reel(failures)
 	passed += _test_burst_button_emits_only_burst(failures)
+	passed += _test_action_feedback_is_event_driven(failures)
 	passed += _test_double_tap_has_a_separate_burst_route(failures)
 	passed += _test_menu_button_returns_without_world_tap(failures)
 	passed += _test_debug_button_and_panel_controls(failures)
@@ -61,10 +62,10 @@ static func _test_thumb_controls_are_large_and_separated(
 	var size := Vector2(1280.0, 720.0)
 	var reel := LabLayout.reel_rect(size)
 	var burst := LabLayout.burst_rect(size)
-	if reel.size.x < 180.0 or reel.size.y < 180.0:
+	if reel.size.x < 220.0 or reel.size.y < 220.0:
 		failures.append("Reel touch target is still too small for focused play")
 		return 0
-	if burst.size.x < 170.0 or burst.size.y < 170.0:
+	if burst.size.x < 220.0 or burst.size.y < 220.0:
 		failures.append("Burst touch target is too small for focused play")
 		return 0
 	if reel.intersects(burst):
@@ -74,6 +75,23 @@ static func _test_thumb_controls_are_large_and_separated(
 			burst.get_center().x <= size.x * 0.5:
 		failures.append("thumb controls are not split across the lower corners")
 		return 0
+	if reel.get_center().x < 140.0 or burst.get_center().x > size.x - 140.0:
+		failures.append("thumb controls remain too close to the device edges")
+		return 0
+	if reel.end.y > size.y - 24.0 or burst.end.y > size.y - 24.0:
+		failures.append("thumb controls remain too close to the bottom edge")
+		return 0
+
+	var router := _make_router()
+	var reel_button := router.hud_button(&"Reel")
+	var burst_button := router.hud_button(&"Burst")
+	var resolved_reel := _resolved_rect(reel_button, size)
+	var resolved_burst := _resolved_rect(burst_button, size)
+	if resolved_reel != reel or resolved_burst != burst:
+		failures.append("GUI hit targets drifted from the shared layout contract")
+		router.free()
+		return 0
+	router.free()
 	return 1
 
 
@@ -123,6 +141,50 @@ static func _test_burst_button_emits_only_burst(
 		router.free()
 		return 0
 	router.free()
+	return 1
+
+
+static func _test_action_feedback_is_event_driven(
+	failures: PackedStringArray,
+) -> int:
+	var view := SwingLabView.new()
+	var reel_event := SimulationEvent.make(
+		SimulationEvent.Kind.REEL_STARTED,
+		Vector2(480.0, 150.0),
+		"Reel engaged",
+	)
+	view.present_event(reel_event)
+	if view._reel_feedback_remaining <= 0.0:
+		failures.append("Reel success event did not arm visible feedback")
+		view.free()
+		return 0
+	var burst_event := SimulationEvent.make(
+		SimulationEvent.Kind.BURST_STARTED,
+		Vector2(640.0, 150.0),
+		"Anchor Pull",
+		{
+			"origin_x": 300.0,
+			"origin_y": 420.0,
+			"direction_x": 0.8,
+			"direction_y": -0.6,
+		},
+	)
+	view.present_event(burst_event)
+	if view._burst_feedback_remaining <= 0.0 or \
+			view._burst_feedback_direction.length() < 0.99:
+		failures.append("Burst success event did not arm directional feedback")
+		view.free()
+		return 0
+	view.free()
+
+	var bootstrap := FileAccess.open(
+		"res://game/bootstrap/main.gd",
+		FileAccess.READ,
+	)
+	if bootstrap == null or not bootstrap.get_as_text().contains(
+			"_session.event_published.connect(_input_router.present_simulation_event)"):
+		failures.append("authoritative action events are not wired to haptics")
+		return 0
 	return 1
 
 
@@ -227,3 +289,17 @@ static func _test_world_input_waits_for_gui(
 		failures.append("world input is not routed through _unhandled_input")
 		return 0
 	return 1
+
+
+static func _resolved_rect(button: Button, viewport_size: Vector2) -> Rect2:
+	var anchor := Vector2(button.anchor_left, button.anchor_top)
+	return Rect2(
+		anchor * viewport_size + Vector2(
+			button.offset_left,
+			button.offset_top,
+		),
+		Vector2(
+			button.offset_right - button.offset_left,
+			button.offset_bottom - button.offset_top,
+		),
+	)

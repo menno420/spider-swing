@@ -111,7 +111,10 @@ func install_touch_surface() -> void:
 	_reel_button = _make_anchored_button(
 		&"Reel",
 		Vector2(0.0, 1.0),
-		Rect2(28.0, -218.0, 190.0, 190.0),
+		_offset_from_reference(
+			LabLayout.reel_rect(LabLayout.REFERENCE_SIZE),
+			Vector2(0.0, 1.0),
+		),
 	)
 	_reel_button.button_down.connect(_set_touch_reel.bind(true))
 	_reel_button.button_up.connect(_set_touch_reel.bind(false))
@@ -119,7 +122,10 @@ func install_touch_surface() -> void:
 	_burst_button = _make_anchored_button(
 		&"Burst",
 		Vector2.ONE,
-		Rect2(-206.0, -206.0, 178.0, 178.0),
+		_offset_from_reference(
+			LabLayout.burst_rect(LabLayout.REFERENCE_SIZE),
+			Vector2.ONE,
+		),
 	)
 	_burst_button.pressed.connect(func() -> void: burst_requested.emit())
 
@@ -179,6 +185,14 @@ func configure_debug_controls(enabled: bool) -> void:
 		debug_toggle_requested.emit()
 
 
+func present_simulation_event(event: SimulationEvent) -> void:
+	match event.kind:
+		SimulationEvent.Kind.REEL_STARTED:
+			Input.vibrate_handheld(28, 0.35)
+		SimulationEvent.Kind.BURST_STARTED:
+			Input.vibrate_handheld(52, 0.8)
+
+
 func _make_anchored_button(
 	button_name: StringName,
 	anchor: Vector2,
@@ -194,6 +208,13 @@ func _make_anchored_button(
 	button.offset_right = offset_rect.end.x
 	button.offset_bottom = offset_rect.end.y
 	return button
+
+
+func _offset_from_reference(rect: Rect2, anchor: Vector2) -> Rect2:
+	return Rect2(
+		rect.position - anchor * LabLayout.REFERENCE_SIZE,
+		rect.size,
+	)
 
 
 func _make_fixed_button(button_name: StringName, rect: Rect2) -> Button:

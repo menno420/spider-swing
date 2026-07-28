@@ -81,7 +81,7 @@ Run directly:
 godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-41 checks, grouped so one subsystem failure never hides the rest:
+42 checks, grouped so one subsystem failure never hides the rest:
 
 - engine, main-scene, input-action, 60 Hz, renderer/viewport, Android preset,
   inward-dependency, and no-autoload bootstrap contracts;
@@ -90,10 +90,11 @@ godot --headless --path . --script res://tests/test_runner.gd
   anchor-directed Burst behavior, bounded streaming,
   obstacle outcomes, boundaries, and identical trajectories from simulated
   30/60/90/120 Hz render loops;
-- nine mobile HUD contracts proving large separated Reel and Burst controls,
+- ten mobile HUD contracts proving large separated Reel and Burst controls,
   DEBUG, and Menu are event-consuming
-  Buttons, UI actions do not leak into web input, debug tools can be removed, and
-  world input waits for Godot GUI handling;
+  Buttons, GUI geometry shares one layout source, accepted actions drive visual
+  and haptic feedback, UI actions do not leak into web input, debug tools can be
+  removed, and world input waits for Godot GUI handling;
 - eight front-end contracts proving Home starts before gameplay, Play/Tutorial/
   Settings route correctly, the six tutorial steps cover live mechanics, Settings
   is scrollable and mobile-readable, options
