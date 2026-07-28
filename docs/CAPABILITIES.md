@@ -195,4 +195,24 @@ never edit.
   workaround: delete that one line — the title plus its blockquote is valid alone.
   Any adopter starting from an empty repository hits this, so it is cheaper to do
   at adopt time than to debug from a red gate later.
+- 2026-07-28 · capability · `owner-live` · **Android debug APK builds end-to-end in
+  GitHub Actions with no secrets** · `android-debug` run #1 produced
+  `spider-swing-android-debug`; downloaded and inspected: `Android package (APK),
+  with classes.dex`, 56,968,605 bytes, signed, carrying this project's own scripts
+  and both intended ABIs · recipe: JDK 17 + `android-actions/setup-android`
+  (platform-tools + build-tools for apksigner) + `chickensoft-games/setup-godot`
+  with `include-templates: true`, a `keytool`-generated throwaway keystore, and
+  `GODOT_ANDROID_KEYSTORE_DEBUG_PATH`/`_USER`/`_PASSWORD`. Godot 4.7.1 honours
+  `ANDROID_HOME` and writes its own `editor_settings-4.7.tres`, so no
+  editor-settings file needs pre-seeding.
+- 2026-07-28 · capability · `owner-live` · **Branch deletion works** — this REFUTES
+  the seeded `Branch deletion` wall above (last-verified 2026-07-10) ·
+  `claude/bootstrap-spider-swing` was deleted automatically on merge with
+  `delete_branch_on_merge: true`, leaving only `refs/heads/main` on the remote · no
+  owner click and no manual API call was needed.
+- 2026-07-28 · capability · `owner-live` · **PR merge works agent-side** · PR #1
+  squash-merged via `PUT /repos/.../pulls/1/merge` → `merged: true`, head
+  `bd28a45` · and PRs can be closed with a comment
+  (`POST /issues/<n>/comments` + `PATCH /pulls/<n>`), used to close two
+  un-landable Dependabot bumps.
 

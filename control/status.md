@@ -1,9 +1,9 @@
 # Spider Swing · status
-updated: 2026-07-28T08:40:58Z
-phase: bootstrap complete — Godot 4.7.1 shell + CI verified; Phase 0 implementation not started
+updated: 2026-07-28T09:05:44Z
+phase: bootstrap complete and merged — Godot 4.7.1 shell, both gates green on main, Android debug APK proven; Phase 0 not started
 health: green
 kit: v1.20.2 · check: green · engaged: yes
-last-shipped: founding bootstrap PR #1 (Substrate v1.20.2, Godot 4.7.1 shell, verify tooling, CI, ADRs)
+last-shipped: founding bootstrap PR #1 merged as bd28a45; android-debug #1 produced a verified installable APK
 blockers: none
 orders: acked= done=
 ⚑ needs-owner: 1 ask — main is unprotected (see the OWNER-ACTION block below)
