@@ -5,7 +5,7 @@
 ## Goal
 
 Implement GitHub issue #2 end-to-end: the deterministic world-space spider motor,
-validated web attachment, manual momentum-preserving release, continuous Reel-In
+validated web attachment, manual momentum-preserving detach, continuous Reel-In
 energy, camera/world boundaries, touch-safe buffered input, graybox presentation,
 runtime tuning, diagnostics, replay hooks, and trajectory tests.
 
