@@ -116,7 +116,7 @@ jobs:
             exit 1
           fi
           echo "claude/* PR carries non-claim paths — not a claims-only diff; guard passes."
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         if: steps.lane.outputs.control_only != 'true'
         with:
           python-version: "3.x"
