@@ -81,12 +81,13 @@ Run directly:
 godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-39 checks, grouped so one subsystem failure never hides the rest:
+41 checks, grouped so one subsystem failure never hides the rest:
 
 - engine, main-scene, input-action, 60 Hz, renderer/viewport, Android preset,
   inward-dependency, and no-autoload bootstrap contracts;
-- thirteen deterministic physics contracts, including arbitrary-point ceiling
-  attachment, momentum preservation, Reel and Burst behavior, bounded streaming,
+- fifteen deterministic physics contracts, including extended arbitrary-point
+  ceiling attachment, momentum preservation, first-tick/sustained Reel behavior,
+  anchor-directed Burst behavior, bounded streaming,
   obstacle outcomes, boundaries, and identical trajectories from simulated
   30/60/90/120 Hz render loops;
 - nine mobile HUD contracts proving large separated Reel and Burst controls,
