@@ -1,0 +1,1 @@
+- `codex/front-end-flow` · **Front-end menu, tutorial, and settings** — initial screen, persisted real settings, animated tutorial, gameplay return path, tests, and Android artifact · 2026-07-28
