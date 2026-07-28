@@ -26,9 +26,9 @@ without a reported regression.
   release and momentum, speed-neutral rope-shortening Reel, percentage Burst,
   one-shot downward Dive Pull, shaped obstacles/gaps, restart, Menu, and optional
   diagnostics without a prerecorded binary asset.
-- `SaveRepository` exclusively owns versioned local settings writes. Swing
-  candidate, control hints, reduced motion, and debug-tool visibility all have
-  verified runtime effects and survive relaunch.
+- `SaveRepository` exclusively owns versioned local settings and progression
+  writes. Swing options survive relaunch; idempotent run settlements persist fly
+  totals, best distance, and cosmetic milestone unlocks.
 - Six input actions are consumed through `InputRouter`: `web_action`, `reel_in`,
   `burst_action`, `pause`, `restart_run`, and `toggle_debug`. Large left-thumb
   Reel, right-thumb Burst, DEBUG, Menu, and debug-panel hit regions are real Godot
@@ -37,15 +37,16 @@ without a reported regression.
   actual buttons, and tests cannot drift apart.
   World attach/release runs in `_unhandled_input` only after GUI handling.
   Render-time events are buffered into commands; simulation never polls input.
-- The playable traversal lab has deterministic forward drive, stronger candidate
-  gravity, polygonal solid targeting with a 1000-pixel web range and 220-pixel
+- The playable traversal lab has deterministic forward drive, the owner-tested
+  1120 gravity candidate, polygonal solid targeting with a 1000-pixel web range and 220-pixel
   aim-forgiveness band, manual release, an 8% gentle attach catch, three named
   presets, camera/world boundaries, and a bounded deterministic seven-chunk
   geometry window that continues past 10,000 m.
-- Reel now shortens the authoritative rope length (480 px/s in Balanced) and
-  spends energy without adding a separate inward acceleration or minimum-speed
-  correction. Anchor Burst crosses 50% of the resolved starting distance over
-  0.20 seconds. A lower target becomes a one-shot 25% Dive Pull over 0.16 seconds
+- Reel shortens the authoritative rope length (480 px/s in Balanced) and spends
+  energy without adding a separate inward acceleration or minimum-speed
+  correction. Natural take-up retains 85% of inward slack by default, also
+  without adding velocity. Anchor Burst crosses 50% of the resolved starting
+  distance over 0.20 seconds. A lower target becomes a one-shot 40% Dive Pull over 0.16 seconds
   and never leaves a rope. Both paths retain bounded tangential carry, use fixed
   exit speeds, share a cooldown, and sweep against lethal polygon geometry.
 - Double-tap carries a target in the authoritative command, so Burst works
@@ -59,14 +60,17 @@ without a reported regression.
 - Accepted Reel, Burst, and Dive Pull actions emit authoritative events.
   Presentation renders short directional flashes and the input adapter supplies
   distinct handheld haptics; unavailable actions do not fake success feedback.
-- The stream varies ceiling heights and gaps, loops a small shaped obstacle
-  vocabulary, and places a short lower anchor window before each challenge
-  pattern's key hazard. The gaps between those windows remain unavailable. It is
-  prototype instrumentation, not an authored or approved Phase 1 chunk pack.
+- The stream keeps a 1000 m learning runway free of detached middle hazards,
+  then combines ceiling/floor gaps, leaf clusters, vine forks, hanging seed pods,
+  and broken-pot gates. Fly arcs mark suggested routes; sparse Burst Frenzy
+  pickups temporarily suppress cooldown. Visible rails can independently be
+  present/absent and safe/lethal. This remains prototype instrumentation, not an
+  authored or approved Phase 1 chunk pack.
 - The debug panel exposes gravity, drive, 500–1400 px range, default RELEASE vs
   optional atomic RETARGET tap behavior, aim forgiveness, attach catch, Reel
-  shortening speed, shared pull cooldown, Burst/Dive percentages and durations,
-  and rope damping.
+  shortening speed, automatic take-up and retained percentage, shared pull
+  cooldown, Burst/Dive percentages and durations, rope damping, rail
+  presence/lethality, the middle-hazard start, and boost duration.
 - Settings is a readable vertical scroll surface with larger type and 58–68-pixel
   controls, verified by runtime contracts and designed around the owner's
   recorded 1040×480 viewport.
@@ -77,13 +81,15 @@ without a reported regression.
 - `python3 tools/verify.py` — passes. Six steps: architecture self-test,
   architecture scan, Godot discovery and version, headless import, boot smoke
   test, headless test runner.
-- `tests/test_runner.gd` — 50 checks, all passing: twenty-three deterministic physics,
-  ten GUI-owned mobile HUD, eight front-end navigation/settings, plus bootstrap
-  and exact build-version contracts. Physics covers exact 50%/25% pull shares,
+- `tests/test_runner.gd` — 59 checks, all passing locally: twenty-eight
+  deterministic physics, twelve GUI-owned mobile HUD, nine front-end
+  navigation/settings/progression, plus bootstrap and exact build-version
+  contracts. Physics covers exact 50%/40% pull shares,
   detached targeted Burst, recovery-web interruption, double-tap fallback,
   release/retarget modes, speed-neutral Reel shortening, solid polygon
-  targeting/collision, tuning controls, and lower-window bounded streaming. The
-  front-end group performs a real filesystem settings round-trip. The trajectory
+  targeting/collision, take-up, rail toggles, swept pickups, tuning controls, and
+  paced bounded streaming. The front-end group performs real filesystem settings
+  and progression round-trips plus settlement idempotency. The trajectory
   fixture produces the same final state when driven through simulated 30, 60,
   90, and 120 Hz render loops.
 - `tools/check_architecture.py` — 14 fixtures, all passing, asserting both
@@ -162,8 +168,9 @@ without a reported regression.
 
 **Deliberately absent** — scope boundary, not gaps:
 
-- No authored Phase 1 chunk pack, moving hazards, flies, currency, alternate
-  spiders, progression, missions, or monetization.
+- No authored Phase 1 chunk pack, moving hazards, finalized currency/economy,
+  purchasable upgrades, missions, or monetization. Flies, one temporary boost,
+  settlement, and two palette unlocks are contained foundation slices.
 - No approved physics baseline yet: `balanced_candidate`, `weighty_candidate`,
   and `agile_candidate` require owner real-device playtesting.
 - No production art, analytics, ads, cloud save, or store SDK.
@@ -178,17 +185,13 @@ without a reported regression.
 
 ## In flight
 
-PR #15 is the active, APK-proven single-intent input fix. The `0.3.1` device
-recording proved that Godot's raw touchscreen event and emulated mouse copy both
-reached world input: the first recovered from Burst and the second immediately
-released that new web. Local and CI Godot 4.7.1 tests reproduce the exact event
-pair, ignore only the synthetic mouse copy, preserve physical mouse and Control
-HUD paths, and pass 53 contracts. Android run
-[30396475709](https://github.com/menno420/spider-swing/actions/runs/30396475709)
-produced verified artifact
-[`8703014230`](https://github.com/menno420/spider-swing/actions/runs/30396475709/artifacts/8703014230)
-carrying `0.3.2-single-intent-test`. Phase 1 remains blocked on choosing or
-rejecting a movement baseline after this corrected device build is tested.
+PR #16 is the gameplay-foundation pass. Local Godot 4.7.1 verification passes
+59 contracts for the 1120/40% candidate, speed-neutral natural take-up,
+independent rail presence/lethality, a 1000 m middle-hazard runway, organic
+graybox patterns, swept flies, Burst Frenzy, and idempotent persistent cosmetic
+milestones. CI and Android artifact evidence will be recorded before merge.
+Phase 1 remains blocked on choosing or rejecting a movement baseline after this
+device build is tested.
 
 ## Recently shipped (newest first)
 

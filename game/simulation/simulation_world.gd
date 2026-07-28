@@ -15,7 +15,11 @@ var furthest_x: float = START_POSITION.x
 var tick: int = 0
 var anchors: PackedVector2Array = PackedVector2Array()
 var surfaces: Array[PackedVector2Array] = []
+var boundary_surfaces: Array[PackedVector2Array] = []
 var obstacles: Array[PackedVector2Array] = []
+var fly_positions: PackedVector2Array = PackedVector2Array()
+var boost_positions: PackedVector2Array = PackedVector2Array()
+var run_flies: int = 0
 var burst_cooldown_remaining: float = 0.0
 var pull_active: bool = false
 var pull_kind: StringName = &""
@@ -29,6 +33,8 @@ var _pull_tangential_velocity: Vector2 = Vector2.ZERO
 var _pull_radial_speed: float = 0.0
 var _pull_exit_speed: float = 0.0
 var _commands: Array[InputCommand] = []
+var _collected_pickups: Dictionary = {}
+var _burst_cooldown_suppressed: bool = false
 
 
 func reset(active_config: SwingConfig, geometry: CourseGeometry) -> void:
@@ -39,8 +45,11 @@ func reset(active_config: SwingConfig, geometry: CourseGeometry) -> void:
 	distance_pixels = 0.0
 	furthest_x = START_POSITION.x
 	tick = 0
+	run_flies = 0
+	_collected_pickups.clear()
 	set_course_geometry(geometry)
 	burst_cooldown_remaining = 0.0
+	_burst_cooldown_suppressed = false
 	_cancel_pull()
 	web.reset(config)
 	_commands.clear()
@@ -51,9 +60,26 @@ func set_course_geometry(geometry: CourseGeometry) -> void:
 	surfaces.clear()
 	for surface: PackedVector2Array in geometry.surfaces:
 		surfaces.append(surface.duplicate())
+	boundary_surfaces.clear()
+	for surface: PackedVector2Array in geometry.boundary_surfaces:
+		boundary_surfaces.append(surface.duplicate())
 	obstacles.clear()
 	for obstacle: PackedVector2Array in geometry.obstacles:
 		obstacles.append(obstacle.duplicate())
+	fly_positions.clear()
+	for fly: Vector2 in geometry.fly_positions:
+		if not _collected_pickups.has(_pickup_key(&"fly", fly)):
+			fly_positions.append(fly)
+	boost_positions.clear()
+	for boost: Vector2 in geometry.boost_positions:
+		if not _collected_pickups.has(_pickup_key(&"boost", boost)):
+			boost_positions.append(boost)
+
+
+func set_burst_cooldown_suppressed(active: bool) -> void:
+	_burst_cooldown_suppressed = active
+	if active:
+		burst_cooldown_remaining = 0.0
 
 
 func queue_command(command: InputCommand) -> void:
@@ -62,13 +88,17 @@ func queue_command(command: InputCommand) -> void:
 
 func step(delta: float) -> Array[SimulationEvent]:
 	var events: Array[SimulationEvent] = []
-	burst_cooldown_remaining = maxf(0.0, burst_cooldown_remaining - delta)
+	if _burst_cooldown_suppressed:
+		burst_cooldown_remaining = 0.0
+	else:
+		burst_cooldown_remaining = maxf(0.0, burst_cooldown_remaining - delta)
 	_commands.sort_custom(func(a: InputCommand, b: InputCommand) -> bool:
 		return a.sequence < b.sequence)
 	for command: InputCommand in _commands:
 		_consume(command, events)
 	_commands.clear()
 
+	var step_start := position
 	var hit_obstacle := false
 	if pull_active:
 		hit_obstacle = _advance_pull(delta, events)
@@ -101,6 +131,7 @@ func step(delta: float) -> Array[SimulationEvent]:
 
 	if hit_obstacle:
 		return events
+	_collect_pickups(step_start, position, events)
 	if position.y > config.lower_world_boundary:
 		events.append(SimulationEvent.make(
 			SimulationEvent.Kind.DEATH_REQUESTED,
@@ -132,6 +163,13 @@ func nearest_solid_point(target: Vector2) -> Dictionary:
 			best_distance = float(candidate["distance"])
 			best = candidate["point"]
 			best_kind = &"surface"
+	if config.course_boundaries_enabled:
+		for surface: PackedVector2Array in boundary_surfaces:
+			var candidate := SolidGeometry.closest_point_on_polygon(target, surface)
+			if bool(candidate["found"]) and float(candidate["distance"]) < best_distance:
+				best_distance = float(candidate["distance"])
+				best = candidate["point"]
+				best_kind = &"boundary"
 	for obstacle: PackedVector2Array in obstacles:
 		var candidate := SolidGeometry.closest_point_on_polygon(target, obstacle)
 		if bool(candidate["found"]) and float(candidate["distance"]) < best_distance:
@@ -154,6 +192,14 @@ func _collides_with_obstacle(center: Vector2) -> bool:
 			obstacle,
 		):
 			return true
+	if config.course_boundaries_enabled and config.course_boundaries_lethal:
+		for boundary: PackedVector2Array in boundary_surfaces:
+			if SolidGeometry.circle_intersects_polygon(
+				center,
+				config.player_collision_radius,
+				boundary,
+			):
+				return true
 	return false
 
 
@@ -366,7 +412,8 @@ func _consume_burst(
 		config.burst_tangential_retention,
 		&"burst",
 	):
-		burst_cooldown_remaining = config.burst_cooldown
+		burst_cooldown_remaining = (
+			0.0 if _burst_cooldown_suppressed else config.burst_cooldown)
 		events.append(_pull_started_event(
 			SimulationEvent.Kind.BURST_STARTED,
 			selected_anchor,
@@ -407,7 +454,8 @@ func _try_start_dive(
 		config.dive_tangential_retention,
 		&"dive",
 	):
-		burst_cooldown_remaining = config.burst_cooldown
+		burst_cooldown_remaining = (
+			0.0 if _burst_cooldown_suppressed else config.burst_cooldown)
 		events.append(_pull_started_event(
 			SimulationEvent.Kind.DIVE_STARTED,
 			selected_anchor,
@@ -529,6 +577,11 @@ func _pull_started_event(
 	selected_anchor: Vector2,
 	message: String,
 ) -> SimulationEvent:
+	var preview := preview_pull(selected_anchor, (
+		config.dive_distance_fraction
+		if pull_kind == &"dive"
+		else config.burst_distance_fraction
+	))
 	return SimulationEvent.make(
 		event_kind,
 		selected_anchor,
@@ -541,8 +594,76 @@ func _pull_started_event(
 			"travel_distance": pull_distance_total,
 			"anchor_distance": position.distance_to(selected_anchor),
 			"pull_kind": pull_kind,
+			"endpoint_x": Vector2(preview["endpoint"]).x,
+			"endpoint_y": Vector2(preview["endpoint"]).y,
+			"path_safe": bool(preview["safe"]),
 		},
 	)
+
+
+func preview_pull(selected_anchor: Vector2, distance_fraction: float) -> Dictionary:
+	var to_anchor := selected_anchor - position
+	var anchor_distance := to_anchor.length()
+	if anchor_distance <= 0.001:
+		return {"endpoint": position, "safe": false}
+	var maximum_travel := maxf(
+		0.0,
+		anchor_distance - config.player_collision_radius - PULL_CLEARANCE,
+	)
+	var requested_travel := minf(
+		anchor_distance * distance_fraction,
+		maximum_travel,
+	)
+	var endpoint := position + to_anchor / anchor_distance * requested_travel
+	var contact := _first_obstacle_contact(position, endpoint)
+	return {
+		"endpoint": endpoint,
+		"safe": not bool(contact["found"]),
+	}
+
+
+func _collect_pickups(
+	start: Vector2,
+	finish: Vector2,
+	events: Array[SimulationEvent],
+) -> void:
+	var remaining_flies := PackedVector2Array()
+	for fly: Vector2 in fly_positions:
+		if SolidGeometry.distance_to_segment(fly, start, finish) <= \
+				config.pickup_collision_radius:
+			_collected_pickups[_pickup_key(&"fly", fly)] = true
+			run_flies += 1
+			events.append(SimulationEvent.make(
+				SimulationEvent.Kind.FLY_COLLECTED,
+				fly,
+				"Fly collected",
+				{"run_flies": run_flies},
+			))
+		else:
+			remaining_flies.append(fly)
+	fly_positions = remaining_flies
+
+	var remaining_boosts := PackedVector2Array()
+	for boost: Vector2 in boost_positions:
+		if SolidGeometry.distance_to_segment(boost, start, finish) <= \
+				config.pickup_collision_radius:
+			_collected_pickups[_pickup_key(&"boost", boost)] = true
+			events.append(SimulationEvent.make(
+				SimulationEvent.Kind.BOOST_COLLECTED,
+				boost,
+				"Burst Frenzy",
+			))
+		else:
+			remaining_boosts.append(boost)
+	boost_positions = remaining_boosts
+
+
+func _pickup_key(kind: StringName, pickup_position: Vector2) -> String:
+	return "%s:%d:%d" % [
+		kind,
+		roundi(pickup_position.x),
+		roundi(pickup_position.y),
+	]
 
 
 func _obstacle_death_event() -> SimulationEvent:

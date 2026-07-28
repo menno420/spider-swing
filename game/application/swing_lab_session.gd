@@ -8,6 +8,7 @@ class_name SwingLabSession
 
 signal snapshot_published(snapshot: SimulationSnapshot)
 signal event_published(event: SimulationEvent)
+signal settlement_created(settlement: RunSettlement)
 
 const FIXED_DELTA := 1.0 / 60.0
 const COURSE_SEED := 1337
@@ -18,6 +19,8 @@ var _world := SimulationWorld.new()
 var _course_stream := CourseStream.new()
 var _course_chunk_index: int = -1
 var _run := RunStateMachine.new()
+var _effects := EffectState.new()
+var _progress := PlayerProgress.defaults()
 var _command_buffer: Array[InputCommand] = []
 var _sequence: int = 0
 var _debug_visible: bool = false
@@ -30,11 +33,21 @@ var _recorded_commands: Array[Dictionary] = []
 var _replaying: bool = false
 var _replay_commands: Array[Dictionary] = []
 var _replay_cursor: int = 0
+var _run_sequence: int = 0
+var _settlement_emitted: bool = false
+var _session_id: String = "%d-%d" % [
+	Time.get_unix_time_from_system(),
+	Time.get_ticks_usec(),
+]
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_reset_run()
+
+
+func configure_progress(progress: PlayerProgress) -> void:
+	_progress = progress.copy()
 
 
 func _physics_process(_delta: float) -> void:
@@ -120,6 +133,8 @@ func toggle_slow_motion() -> void:
 func apply_preset(name: StringName) -> void:
 	_config.apply_preset(name)
 	_world.config = _config
+	_course_stream.reset(_config.middle_hazard_start_distance)
+	_world.set_course_geometry(_course_stream.geometry())
 	event_published.emit(SimulationEvent.make(
 		SimulationEvent.Kind.PRESET_CHANGED,
 		_world.position,
@@ -135,7 +150,14 @@ func select_tuning_parameter(direction: int) -> void:
 
 
 func adjust_selected_parameter(direction: float) -> void:
-	_config.adjust(TUNING_PARAMETERS[_selected_parameter_index], direction)
+	var parameter: StringName = TUNING_PARAMETERS[_selected_parameter_index]
+	_config.adjust(parameter, direction)
+	if parameter == &"mid_hazard_m":
+		_course_stream.reset(_config.middle_hazard_start_distance)
+		_world.set_course_geometry(_course_stream.geometry())
+	elif parameter == &"course_rails" and \
+			not _config.course_boundaries_enabled:
+		_world.web.release()
 	_publish_snapshot()
 
 
@@ -192,7 +214,7 @@ func export_diagnostic() -> void:
 			"travel_distance": _world.pull_distance_total,
 			"remaining_distance": _world.pull_distance_remaining,
 		},
-		"tuning": {
+			"tuning": {
 			"burst_distance_fraction": _config.burst_distance_fraction,
 			"dive_distance_fraction": _config.dive_distance_fraction,
 			"reel_retraction_rate": _config.reel_retraction_rate,
@@ -200,8 +222,16 @@ func export_diagnostic() -> void:
 			"web_maximum_length": _config.web_maximum_length,
 			"tap_retargets_when_attached":
 				_config.web_tap_retargets_when_attached,
-			"pull_cooldown": _config.burst_cooldown,
-		},
+				"pull_cooldown": _config.burst_cooldown,
+				"automatic_take_up_enabled": _config.automatic_take_up_enabled,
+				"automatic_take_up_retention":
+					_config.automatic_take_up_retention,
+				"course_boundaries_enabled": _config.course_boundaries_enabled,
+				"course_boundaries_lethal": _config.course_boundaries_lethal,
+				"middle_hazard_start_distance":
+					_config.middle_hazard_start_distance,
+				"burst_frenzy_duration": _config.burst_frenzy_duration,
+			},
 		"stream_chunks": [
 			geometry.first_chunk_index,
 			geometry.last_chunk_index,
@@ -227,6 +257,15 @@ func current_snapshot() -> SimulationSnapshot:
 
 func _step_once() -> void:
 	if _run.state == RunStateMachine.State.ACTIVE:
+		for expired: StringName in _effects.advance(FIXED_DELTA):
+			if expired == EffectState.BURST_FRENZY:
+				event_published.emit(SimulationEvent.make(
+					SimulationEvent.Kind.BOOST_EXPIRED,
+					_world.position,
+					"Burst Frenzy ended",
+				))
+		_world.set_burst_cooldown_suppressed(
+			_effects.is_active(EffectState.BURST_FRENZY))
 		_feed_replay_commands()
 		_command_buffer = _discard_expired_commands(_command_buffer)
 		for command: InputCommand in _command_buffer:
@@ -238,14 +277,23 @@ func _step_once() -> void:
 		if next_chunk_index != _course_chunk_index:
 			_course_chunk_index = next_chunk_index
 			_world.set_course_geometry(
-				_course_stream.update_for_position(_world.position.x))
+				_course_stream.update_for_position(
+					_world.position.x,
+					_config.middle_hazard_start_distance,
+				))
 		var events := _world.step(FIXED_DELTA)
 		for event: SimulationEvent in events:
+			if event.kind == SimulationEvent.Kind.BOOST_COLLECTED:
+				_effects.activate(
+					EffectState.BURST_FRENZY,
+					_config.burst_frenzy_duration,
+				)
 			if event.kind == SimulationEvent.Kind.DEATH_REQUESTED:
 				var cause := StringName(event.data.get("cause", &"unknown"))
 				if not _run.request_death(cause, _config.death_confirmation_seconds):
 					continue
 				_world.web.release()
+				_emit_settlement(cause)
 			event_published.emit(event)
 	elif _run.state == RunStateMachine.State.DYING:
 		_run.advance(FIXED_DELTA)
@@ -284,7 +332,10 @@ func _discard_expired_commands(commands: Array[InputCommand]) -> Array[InputComm
 
 func _reset_run(clear_replay: bool = true) -> void:
 	_run.reset()
-	_course_stream.reset()
+	_run_sequence += 1
+	_settlement_emitted = false
+	_effects.reset()
+	_course_stream.reset(_config.middle_hazard_start_distance)
 	_world.reset(_config, _course_stream.geometry())
 	_course_chunk_index = maxi(
 		0, floori(_world.position.x / CourseStream.CHUNK_WIDTH))
@@ -328,11 +379,29 @@ func _make_snapshot() -> SimulationSnapshot:
 	snapshot.run_state = _run.state_name()
 	snapshot.death_cause = _run.death_cause
 	snapshot.preset_name = _config.preset_name
-	snapshot.anchors = _world.anchors.duplicate()
+	if _config.course_boundaries_enabled:
+		snapshot.anchors = _world.anchors.duplicate()
 	for surface: PackedVector2Array in _world.surfaces:
 		snapshot.surfaces.append(surface.duplicate())
+	if _config.course_boundaries_enabled:
+		for boundary: PackedVector2Array in _world.boundary_surfaces:
+			snapshot.boundary_surfaces.append(boundary.duplicate())
 	for obstacle: PackedVector2Array in _world.obstacles:
 		snapshot.obstacles.append(obstacle.duplicate())
+	snapshot.fly_positions = _world.fly_positions.duplicate()
+	snapshot.boost_positions = _world.boost_positions.duplicate()
+	snapshot.run_flies = _world.run_flies
+	snapshot.total_flies = _progress.total_flies
+	snapshot.burst_frenzy_remaining = _effects.remaining(
+		EffectState.BURST_FRENZY)
+	snapshot.burst_frenzy_capacity = _config.burst_frenzy_duration
+	snapshot.course_boundaries_enabled = _config.course_boundaries_enabled
+	snapshot.course_boundaries_lethal = _config.course_boundaries_lethal
+	snapshot.automatic_take_up_enabled = _config.automatic_take_up_enabled
+	snapshot.automatic_take_up_retention = \
+		_config.automatic_take_up_retention
+	snapshot.spider_style = _progress.selected_spider_style
+	_populate_dive_preview(snapshot)
 	snapshot.debug_visible = _debug_visible
 	snapshot.debug_paused = _debug_paused
 	snapshot.slow_motion = _slow_motion
@@ -344,6 +413,45 @@ func _make_snapshot() -> SimulationSnapshot:
 	snapshot.camera_follow_strength = _config.camera_follow_strength
 	snapshot.camera_look_ahead = _config.camera_look_ahead
 	return snapshot
+
+
+func _populate_dive_preview(snapshot: SimulationSnapshot) -> void:
+	if not _config.course_boundaries_enabled:
+		return
+	var best_distance := INF
+	var best_anchor := Vector2.ZERO
+	for anchor: Vector2 in _world.anchors:
+		if anchor.x < _world.position.x - 40.0 or \
+				anchor.y < _world.position.y + _config.downward_target_threshold:
+			continue
+		var distance := _world.position.distance_to(anchor)
+		if distance < _config.web_minimum_length or \
+				distance > _config.web_maximum_length or distance >= best_distance:
+			continue
+		best_distance = distance
+		best_anchor = anchor
+	if best_distance == INF:
+		return
+	var preview := _world.preview_pull(
+		best_anchor,
+		_config.dive_distance_fraction,
+	)
+	snapshot.dive_preview_available = true
+	snapshot.dive_preview_anchor = best_anchor
+	snapshot.dive_preview_endpoint = preview["endpoint"]
+	snapshot.dive_preview_safe = bool(preview["safe"])
+
+
+func _emit_settlement(cause: StringName) -> void:
+	if _settlement_emitted:
+		return
+	_settlement_emitted = true
+	settlement_created.emit(RunSettlement.create(
+		"%s-run-%d" % [_session_id, _run_sequence],
+		_world.distance_pixels,
+		_world.run_flies,
+		cause,
+	))
 
 
 func _publish_snapshot() -> void:

@@ -31,8 +31,8 @@ The tutorial is data-driven by `FrontEndState.TUTORIAL_STEPS` and illustrated by
 4. speed-neutral rope-shortening Reel use and finite energy;
 5. percentage-based Anchor Burst, detached double-tap targeting, one-shot
    downward Dive Pull, and immediate recovery-web interruption;
-6. shaped warning obstacles, ceiling/floor gaps, lower anchor windows, lethal
-   boundaries, restart, Menu, and optional debug tooling.
+6. shaped warning obstacles, ceiling/floor gaps, fly routes, temporary Burst
+   Frenzy, configurable lethal rails, restart, Menu, and optional debug tooling.
 
 The preview is an in-engine animation rather than a prerecorded video. This is a
 deliberate reversible decision: the guide stays synchronized with live mechanics,
@@ -51,8 +51,10 @@ The current options all affect runtime behavior:
 | Reduced motion | Stops decorative front-end/tutorial motion and removes camera easing/parallax |
 | Debug tools | Shows or removes the laboratory DEBUG control and panel hit regions |
 
-`PlayerSettings` validates and versions these values. `SaveRepository` is the
-exclusive persistent writer and performs a recoverable temp → primary rotation.
+`PlayerSettings` validates and versions these values. `PlayerProgress` separately
+versions fly totals, distance milestones, and unlocked spider palettes.
+`SaveRepository` is the exclusive persistent writer and performs a recoverable
+temp → primary rotation for both records.
 Settings survive app restarts; invalid or corrupt values fall back safely.
 The Settings card is a vertical `ScrollContainer` with larger text, 58–68-pixel
 controls, and focus-follow behavior. All actions remain reachable on the
@@ -64,7 +66,9 @@ controls, and focus-follow behavior. All actions remain reachable on the
   the Play request.
 - `FrontEndView` renders state and forwards button intent.
 - `TutorialPreview` renders illustration only.
-- `SaveRepository` exclusively reads and writes the settings file.
+- `ProgressionService` applies each run settlement once and owns milestone
+  cosmetic unlocks.
+- `SaveRepository` exclusively reads and writes settings and progression files.
 - `main.gd` is the composition root: it mounts one surface at a time and wires
   the transition.
 - `SwingLabSession` remains the sole owner of authoritative run state.
@@ -81,7 +85,9 @@ No global manager or autoload is introduced.
 - Settings owns a vertical scroll surface with readable type and mobile-sized
   picker/action controls;
 - invalid settings are rejected and valid changes emit once;
-- settings encode/decode and actual atomic filesystem persistence round-trip;
+- settings and progression encode/decode and actual atomic filesystem
+  persistence round-trips;
+- duplicate settlement rejection plus fly/distance cosmetic milestones;
 - the composition root enters gameplay only through the Play request;
 - Menu emits one return request without leaking into a web action;
 - disabling debug tools removes their touch surface.

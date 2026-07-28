@@ -58,6 +58,14 @@ static func bounds(polygon: PackedVector2Array) -> Rect2:
 	return Rect2(minimum, maximum - minimum)
 
 
+static func distance_to_segment(
+	point: Vector2,
+	start: Vector2,
+	finish: Vector2,
+) -> float:
+	return point.distance_to(_closest_point_on_segment(point, start, finish))
+
+
 static func _closest_point_on_segment(
 	point: Vector2,
 	start: Vector2,

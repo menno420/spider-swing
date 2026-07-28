@@ -73,3 +73,18 @@
   detached while truthfully displaying `Momentum preserved`. Source arbitration
   prevents every downstream state machine from having to deduplicate pointers.
 - provenance: Menno's `0.3.1-recovery-web-test` recording and PR #15
+
+## [D-0006] Ratchet natural slack and teach hazards through a paced corridor
+
+- status: decided
+- date: 2026-07-28
+- verdict: Natural inward movement may retain a configurable share of shorter
+  rope length without adding velocity; a 1000 m runway teaches ceiling/floor
+  routes before detached middle hazards, and rail presence/lethality remain
+  independent laboratory controls.
+- why: Device playtests showed that a visually shortened web stretching back to
+  its old length caused unexpected deep falls, while early middle obstacles
+  demanded precision before the player could learn recovery and downward pulls.
+  A speed-neutral ratchet improves predictability, and separating geometry from
+  lethality lets the owner compare corridor feel without duplicating courses.
+- provenance: Menno's Phase 0.10 playtests and PR #16

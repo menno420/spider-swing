@@ -13,6 +13,7 @@ static func run() -> Dictionary:
 	passed += _test_settings_are_scrollable_and_mobile_readable(failures)
 	passed += _test_settings_codec_round_trip(failures)
 	passed += _test_settings_repository_round_trip(failures)
+	passed += _test_progression_is_idempotent_and_persistent(failures)
 	passed += _test_composition_root_mounts_front_end_first(failures)
 	return {"passed": passed, "failures": failures}
 
@@ -78,7 +79,7 @@ static func _test_tutorial_covers_current_mechanics(
 		"BURST",
 		"double-tap",
 		"half the web distance",
-		"25% Dive Pull",
+		"40% Dive Pull",
 		"warning-colored obstacle",
 		"ends the run",
 		"MENU",
@@ -219,6 +220,58 @@ static func _test_composition_root_mounts_front_end_first(
 		return 0
 	if not source.contains("_front_end_state.play_requested.connect(_start_game)"):
 		failures.append("Play does not own the transition into gameplay")
+		return 0
+	return 1
+
+
+static func _test_progression_is_idempotent_and_persistent(
+	failures: PackedStringArray,
+) -> int:
+	var progress := PlayerProgress.defaults()
+	var service := ProgressionService.new()
+	var settlement := RunSettlement.create(
+		"test-settlement",
+		10500.0,
+		25,
+		&"obstacle",
+	)
+	var first := service.apply_settlement(progress, settlement)
+	var second := service.apply_settlement(progress, settlement)
+	if not bool(first["applied"]) or bool(second["applied"]):
+		failures.append("progression did not apply one settlement exactly once")
+		return 0
+	if progress.total_flies != 25 or \
+			PlayerProgress.STYLE_AMBER not in progress.unlocked_spider_styles or \
+			PlayerProgress.STYLE_COMET not in progress.unlocked_spider_styles:
+		failures.append("fly and distance milestones did not unlock cosmetics")
+		return 0
+	var settings_path := "user://progress_test_settings.json"
+	var progress_path := "user://progress_test_progress.json"
+	for path: String in [
+		settings_path,
+		"%s.tmp" % settings_path,
+		"%s.bak" % settings_path,
+		progress_path,
+		"%s.tmp" % progress_path,
+		"%s.bak" % progress_path,
+	]:
+		_remove_test_file(path)
+	var repository := SaveRepository.new(settings_path, progress_path)
+	if not repository.save_progress(progress):
+		failures.append("SaveRepository could not atomically write progress")
+		return 0
+	var restored := repository.load_progress()
+	for path: String in [
+		settings_path,
+		"%s.tmp" % settings_path,
+		"%s.bak" % settings_path,
+		progress_path,
+		"%s.tmp" % progress_path,
+		"%s.bak" % progress_path,
+	]:
+		_remove_test_file(path)
+	if restored.to_dictionary() != progress.to_dictionary():
+		failures.append("SaveRepository did not restore progression")
 		return 0
 	return 1
 
