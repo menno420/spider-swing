@@ -1,7 +1,8 @@
 # Phase 0 — Swing Laboratory
 
-> **Status:** implemented candidate; owner device playtest and baseline approval
-> remain open.
+> **Status:** `reference`
+>
+> Implemented candidate; owner device playtest and baseline approval remain open.
 
 The Swing Laboratory is the first playable Spider Swing milestone. It exists to
 answer one question before content production begins: does attaching, swinging,
