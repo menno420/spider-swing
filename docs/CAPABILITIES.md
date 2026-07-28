@@ -205,6 +205,16 @@ never edit.
   `GODOT_ANDROID_KEYSTORE_DEBUG_PATH`/`_USER`/`_PASSWORD`. Godot 4.7.1 honours
   `ANDROID_HOME` and writes its own `editor_settings-4.7.tres`, so no
   editor-settings file needs pre-seeding.
+- 2026-07-28 · capability · `owner-live` · **PR Android artifacts remain
+  source-identifiable and downloadable through the connected GitHub venue** ·
+  PR #13 run `30389823194` produced `spider-swing-android-debug` artifact
+  `8700462786`; the downloaded ZIP matched GitHub's SHA-256
+  `a40ee04c2417fd3890b83830206a02965f55dfcf4d41c1c239181959bad33acb`,
+  its APK opened without archive errors, and `build-info.txt` proved version
+  `0.3.0-percentage-pull-test`, source
+  `357b885290e8ad692b8ef04c1dcfaf7892cfb03e`, package
+  `com.menno420.spiderswing.dev`, and display name
+  `Spider Swing Percentage Pull (dev)`.
 - 2026-07-28 · capability · `owner-live` · **Branch deletion works** — this REFUTES
   the seeded `Branch deletion` wall above (last-verified 2026-07-10) ·
   `claude/bootstrap-spider-swing` was deleted automatically on merge with

@@ -84,11 +84,12 @@ without a reported regression.
 **CI**
 
 - `game-quality` — **green.** Runs `tools/verify.py` on a clean runner with Godot
-  4.7.1 and uses no secrets. PR #12 run
-  [30377680346](https://github.com/menno420/spider-swing/actions/runs/30377680346)
-  passed all 42 runtime contracts at source
-  `cc0bac54e74f49ed4147978bc7a6e702c4c50804`, including the responsive Reel,
-  decomposed Burst, touch-geometry, feedback, and Android workflow identity guards.
+  4.7.1 and uses no secrets. PR #13 run
+  [30389822532](https://github.com/menno420/spider-swing/actions/runs/30389822532)
+  passed all 46 runtime contracts at source
+  `357b885290e8ad692b8ef04c1dcfaf7892cfb03e`, including exact percentage pulls,
+  speed-neutral Reel, solid polygon targeting/collision, shaped streaming,
+  touch geometry, feedback, and Android workflow identity guards.
 - `substrate-gate` — kit-owned. A born-red session card deliberately holds a PR
   until close-out; it must be green on the completed card before merge.
 - `android-debug` — **green on `main`, APK proven.** Run #1 produced artifact
@@ -108,6 +109,18 @@ without a reported regression.
   `cc0bac54e74f49ed4147978bc7a6e702c4c50804`, package
   `com.menno420.spiderswing.dev`, and display name
   `Spider Swing Responsive Pull (dev)`.
+- PR #13 `android-debug` run
+  [30389823194](https://github.com/menno420/spider-swing/actions/runs/30389823194)
+  produced downloadable artifact
+  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30389823194/artifacts/8700462786)
+  ID `8700462786`, 56,739,942 bytes, digest
+  `sha256:a40ee04c2417fd3890b83830206a02965f55dfcf4d41c1c239181959bad33acb`.
+  The downloaded 57,120,332-byte APK opened without errors and had SHA-256
+  `305f25025e4cb7b55590011dcf39a67882ead60f6529e12ac15fd4a58897de04`.
+  Its bundled manifest proves version `0.3.0-percentage-pull-test`, source
+  `357b885290e8ad692b8ef04c1dcfaf7892cfb03e`, package
+  `com.menno420.spiderswing.dev`, and display name
+  `Spider Swing Percentage Pull (dev)`.
 - **Dependabot** — live. Its first run opened two bumps against the kit-owned
   `substrate-gate.yml`; both were closed because `adopt`/`upgrade` regenerates that
   file. The rule is documented in `.github/dependabot.yml`: kit-owned-only bumps get
@@ -133,20 +146,21 @@ without a reported regression.
 
 ## In flight
 
-PR #13 is the active percentage-pull feel pass. Its local Godot 4.7.1 gate passes
-46 contracts. The next owner exit gate is Android build
-`0.3.0-percentage-pull-test`: judge the larger solid aim band, Reel height control
-without runaway speed, exact-feeling 50% Burst, 25% downward Dive Pull, and the
-new shaped route silhouettes. Phase 1 remains blocked on choosing or rejecting a
-movement baseline.
+PR #13 is the active, APK-proven percentage-pull feel pass. Local and
+`game-quality` Godot 4.7.1 gates pass 46 contracts, and Android artifact
+`8700462786` carries build `0.3.0-percentage-pull-test`. The next owner exit gate
+is device feel: judge the larger solid aim band, Reel height control without
+runaway speed, exact-feeling 50% Burst, 25% downward Dive Pull, and the new shaped
+route silhouettes. Phase 1 remains blocked on choosing or rejecting a movement
+baseline.
 
 ## Recently shipped (newest first)
 
-- **2026-07-28 — Percentage-pull traversal candidate (PR #13 in flight).**
+- **2026-07-28 — Percentage-pull traversal candidate (PR #13 ready).**
   Separates Reel shortening from speed gain, makes Burst/Dive distance-shaped and
   atomically targetable, accepts all retained solid polygons as anchors, adds
   shaped ceiling/floor/obstacle silhouettes, exposes the new feel controls, and
-  passes 46 local Godot contracts.
+  passes 46 local and CI Godot contracts with a verified Android artifact.
 - **2026-07-28 — Responsive rope-actions candidate.** PR #12 enlarges both thumb
   targets to symmetric 228×228 regions, gives Reel a guaranteed first-tick radial
   response, decomposes Burst into anchor-directed and retained tangential motion,
