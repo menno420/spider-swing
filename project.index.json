@@ -9,7 +9,8 @@
         "docs/game-design/Spider-Swing-GDD-v2.0.md",
         "docs/technical/adr/0002-simulation-and-event-boundaries.md",
         "docs/runtime_contracts.md",
-        "docs/architecture.md"
+        "docs/architecture.md",
+        "docs/technical/phase-0-swing-laboratory.md"
       ],
       "source_roots": [
         "game/simulation/",
@@ -26,12 +27,12 @@
         "an input poll inside simulation — simulation consumes buffered InputCommand values only"
       ],
       "gates": [
-        "PHASE 0 NOT STARTED. This area is empty by design; the bootstrap deliberately implemented no swing physics.",
-        "Phase 0 exit gate (GDD 23): attach/release predictable across supported frame rates; release preserves momentum; Reel-In useful without being mandatory; most test deaths correctly attributable by the player; one named physics preset approved as the baseline.",
+        "PHASE 0 IMPLEMENTED CANDIDATE. Deterministic motor, web constraint, manual release, Reel-In energy, boundaries, and trajectory tests exist on PR #6.",
+        "Phase 0 owner gate remains open: compare balanced_candidate, weighty_candidate, and agile_candidate on a real Android device; approve one named baseline or request changes.",
         "The core physics prototype must be approved before progression, monetization, missions, multiple spiders, or large content sets are built (GDD 1)."
       ],
       "verification": [
-        "python3 tools/verify.py",
+        "python3 tools/verify.py --require-godot",
         "python3 bootstrap.py check --strict"
       ]
     },
@@ -42,7 +43,8 @@
         "docs/game-design/Spider-Swing-GDD-v2.0.md",
         "docs/technical/adr/0002-simulation-and-event-boundaries.md",
         "docs/ownership.md",
-        "docs/runtime_contracts.md"
+        "docs/runtime_contracts.md",
+        "docs/technical/phase-0-swing-laboratory.md"
       ],
       "source_roots": [
         "game/application/",
@@ -58,12 +60,12 @@
         "a parallel effect timer — EffectState owns power-up activation, refresh, and expiry"
       ],
       "gates": [
-        "PHASE 0 NOT STARTED. Empty by design.",
-        "Seeded chunk selection and the difficulty director are Phase 1, not Phase 0.",
+        "Phase 0 RunStateMachine and SwingLabSession exist. They own lifecycle, command buffering, fixed-step call order, candidate presets, snapshots, recording, replay, and diagnostics.",
+        "Seeded chunk selection and the difficulty director are Phase 1 and remain blocked by the Phase 0 owner feel gate.",
         "Run settlement, Silk, and progression are Phase 2. Phase 2 exit gate: economy grants cannot duplicate; progress survives app suspension and migration; upgrades do not affect standard records."
       ],
       "verification": [
-        "python3 tools/verify.py",
+        "python3 tools/verify.py --require-godot",
         "python3 bootstrap.py check --strict"
       ]
     },
@@ -73,7 +75,8 @@
       "binding_docs": [
         "docs/technical/adr/0002-simulation-and-event-boundaries.md",
         "docs/runtime_contracts.md",
-        "docs/game-design/Spider-Swing-GDD-v2.0.md"
+        "docs/game-design/Spider-Swing-GDD-v2.0.md",
+        "docs/technical/phase-0-swing-laboratory.md"
       ],
       "source_roots": [
         "game/adapters/",
@@ -88,12 +91,12 @@
         "input action definitions outside project.godot's [input] section"
       ],
       "gates": [
-        "Input action names exist as definitions (web_action, reel_in, pause, restart_run, toggle_debug); no consumer is wired yet.",
-        "Touch bindings arrive with the Phase 0 input router, through the buffered-command seam — not a raw action poll.",
+        "InputRouter consumes the five configured actions plus multi-touch screen events and emits intent without mutating simulation.",
+        "UI and Reel touch rectangles are filtered before web input; simultaneous Reel plus attach/release is supported.",
         "Save, telemetry, and platform adapters are Phase 2."
       ],
       "verification": [
-        "python3 tools/verify.py",
+        "python3 tools/verify.py --require-godot",
         "python3 bootstrap.py check --strict"
       ]
     },
@@ -103,7 +106,8 @@
       "binding_docs": [
         "docs/technical/adr/0002-simulation-and-event-boundaries.md",
         "docs/technical/adr/0001-engine-and-runtime.md",
-        "docs/game-design/Spider-Swing-GDD-v2.0.md"
+        "docs/game-design/Spider-Swing-GDD-v2.0.md",
+        "docs/technical/phase-0-swing-laboratory.md"
       ],
       "source_roots": [
         "game/presentation/scenes/",
@@ -119,12 +123,12 @@
         "a second HUD root or a competing camera controller"
       ],
       "gates": [
-        "Bootstrap placeholder only: swing_lab.tscn renders the Phase 0 title and one runtime-facts line. No spider, no web, no camera follow.",
-        "Phase 0 adds the camera with speed-dependent look-ahead (spider held in the left third, GDD 4.2) and the diagnostic overlays from GDD 22.1.",
+        "Phase 0 code-drawn graybox view consumes snapshots/events and includes camera look-ahead, visible anchors/web/tension, HUD, Reel energy, tuning controls, and diagnostic overlays.",
+        "The view is intentionally not production art. Phase 1 may add fair-slice readability only after the owner approves a physics baseline.",
         "Production art is Phase 2 (release-quality first biome). Avoid Spider-Man / superhero visual similarity (GDD 17.1)."
       ],
       "verification": [
-        "python3 tools/verify.py",
+        "python3 tools/verify.py --require-godot",
         "python3 bootstrap.py check --strict"
       ]
     },
@@ -157,7 +161,7 @@
         "No Git LFS until real large binary assets justify it."
       ],
       "verification": [
-        "python3 tools/verify.py",
+        "python3 tools/verify.py --require-godot",
         "python3 bootstrap.py check --strict"
       ]
     },
@@ -197,7 +201,7 @@
         "No production credential, key, token, signing material, or store integration may be committed."
       ],
       "verification": [
-        "python3 tools/verify.py",
+        "python3 tools/verify.py --require-godot",
         "python3 bootstrap.py check --strict",
         "python3 tools/check_architecture.py --self-test"
       ]
