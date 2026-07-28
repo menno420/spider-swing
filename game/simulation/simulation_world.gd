@@ -184,7 +184,7 @@ func _consume(
 					"Attach a web before Reel-In",
 				))
 			else:
-				web.set_reel_active(true)
+				velocity = web.engage_reel(position, velocity, config)
 		InputCommand.Kind.REEL_STOP:
 			web.set_reel_active(false)
 		InputCommand.Kind.BURST:
@@ -196,15 +196,32 @@ func _consume(
 					{"remaining": burst_cooldown_remaining},
 				))
 				return
+			if not web.attached:
+				events.append(SimulationEvent.make(
+					SimulationEvent.Kind.BURST_UNAVAILABLE,
+					position,
+					"Attach a web before Burst",
+				))
+				return
+			var pull_vector := web.anchor - position
+			if pull_vector.length_squared() <= 0.0001:
+				events.append(SimulationEvent.make(
+					SimulationEvent.Kind.BURST_UNAVAILABLE,
+					position,
+					"Web target is too close for Burst",
+				))
+				return
+			var pull_direction := pull_vector.normalized()
+			var burst_anchor := web.anchor
 			web.release()
-			velocity.x = maxf(
-				velocity.x + config.burst_impulse,
-				config.starting_target_speed + config.burst_impulse,
-			)
-			velocity.y = minf(velocity.y, -config.burst_lift)
+			velocity += pull_direction * config.burst_pull_impulse
 			burst_cooldown_remaining = config.burst_cooldown
 			events.append(SimulationEvent.make(
 				SimulationEvent.Kind.BURST_STARTED,
-				position,
-				"Forward Burst",
+				burst_anchor,
+				"Anchor Pull",
+				{
+					"direction_x": pull_direction.x,
+					"direction_y": pull_direction.y,
+				},
 			))

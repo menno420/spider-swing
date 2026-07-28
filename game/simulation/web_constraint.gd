@@ -61,6 +61,27 @@ func set_reel_active(active: bool) -> void:
 	reel_active = active and attached and reel_energy > 0.0
 
 
+func engage_reel(
+	position: Vector2,
+	velocity: Vector2,
+	config: SwingConfig,
+) -> Vector2:
+	if reel_active:
+		return velocity
+	set_reel_active(true)
+	if not reel_active:
+		return velocity
+	var to_anchor := anchor - position
+	if to_anchor.length_squared() <= 0.0001:
+		return velocity
+	return _add_bounded_inward_speed(
+		velocity,
+		to_anchor.normalized(),
+		config.reel_engage_impulse,
+		config.reel_maximum_pull_speed,
+	)
+
+
 func advance_resource(delta: float, config: SwingConfig) -> bool:
 	var became_empty := false
 	if reel_lockout_remaining > 0.0:
@@ -95,6 +116,15 @@ func solve(
 	config: SwingConfig,
 ) -> Dictionary:
 	tension = 0.0
+	if attached and reel_active and reel_energy > 0.0:
+		var to_anchor := anchor - position
+		if to_anchor.length_squared() > 0.0001:
+			velocity = _add_bounded_inward_speed(
+				velocity,
+				to_anchor.normalized(),
+				config.reel_pull_acceleration * delta,
+				config.reel_maximum_pull_speed,
+			)
 	var predicted := position + velocity * delta
 	if not attached:
 		return {"position": predicted, "velocity": velocity}
@@ -126,3 +156,14 @@ func solve(
 	)
 
 	return {"position": predicted, "velocity": velocity}
+
+
+func _add_bounded_inward_speed(
+	velocity: Vector2,
+	inward_direction: Vector2,
+	requested_speed: float,
+	maximum_speed: float,
+) -> Vector2:
+	var inward_speed := velocity.dot(inward_direction)
+	var available := maxf(0.0, maximum_speed - inward_speed)
+	return velocity + inward_direction * minf(requested_speed, available)

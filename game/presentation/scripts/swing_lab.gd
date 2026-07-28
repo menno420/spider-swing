@@ -157,7 +157,8 @@ func _draw_course(size: Vector2) -> void:
 		if screen.x < -80.0 or screen.x > size.x + 80.0:
 			continue
 		var distance := guide.distance_to(_snapshot.position)
-		var in_range := distance >= 90.0 and distance <= 620.0
+		var in_range := distance >= 90.0 and \
+			distance <= _snapshot.web_maximum_length
 		var color := GREEN if in_range else YELLOW
 		draw_circle(screen, 10.0, Color(color, 0.12))
 		draw_arc(screen, 11.0, 0.0, TAU, 24, Color(color, 0.72), 2.0)
@@ -287,7 +288,8 @@ func _draw_hud(size: Vector2) -> void:
 	var burst_rect := LabLayout.burst_rect(size)
 	var burst_center := burst_rect.get_center()
 	var burst_radius := burst_rect.size.x * 0.44
-	var burst_ready := _snapshot.burst_cooldown <= 0.0
+	var burst_ready := _snapshot.burst_cooldown <= 0.0 and \
+		_snapshot.web_attached
 	var burst_fill := Color(0.36, 0.19, 0.06, 0.96) if burst_ready \
 		else Color(0.12, 0.1, 0.08, 0.86)
 	draw_circle(burst_center, burst_radius, burst_fill)
@@ -301,9 +303,10 @@ func _draw_hud(size: Vector2) -> void:
 	)
 	draw_arc(burst_center, burst_radius, -PI * 0.5,
 		-PI * 0.5 + TAU * cooldown_ratio, 64, YELLOW, 9.0)
-	_draw_centered_text(burst_center + Vector2(0.0, 7.0),
-		"BURST" if burst_ready else "%.1f" % _snapshot.burst_cooldown,
-		20, WEB)
+	var burst_label := "ATTACH" if not _snapshot.web_attached else (
+		"BURST" if burst_ready else "%.1f" % _snapshot.burst_cooldown)
+	_draw_centered_text(
+		burst_center + Vector2(0.0, 7.0), burst_label, 20, WEB)
 
 	if _snapshot.run_state != &"active":
 		draw_rect(Rect2(Vector2.ZERO, size), Color(0.02, 0.04, 0.06, 0.62))
@@ -332,8 +335,11 @@ func _draw_debug(_size: Vector2) -> void:
 			_snapshot.rope_length, _snapshot.tension],
 		"Reel: %.1f / %.1f  lockout %.2f" % [
 			_snapshot.reel_energy, _snapshot.reel_capacity, _snapshot.reel_lockout],
-		"Burst cooldown: %.2f / %.2f" % [
-			_snapshot.burst_cooldown, _snapshot.burst_cooldown_capacity],
+		"Burst: %.2f / %.2f  attached %s" % [
+			_snapshot.burst_cooldown,
+			_snapshot.burst_cooldown_capacity,
+			_snapshot.web_attached,
+		],
 		"geometry: %d surfaces  %d obstacles" % [
 			_snapshot.surface_segments.size(), _snapshot.obstacles.size()],
 		"preset: %s" % _snapshot.preset_name,
