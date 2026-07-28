@@ -24,16 +24,19 @@ this session protected that movement while correcting the HUD input seam.
 ## Evidence and resolution
 
 Frame review of the 1040×480 recording showed direct presses on both right-edge
-controls with no response. Godot had already stretch-adjusted touch positions into
+controls with no intended response. Menno clarified that attached Reel presses
+released the web like an ordinary tap, directly proving the missed UI touch fell
+through into the web action. Godot had already stretch-adjusted touch positions into
 the logical canvas, and the Node2D HUD was drawn there, while `InputRouter` sized
 its hit rectangles from the physical visible surface. With `canvas_items` and
 `expand`, that phone's 1040×480 surface is a 1560×720 logical canvas, so the manual
 hit targets were displaced up and left.
 
 `InputRouter` now converts only the physical visible size through the inverse
-stretch basis. Shared rectangles remain owned by `LabLayout`. Four regression
-checks lock the recorded phone size, the recorded Reel and DEBUG positions, and
-the reference identity layout.
+stretch basis. Shared rectangles remain owned by `LabLayout`; primary Reel and DEBUG regions
+are now classified before any touch can become a world/web tap. Four regression
+checks lock the recorded phone size, Reel non-fallthrough, DEBUG non-fallthrough,
+and the reference identity layout.
 
 The Reel behavior remains attached-only. A detached press now emits yellow
 `Attach a web before Reel-In` feedback without consuming energy. While attached,
@@ -42,15 +45,15 @@ and retains the existing rope pulse.
 
 ## Verification
 
-- `game-quality` run #40: PASS — Godot 4.7.1 import, boot, 21/21 runner checks,
-  nine deterministic physics contracts, four mobile HUD coordinate checks, and
-  14/14 architecture fixtures.
-  https://github.com/menno420/spider-swing/actions/runs/30354700917
-- The earlier functional head also passed independently in run #39.
+- `game-quality` run #46: PASS — Godot 4.7.1 import, boot, 21/21 runner
+  checks, nine deterministic physics contracts, four mobile HUD coordinate and
+  non-fallthrough checks, and 14/14 architecture fixtures.
+  https://github.com/menno420/spider-swing/actions/runs/30355004853
+- `substrate-gate` run #47: PASS — completed session grammar, living-ledger
+  status, claim release, and strict repository checks.
+  https://github.com/menno420/spider-swing/actions/runs/30355004812
+- An earlier functional head also passed independently in game-quality run #39.
   https://github.com/menno420/spider-swing/actions/runs/30354624244
-- `substrate-gate`: the only pre-close failure was this card's designed
-  `in-progress` hold. This deliberate final status change triggers the post-close
-  strict verification; merge remains forbidden until it passes.
 - PR: https://github.com/menno420/spider-swing/pull/7
 
 ## Docs audit
