@@ -44,8 +44,9 @@ static func _test_recorded_phone_canvas_size(
 static func _test_recorded_reel_touch(failures: PackedStringArray) -> int:
 	var logical_size := _recorded_canvas_size()
 	var recorded_touch := Vector2(1455.0, 612.0)
-	if not LabLayout.reel_rect(logical_size).has_point(recorded_touch):
-		failures.append("recorded Reel touch misses the logical Reel rectangle")
+	var region := InputRouter.classify_primary_touch(recorded_touch, logical_size)
+	if region != InputRouter.PrimaryTouchRegion.REEL:
+		failures.append("recorded Reel touch falls through to the web action")
 		return 0
 	if LabLayout.reel_rect(Vector2(1040.0, 480.0)).has_point(recorded_touch):
 		failures.append("regression proof invalid: physical-size rectangle also hit")
@@ -56,8 +57,9 @@ static func _test_recorded_reel_touch(failures: PackedStringArray) -> int:
 static func _test_recorded_debug_touch(failures: PackedStringArray) -> int:
 	var logical_size := _recorded_canvas_size()
 	var recorded_touch := Vector2(1504.0, 50.0)
-	if not LabLayout.debug_toggle_rect(logical_size).has_point(recorded_touch):
-		failures.append("recorded DEBUG touch misses the logical DEBUG rectangle")
+	var region := InputRouter.classify_primary_touch(recorded_touch, logical_size)
+	if region != InputRouter.PrimaryTouchRegion.DEBUG:
+		failures.append("recorded DEBUG touch falls through to the web action")
 		return 0
 	if LabLayout.debug_toggle_rect(Vector2(1040.0, 480.0)).has_point(
 			recorded_touch):
