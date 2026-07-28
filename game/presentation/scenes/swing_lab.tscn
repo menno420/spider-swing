@@ -1,0 +1,37 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/presentation/scripts/swing_lab.gd" id="1_swing_lab"]
+
+[node name="SwingLab" type="Node2D"]
+script = ExtResource("1_swing_lab")
+
+[node name="Hud" type="CanvasLayer" parent="."]
+
+[node name="Background" type="ColorRect" parent="Hud"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.07451, 0.078431, 0.101961, 1)
+
+[node name="Layout" type="VBoxContainer" parent="Hud"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="Title" type="Label" parent="Hud/Layout"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Spider Swing — Phase 0 Swing Laboratory"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="Hud/Layout"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "placeholder — runtime details are filled in at boot"
+horizontal_alignment = 1

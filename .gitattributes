@@ -1,0 +1,16 @@
+# Spider Swing — text-native Godot resources are real source, not generated.
+# Marking them explicitly keeps GitHub's language stats and diff behaviour honest
+# and stops .tscn/.tres from being treated as binary or vendored.
+*.gd     text eol=lf linguist-language=GDScript
+*.tscn   text eol=lf linguist-language=GDScript3
+*.tres   text eol=lf linguist-language=GDScript3
+*.godot  text eol=lf
+*.cfg    text eol=lf
+*.import text eol=lf
+
+# The vendored GDD is the owner's authored product document, checksum-pinned.
+docs/game-design/Spider-Swing-GDD-v2.0.md text eol=lf
+
+# substrate-kit search hygiene (planted by adopt/upgrade; the kit only ever APPENDS missing entries — existing content above is host-owned)
+/bootstrap.py linguist-generated=true
+/.substrate/backup/** linguist-generated=true

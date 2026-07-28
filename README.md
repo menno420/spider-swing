@@ -1,2 +1,182 @@
-# spider-swing
-Android-first 2D physics swing game — internal codename Spider Swing
+# Spider Swing
+
+An Android-first 2D physics game. You control a small, agile spider moving through
+oversized environments — fire silk, turn forward speed into pendulum momentum, skim
+past hazards, catch flies, and survive as long as you can. Distance travelled is the
+score.
+
+The product *is* the swinging. Everything else exists to support it.
+
+> ### "Spider Swing" is a codename
+>
+> **Not approved release branding.** Other games already use this name and similar
+> spider-swinging concepts. Naming, trademark, domain, and store-conflict review are
+> all still open — see [`docs/product/name-status.md`](docs/product/name-status.md).
+> The repository name, the Godot project name, and the package identifier
+> `com.menno420.spiderswing.dev` are all development identifiers and are all
+> expected to change.
+
+## Current phase: repository bootstrap
+
+**Phase 0 implementation has not started.** This repository currently contains a
+verified development substrate and a bootable Godot shell — nothing more, on
+purpose.
+
+### What exists
+
+- A Godot 4.7.1 project that boots and terminates cleanly, headless and on device.
+- A "Spider Swing — Phase 0 Swing Laboratory" placeholder scene.
+- Input action *definitions* (`web_action`, `reel_in`, `pause`, `restart_run`,
+  `toggle_debug`) — defined, not yet consumed.
+- The layered `game/` directory structure with its dependency rule enforced by CI.
+- Verification tooling, a headless test runner, and two green CI gates.
+- An Android debug APK produced on every push to `main`.
+- The GDD and three binding architecture decision records.
+
+### What is deliberately not implemented
+
+**No swing physics.** No web constraint, no Reel-In, no forward drive, no anchors.
+Also absent: obstacles, flies, currency, spiders, progression, missions,
+monetization, production art, production signing, and any store integration.
+
+That boundary is the point. The GDD requires the core physics prototype to be
+approved before progression, monetization, missions, multiple spiders, or large
+content sets are built.
+
+Phase 0 is tracked as [its own issue](../../issues?q=is%3Aissue+label%3Aphase%3A0-swing-lab).
+
+## Requirements
+
+- **Godot 4.7.1 Standard** — not the .NET/Mono build. GDScript only, no C#.
+  [Download archive](https://godotengine.org/download/archive/).
+- **Python 3.10+** for the verification tooling. Nothing to install; it is
+  stdlib-only.
+
+The engine version is pinned in [`.godot-version`](.godot-version) and locked by
+[ADR 0001](docs/technical/adr/0001-engine-and-runtime.md). `tools/verify.py`
+refuses to run against a different version, and refuses a Mono build outright.
+
+## Opening the project
+
+1. Install Godot 4.7.1 Standard.
+2. Clone this repository.
+3. In the Godot project manager choose **Import**, select `project.godot` in the
+   repository root, and open it.
+4. Press F5. You should see the Swing Laboratory placeholder with one line of
+   runtime facts.
+
+The engine will create `.godot/` on first open — that is regenerated import data
+and is git-ignored.
+
+## Verifying
+
+Two commands. Both must pass before work lands, and they never call each other.
+
+```bash
+python3 tools/verify.py             # host + game code
+python3 bootstrap.py check --strict  # Substrate doc/session hygiene
+```
+
+`tools/verify.py` locates Godot via `GODOT_BIN`, `GODOT`, `GODOT4`, or PATH; asserts
+the version; runs the architecture checker and its 14 self-test fixtures; imports the
+project headlessly; runs the boot smoke test; then runs the headless test runner. It
+never downloads anything — a missing Godot is reported, not fetched.
+
+```bash
+export GODOT_BIN=/path/to/Godot_v4.7.1-stable_linux.x86_64
+python3 tools/verify.py
+```
+
+Details in [`docs/technical/testing.md`](docs/technical/testing.md).
+
+## Getting an Android debug build
+
+Every push to `main` builds an installable debug APK.
+
+1. Open the [**android-debug** workflow runs](../../actions/workflows/android-debug.yml).
+2. Click the most recent successful run.
+3. Download the **`spider-swing-android-debug`** artifact from the Artifacts
+   section (kept 14 days).
+4. Unzip it and install:
+
+```bash
+adb install -r spider-swing-debug.apk
+```
+
+Debug build, debug-signed with a throwaway per-run keystore. Not signed for
+release, not on Google Play, and it installs alongside any future production build
+because the package identifiers differ. See
+[ADR 0003](docs/technical/adr/0003-android-build-strategy.md).
+
+You can also trigger a build manually from the workflow page via **Run workflow**.
+
+## Architecture in one table
+
+Dependencies point strictly inward. `adapters` and `presentation` are equal-rank
+peers and may not depend on each other.
+
+| Layer | Contains | May depend on |
+| --- | --- | --- |
+| `game/domain/` | Value objects, commands, events, identifiers, config contracts | nothing |
+| `game/content/` | Versioned data definitions | nothing |
+| `game/simulation/` | Fixed-step spider motor, web constraint, collision policy | `domain` |
+| `game/application/` | Run state machine, difficulty director, world stream, score, settlement | `domain`, `simulation` |
+| `game/adapters/` | Godot input, scenes, persistence, telemetry, platform | inward layers |
+| `game/presentation/` | UI, camera, audio, VFX, rendering | inward layers |
+| `game/bootstrap/` | The composition root | anything |
+
+The flow is one-way:
+
+```
+input → buffered command → fixed-step simulation → domain events
+      → presentation/telemetry → run settlement → persistence
+```
+
+Presentation never mutates simulation truth and cannot grant rewards. Enforced by
+`tools/check_architecture.py` and `tests/test_runner.gd`, both run by CI. See
+[ADR 0002](docs/technical/adr/0002-simulation-and-event-boundaries.md) and
+[`docs/technical/repository-layout.md`](docs/technical/repository-layout.md).
+
+## Roadmap
+
+Phases are gated: each one has an exit gate that must pass before the next starts.
+Full criteria in the GDD § 23.
+
+| Phase | Scope | Exit gate |
+| --- | --- | --- |
+| **0 — Swing Laboratory** | Spider body and forward drive, valid anchors, attach/swing/manual release, Reel-In energy, camera and world boundaries, graybox debug course, runtime tuning and diagnostics | Attach/release predictable across frame rates; release preserves momentum; Reel-In useful but not mandatory; test players can attribute their deaths; one named physics preset approved as baseline |
+| **1 — Fair Endless Slice** | Seeded chunk selection, three static chunks + one moving-hazard family, small flies, Shield and Tension flies, distance score, death/results/sub-2s restart, local best, basic audio and haptics | No unavoidable deaths in fixed-seed testing; special-fly hits readable; performance target met on the lowest supported device |
+| **2 — MVP Progression** | Run settlement and Silk, atomic versioned save, Magnet Fly, Classic customization, small capped upgrades, three mission templates, settings and accessibility, analytics adapter, release-quality first biome | Economy grants cannot duplicate; progress survives suspension and migration; upgrades do not affect standard records |
+| **3 — Content Expansion** | Alternate spiders with trade-offs, more biomes and chunk packs, cosmetics, daily fixed-seed challenge, platform services, tested rewarded ads, Rush Fly | — |
+
+Twin-Web stays blocked until it has a dedicated, tested control specification.
+
+## Documentation
+
+| Document | What it is |
+| --- | --- |
+| [Game Design Document v2.0](docs/game-design/Spider-Swing-GDD-v2.0.md) | **The product and gameplay source of truth.** Fairness rules, system boundaries, release gates. |
+| [ADR 0001 — Engine and runtime](docs/technical/adr/0001-engine-and-runtime.md) | Godot 4.7.1 Standard, GDScript, Compatibility renderer, 60 Hz fixed step. |
+| [ADR 0002 — Simulation and event boundaries](docs/technical/adr/0002-simulation-and-event-boundaries.md) | Inward layering and deterministic event flow. |
+| [ADR 0003 — Android build strategy](docs/technical/adr/0003-android-build-strategy.md) | Debug-only CI now; production signing later, owner-controlled. |
+| [Repository layout](docs/technical/repository-layout.md) | What lives where. |
+| [Testing and verification](docs/technical/testing.md) | How to verify locally; what CI enforces. |
+| [Name status](docs/product/name-status.md) | Why the title is a codename and what review remains. |
+| [Substrate Kit provenance](docs/technical/substrate-kit-provenance.md) | How the vendored kit got here; how to re-verify the pin. |
+
+The GDD's own change rules apply: **locked rules** must not change during
+implementation without updating the document, **tunable values** live in
+configuration rather than code, and **deferred features** keep an extension point
+but are not built before their phase.
+
+## How this repository is worked
+
+The owner directs product vision and playtests; autonomous Claude and Codex agents
+implement and maintain the repository. The working contract lives in
+[`CONSTITUTION.md`](CONSTITUTION.md) and the Substrate-generated ledgers under
+`docs/` — start with `docs/AGENT_ORIENTATION.md` and `docs/current-state.md`.
+
+Reversible implementation decisions are decide-and-flag. The owner reviews playable
+feel, branding, monetization, production signing, and external publication rather
+than routine code. When documentation disagrees with verified source, the source
+wins and the documentation is corrected in the same PR.
