@@ -1,0 +1,1 @@
+- `codex-mobile-hud-touch-fix` · **Mobile HUD touch coordinates** — reproduce Menno's 1040×480 Android recording, fix Reel/LAB hit testing across stretch transforms, add detached-Reel feedback, regression tests, and a replacement APK · 2026-07-28
