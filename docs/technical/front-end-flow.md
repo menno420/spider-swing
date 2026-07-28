@@ -13,7 +13,7 @@ cannot start or persist a run by itself.
 The first visible screen presents exactly three primary routes:
 
 - **Play** — creates a new Swing Laboratory session with the saved options;
-- **Tutorial** — opens the five-step animated mechanics guide;
+- **Tutorial** — opens the six-step animated mechanics guide;
 - **Settings** — edits real, persisted player options.
 
 The simulation, input router, and gameplay view are not mounted until Play is
@@ -23,13 +23,14 @@ input, destroys the current session, and recreates the front end.
 ### Tutorial
 
 The tutorial is data-driven by `FrontEndState.TUTORIAL_STEPS` and illustrated by
-`TutorialPreview`. Its five focused steps cover:
+`TutorialPreview`. Its six focused steps cover:
 
 1. automatic forward movement and distance;
-2. valid cyan web anchors and range;
+2. continuous cyan ceiling surfaces, optional aim guides, and range;
 3. manual release with momentum preservation;
-4. attached-only Reel use and finite energy;
-5. lethal boundaries, restart, Menu, and optional debug tooling.
+4. attached-only left-thumb Reel use and finite energy;
+5. the forward Burst button and double-tap shortcut;
+6. striped obstacles, lethal boundaries, restart, Menu, and optional debug tooling.
 
 The preview is an in-engine animation rather than a prerecorded video. This is a
 deliberate reversible decision: the guide stays synchronized with live mechanics,
@@ -51,6 +52,9 @@ The current options all affect runtime behavior:
 `PlayerSettings` validates and versions these values. `SaveRepository` is the
 exclusive persistent writer and performs a recoverable temp → primary rotation.
 Settings survive app restarts; invalid or corrupt values fall back safely.
+The Settings card is a vertical `ScrollContainer` with larger text, 58–68-pixel
+controls, and focus-follow behavior. All actions remain reachable on the
+1040×480 Android viewport from the owner recording and on taller aspect ratios.
 
 ## Ownership
 
@@ -71,7 +75,9 @@ No global manager or autoload is introduced.
 
 - startup mounts Home without creating gameplay;
 - Play, Tutorial, and Settings are real event-consuming Buttons;
-- the tutorial has exactly five steps and covers the live mechanics;
+- the tutorial has exactly six steps and covers the live mechanics;
+- Settings owns a vertical scroll surface with readable type and mobile-sized
+  picker/action controls;
 - invalid settings are rejected and valid changes emit once;
 - settings encode/decode and actual atomic filesystem persistence round-trip;
 - the composition root enters gameplay only through the Play request;
