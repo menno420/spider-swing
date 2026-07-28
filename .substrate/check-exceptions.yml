@@ -1,0 +1,15 @@
+# Reason-required check allowlist (the kit's §5.3 triage seam).
+#
+# An entry suppresses exactly one finding, matched exactly on path + kind, and
+# only when it states WHY. A reason-less entry suppresses nothing and is itself
+# reported — so this file cannot silently widen.
+#
+# Keep this file short. If it grows, that is a signal the underlying thing needs
+# fixing rather than accepting.
+
+- path: game-design/Spider-Swing-GDD-v2.0.md
+  kind: badge
+  reason: "Vendored, byte-frozen product document authored by the owner, checksum-pinned to a63e804bfadfe6fd9db88686bf55ea2b57ce488157069190d8350968c39c7a53. It is not one of this repository's living ledgers, so the badge taxonomy does not apply to it; adding a Status badge would change its bytes and break the checksum the owner audits against. The badge is carried on its behalf by docs/game-design/README.md, which also records the hash and the re-verification command. A genuine design change arrives as a new GDD version from the owner with a new recorded checksum, never as an in-place edit."
+  triaged: 2026-07-28
+  by: founding-bootstrap-session
+  verdict: false_positive

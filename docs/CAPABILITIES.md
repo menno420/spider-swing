@@ -114,3 +114,85 @@ as venue `any`.)
 (Hand-filled by sessions, per the discovery rule. Seed rows above are
 kit-owned — they refresh at upgrade between the fence markers; local
 findings go here, below the fence.)
+
+### 2026-07-28 · founding bootstrap session · venue `owner-live`
+
+Recorded against the live surface of THIS repository. Where a seed row above
+disagrees, the dated line here is the fresher fact — re-verifications append,
+never edit.
+
+**Capabilities — verified working this session**
+
+- 2026-07-28 · capability · `owner-live` · **Repository creation, labels,
+  milestones, merge settings, issues, and PR creation all work agent-side** ·
+  `menno420/spider-swing` was created private with `POST /user/repos`; four
+  labels, four milestones, squash-only merge settings, a branch, a ready PR, and
+  the Phase 0 issue all landed through the API · no workaround needed.
+- 2026-07-28 · capability · `owner-live` · **`api.github.com` over direct HTTP
+  works** — this REFUTES the seeded `api.github.com direct HTTP` wall above
+  (last-verified 2026-07-10) · every GitHub call this session used
+  `curl --noproxy '*' -H "Authorization: Bearer $GITHUB_PAT"` and succeeded; the
+  *proxied* path is the one that 403s · use direct egress with the PAT.
+- 2026-07-28 · capability · `owner-live` · **Private-repo clone and push work**
+  with `GIT_CONFIG_GLOBAL=/dev/null` plus
+  `https://x-access-token:$GITHUB_PAT@github.com/...` · clone, three commits, and
+  pushes to `claude/bootstrap-spider-swing` all succeeded.
+- 2026-07-28 · capability · `owner-live` · **Release assets download and verify
+  from a private sibling repo** · Substrate Kit v1.20.2's `bootstrap.py`,
+  `bootstrap.py.sha256`, and `release.json` fetched via the assets API with
+  `Accept: application/octet-stream`; sha256
+  `48ecd4785f401bc76722ef312d1522abd2d9aff7b2e8931ed5e590bbfef9ece6` matched both
+  published manifests before execution.
+- 2026-07-28 · capability · `owner-live` · **Godot 4.7.1 runs headlessly in this
+  container, not only in CI** · downloaded the official
+  `Godot_v4.7.1-stable_linux.x86_64` (76 MB) and ran `--import`, the boot smoke
+  test, and the GDScript test runner locally · this is what let the project be
+  validated before the first push instead of through CI round-trips. Worth
+  repeating in any Godot session.
+- 2026-07-28 · capability · `owner-live` · **Upstream action commit SHAs are
+  resolvable for pinning** · `GET /repos/<owner>/<repo>/releases/latest` then
+  `GET /git/ref/tags/<tag>` (dereferencing annotated tags through
+  `/git/tags/<sha>`) resolved all seven actions · never invent a SHA; resolve it.
+
+**Verified plan constraint — not an agent limitation**
+
+- 2026-07-28 · wall · `owner-live` · **Branch protection and rulesets are
+  unavailable on PRIVATE repositories on this account's plan.** Attempted once per
+  the discovery rule, on both endpoints, via the direct-PAT path:
+  - `POST /repos/menno420/spider-swing/rulesets` → **HTTP 403**
+    `"Upgrade to GitHub Pro or make this repository public to enable this feature."`
+  - `PUT /repos/menno420/spider-swing/branches/main/protection` → **HTTP 403**,
+    identical message.
+  This is a GitHub **plan/visibility** constraint on the repository, not a
+  capability limit of the agent, the token, or the venue: the same PAT
+  successfully changed every other repository setting this session. It is not
+  routable-around agent-side — the only resolutions cost money or change
+  visibility, so both belong to the owner. Consequence: `main` is unprotected and
+  `allow_auto_merge` is deliberately left OFF, because arming auto-merge with zero
+  required contexts merges a PR instantly. The kit's `auto-merge-enabler` refuses
+  to arm in exactly this state (its `gh api .../rules/branches/main` call hits the
+  same 403 and the job exits 1 — that red is this constraint surfacing, not a
+  workflow defect). Workaround until the owner decides: agents verify both gates
+  green by hand, then merge via the API.
+
+**Godot / Android specifics worth not rediscovering**
+
+- 2026-07-28 · capability · `any` · **`chickensoft-games/setup-godot` exports
+  `GODOT` and `GODOT4` env vars** (confirmed by inspecting `dist/index.js` at the
+  pinned SHA) and takes `use-dotnet: false` for a Standard build and
+  `include-templates: true` when the job exports · `tools/verify.py` probes
+  `GODOT_BIN`, `GODOT`, `GODOT4`, then PATH, so it binds without extra wiring.
+- 2026-07-28 · capability · `any` · **Godot 4.7.1 reads Android debug signing from
+  the environment** — `GODOT_ANDROID_KEYSTORE_DEBUG_PATH`, `_USER`, `_PASSWORD`,
+  plus `ANDROID_HOME` (all confirmed present in the 4.7.1 binary's strings) · a
+  headless Android debug export needs **no** synthesised editor-settings file:
+  generate a throwaway keystore with `keytool` and export the env vars.
+- 2026-07-28 · capability · `any` · **A newly added `control/inbox.md` passes the
+  kit's `inbox-order-grammar` check once the seeded placeholder line is removed** ·
+  the adopt seed ships an italic `*(no orders yet — ...)*` line that is neither the
+  file header nor a `## ORDER` block, and on a first-commit inbox the merge-base
+  blob is empty so the whole file counts as appended, which reds `check --strict` ·
+  workaround: delete that one line — the title plus its blockquote is valid alone.
+  Any adopter starting from an empty repository hits this, so it is cheaper to do
+  at adopt time than to debug from a red gate later.
+

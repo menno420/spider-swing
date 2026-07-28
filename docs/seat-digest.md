@@ -1,4 +1,4 @@
-# spider-swing — seat digest
+# Spider Swing — seat digest
 
 > **Status:** `reference`
 >
@@ -45,6 +45,7 @@ Full index (grounds + capabilities): `docs/SKILLS.md` — the source this block 
 - `any` · **Environment / Project creation**: owner-click actions in the console — queue them as structured owner asks, never wait silently. Routine/schedule creation…
 - `any` · **Merging works agent-side — NOT a wall.** Agents flip drafts to ready, arm auto-merge, and merge their own or a sibling's PR (MCP/REST) once CI is green…
 - `any` · **GraphQL API quota**: tight — batch queries and prefer the REST-backed MCP tools for bulk reads.
+- `any` · `owner-live` · **Branch protection and rulesets are unavailable on PRIVATE repositories on this account's plan.** Attempted once per the discovery rule, on…
 
 Full ledger (all venues, evidence, freshness): `docs/CAPABILITIES.md` — the seat-local source of truth; append findings THERE, never here.
 <!-- substrate-kit:walls-digest END -->

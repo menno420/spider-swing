@@ -43,7 +43,7 @@
     "docs/reading-path.md": "8624a4c01e7e5a04b9f303817826c4390f927023178eba25d0466ee5b0fecadf",
     "docs/repo-navigation-map.md": "fa07a118d32a03225ee7819cabe3a687cbb8b7bcdc39a1a8e68fae9412da2f24",
     "docs/runtime_contracts.md": "5908ba04f50e847ba2e44b49e0c315e69375a60b4afd9a00a032ae273afd1196",
-    "docs/seat-digest.md": "85ed27c78156ac4c14ecb5f6387478e21a4857875611f6529d2a9c07cf0ab0d9",
+    "docs/seat-digest.md": "1cb2f04fefdfd844a6ec770a4e4efd2525dd7b517b5cd8d921a5250e40b5dda3",
     "scripts/env-setup.sh": "cd2145129fcba288ff9399ad44146a09017d85813e282c16bcba22340b613a2c"
   },
   "project_id": "a0d9e3b0a494",
@@ -51,7 +51,7 @@
   "quiet_sessions": 0,
   "reflection_buffer": {
     "active_count": 0,
-    "last_mined": null
+    "last_mined": "2026-07-28"
   },
   "review_log": [],
   "session_anchor": {
