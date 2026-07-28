@@ -32,6 +32,22 @@
     "summary": "> **Status:** `complete`"
   },
   {
+    "slug": "burst-web-independence",
+    "date": "2026-07-28",
+    "tags": [
+      "phase",
+      "0",
+      "9",
+      "burst",
+      "web",
+      "independence",
+      "session",
+      "\ud83d\udca1",
+      "\ud83d\udcca"
+    ],
+    "summary": "> **Status:** `in-progress`"
+  },
+  {
     "slug": "control-owned-mobile-hud",
     "date": "2026-07-28",
     "tags": [
@@ -135,7 +151,7 @@
       "\ud83d\udca1",
       "\ud83d\udcca"
     ],
-    "summary": "> **Status:** `in-progress`"
+    "summary": "> **Status:** `complete`"
   },
   {
     "slug": "responsive-rope-actions",

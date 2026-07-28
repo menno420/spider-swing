@@ -103,6 +103,13 @@ without a reported regression.
   passed all 50 contracts at merged source
   `5dcbd3410eff573f24add454819cdbd33248e5d5`, including pull interruption,
   double-tap recovery fallback, tap-mode tuning, and lower anchor coverage.
+- PR #15 `game-quality` run
+  [30396476300](https://github.com/menno420/spider-swing/actions/runs/30396476300)
+  passes 53 contracts at source
+  `4ecc2968c2404edca9c8c4125c48d44eff02a554`. The added device-equivalent
+  regression sends one raw touchscreen event followed by its emulated mouse copy
+  and proves that exactly one command survives, Burst is interrupted, and the
+  recovery web remains attached.
 - `substrate-gate` — kit-owned. A born-red session card deliberately holds a PR
   until close-out; it must be green on the completed card before merge.
 - `android-debug` — **green on `main`, APK proven.** Run #1 produced artifact
@@ -171,13 +178,17 @@ without a reported regression.
 
 ## In flight
 
-PR #15 is the active single-intent input fix. The `0.3.1` device recording
-proved that Godot's raw touchscreen event and emulated mouse copy both reached
-world input: the first recovered from Burst and the second immediately released
-that new web. Local Godot 4.7.1 tests now reproduce the exact event pair, ignore
-only the synthetic mouse copy, preserve physical mouse and Control HUD paths, and
-pass 53 contracts. Phase 1 remains blocked on choosing or rejecting a movement
-baseline after the corrected device build is tested.
+PR #15 is the active, APK-proven single-intent input fix. The `0.3.1` device
+recording proved that Godot's raw touchscreen event and emulated mouse copy both
+reached world input: the first recovered from Burst and the second immediately
+released that new web. Local and CI Godot 4.7.1 tests reproduce the exact event
+pair, ignore only the synthetic mouse copy, preserve physical mouse and Control
+HUD paths, and pass 53 contracts. Android run
+[30396475709](https://github.com/menno420/spider-swing/actions/runs/30396475709)
+produced verified artifact
+[`8703014230`](https://github.com/menno420/spider-swing/actions/runs/30396475709/artifacts/8703014230)
+carrying `0.3.2-single-intent-test`. Phase 1 remains blocked on choosing or
+rejecting a movement baseline after this corrected device build is tested.
 
 ## Recently shipped (newest first)
 
