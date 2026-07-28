@@ -20,10 +20,10 @@ without a reported regression.
 - Compatibility renderer, landscape, 1280×720 reference viewport with
   `canvas_items`/`expand` stretch, **60 Hz** fixed tick, 4 max catch-up steps.
 - Five input actions are consumed through `InputRouter`: `web_action`,
-  `reel_in`, `pause`, `restart_run`, and `toggle_debug`. Render-time touch
-  events are buffered into commands; simulation never polls input. HUD hit regions
-  are resolved in the stretched logical canvas, including the verified 1040×480
-  Android layout.
+  `reel_in`, `pause`, `restart_run`, and `toggle_debug`. Reel, DEBUG, and
+  debug-panel hit regions are real Godot GUI controls that stop pointer events.
+  World attach/release runs in `_unhandled_input` only after GUI handling.
+  Render-time events are buffered into commands; simulation never polls input.
 - The playable Phase 0 lab has deterministic forward drive, gravity, web
   attachment/release, Reel-In energy, three candidate tuning presets, camera/world
   boundaries, runtime diagnostics, input recording/replay, and code-drawn graybox
@@ -35,10 +35,11 @@ without a reported regression.
 - `python3 tools/verify.py` — passes. Six steps: architecture self-test,
   architecture scan, Godot discovery and version, headless import, boot smoke
   test, headless test runner.
-- `tests/test_runner.gd` — 21 checks, all passing, including nine deterministic
-  Phase 0 physics contracts and four mobile HUD coordinate regressions derived
-  from the owner's 1040×480 recording. The trajectory fixture produces the same final state
-  when driven through simulated 30, 60, 90, and 120 Hz render loops.
+- `tests/test_runner.gd` — 22 checks, all passing, including nine deterministic
+  Phase 0 physics contracts, four GUI-owned mobile HUD contracts, and an exact
+  visible/Android build-version contract. The trajectory fixture produces the
+  same final state when driven through simulated 30, 60, 90, and 120 Hz render
+  loops.
 - `tools/check_architecture.py` — 14 fixtures, all passing, asserting both
   directions of the inward rule.
 
@@ -54,6 +55,14 @@ without a reported regression.
   signed, containing this project's own scripts and scenes, shipping exactly
   `arm64-v8a` + `x86_64`. Uses no secrets and never publishes.
   Run: https://github.com/menno420/spider-swing/actions/runs/30344755707
+- `android-debug` also runs for gameplay pull requests. PR #8 run
+  [#30356316047](https://github.com/menno420/spider-swing/actions/runs/30356316047)
+  produced artifact `spider-swing-android-debug` (56,653,674-byte archive,
+  SHA-256 `06f3d5b4b8069e0f4e391d541fa3e7509cf8922bf6de203860116fa455159fd5`).
+  Its `build-info.txt` proves version `0.0.2-control-ui`, source
+  `3322e8ca9fbac1771a761d39dcc798b3584f70f7`, package
+  `com.menno420.spiderswing.dev`, and display name
+  `Spider Swing UI2 (dev)`.
 - **Dependabot** — live. Its first run opened two bumps against the kit-owned
   `substrate-gate.yml`; both were closed because `adopt`/`upgrade` regenerates that
   file. The rule is documented in `.github/dependabot.yml`: kit-owned-only bumps get
@@ -78,20 +87,27 @@ without a reported regression.
 
 ## In flight
 
-The Phase 0 candidate is implemented. The owner's first phone run confirms the
-core swing already feels fun, while exposing a physical-screen/logical-canvas
-mismatch that made the drawn Reel and DEBUG controls miss touch input. PR #7 maps
-HUD hit regions through the inverse stretch transform, adds detached-Reel feedback,
-and locks the recorded device geometry with regression tests.
+The Phase 0 candidate is implemented and the core swing already feels fun. The
+owner's second phone test reported no change after PR #7, so coordinate-only
+regressions and ambiguous same-named APK delivery are no longer accepted as proof.
+PR #8 replaces manual hit testing with Godot GUI controls, moves world taps to
+`_unhandled_input`, and gives the app a visible, manifest-verified build identity.
 
-**Owner exit gate:** install the replacement Android artifact produced by PR #7,
-confirm DEBUG opens, verify Reel while attached, compare all three tuning
-candidates, and approve one baseline or request concrete changes. Phase 1 remains
-blocked until the swing feel and controls are approved.
+**Owner exit gate:** uninstall the previous development app, install the PR #8
+artifact, launch `Spider Swing UI2 (dev)`, and confirm the lower-left HUD reads
+`BUILD 0.0.2-control-ui`. Then confirm DEBUG opens, verify Reel while attached,
+compare all three tuning candidates, and approve one baseline or request concrete
+changes. Phase 1 remains blocked until the physical controls and swing feel are
+approved.
 
 ## Recently shipped (newest first)
 
-- **2026-07-28 — Mobile HUD touch-coordinate correction.** Real-device video
+- **2026-07-28 — Control-owned mobile HUD correction candidate.** PR #8 makes
+  Reel, DEBUG, and panel controls native GUI buttons that consume touch before
+  world input; adds visible build version `0.0.2-control-ui`; increments Android
+  version code to 2 and app label to `Spider Swing UI2 (dev)`; and produces a
+  PR-scoped APK plus source manifest. Owner device verification remains open.
+- **2026-07-28 — Mobile HUD touch-coordinate correction (superseded).** Real-device video
   reproduced a mismatch between physical viewport sizing and stretch-adjusted
   touch/canvas coordinates. Reel and DEBUG now share the canvas coordinate contract;
   detached Reel reports why it cannot pull and attached Reel has explicit active
