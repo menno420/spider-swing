@@ -81,7 +81,7 @@ Run directly:
 godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-15 checks, all independent so one failure never hides the rest:
+16 checks, all independent so one failure never hides the rest:
 
 - the engine is the pinned 4.7.1;
 - the main scene resolves **and instantiates**;
@@ -95,10 +95,18 @@ godot --headless --path . --script res://tests/test_runner.gd
 - the `Android Debug` export preset exists, targets Android, and carries the
   development-only package identifier;
 - `domain`/`simulation`/`application` do not depend outward;
-- no autoload singleton has been introduced.
+- no autoload singleton has been introduced;
+- all three candidate presets validate;
+- release preserves velocity within tolerance;
+- Reel-In shortens the rope without teleporting the spider;
+- an invalid web target is inert and emits feedback;
+- repeated attach/release does not inject energy;
+- the upper boundary is nonlethal and the lower boundary requests death;
+- one recorded command trace produces the same trajectory from simulated 30, 60,
+  90, and 120 Hz render loops.
 
-These are configuration and architecture contracts, not gameplay tests. There are
-no swing-physics tests because there is no swing physics yet.
+The Phase 0 group lives in `tests/unit/phase0_physics_tests.gd` and consumes
+`tests/fixtures/phase0_trace.json`.
 
 ## `tools/check_architecture.py`
 
@@ -149,12 +157,10 @@ the release tag in a trailing comment. The kit-owned workflows use upstream's ow
 tag references; that is the kit's template, and hand-pinning them would be
 overwritten on the next upgrade.
 
-## Adding tests in Phase 0
+## Adding gameplay tests
 
-Phase 0's acceptance criteria include fixed-rate and trajectory tests. Put them in
-`tests/unit/` and `tests/integration/`, register them in `tests/test_runner.gd`,
-and keep them deterministic: fixed seeds and recorded input traces in
-`tests/fixtures/`, never wall-clock timing. The GDD's automated-check list (§ 22.2)
-is the target set — release preserves velocity within tolerance, Reel-In never
-teleports, settlement is idempotent, one outcome per collision, a seed reproduces
-its chunk sequence.
+Keep simulation checks deterministic: fixed seeds and recorded input traces in
+`tests/fixtures/`, never wall-clock timing. Register suites in
+`tests/test_runner.gd`. The remaining GDD §22.2 targets arrive with their owning
+phases: collision policy and seeded chunk selection in Phase 1, settlement
+idempotence in Phase 2.

@@ -1,12 +1,12 @@
 # Spider Swing · status
-updated: 2026-07-28T09:05:44Z
-phase: bootstrap complete and merged — Godot 4.7.1 shell, both gates green on main, Android debug APK proven; Phase 0 not started
+updated: 2026-07-28T10:26:25Z
+phase: Phase 0 Swing Laboratory implementation complete on PR #6 — verified candidate awaiting merge and real-device feel approval
 health: green
-kit: v1.20.2 · check: green · engaged: yes
-last-shipped: founding bootstrap PR #1 merged as bd28a45; android-debug #1 produced a verified installable APK
-blockers: none
+kit: v1.20.2 · check: designed session-card hold only · engaged: yes
+last-shipped: founding bootstrap; Phase 0 PR #6 game-quality green with 16 runtime contracts
+blockers: no technical blockers; Phase 1 is product-gated on owner swing-feel approval
 orders: acked= done=
-⚑ needs-owner: 1 ask — main is unprotected (see the OWNER-ACTION block below)
+⚑ needs-owner: 2 asks — choose a main-protection option and playtest the Phase 0 Android artifact after merge
 
 ⚑ OWNER-ACTION
 WHAT: Decide how `main` should be protected on this private repository — GitHub will not let any tool set branch protection here until you pick one of three options.
@@ -16,4 +16,13 @@ RISK: ↩️ reversible — a Pro upgrade can be cancelled, visibility can be fl
 WHY-IT-MATTERS: without protection, a bad push could land on `main` without the two gates passing, and GitHub's auto-merge cannot be armed at all — so every agent PR needs a manual merge instead of landing itself on green.
 UNBLOCKS: the `substrate-gate` + `game-quality` required-check ruleset, and the kit's auto-merge-enabler, which is currently inert by design and will stay red until required contexts exist.
 VERIFIED-NEEDED: attempted 2026-07-28 via the direct-PAT path on BOTH endpoints. `POST /repos/menno420/spider-swing/rulesets` -> HTTP 403 "Upgrade to GitHub Pro or make this repository public to enable this feature." and `PUT /repos/menno420/spider-swing/branches/main/protection` -> HTTP 403, identical message. The same token successfully changed every other repository setting this session (squash-only merges, delete-branch-on-merge, labels, milestones), so this is a GitHub plan/visibility constraint on private repos, not a token, venue, or agent limitation. Recorded in docs/CAPABILITIES.md.
-notes: Phase 0 issue #2 open and scoped. No swing physics implemented on purpose. No production signing, Play publishing, iOS runner, analytics, ads, cloud save, or store SDK. android-debug first runs on the merge commit; APK proof appended to the founding session card after merge.
+
+⚑ OWNER-ACTION
+WHAT: Play all three Phase 0 tuning candidates on a real Android phone and approve one baseline, request concrete tuning changes, or reject all three.
+WHERE: https://github.com/menno420/spider-swing/actions/workflows/android-debug.yml — open the successful run created by the Phase 0 merge, download artifact `spider-swing-android-debug`, unzip it, and install `spider-swing-debug.apk`.
+HOW: open the lab; tap a cyan anchor to attach, tap again to detach, hold Reel in the lower-right, and use LAB to switch among `balanced_candidate`, `weighty_candidate`, and `agile_candidate`. Try several runs with each, then report the preferred candidate and any attach delay, lost momentum, Reel teleport, or unfair boundary death. Use REC then EXPORT after a run that feels wrong.
+RISK: ↩️ reversible — these are candidate values, no preset is declared the baseline, and tuning changes do not alter saves or published records.
+WHY-IT-MATTERS: the GDD makes swing feel the Phase 0 exit gate and explicitly blocks obstacle, progression, monetization, alternate-spider, and large-content work until one physics baseline is approved.
+UNBLOCKS: Phase 1 — Fair Endless Slice, including reusable biome backgrounds, obstacle chunk families, flies, score, death/results, and sub-two-second restart.
+VERIFIED-NEEDED: automated checks prove determinism and invariants, but no headless test can establish tactile feel, touch ergonomics, device latency, or player-attributed fairness. This requires the owner on a real phone.
+notes: PR #6 contains deterministic 60 Hz movement, validated web targets, manual momentum-preserving detach, finite Reel energy, boundaries, three candidate presets, multitouch input, a read-only graybox view, tuning/record/replay/export tools, and eight physics contracts. No Phase 1 content or production art was added.

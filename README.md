@@ -16,34 +16,36 @@ The product *is* the swinging. Everything else exists to support it.
 > `com.menno420.spiderswing.dev` are all development identifiers and are all
 > expected to change.
 
-## Current phase: repository bootstrap
+## Current phase: Phase 0 Swing Laboratory
 
-**Phase 0 implementation has not started.** This repository currently contains a
-verified development substrate and a bootable Godot shell — nothing more, on
-purpose.
+**The first playable physics candidate is implemented.** The project now boots
+directly into a graybox laboratory for attaching, swinging, preserving release
+momentum, and using a finite Reel-In energy reserve.
 
 ### What exists
 
-- A Godot 4.7.1 project that boots and terminates cleanly, headless and on device.
-- A "Spider Swing — Phase 0 Swing Laboratory" placeholder scene.
-- Input action *definitions* (`web_action`, `reel_in`, `pause`, `restart_run`,
-  `toggle_debug`) — defined, not yet consumed.
-- The layered `game/` directory structure with its dependency rule enforced by CI.
-- Verification tooling, a headless test runner, and two green CI gates.
-- An Android debug APK produced on every push to `main`.
-- The GDD and three binding architecture decision records.
+- A deterministic 60 Hz point-mass spider motor with gravity, forward drive, drag,
+  world boundaries, and a capped maximum-length web constraint.
+- Valid visible anchors, manual release, Reel-In drain/regeneration/lockout, and
+  multi-touch input that keeps UI touches out of the web path.
+- Three named tuning candidates: `balanced_candidate`, `weighty_candidate`, and
+  `agile_candidate`.
+- A code-drawn graybox view with camera follow, web tension feedback, HUD, Reel
+  energy ring, event messages, pause/frame-step/slow-motion, runtime tuning,
+  deterministic input recording/replay, and diagnostic export.
+- Eight deterministic Phase 0 physics tests, including identical results from
+  simulated 30/60/90/120 Hz render loops.
+- The existing headless, architecture, CI, and Android debug build substrate.
 
 ### What is deliberately not implemented
 
-**No swing physics.** No web constraint, no Reel-In, no forward drive, no anchors.
-Also absent: obstacles, flies, currency, spiders, progression, missions,
-monetization, production art, production signing, and any store integration.
+No procedural chunks, obstacles, flies, currency, progression, missions, alternate
+spiders, monetization, or production art. Those belong to later phases and must not
+be built around movement the owner has not approved on a real phone.
 
-That boundary is the point. The GDD requires the core physics prototype to be
-approved before progression, monetization, missions, multiple spiders, or large
-content sets are built.
-
-Phase 0 is tracked as [its own issue](../../issues?q=is%3Aissue+label%3Aphase%3A0-swing-lab).
+Phase 0 is tracked in [issue #2](../../issues/2). The implementation is ready for
+device playtesting, but none of its three presets is an approved baseline yet.
+See the [Swing Laboratory playtest guide](docs/technical/phase-0-swing-laboratory.md).
 
 ## Requirements
 
@@ -62,8 +64,8 @@ refuses to run against a different version, and refuses a Mono build outright.
 2. Clone this repository.
 3. In the Godot project manager choose **Import**, select `project.godot` in the
    repository root, and open it.
-4. Press F5. You should see the Swing Laboratory placeholder with one line of
-   runtime facts.
+4. Press F5. You should see the playable graybox Swing Laboratory. Tap or click
+   a cyan anchor to attach, tap again to release, and hold Reel in the lower-right.
 
 The engine will create `.godot/` on first open — that is regenerated import data
 and is git-ignored.
@@ -161,6 +163,7 @@ Twin-Web stays blocked until it has a dedicated, tested control specification.
 | [ADR 0003 — Android build strategy](docs/technical/adr/0003-android-build-strategy.md) | Debug-only CI now; production signing later, owner-controlled. |
 | [Repository layout](docs/technical/repository-layout.md) | What lives where. |
 | [Testing and verification](docs/technical/testing.md) | How to verify locally; what CI enforces. |
+| [Phase 0 Swing Laboratory](docs/technical/phase-0-swing-laboratory.md) | Controls, tuning candidates, diagnostics, and the real-device approval gate. |
 | [Name status](docs/product/name-status.md) | Why the title is a codename and what review remains. |
 | [Substrate Kit provenance](docs/technical/substrate-kit-provenance.md) | How the vendored kit got here; how to re-verify the pin. |
 

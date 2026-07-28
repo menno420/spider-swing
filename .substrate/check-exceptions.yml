@@ -13,3 +13,10 @@
   triaged: 2026-07-28
   by: founding-bootstrap-session
   verdict: false_positive
+
+- path: CAPABILITIES.md
+  kind: capability-entry-stale
+  reason: "The Phase 0 session card describes a gameplay feature build and merge gate; it does not create or depend on a git tag, GitHub Release, release workflow, or direct tag push. The stale 2026-07-12 fleet capability is selected only by vocabulary overlap and is irrelevant to this PR. Fabricating a tag mutation solely to refresh an unused capability would expand scope and alter repository history. Actual delivery is the already-verified android-debug push-to-main workflow and remains independently evidenced in docs/CAPABILITIES.md."
+  triaged: 2026-07-28
+  by: phase-0-swing-laboratory
+  verdict: false_positive
