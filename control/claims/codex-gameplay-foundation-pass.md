@@ -1,0 +1,1 @@
+- `codex/gameplay-foundation-pass` · **gameplay foundation pass** — movement tuning, rope take-up, course boundaries, obstacles, collectibles, boosts, progression foundations, debug controls, tests, and playtest build · 2026-07-28
