@@ -1,0 +1,1 @@
+- `codex/burst-web-independence` · **burst web independence** — filter emulated mouse duplicates so each physical tap produces one web intent · game/adapters/input_router.gd; gameplay input tests; build/session evidence · 2026-07-28
