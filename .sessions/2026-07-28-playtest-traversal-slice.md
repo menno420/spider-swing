@@ -1,6 +1,6 @@
 # Phase 0.5 mobile traversal and obstacle test session
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 
