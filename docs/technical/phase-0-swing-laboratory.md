@@ -20,11 +20,17 @@ must not be built around unapproved movement.
 | Release web | Tap anywhere while attached | Left-click while attached |
 | Reel-In | Hold the lower-right Reel control | Hold the configured `reel_in` action |
 | Restart | Tap after death | `R` / configured `restart_run` |
-| Debug panel | Tap `LAB` in the upper-right | `F1` / configured `toggle_debug` |
+| Debug panel | Tap `DEBUG` in the upper-right | `F1` / configured `toggle_debug` |
 
 Touching the Reel control or any debug control never also fires a web. Multiple
 touches are tracked independently, so the player may hold Reel with one finger
-and attach or release with another.
+and attach or release with another. On stretched Android displays, hit regions
+are evaluated in the same logical canvas coordinates used to draw the HUD; the
+1040×480 device recording is locked by a regression test as a 1560×720 canvas.
+
+Holding Reel while detached intentionally does not move the spider or spend
+energy. It now reports `Attach a web before Reel-In`. While attached, the control
+changes to `PULL`, brightens, drains its ring, and shortens the rope.
 
 ## Candidate presets
 
@@ -40,7 +46,7 @@ complete.
 
 ## Debug and reproduction tools
 
-Open the `LAB` panel for:
+Open the `DEBUG` panel for:
 
 - pause and single fixed-step;
 - quarter-speed simulation;
@@ -74,6 +80,9 @@ Phase 0 deterministic suite. The suite guards:
 - named preset validation;
 - release-time velocity preservation;
 - Reel shortening without a position teleport;
+- detached Reel remaining inert with explicit attach-first feedback;
+- 1040×480 Android HUD coordinates mapping to the logical canvas for both Reel
+  and DEBUG, while the reference viewport remains unchanged;
 - inert invalid targets with explicit feedback;
 - repeated attach/release without hidden energy injection;
 - a nonlethal upper world boundary and lethal lower boundary;
@@ -93,8 +102,11 @@ Please report:
 1. the candidate you preferred;
 2. whether attaching ever felt delayed or unclear;
 3. whether release preserved the momentum you expected;
-4. whether Reel felt useful without becoming a teleport;
-5. any unfair top, bottom, or left-edge death;
-6. the exported diagnostic file after a run that felt wrong.
+4. whether attached Reel changes to `PULL`, drains energy, and visibly shortens
+   the rope;
+5. whether detached Reel gives the yellow attach-first message;
+6. whether the DEBUG panel opens and all its touch controls respond;
+7. any unfair top, bottom, or left-edge death;
+8. the exported diagnostic file after a run that felt wrong.
 
 Phase 1 may begin only after the feel baseline is explicitly approved.
