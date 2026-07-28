@@ -12,7 +12,8 @@ expected; importing `game/simulation/`, `game/application/`, `game/adapters/`, o
 
 ## What belongs here
 
-- `InputCommand` values produced by the input router and consumed by simulation.
+- `InputCommand` values produced by the input router and consumed by simulation, including the authoritative `BURST` command.
+- `CourseGeometry`, the compact ceiling/guide/obstacle value crossing from the application stream into simulation.
 - `DomainEvent` values the simulation emits (GDD § 19.2).
 - Stable content identifiers (GDD § 19.3): runtime logic refers to IDs, never to
   scene names or display text.
@@ -25,4 +26,4 @@ expected; importing `game/simulation/`, `game/application/`, `game/adapters/`, o
 
 Anything that touches the scene tree, physics bodies, files, or rendering.
 
-Empty at bootstrap: Phase 0 populates it. See ADR 0002.
+`InputCommand`, `CourseGeometry`, `SimulationEvent`, `SimulationSnapshot`, `SwingConfig`, and shared layout contracts are live. See ADR 0002.
