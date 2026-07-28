@@ -2,6 +2,12 @@ extends Node
 class_name InputRouter
 ## Captures render-time input and emits intent without mutating simulation.
 
+enum PrimaryTouchRegion {
+	WORLD,
+	REEL,
+	DEBUG,
+}
+
 signal web_tapped(screen_position: Vector2)
 signal reel_changed(active: bool)
 signal restart_requested
@@ -37,6 +43,17 @@ static func logical_canvas_size(
 	if logical_size.x <= 0.0 or logical_size.y <= 0.0:
 		return LabLayout.REFERENCE_SIZE
 	return logical_size
+
+
+static func classify_primary_touch(
+	position: Vector2,
+	logical_canvas_size_value: Vector2,
+) -> int:
+	if LabLayout.reel_rect(logical_canvas_size_value).has_point(position):
+		return PrimaryTouchRegion.REEL
+	if LabLayout.debug_toggle_rect(logical_canvas_size_value).has_point(position):
+		return PrimaryTouchRegion.DEBUG
+	return PrimaryTouchRegion.WORLD
 
 
 func _ready() -> void:
@@ -80,10 +97,15 @@ func _input(event: InputEvent) -> void:
 
 func _handle_screen_touch(touch: InputEventScreenTouch) -> void:
 	if touch.pressed:
-		if LabLayout.reel_rect(_viewport_size()).has_point(touch.position):
-			_reel_touch_ids[touch.index] = true
-			_publish_reel_state()
-			return
+		match classify_primary_touch(touch.position, _viewport_size()):
+			PrimaryTouchRegion.REEL:
+				_reel_touch_ids[touch.index] = true
+				_publish_reel_state()
+				return
+			PrimaryTouchRegion.DEBUG:
+				_debug_visible = not _debug_visible
+				debug_toggle_requested.emit()
+				return
 		if _handle_ui_press(touch.position):
 			return
 		web_tapped.emit(touch.position)
