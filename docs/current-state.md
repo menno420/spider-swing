@@ -19,8 +19,13 @@ without a reported regression.
   and exits 0. Verified both locally and in CI.
 - Compatibility renderer, landscape, 1280×720 reference viewport with
   `canvas_items`/`expand` stretch, **60 Hz** fixed tick, 4 max catch-up steps.
-- Five input actions are **defined and nothing consumes them**: `web_action`,
-  `reel_in`, `pause`, `restart_run`, `toggle_debug`.
+- Five input actions are consumed through `InputRouter`: `web_action`,
+  `reel_in`, `pause`, `restart_run`, and `toggle_debug`. Render-time touch
+  events are buffered into commands; simulation never polls input.
+- The playable Phase 0 lab has deterministic forward drive, gravity, web
+  attachment/release, Reel-In energy, three candidate tuning presets, camera/world
+  boundaries, runtime diagnostics, input recording/replay, and code-drawn graybox
+  presentation.
 - No autoload singletons exist, and a test fails if one appears.
 
 **Verification**
@@ -28,9 +33,9 @@ without a reported regression.
 - `python3 tools/verify.py` — passes. Six steps: architecture self-test,
   architecture scan, Godot discovery and version, headless import, boot smoke
   test, headless test runner.
-- `tests/test_runner.gd` — 15 checks, all passing. Verified to **fail** correctly
-  on injected regressions (broken tick rate, removed input action, renamed export
-  preset, outward import), so the green means something.
+- `tests/test_runner.gd` — 16 checks, all passing, including eight deterministic
+  Phase 0 physics contracts. The trajectory fixture produces the same final state
+  when driven through simulated 30, 60, 90, and 120 Hz render loops.
 - `tools/check_architecture.py` — 14 fixtures, all passing, asserting both
   directions of the inward rule.
 
@@ -55,8 +60,10 @@ without a reported regression.
 
 **Deliberately absent** — scope boundary, not gaps:
 
-- No swing physics, web constraint, Reel-In, forward drive, or anchors.
-- No obstacles, flies, currency, spiders, progression, missions, or monetization.
+- No procedural chunks, obstacles, flies, currency, alternate spiders,
+  progression, missions, or monetization.
+- No approved physics baseline yet: `balanced_candidate`, `weighty_candidate`,
+  and `agile_candidate` require owner real-device playtesting.
 - No production art, analytics, ads, cloud save, or store SDK.
 - No production Android signing, no Google Play publishing, no iOS/macOS signing
   runner.
@@ -68,15 +75,21 @@ without a reported regression.
 
 ## In flight
 
-Nothing. The founding bootstrap PR is merged and no bootstrap or fix PR remains
-open.
+[PR #6 — Phase 0: Build the Swing Laboratory](https://github.com/menno420/spider-swing/pull/6)
+implements issue #2. Godot import, boot, architecture checks, and all 16 runner
+checks pass in `game-quality`.
 
-**Next work:** [Phase 0: Build the Swing Laboratory](https://github.com/menno420/spider-swing/issues/2)
-— open, scoped, in the Phase 0 milestone, ready for the next agent. Phase 0's exit
-gate is owner-judged and needs real-device feel testing.
+**Owner exit gate:** install the next Android artifact, compare all three tuning
+candidates, and approve one baseline or request concrete changes. Phase 1 remains
+blocked until the swing feel is approved.
 
 ## Recently shipped (newest first)
 
+- **2026-07-28 — Phase 0 candidate on PR #6.** Deterministic point-mass simulation,
+  capped rope constraint, momentum-preserving manual release, Reel energy,
+  buffered multitouch input, three named tuning candidates, read-only graybox
+  presentation, runtime tuning and reproduction tools, and eight physics contracts.
+  Awaiting merge and owner device approval.
 - **2026-07-28 — founding bootstrap.** Substrate Kit v1.20.2 adopted in guided mode
   with enforcement wired and all 16 interview slots answered; a Godot 4.7.1 shell
   that boots and exits cleanly headless; the GDD placed byte-exact (SHA-256
