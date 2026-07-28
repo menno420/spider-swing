@@ -21,6 +21,7 @@ func _initialize() -> void:
 	_check_no_autoloads()
 	_check_inward_dependencies()
 	_check_phase0_physics()
+	_check_mobile_hud_layout()
 	print("")
 	if _failures.is_empty():
 		print("[test_runner] PASS — %d check(s) passed" % _passed)
@@ -188,3 +189,15 @@ func _check_phase0_physics() -> void:
 		return
 	for failure: String in failures:
 		_fail("Phase 0 physics — %s" % failure)
+
+
+func _check_mobile_hud_layout() -> void:
+	var result := MobileHudLayoutTests.run()
+	var failures: PackedStringArray = result["failures"]
+	if failures.is_empty():
+		_passed += int(result["passed"])
+		print("  ✓ Mobile HUD layout: %d coordinate checks" %
+			int(result["passed"]))
+		return
+	for failure: String in failures:
+		_fail("Mobile HUD layout — %s" % failure)
