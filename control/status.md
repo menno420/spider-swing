@@ -1,12 +1,12 @@
 # Spider Swing · status
-updated: 2026-07-28T10:26:25Z
-phase: Phase 0 Swing Laboratory implementation complete on PR #6 — verified candidate awaiting merge and real-device feel approval
+updated: 2026-07-28T11:25:58Z
+phase: Phase 0 mobile HUD correction complete on PR #7 — green candidate awaiting merge and owner device confirmation
 health: green
 kit: v1.20.2 · check: designed session-card hold only · engaged: yes
-last-shipped: founding bootstrap; Phase 0 PR #6 game-quality green with 16 runtime contracts
-blockers: no technical blockers; Phase 1 is product-gated on owner swing-feel approval
+last-shipped: Phase 0 Swing Laboratory; PR #7 fixes Android Reel/DEBUG hit regions with 21 green runtime contracts
+blockers: no technical blockers; Phase 1 remains product-gated on owner control verification and swing-baseline approval
 orders: acked= done=
-⚑ needs-owner: 2 asks — choose a main-protection option and playtest the Phase 0 Android artifact after merge
+⚑ needs-owner: 2 asks — choose a main-protection option and verify the repaired Reel/DEBUG controls on the replacement APK
 
 ⚑ OWNER-ACTION
 WHAT: Decide how `main` should be protected on this private repository — GitHub will not let any tool set branch protection here until you pick one of three options.
@@ -18,11 +18,11 @@ UNBLOCKS: the `substrate-gate` + `game-quality` required-check ruleset, and the 
 VERIFIED-NEEDED: attempted 2026-07-28 via the direct-PAT path on BOTH endpoints. `POST /repos/menno420/spider-swing/rulesets` -> HTTP 403 "Upgrade to GitHub Pro or make this repository public to enable this feature." and `PUT /repos/menno420/spider-swing/branches/main/protection` -> HTTP 403, identical message. The same token successfully changed every other repository setting this session (squash-only merges, delete-branch-on-merge, labels, milestones), so this is a GitHub plan/visibility constraint on private repos, not a token, venue, or agent limitation. Recorded in docs/CAPABILITIES.md.
 
 ⚑ OWNER-ACTION
-WHAT: Play all three Phase 0 tuning candidates on a real Android phone and approve one baseline, request concrete tuning changes, or reject all three.
-WHERE: https://github.com/menno420/spider-swing/actions/workflows/android-debug.yml — open the successful run created by the Phase 0 merge, download artifact `spider-swing-android-debug`, unzip it, and install `spider-swing-debug.apk`.
-HOW: open the lab; tap a cyan anchor to attach, tap again to detach, hold Reel in the lower-right, and use LAB to switch among `balanced_candidate`, `weighty_candidate`, and `agile_candidate`. Try several runs with each, then report the preferred candidate and any attach delay, lost momentum, Reel teleport, or unfair boundary death. Use REC then EXPORT after a run that feels wrong.
-RISK: ↩️ reversible — these are candidate values, no preset is declared the baseline, and tuning changes do not alter saves or published records.
-WHY-IT-MATTERS: the GDD makes swing feel the Phase 0 exit gate and explicitly blocks obstacle, progression, monetization, alternate-spider, and large-content work until one physics baseline is approved.
+WHAT: Install the replacement Android build from PR #7, verify Reel and DEBUG now respond, then approve a Phase 0 tuning baseline or request concrete changes.
+WHERE: https://github.com/menno420/spider-swing/actions/workflows/android-debug.yml — open the successful run created by the PR #7 merge, download artifact `spider-swing-android-debug`, unzip it, and install `spider-swing-debug.apk`.
+HOW: first tap DEBUG and confirm the lab panel opens. Press Reel while detached and confirm the yellow attach-first message. Then attach to a cyan anchor, hold Reel, and confirm the button says PULL, brightens, drains energy, and visibly shortens the rope. Finally compare `balanced_candidate`, `weighty_candidate`, and `agile_candidate`, then report your preferred baseline and any attach delay, lost momentum, Reel teleport, or unfair boundary death.
+RISK: ↩️ reversible — this changes only the development APK; no preset is declared the baseline, and no save, production signing, or published record is affected.
+WHY-IT-MATTERS: the first 1040×480 phone recording exposed a physical-screen/logical-canvas mismatch. CI now proves the recorded coordinates, but only a real device can confirm touch ergonomics and whether Reel feels useful.
 UNBLOCKS: Phase 1 — Fair Endless Slice, including reusable biome backgrounds, obstacle chunk families, flies, score, death/results, and sub-two-second restart.
-VERIFIED-NEEDED: automated checks prove determinism and invariants, but no headless test can establish tactile feel, touch ergonomics, device latency, or player-attributed fairness. This requires the owner on a real phone.
-notes: PR #6 contains deterministic 60 Hz movement, validated web targets, manual momentum-preserving detach, finite Reel energy, boundaries, three candidate presets, multitouch input, a read-only graybox view, tuning/record/replay/export tools, and eight physics contracts. No Phase 1 content or production art was added.
+VERIFIED-NEEDED: `game-quality` passes 21 runtime checks, including nine physics contracts and four mobile HUD coordinate regressions. The owner must confirm the repaired physical controls and choose or reject a tuning candidate.
+notes: PR #7 converts the visible physical screen size through Godot's inverse stretch basis before evaluating shared HUD rectangles, adds detached-Reel feedback and a strong attached state, and changes no physics constants, presets, frozen GDD bytes, or Phase 1 content.
