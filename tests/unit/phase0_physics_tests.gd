@@ -14,6 +14,7 @@ static func run() -> Dictionary:
 	passed += _test_release_preserves_velocity(failures)
 	passed += _test_reel_shortens_without_teleport(failures)
 	passed += _test_reel_does_not_add_speed(failures)
+	passed += _test_automatic_take_up_ratchets_slack_without_speed(failures)
 	passed += _test_detached_reel_reports_unavailable(failures)
 	passed += _test_invalid_target_is_inert(failures)
 	passed += _test_continuous_surface_attachment(failures)
@@ -27,8 +28,12 @@ static func run() -> Dictionary:
 	passed += _test_attached_tap_modes_are_explicit(failures)
 	passed += _test_pull_tuning_controls(failures)
 	passed += _test_course_stream_is_endless_and_bounded(failures)
+	passed += _test_opening_runway_has_no_middle_hazards(failures)
 	passed += _test_course_stream_places_lower_anchor_windows(failures)
 	passed += _test_obstacle_collision_is_authoritative(failures)
+	passed += _test_boundary_lethality_is_a_toggle(failures)
+	passed += _test_collectibles_are_swept_and_not_respawned(failures)
+	passed += _test_burst_frenzy_suppresses_only_cooldown(failures)
 	passed += _test_attach_release_does_not_inject_energy(failures)
 	passed += _test_top_is_not_lethal(failures)
 	passed += _test_lower_boundary_is_lethal(failures)
@@ -44,6 +49,11 @@ static func _test_presets(failures: PackedStringArray) -> int:
 			failures.append("preset %s fails validation: %s" % [
 				name, ", ".join(config.validate())])
 			return 0
+	var balanced := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	if not is_equal_approx(balanced.gravity, 1120.0) or \
+			not is_equal_approx(balanced.dive_distance_fraction, 0.40):
+		failures.append("balanced candidate lost the owner-tested 1120/40% values")
+		return 0
 	return 1
 
 
@@ -159,6 +169,46 @@ static func _test_detached_reel_reports_unavailable(
 		return 0
 	if not _contains_event(events, SimulationEvent.Kind.REEL_UNAVAILABLE):
 		failures.append("detached Reel emitted no attach-first feedback")
+		return 0
+	return 1
+
+
+static func _test_automatic_take_up_ratchets_slack_without_speed(
+	failures: PackedStringArray,
+) -> int:
+	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	config.automatic_take_up_enabled = true
+	config.automatic_take_up_retention = 0.80
+	var web := WebConstraint.new()
+	web.reset(config)
+	var anchor := Vector2(600.0, 140.0)
+	var position := Vector2(220.0, 390.0)
+	if web.try_attach(position, anchor, config) != \
+			WebConstraint.AttachResult.ATTACHED:
+		failures.append("automatic take-up fixture could not attach")
+		return 0
+	var attached_distance := position.distance_to(anchor)
+	web.rope_length = 500.0
+	var direction := (position - anchor).normalized()
+	position = anchor + direction * (attached_distance - 20.0)
+	var velocity := Vector2.ZERO
+	var result := web.solve(position, velocity, FIXED_DELTA, config)
+	var expected := 500.0 - 20.0 * 0.80
+	if absf(web.rope_length - expected) > 0.001:
+		failures.append("automatic take-up did not retain the configured slack share")
+		return 0
+	if Vector2(result["velocity"]).distance_to(velocity) > 0.001:
+		failures.append("automatic take-up injected speed while the rope remained slack")
+		return 0
+	web.solve(position, velocity, FIXED_DELTA, config)
+	if absf(web.rope_length - expected) > 0.001:
+		failures.append("static slack kept shrinking after inward movement stopped")
+		return 0
+	config.automatic_take_up_enabled = false
+	web.rope_length = 500.0
+	web.solve(position, velocity, FIXED_DELTA, config)
+	if absf(web.rope_length - 500.0) > 0.001:
+		failures.append("automatic take-up OFF still changed rope length")
 		return 0
 	return 1
 
@@ -526,6 +576,10 @@ static func _test_pull_tuning_controls(failures: PackedStringArray) -> int:
 	config.adjust(&"web_range", 1.0)
 	config.adjust(&"pull_cooldown", -1.0)
 	config.adjust(&"tap_retarget", 1.0)
+	config.adjust(&"auto_take_up", -1.0)
+	config.adjust(&"take_up_pct", -1.0)
+	config.adjust(&"course_rails", -1.0)
+	config.adjust(&"lethal_rails", 1.0)
 	if absf(config.burst_distance_fraction - (burst_before + 0.05)) > 0.001:
 		failures.append("debug Burst percentage adjustment is not 5%")
 		return 0
@@ -544,6 +598,10 @@ static func _test_pull_tuning_controls(failures: PackedStringArray) -> int:
 	if not config.web_tap_retargets_when_attached:
 		failures.append("debug tap mode did not enable RETARGET")
 		return 0
+	if config.automatic_take_up_enabled or config.course_boundaries_enabled or \
+			not config.course_boundaries_lethal:
+		failures.append("debug toggles did not update take-up and rail policies")
+		return 0
 	for parameter: StringName in [
 		&"burst_pull_pct",
 		&"dive_pull_pct",
@@ -555,6 +613,12 @@ static func _test_pull_tuning_controls(failures: PackedStringArray) -> int:
 		&"tap_retarget",
 		&"aim_forgiveness",
 		&"attach_catch_pct",
+		&"auto_take_up",
+		&"take_up_pct",
+		&"course_rails",
+		&"lethal_rails",
+		&"mid_hazard_m",
+		&"boost_duration",
 	]:
 		if parameter not in SwingLabSession.TUNING_PARAMETERS:
 			failures.append("debug menu is missing %s" % parameter)
@@ -569,12 +633,12 @@ static func _test_course_stream_is_endless_and_bounded(
 	stream.reset()
 	var geometry := stream.update_for_position(100000.0)
 	var furthest_surface_x := -INF
-	for surface: PackedVector2Array in geometry.surfaces:
+	for surface: PackedVector2Array in geometry.boundary_surfaces:
 		furthest_surface_x = maxf(
 			furthest_surface_x,
 			SolidGeometry.bounds(surface).end.x,
 		)
-	if geometry.surfaces.is_empty() or furthest_surface_x <= 100000.0:
+	if geometry.boundary_surfaces.is_empty() or furthest_surface_x <= 100000.0:
 		failures.append("course stream has no web surface beyond 10,000 m")
 		return 0
 	if stream.retained_chunk_count() > \
@@ -595,6 +659,40 @@ static func _test_course_stream_is_endless_and_bounded(
 	return 1
 
 
+static func _test_opening_runway_has_no_middle_hazards(
+	failures: PackedStringArray,
+) -> int:
+	var stream := CourseStream.new()
+	stream.reset(10000.0)
+	for metres in [100.0, 450.0, 900.0]:
+		var geometry := stream.update_for_position(
+			metres * 10.0 + SimulationWorld.START_POSITION.x,
+			10000.0,
+		)
+		for obstacle: PackedVector2Array in geometry.obstacles:
+			var bounds := SolidGeometry.bounds(obstacle)
+			if bounds.position.x >= SimulationWorld.START_POSITION.x + 10000.0:
+				continue
+			var touches_ceiling := bounds.position.y <= 210.0
+			var touches_floor := bounds.end.y >= 620.0
+			if not touches_ceiling and not touches_floor:
+				failures.append(
+					"opening runway spawned a detached middle hazard at %.0f m" %
+						metres)
+				return 0
+	var later := stream.update_for_position(12000.0, 10000.0)
+	var found_middle := false
+	for obstacle: PackedVector2Array in later.obstacles:
+		var bounds := SolidGeometry.bounds(obstacle)
+		if bounds.position.y > 210.0 and bounds.end.y < 620.0:
+			found_middle = true
+			break
+	if not found_middle:
+		failures.append("course never introduces middle hazards after the runway")
+		return 0
+	return 1
+
+
 static func _test_course_stream_places_lower_anchor_windows(
 	failures: PackedStringArray,
 ) -> int:
@@ -606,16 +704,14 @@ static func _test_course_stream_places_lower_anchor_windows(
 		geometry.first_chunk_index,
 		geometry.last_chunk_index + 1,
 	):
-		if chunk_index < 1:
-			continue
 		var chunk_start := float(chunk_index) * CourseStream.CHUNK_WIDTH
 		var chunk_end := chunk_start + CourseStream.CHUNK_WIDTH
 		var found_window := false
-		for surface: PackedVector2Array in geometry.surfaces:
+		for surface: PackedVector2Array in geometry.boundary_surfaces:
 			var bounds := SolidGeometry.bounds(surface)
-			if bounds.position.x < chunk_start or bounds.end.x > chunk_end:
+			if bounds.end.x <= chunk_start or bounds.position.x >= chunk_end:
 				continue
-			if bounds.position.y >= 560.0 and bounds.size.x <= 220.0:
+			if bounds.position.y >= 560.0 and bounds.size.x >= 250.0:
 				found_window = true
 				break
 		if not found_window:
@@ -623,6 +719,98 @@ static func _test_course_stream_places_lower_anchor_windows(
 				"chunk %d has no authored lower anchor before its hazards" %
 				chunk_index)
 			return 0
+	return 1
+
+
+static func _test_boundary_lethality_is_a_toggle(
+	failures: PackedStringArray,
+) -> int:
+	var geometry := _test_geometry()
+	geometry.boundary_surfaces.append(
+		_rectangle_polygon(Rect2(0.0, 640.0, 900.0, 60.0)))
+	var safe_config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	safe_config.gravity = 0.0001
+	safe_config.horizontal_drive_acceleration = 0.0001
+	safe_config.air_drag = 0.0
+	safe_config.course_boundaries_enabled = true
+	safe_config.course_boundaries_lethal = false
+	var safe := SimulationWorld.new()
+	safe.reset(safe_config, geometry)
+	safe.position = Vector2(360.0, 645.0)
+	safe.velocity = Vector2.ZERO
+	if _contains_event(safe.step(FIXED_DELTA), SimulationEvent.Kind.DEATH_REQUESTED):
+		failures.append("safe course rails killed the spider")
+		return 0
+	var lethal_config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	lethal_config.gravity = 0.0001
+	lethal_config.horizontal_drive_acceleration = 0.0001
+	lethal_config.air_drag = 0.0
+	lethal_config.course_boundaries_enabled = true
+	lethal_config.course_boundaries_lethal = true
+	var lethal := SimulationWorld.new()
+	lethal.reset(lethal_config, geometry)
+	lethal.position = Vector2(360.0, 645.0)
+	lethal.velocity = Vector2.ZERO
+	if not _contains_event(
+		lethal.step(FIXED_DELTA), SimulationEvent.Kind.DEATH_REQUESTED):
+		failures.append("lethal course rails did not kill the spider")
+		return 0
+	return 1
+
+
+static func _test_collectibles_are_swept_and_not_respawned(
+	failures: PackedStringArray,
+) -> int:
+	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	config.gravity = 0.0001
+	config.horizontal_drive_acceleration = 0.0001
+	config.air_drag = 0.0
+	var geometry := _test_geometry()
+	var fly := Vector2(260.0, 390.0)
+	var boost := Vector2(300.0, 390.0)
+	geometry.fly_positions.append(fly)
+	geometry.boost_positions.append(boost)
+	var world := SimulationWorld.new()
+	world.reset(config, geometry)
+	world.velocity = Vector2(6000.0, 0.0)
+	var events := world.step(FIXED_DELTA)
+	if world.run_flies != 1 or \
+			not _contains_event(events, SimulationEvent.Kind.FLY_COLLECTED) or \
+			not _contains_event(events, SimulationEvent.Kind.BOOST_COLLECTED):
+		failures.append("swept pickup path missed a fly or boost")
+		return 0
+	world.set_course_geometry(geometry)
+	if not world.fly_positions.is_empty() or not world.boost_positions.is_empty():
+		failures.append("stream refresh respawned collected pickups")
+		return 0
+	return 1
+
+
+static func _test_burst_frenzy_suppresses_only_cooldown(
+	failures: PackedStringArray,
+) -> int:
+	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	config.gravity = 0.0001
+	config.horizontal_drive_acceleration = 0.0001
+	config.air_drag = 0.0
+	var world := SimulationWorld.new()
+	world.reset(config, _test_geometry())
+	world.set_burst_cooldown_suppressed(true)
+	world.queue_command(InputCommand.burst_at(Vector2(640.0, 150.0), 1, 0))
+	var events := world.step(FIXED_DELTA)
+	if not _contains_event(events, SimulationEvent.Kind.BURST_STARTED) or \
+			world.burst_cooldown_remaining > 0.0:
+		failures.append("Burst Frenzy did not suppress Burst cooldown")
+		return 0
+	var effects := EffectState.new()
+	effects.activate(EffectState.BURST_FRENZY, 0.05)
+	if not effects.is_active(EffectState.BURST_FRENZY):
+		failures.append("Burst Frenzy did not activate")
+		return 0
+	if not effects.advance(0.03).is_empty() or \
+			effects.advance(0.03) != PackedStringArray([EffectState.BURST_FRENZY]):
+		failures.append("Burst Frenzy expiry is not deterministic")
+		return 0
 	return 1
 
 

@@ -16,21 +16,22 @@ The product *is* the swinging. Everything else exists to support it.
 > `com.menno420.spiderswing.dev` are all development identifiers and are all
 > expected to change.
 
-## Current phase: Phase 0.8 recovery-web traversal test
+## Current phase: Phase 0.10 configurable gameplay-foundation test
 
 **The first playable traversal test is implemented.** The project opens on a
 player-facing Home screen with Play, a six-step Tutorial, and readable scrolling
 Settings. Play enters an endless laboratory with forgiving solid-object
-attachment, momentum-preserving release, rope-shortening Reel, interruptible
-percentage-based Anchor Burst and Dive Pull, and a small shaped obstacle
-vocabulary.
+attachment, momentum-preserving release, naturally retained rope shortening,
+interruptible percentage-based Anchor Burst and Dive Pull, a paced organic
+graybox course, collectible fly routes, and one temporary Burst boost.
 
 ### What exists
 
 - A responsive starting screen with Play, Tutorial, and Settings; settings persist
   the swing candidate, control hints, reduced motion, and debug-tool visibility.
 - A data-driven six-step animated tutorial plus an in-game Menu return path.
-- A deterministic 60 Hz point-mass spider motor with gravity, forward drive, drag,
+- A deterministic 60 Hz point-mass spider motor with the owner-tested 1120
+  gravity candidate, forward drive, drag,
   world boundaries, and a capped maximum-length web constraint.
 - Polygonal ceilings and obstacles with optional aim guides, a 1000-pixel shared
   web range, a 220-pixel aim-forgiveness band, manual release, Reel-In
@@ -38,20 +39,31 @@ vocabulary.
   the web path. Every solid edge is a valid target.
 - Three named tuning candidates: `balanced_candidate`, `weighty_candidate`, and
   `agile_candidate`.
-- A deterministic bounded course stream with ceiling gaps, changing heights,
-  branch silhouettes, broken-pot gates, and short lower anchor windows before
-  key hazards. Burst crosses 50% of the selected web distance; downward taps
-  make a one-shot 25% Dive Pull; both are collision-checked and share a cooldown.
-  Either pull can be cancelled immediately by a recovery-web tap.
+- A deterministic bounded course stream with a 1000 m learning runway before
+  detached middle hazards, mostly continuous ceiling/floor rails with deliberate
+  gaps, leaf clusters, vine forks, hanging seed pods, broken-pot gates, fly route
+  arcs, and lower anchors before later challenges. Burst crosses 50% of the
+  selected web distance; downward taps make a one-shot 40% Dive Pull; both are
+  collision-checked and share a cooldown. Either pull can be cancelled
+  immediately by a recovery-web tap.
+- Automatic rope take-up retains 85% of natural inward slack by default without
+  adding speed. DEBUG can compare it off/on, alter the retained percentage, hide
+  the course rails, or make visible rails lethal.
+- Flies are swept deterministically at high speed. A Burst Frenzy pickup removes
+  Burst cooldown for a tunable duration. One idempotent run settlement persists
+  fly totals and distance milestones; the first two alternate graybox spider
+  palettes unlock at 25 flies and 1000 m.
 - A code-drawn view with camera follow, 228-pixel thumb targets,
   action flashes/haptics, pause/frame-step/slow-motion, runtime controls for
   Burst/Dive percentages and durations, pull cooldown, Reel shortening speed,
-  attach catch, aim forgiveness, range, RELEASE/RETARGET tap behavior,
+  natural take-up mode/percentage, rail presence/lethality, middle-hazard start,
+  boost duration, attach catch, aim forgiveness, range, RELEASE/RETARGET behavior,
   deterministic input recording/replay, and diagnostic export.
-- Twenty-three deterministic physics tests (53 runtime contracts total),
+- Twenty-eight deterministic physics tests (59 runtime contracts total),
   including interruptible recovery webs, double-tap fallback, explicit
-  release/retarget modes, lower anchor coverage, exact pull-distance shares,
-  speed-neutral Reel shortening, polygon anchors/collisions, extended reach, and
+  release/retarget modes, opening-runway pacing, lower anchor coverage, exact
+  pull-distance shares, speed-neutral Reel/take-up shortening, rail policy,
+  swept pickups, idempotent progression, polygon anchors/collisions, and
   identical results from simulated 30/60/90/120 Hz render loops. Adapter tests
   prove that raw Android touch owns world intent while its emulated mouse copy
   is ignored, so one physical tap cannot attach and immediately release.
@@ -59,10 +71,12 @@ vocabulary.
 
 ### What is deliberately not implemented
 
-No authored Phase 1 chunk pack, moving hazards, flies, currency, progression,
-missions, alternate spiders, monetization, or production art. The current
-polygon silhouettes are deliberately small prototype test instruments, not
-approved production content.
+No authored Phase 1 chunk pack, moving hazards, finalized currency/economy,
+missions, purchasable upgrades, monetization, or production art. The fly,
+temporary boost, settlement, and alternate-color unlocks are deliberately small
+architecture-proving slices—not approved balance or production content. Debug
+values remain prototypes for possible future upgrades; no price or economy has
+been invented.
 
 Phase 0 is tracked in [issue #2](../../issues/2). The implementation is ready for
 device playtesting, but none of its three presets is an approved baseline yet.

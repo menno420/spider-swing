@@ -95,6 +95,12 @@ func present_event(event: SimulationEvent) -> void:
 				SimulationEvent.Kind.REEL_EMPTY, \
 				SimulationEvent.Kind.BURST_UNAVAILABLE:
 			_feedback_color = YELLOW
+		SimulationEvent.Kind.FLY_COLLECTED:
+			_feedback_color = YELLOW
+		SimulationEvent.Kind.BOOST_COLLECTED:
+			_feedback_color = CYAN
+		SimulationEvent.Kind.BOOST_EXPIRED:
+			_feedback_color = MUTED
 		_:
 			_feedback_color = GREEN
 	queue_redraw()
@@ -166,8 +172,6 @@ func _draw_parallax(size: Vector2) -> void:
 
 
 func _draw_course(size: Vector2) -> void:
-	draw_line(Vector2(0.0, 680.0), Vector2(size.x, 680.0),
-		Color(0.22, 0.5, 0.47, 0.5), 3.0)
 	if _snapshot == null:
 		return
 
@@ -179,6 +183,19 @@ func _draw_course(size: Vector2) -> void:
 			continue
 		draw_colored_polygon(screen_surface, Color(0.07, 0.26, 0.29, 0.96))
 		_draw_closed_polyline(screen_surface, CYAN, 4.0)
+
+	for boundary: PackedVector2Array in _snapshot.boundary_surfaces:
+		var screen_boundary := _polygon_to_screen(boundary)
+		var boundary_bounds := _polygon_bounds(screen_boundary)
+		if boundary_bounds.end.x < -80.0 or \
+				boundary_bounds.position.x > size.x + 80.0:
+			continue
+		var outline := YELLOW if _snapshot.course_boundaries_lethal else GREEN
+		var fill := Color(0.20, 0.16, 0.09, 0.96) \
+			if _snapshot.course_boundaries_lethal \
+			else Color(0.07, 0.25, 0.22, 0.96)
+		draw_colored_polygon(screen_boundary, fill)
+		_draw_closed_polyline(screen_boundary, outline, 4.0)
 
 	for guide: Vector2 in _snapshot.anchors:
 		var screen := _world_to_screen(guide)
@@ -199,6 +216,37 @@ func _draw_course(size: Vector2) -> void:
 				obstacle_bounds.position.x > size.x + 80.0:
 			continue
 		_draw_obstacle(screen_obstacle)
+
+	for fly: Vector2 in _snapshot.fly_positions:
+		var fly_screen := _world_to_screen(fly)
+		if fly_screen.x < -40.0 or fly_screen.x > size.x + 40.0:
+			continue
+		draw_circle(fly_screen, 6.0, YELLOW)
+		draw_circle(fly_screen + Vector2(-7.0, -5.0), 5.0, Color(WEB, 0.74))
+		draw_circle(fly_screen + Vector2(7.0, -5.0), 5.0, Color(WEB, 0.74))
+		draw_arc(fly_screen, 11.0, 0.0, TAU, 20, Color(YELLOW, 0.48), 2.0)
+
+	for boost: Vector2 in _snapshot.boost_positions:
+		var boost_screen := _world_to_screen(boost)
+		if boost_screen.x < -50.0 or boost_screen.x > size.x + 50.0:
+			continue
+		draw_circle(boost_screen, 18.0, Color(0.08, 0.30, 0.34, 0.94))
+		draw_arc(boost_screen, 22.0, 0.0, TAU, 28, CYAN, 4.0)
+		draw_polyline(PackedVector2Array([
+			boost_screen + Vector2(-5.0, -12.0),
+			boost_screen + Vector2(4.0, -3.0),
+			boost_screen + Vector2(-2.0, 2.0),
+			boost_screen + Vector2(7.0, 12.0),
+		]), WEB, 4.0, true)
+
+	if _snapshot.debug_visible and _snapshot.dive_preview_available:
+		var preview_color := GREEN if _snapshot.dive_preview_safe else RED
+		var preview_start := _world_to_screen(_snapshot.position)
+		var preview_end := _world_to_screen(_snapshot.dive_preview_endpoint)
+		var preview_anchor := _world_to_screen(_snapshot.dive_preview_anchor)
+		draw_dashed_line(preview_start, preview_end, preview_color, 3.0, 10.0)
+		draw_line(preview_end, preview_anchor, Color(preview_color, 0.35), 2.0)
+		draw_arc(preview_end, 13.0, 0.0, TAU, 24, preview_color, 3.0)
 
 	var kill_x := _world_to_screen(Vector2(_snapshot.left_kill_boundary, 0.0)).x
 	if kill_x > 0.0 and kill_x < size.x:
@@ -290,6 +338,15 @@ func _draw_action_feedback() -> void:
 func _draw_spider() -> void:
 	var center := _world_to_screen(_snapshot.position)
 	var rotation := clampf(_snapshot.velocity.angle() * 0.16, -0.35, 0.35)
+	var accent := SPIDER_ACCENT
+	var body := SPIDER_DARK
+	match _snapshot.spider_style:
+		PlayerProgress.STYLE_AMBER:
+			accent = Color("ffd166")
+			body = Color("4d2b20")
+		PlayerProgress.STYLE_COMET:
+			accent = Color("8be9fd")
+			body = Color("3a275f")
 	for side in [-1.0, 1.0]:
 		for index in range(4):
 			var y := -15.0 + float(index) * 10.0
@@ -298,11 +355,11 @@ func _draw_spider() -> void:
 				y - 9.0 + index * 5.0).rotated(rotation)
 			var foot := center + Vector2(side * (38.0 + index * 3.0),
 				y + 2.0 + index * 6.0).rotated(rotation)
-			draw_polyline(PackedVector2Array([hip, knee, foot]), SPIDER_DARK, 5.0, true)
-			draw_polyline(PackedVector2Array([hip, knee, foot]), SPIDER_ACCENT, 1.5, true)
-	draw_circle(center + Vector2(-8.0, 0.0).rotated(rotation), 17.0, SPIDER_DARK)
-	draw_circle(center + Vector2(12.0, -1.0).rotated(rotation), 14.0, SPIDER_DARK)
-	draw_circle(center + Vector2(-9.0, -4.0).rotated(rotation), 6.0, SPIDER_ACCENT)
+			draw_polyline(PackedVector2Array([hip, knee, foot]), body, 5.0, true)
+			draw_polyline(PackedVector2Array([hip, knee, foot]), accent, 1.5, true)
+	draw_circle(center + Vector2(-8.0, 0.0).rotated(rotation), 17.0, body)
+	draw_circle(center + Vector2(12.0, -1.0).rotated(rotation), 14.0, body)
+	draw_circle(center + Vector2(-9.0, -4.0).rotated(rotation), 6.0, accent)
 	draw_circle(center + Vector2(17.0, -5.0).rotated(rotation), 3.2, WEB)
 	draw_circle(center + Vector2(17.0, -5.0).rotated(rotation), 1.4, Color("15202b"))
 	if _show_debug_tools and _snapshot.debug_visible:
@@ -323,6 +380,19 @@ func _draw_feedback() -> void:
 func _draw_hud(size: Vector2) -> void:
 	var distance_metres := _snapshot.distance_pixels / 10.0
 	_draw_text(Vector2(142.0, 48.0), "%05.1f m" % distance_metres, 28, WEB)
+	_draw_text(
+		Vector2(size.x - 280.0, 48.0),
+		"FLIES %d  ·  TOTAL %d" % [_snapshot.run_flies, _snapshot.total_flies],
+		20,
+		YELLOW,
+	)
+	if _snapshot.burst_frenzy_remaining > 0.0:
+		_draw_text(
+			Vector2(size.x - 280.0, 78.0),
+			"BURST FRENZY %.1fs" % _snapshot.burst_frenzy_remaining,
+			18,
+			CYAN,
+		)
 	_draw_button(LabLayout.menu_rect(size), "MENU", false)
 	if _show_control_hints:
 		_draw_text(Vector2(142.0, 76.0),
@@ -418,8 +488,14 @@ func _draw_debug(_size: Vector2) -> void:
 			_snapshot.burst_cooldown_capacity,
 			_snapshot.pull_kind if _snapshot.pull_active else &"ready",
 		],
-		"geometry: %d surfaces  %d obstacles" % [
-			_snapshot.surfaces.size(), _snapshot.obstacles.size()],
+		"geometry: %d rails  %d obstacles" % [
+			_snapshot.boundary_surfaces.size(), _snapshot.obstacles.size()],
+		"rails %s/%s · take-up %s %.0f%%" % [
+			"ON" if _snapshot.course_boundaries_enabled else "OFF",
+			"LETHAL" if _snapshot.course_boundaries_lethal else "SAFE",
+			"ON" if _snapshot.automatic_take_up_enabled else "OFF",
+			_snapshot.automatic_take_up_retention * 100.0,
+		],
 		"preset: %s" % _snapshot.preset_name,
 		"recording: %s  replay: %s" % [
 			_snapshot.recording, _snapshot.replaying],
@@ -502,12 +578,24 @@ func _format_tuning_value(parameter: StringName, value: float) -> String:
 			return "AIM %.0fpx" % value
 		&"reel_rate":
 			return "REEL %.0f/s" % value
+		&"auto_take_up":
+			return "AUTO %s" % ("ON" if value > 0.5 else "OFF")
+		&"take_up_pct":
+			return "KEEP %.0f%%" % (value * 100.0)
 		&"web_range":
 			return "RANGE %.0f" % value
 		&"tap_retarget":
 			return "TAP %s" % ("RETARGET" if value > 0.5 else "RELEASE")
 		&"rope_damping":
 			return "DAMP %.2f" % value
+		&"course_rails":
+			return "RAILS %s" % ("ON" if value > 0.5 else "OFF")
+		&"lethal_rails":
+			return "RAILS %s" % ("LETHAL" if value > 0.5 else "SAFE")
+		&"mid_hazard_m":
+			return "MID @ %.0fm" % (value / 10.0)
+		&"boost_duration":
+			return "BOOST %.1fs" % value
 		&"gravity":
 			return "GRAV %.0f" % value
 		&"drive":

@@ -81,27 +81,29 @@ Run directly:
 godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-50 checks, grouped so one subsystem failure never hides the rest:
+59 checks, grouped so one subsystem failure never hides the rest:
 
 - engine, main-scene, input-action, 60 Hz, renderer/viewport, Android preset,
   inward-dependency, and no-autoload bootstrap contracts;
-- twenty-three deterministic physics contracts, including extended arbitrary-point
+- twenty-eight deterministic physics contracts, including extended arbitrary-point
   solid attachment, larger aim forgiveness, momentum preservation, speed-neutral
-  Reel shortening, exact Burst/Dive distance shares, recovery-web interruption,
+  Reel and automatic take-up, exact Burst/Dive distance shares, recovery-web interruption,
   detached cooldown double-tap fallback, explicit release/retarget behavior,
-  polygon anchoring/collision, bounded shaped streaming with lower anchor
-  coverage, boundaries, runtime pull tuning, and identical trajectories from
+  polygon anchoring/collision, a 1000 m runway and bounded organic streaming with
+  lower rail coverage, independent rail lethality, swept pickups, runtime pull
+  tuning, and identical trajectories from
   simulated 30/60/90/120 Hz render loops;
 - ten mobile HUD contracts proving large separated Reel and Burst controls,
   DEBUG, and Menu are event-consuming
   Buttons, GUI geometry shares one layout source, accepted actions drive visual
   and haptic feedback, UI actions do not leak into web input, debug tools can be
   removed, and world input waits for Godot GUI handling;
-- eight front-end contracts proving Home starts before gameplay, Play/Tutorial/
+- nine front-end contracts proving Home starts before gameplay, Play/Tutorial/
   Settings route correctly, the six tutorial steps cover live mechanics, Settings
   is scrollable and mobile-readable, options
   validate and emit once, serialization is stable, atomic filesystem persistence
-  round-trips, and only Play mounts the run.
+  round-trips, progression settlements remain idempotent, milestone unlocks
+  persist, and only Play mounts the run.
 
 The physics group lives in `tests/unit/phase0_physics_tests.gd`, mobile input in
 `tests/unit/mobile_hud_layout_tests.gd`, and the front-end flow in

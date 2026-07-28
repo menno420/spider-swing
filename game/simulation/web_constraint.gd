@@ -16,6 +16,7 @@ var reel_energy: float = 0.0
 var reel_active: bool = false
 var reel_lockout_remaining: float = 0.0
 var _empty_event_armed: bool = true
+var _last_distance_to_anchor: float = 0.0
 
 
 func reset(config: SwingConfig) -> void:
@@ -27,6 +28,7 @@ func reset(config: SwingConfig) -> void:
 	reel_active = false
 	reel_lockout_remaining = 0.0
 	_empty_event_armed = true
+	_last_distance_to_anchor = 0.0
 
 
 func try_attach(
@@ -52,6 +54,7 @@ func try_attach(
 		config.web_maximum_length,
 	)
 	tension = 0.0
+	_last_distance_to_anchor = distance
 	return AttachResult.ATTACHED
 
 
@@ -59,6 +62,7 @@ func release() -> void:
 	attached = false
 	reel_active = false
 	tension = 0.0
+	_last_distance_to_anchor = 0.0
 
 
 func set_reel_active(active: bool) -> void:
@@ -114,11 +118,24 @@ func solve(
 
 	var offset := predicted - anchor
 	var distance := offset.length()
+	# Retain a configurable share of new inward movement exactly once. Static
+	# slack does not keep shrinking on later ticks, so a percentage below 100%
+	# leaves real elastic give instead of merely slowing a full ratchet.
+	if config.automatic_take_up_enabled and \
+			distance < _last_distance_to_anchor and distance < rope_length:
+		var inward_movement := _last_distance_to_anchor - distance
+		rope_length = maxf(
+			config.web_minimum_length,
+			rope_length - inward_movement * config.automatic_take_up_retention,
+		)
+
 	if distance <= 0.0001:
+		_last_distance_to_anchor = distance
 		return {"position": predicted, "velocity": velocity}
 
 	var allowed_length := rope_length + config.rope_elasticity_allowance
 	if distance <= allowed_length:
+		_last_distance_to_anchor = distance
 		return {"position": predicted, "velocity": velocity}
 
 	var radial_direction := offset / distance
@@ -137,5 +154,6 @@ func solve(
 		(outward_speed * config.spider_mass / maxf(delta, 0.0001))
 		+ (excess * config.spider_mass / maxf(delta * delta, 0.0001))
 	)
+	_last_distance_to_anchor = predicted.distance_to(anchor)
 
 	return {"position": predicted, "velocity": velocity}

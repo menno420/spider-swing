@@ -47,6 +47,10 @@ Balanced candidate while energy is available. The constraint removes outward
 motion and applies capped position correction as the rope tightens; Reel does not
 also add a radial acceleration or minimum inward speed. That keeps its job
 distinct: change the swing radius without becoming a hidden speed boost.
+Natural inward movement now creates slack take-up as a separate, speed-neutral
+rule: Balanced retains 85% of each new inward movement, leaving 15% elastic give.
+Static slack is not repeatedly consumed. DEBUG can disable the behavior or tune
+the retained share from 0–100%.
 
 Anchor Burst is a short deterministic traversal:
 
@@ -65,7 +69,7 @@ double-tap made while detached and still cooling down also becomes a normal web
 instead of an unavailable Burst. Cooldown still limits repeated power use; it
 never locks ordinary web control.
 
-A target below the spider becomes Dive Pull instead of a rope. It crosses 25%
+A target below the spider becomes Dive Pull instead of a rope. It crosses 40%
 of the starting distance over 0.16 seconds, retains 50% of tangential velocity,
 ends with a 280 px/s radial exit, and never remains attached. Burst and Dive Pull
 share the 1.65-second cooldown. Both paths are sampled against lethal polygon
@@ -82,19 +86,31 @@ instead of faking acceptance.
 indices. It retains two chunks behind the spider and four ahead, so distance is
 not capped and retained state does not grow with a run.
 
-The first two chunks remain safe and the second introduces one lower practice
-anchor. Later chunks vary:
+The first 1000 displayed metres are a learning runway with no detached
+middle-lane hazards. Sparse silhouettes may grow from an existing rail, but the
+player first learns the corridor, ceiling web, lower Dive routes, flies, and
+recovery timing. Later chunks vary:
 
-- ceiling height and the presence of ceiling gaps;
-- floor-grown and ceiling-hanging branch silhouettes;
+- ceiling and floor height plus deliberate gaps on either side;
+- floor-grown leaf clusters and vine forks;
+- ceiling-hanging seed pods and leaf clusters;
 - broken-pot gates with a traversable opening;
-- short cyan lower-root windows placed before the pattern's key hazard;
-- sections between authored windows where no lower target is available.
+- lower rail targets placed before the pattern's key hazard;
+- five-fly arcs that communicate a suggested route;
+- sparse Burst Frenzy pickups.
 
-Obstacle polygons are lethal on contact and also valid anchors. Ceiling polygons
-are attachable structural surfaces. The palette is still diagnostic; moving
-hazards, collectibles, production balancing, and final object art remain
-deferred.
+Obstacle polygons are lethal on contact and also valid anchors. Course rails are
+attachable structural surfaces and are independently configurable as visible or
+absent, and safe or lethal. DEBUG draws the predicted endpoint of the nearest
+available Dive in green or red. The palette is still diagnostic; moving hazards,
+production balancing, and final object art remain deferred.
+
+Fly and Burst Frenzy pickups are collected with swept tests, so a fast spider
+cannot tunnel through them. Burst Frenzy suppresses cooldown for four configurable
+seconds. Death creates one idempotent settlement through `ProgressionService`;
+`SaveRepository` atomically persists fly totals and the 25-fly/1000-m cosmetic
+milestones. This proves ownership and save flow without inventing the final
+economy or upgrade prices.
 
 ## Debug tuning
 
@@ -110,12 +126,18 @@ the selected value with `-` and `+`.
 | `AIM` | accepted distance from a tap to the nearest solid edge | 10 / 80–320 px |
 | `CATCH` | rope-length reduction on normal attach | 1% / 0–20% |
 | `REEL` | rope shortening speed | 20 / 80–720 px/s |
+| `AUTO` | retain natural inward slack | off / on |
+| `KEEP` | share of natural slack retained | 5% / 0–100% |
 | `BURST` | Burst share of starting anchor distance | 5% / 10–80% |
 | `B TIME` | time taken to cross the Burst share | 0.02 / 0.08–0.40 s |
 | `P CD` | shared Burst/Dive cooldown | 0.10 / 0.30–2.50 s |
 | `DIVE` | Dive Pull share of starting anchor distance | 5% / 5–50% |
 | `D TIME` | time taken to cross the Dive share | 0.02 / 0.08–0.32 s |
 | `DAMP` | rope constraint damping | 0.01 / 0–0.30 |
+| `RAILS` | render/target ceiling and floor rails | off / on |
+| `RAILS SAFE/LETHAL` | rail contact policy | safe / lethal |
+| `MID @` | first detached middle-hazard distance | 100 m / 250–2000 m |
+| `BOOST` | Burst Frenzy duration | 0.5 / 1–10 s |
 
 `DRIVE` can be subtle while the spider is already at or above its current target
 speed: it accelerates forward only toward that target, while the target itself
@@ -124,20 +146,29 @@ increases with distance. It is not a free velocity multiplier.
 Diagnostics include active pull kind, pull cooldown, retained stream chunks,
 record/replay, and JSON export. Runtime changes reset when the app restarts.
 
+These controls are also the measurement surface for possible future upgrades.
+Reel rate, Burst share, cooldown, and later glide response can become validated
+modifiers over one base `SwingConfig`; they must not create parallel physics
+implementations. Costs, caps, record eligibility, and the final economy remain a
+separate product decision and are intentionally not inferred from DEBUG values.
+
 ## Verification contract
 
 `python3 tools/verify.py --require-godot` guards:
 
 - all presets and every requested debug-control mapping;
 - release-time momentum preservation and speed-neutral Reel shortening;
+- speed-neutral configurable automatic slack take-up;
 - arbitrary solid-edge attachment, larger aim forgiveness, and extended range;
 - detached targeted Burst, exact 50% traversal, deterministic exit, and cooldown;
 - active-pull interruption plus detached cooldown double-tap recovery;
 - default manual release and optional atomic RETARGET behavior;
-- one-shot downward Dive Pull with exact 25% traversal and no persistent rope;
+- one-shot downward Dive Pull with exact 40% traversal and no persistent rope;
 - obstacle anchoring, polygon collision, and swept pull collision checks;
-- deterministic shaped geometry after 10,000 m, authored lower anchor coverage,
-  and a bounded seven-chunk window;
+- a 1000 m middle-hazard runway, deterministic organic geometry after it,
+  lower-anchor coverage, and a bounded seven-chunk window;
+- independently safe/lethal course rails, swept pickups that do not respawn,
+  idempotent persistent progression, and milestone cosmetic unlocks;
 - nonlethal upper and lethal lower/left/obstacle boundaries;
 - symmetric event-consuming Reel and Burst touch targets;
 - one gameplay intent for each Android touchscreen press even though the
@@ -146,7 +177,7 @@ record/replay, and JSON export. Runtime changes reset when the app restarts.
 
 ## Owner device playtest
 
-Install `0.3.2-single-intent-test` after uninstalling the previous ephemerally
+Install `0.4.0-gameplay-foundation-test` after uninstalling the previous ephemerally
 signed dev app, then check:
 
 1. from `RUN ENDED`, tap once to restart and confirm that the same physical tap
@@ -167,13 +198,20 @@ signed dev app, then check:
    without the previous runaway speed gain;
 9. compare several starting web lengths and confirm Burst always covers roughly
    half the visible rope distance;
-10. use the cyan lower-root windows before hazards and confirm a 25% Dive Pull
-   redirects the spider without leaving a rope attached;
+10. use lower rail targets before hazards and compare 35%, 40%, and 45% Dive Pull;
+    confirm each redirects the spider without leaving a rope attached;
 11. deliberately Burst toward a badly timed obstacle and confirm the control
    remains powerful but unsafe;
 12. use DEBUG to change range, cooldown, Burst %, Dive %, both durations, and Reel
    speed, then name the closest values;
-13. judge whether the lower anchor windows appear when useful without making the
-   entire floor a permanent safety net.
+13. compare `AUTO` off/on and several `KEEP` percentages; when the spider moves
+    toward the anchor, the shorter web should mostly remain short without a speed
+    spike;
+14. compare rails off, rails safe, and rails lethal; verify the deliberate gaps
+    still permit occasional travel above/below the ordinary corridor;
+15. confirm no detached middle hazard appears before roughly 1000 m, then judge
+    whether later leaf, vine, seed-pod, and pot patterns remain readable;
+16. follow fly arcs, collect Burst Frenzy, use multiple Bursts before it expires,
+    and confirm the next run retains totals/unlocks.
 
 Phase 1 remains gated on an explicitly approved movement baseline.

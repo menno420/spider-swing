@@ -1,30 +1,45 @@
 extends RefCounted
 class_name CourseStream
-## Deterministic bounded Phase 0.8 world stream.
+## Deterministic, bounded course stream with an authored difficulty runway.
 ##
-## Polygon silhouettes create changing ceilings, gaps, branches, and gates.
-## Every retained solid is targetable; obstacle polygons additionally carry
-## the authoritative lethal-contact policy in SimulationWorld.
+## Ceiling/floor rails are their own geometry class so the laboratory can test
+## them as visible targetable solids, lethal boundaries, or disabled geometry
+## without changing obstacle collision policy. Detached middle-lane hazards do
+## not appear until the configured distance runway has elapsed.
 
 const CHUNK_WIDTH := 960.0
 const KEEP_BEHIND := 2
 const GENERATE_AHEAD := 4
 const GUIDE_SPACING := 160.0
-const CEILING_THICKNESS := 42.0
+const CEILING_THICKNESS := 46.0
+const FLOOR_THICKNESS := 54.0
+const FLOOR_Y := 684.0
+const START_X := 220.0
 
 var _geometry := CourseGeometry.new()
+var _middle_hazard_start_distance: float = 10000.0
 
 
-func reset() -> void:
+func reset(middle_hazard_start_distance: float = 10000.0) -> void:
+	_middle_hazard_start_distance = middle_hazard_start_distance
 	_geometry = CourseGeometry.new()
 	update_for_position(SimulationWorld.START_POSITION.x)
 
 
-func update_for_position(world_x: float) -> CourseGeometry:
+func update_for_position(
+	world_x: float,
+	middle_hazard_start_distance: float = -1.0,
+) -> CourseGeometry:
+	if middle_hazard_start_distance >= 0.0 and not is_equal_approx(
+		middle_hazard_start_distance,
+		_middle_hazard_start_distance,
+	):
+		_middle_hazard_start_distance = middle_hazard_start_distance
+		_geometry = CourseGeometry.new()
 	var current_index := maxi(0, floori(world_x / CHUNK_WIDTH))
 	var first := maxi(0, current_index - KEEP_BEHIND)
 	var last := current_index + GENERATE_AHEAD
-	if not _geometry.surfaces.is_empty() and \
+	if not _geometry.boundary_surfaces.is_empty() and \
 			_geometry.first_chunk_index == first and \
 			_geometry.last_chunk_index == last:
 		return _geometry.duplicate_geometry()
@@ -51,56 +66,120 @@ func _build_range(first: int, last: int) -> CourseGeometry:
 
 func _append_chunk(result: CourseGeometry, chunk_index: int) -> void:
 	var start_x := float(chunk_index) * CHUNK_WIDTH
-	var pattern := posmod(chunk_index, 6)
-	var ceiling_y := 118.0 + float(posmod(chunk_index * 37, 4)) * 24.0
+	var pattern := posmod(chunk_index, 8)
+	var ceiling_y := 112.0 + float(posmod(chunk_index * 37, 4)) * 22.0
+	var floor_y := FLOOR_Y - float(posmod(chunk_index * 29, 3)) * 18.0
+	_append_boundary_pattern(result, start_x, ceiling_y, floor_y, pattern)
+	_append_route_flies(result, start_x, ceiling_y, floor_y, pattern)
 
-	if chunk_index < 2:
-		_append_ceiling(result, start_x, CHUNK_WIDTH + 2.0, ceiling_y)
-		if chunk_index == 1:
-			_append_lower_anchor_window(result, start_x + 430.0, 610.0, 170.0)
+	var distance_at_chunk := maxf(0.0, start_x - START_X)
+	if distance_at_chunk < _middle_hazard_start_distance:
+		_append_opening_edge_detail(
+			result,
+			start_x,
+			ceiling_y,
+			floor_y,
+			pattern,
+			chunk_index,
+		)
+	else:
+		_append_middle_challenge(
+			result,
+			start_x,
+			ceiling_y,
+			floor_y,
+			pattern,
+		)
+
+	if chunk_index >= 3 and posmod(chunk_index, 5) == 3:
+		result.boost_positions.append(Vector2(
+			start_x + 720.0,
+			lerpf(ceiling_y + 150.0, floor_y - 120.0, 0.5),
+		))
+
+
+func _append_boundary_pattern(
+	result: CourseGeometry,
+	start_x: float,
+	ceiling_y: float,
+	floor_y: float,
+	pattern: int,
+) -> void:
+	# Each chunk has readable rails, but a deliberate gap on one side creates
+	# occasional freedom to rise or fall outside the usual corridor.
+	match pattern:
+		1, 5:
+			_append_ceiling(result, start_x, 350.0, ceiling_y)
+			_append_ceiling(result, start_x + 550.0, 412.0, ceiling_y + 18.0)
+			_append_floor(result, start_x, CHUNK_WIDTH + 2.0, floor_y)
+		2, 6:
+			_append_ceiling(result, start_x, CHUNK_WIDTH + 2.0, ceiling_y)
+			_append_floor(result, start_x, 410.0, floor_y)
+			_append_floor(result, start_x + 610.0, 352.0, floor_y - 12.0)
+		3:
+			_append_ceiling(result, start_x + 130.0, 832.0, ceiling_y)
+			_append_floor(result, start_x, 520.0, floor_y)
+			_append_floor(result, start_x + 700.0, 262.0, floor_y)
+		7:
+			_append_ceiling(result, start_x, 610.0, ceiling_y)
+			_append_ceiling(result, start_x + 800.0, 162.0, ceiling_y + 26.0)
+			_append_floor(result, start_x + 100.0, 862.0, floor_y)
+		_:
+			_append_ceiling(result, start_x, CHUNK_WIDTH + 2.0, ceiling_y)
+			_append_floor(result, start_x, CHUNK_WIDTH + 2.0, floor_y)
+
+
+func _append_opening_edge_detail(
+	result: CourseGeometry,
+	start_x: float,
+	ceiling_y: float,
+	floor_y: float,
+	pattern: int,
+	chunk_index: int,
+) -> void:
+	if chunk_index == 0:
 		return
+	# The opening runway teaches the corridor and web rhythm. It never adds a
+	# detached middle obstacle; sparse shapes grow only from an existing edge.
+	if posmod(chunk_index, 3) != 1:
+		return
+	if pattern in [1, 3, 5, 7]:
+		_append_leaf_cluster(result, start_x + 650.0, floor_y, false)
+	else:
+		_append_leaf_cluster(result, start_x + 650.0, ceiling_y, true)
 
+
+func _append_middle_challenge(
+	result: CourseGeometry,
+	start_x: float,
+	ceiling_y: float,
+	floor_y: float,
+	pattern: int,
+) -> void:
+	# Every challenge keeps a usable lower or upper rail before the hazard. Its
+	# fly trail communicates the intended route without making it mandatory.
 	match pattern:
 		0:
-			_append_ceiling(result, start_x, CHUNK_WIDTH + 2.0, ceiling_y)
-			_append_lower_anchor_window(result, start_x + 210.0, 610.0, 170.0)
-			_append_floor_branch(result, start_x + 530.0, 680.0, 210.0, 138.0)
+			_append_vine_fork(result, start_x + 610.0, floor_y, 220.0, 180.0)
 		1:
-			_append_ceiling(result, start_x, 430.0, ceiling_y)
-			_append_ceiling(result, start_x + 630.0, 332.0, ceiling_y + 28.0)
-			_append_lower_anchor_window(result, start_x + 260.0, 600.0, 160.0)
-			_append_floor_branch(result, start_x + 500.0, 680.0, 190.0, 172.0)
+			_append_hanging_seed_pod(
+				result, start_x + 650.0, ceiling_y, 150.0, 235.0)
 		2:
-			_append_ceiling(result, start_x + 190.0, 772.0, ceiling_y)
-			_append_lower_anchor_window(result, start_x + 360.0, 605.0, 180.0)
-			_append_hanging_branch(
-				result,
-				start_x + 610.0,
-				ceiling_y,
-				138.0,
-				225.0,
-			)
+			_append_leaf_cluster(result, start_x + 620.0, floor_y, false)
+			_append_hanging_seed_pod(
+				result, start_x + 790.0, ceiling_y, 105.0, 165.0)
 		3:
-			_append_ceiling(result, start_x, 310.0, ceiling_y + 22.0)
-			_append_ceiling(result, start_x + 520.0, 442.0, ceiling_y)
-			_append_lower_anchor_window(result, start_x + 205.0, 600.0, 150.0)
-			_append_broken_pot_gate(result, start_x + 410.0, 365.0)
+			_append_broken_pot_gate(result, start_x + 690.0, 370.0)
 		4:
-			_append_ceiling(result, start_x, 650.0, ceiling_y)
-			_append_lower_anchor_window(result, start_x + 120.0, 610.0, 170.0)
-			_append_floor_branch(result, start_x + 360.0, 680.0, 260.0, 195.0)
-			_append_hanging_branch(
-				result,
-				start_x + 730.0,
-				ceiling_y,
-				92.0,
-				158.0,
-			)
+			_append_vine_fork(result, start_x + 650.0, floor_y, 250.0, 215.0)
 		5:
-			_append_ceiling(result, start_x + 120.0, 350.0, ceiling_y + 28.0)
-			_append_ceiling(result, start_x + 650.0, 312.0, ceiling_y)
-			_append_lower_anchor_window(result, start_x + 315.0, 605.0, 160.0)
-			_append_broken_pot_gate(result, start_x + 515.0, 330.0)
+			_append_hanging_seed_pod(
+				result, start_x + 620.0, ceiling_y, 175.0, 260.0)
+		6:
+			_append_leaf_cluster(result, start_x + 610.0, floor_y, false)
+			_append_leaf_cluster(result, start_x + 815.0, ceiling_y, true)
+		_:
+			_append_broken_pot_gate(result, start_x + 700.0, 350.0)
 
 
 func _append_ceiling(
@@ -109,69 +188,115 @@ func _append_ceiling(
 	width: float,
 	underside_y: float,
 ) -> void:
-	result.surfaces.append(PackedVector2Array([
+	result.boundary_surfaces.append(PackedVector2Array([
 		Vector2(start_x, underside_y - CEILING_THICKNESS),
 		Vector2(start_x + width, underside_y - CEILING_THICKNESS),
 		Vector2(start_x + width, underside_y),
 		Vector2(start_x, underside_y),
 	]))
-	var guide_x := start_x + 80.0
-	while guide_x < start_x + width - 36.0:
-		result.aim_guides.append(Vector2(guide_x, underside_y))
+	_append_guides(result, start_x, width, underside_y)
+
+
+func _append_floor(
+	result: CourseGeometry,
+	start_x: float,
+	width: float,
+	top_y: float,
+) -> void:
+	result.boundary_surfaces.append(PackedVector2Array([
+		Vector2(start_x, top_y),
+		Vector2(start_x + width, top_y),
+		Vector2(start_x + width, top_y + FLOOR_THICKNESS),
+		Vector2(start_x, top_y + FLOOR_THICKNESS),
+	]))
+	_append_guides(result, start_x, width, top_y)
+
+
+func _append_guides(
+	result: CourseGeometry,
+	start_x: float,
+	width: float,
+	y: float,
+) -> void:
+	var guide_x := start_x + 76.0
+	while guide_x < start_x + width - 32.0:
+		result.aim_guides.append(Vector2(guide_x, y))
 		guide_x += GUIDE_SPACING
 
 
-func _append_floor_branch(
+func _append_route_flies(
 	result: CourseGeometry,
 	start_x: float,
+	ceiling_y: float,
+	floor_y: float,
+	pattern: int,
+) -> void:
+	var high_route := pattern in [1, 3, 4, 7]
+	var base_y := floor_y - 135.0 if high_route else ceiling_y + 155.0
+	var arc_sign := -1.0 if high_route else 1.0
+	for index in range(5):
+		var progress := float(index) / 4.0
+		result.fly_positions.append(Vector2(
+			start_x + 230.0 + float(index) * 120.0,
+			base_y + sin(progress * PI) * 82.0 * arc_sign,
+		))
+
+
+func _append_leaf_cluster(
+	result: CourseGeometry,
+	center_x: float,
+	edge_y: float,
+	hanging: bool,
+) -> void:
+	var direction := 1.0 if hanging else -1.0
+	result.obstacles.append(PackedVector2Array([
+		Vector2(center_x - 105.0, edge_y),
+		Vector2(center_x - 78.0, edge_y + direction * 46.0),
+		Vector2(center_x - 120.0, edge_y + direction * 94.0),
+		Vector2(center_x - 36.0, edge_y + direction * 82.0),
+		Vector2(center_x, edge_y + direction * 142.0),
+		Vector2(center_x + 34.0, edge_y + direction * 78.0),
+		Vector2(center_x + 118.0, edge_y + direction * 102.0),
+		Vector2(center_x + 76.0, edge_y + direction * 42.0),
+		Vector2(center_x + 105.0, edge_y),
+	]))
+
+
+func _append_vine_fork(
+	result: CourseGeometry,
+	center_x: float,
 	floor_y: float,
 	width: float,
 	height: float,
 ) -> void:
 	result.obstacles.append(PackedVector2Array([
-		Vector2(start_x, floor_y),
-		Vector2(start_x + width * 0.18, floor_y - height * 0.58),
-		Vector2(start_x + width * 0.43, floor_y - height),
-		Vector2(start_x + width * 0.64, floor_y - height * 0.72),
-		Vector2(start_x + width, floor_y - height * 0.40),
-		Vector2(start_x + width, floor_y),
+		Vector2(center_x - width * 0.48, floor_y),
+		Vector2(center_x - width * 0.36, floor_y - height * 0.34),
+		Vector2(center_x - width * 0.50, floor_y - height * 0.58),
+		Vector2(center_x - width * 0.20, floor_y - height * 0.49),
+		Vector2(center_x - width * 0.04, floor_y - height),
+		Vector2(center_x + width * 0.11, floor_y - height * 0.55),
+		Vector2(center_x + width * 0.46, floor_y - height * 0.73),
+		Vector2(center_x + width * 0.28, floor_y - height * 0.37),
+		Vector2(center_x + width * 0.48, floor_y),
 	]))
 
 
-func _append_lower_anchor_window(
+func _append_hanging_seed_pod(
 	result: CourseGeometry,
-	start_x: float,
-	top_y: float,
-	width: float,
-) -> void:
-	# A short, nonlethal root silhouette creates an intentional Dive Pull window
-	# without turning the entire floor into a permanent safety net.
-	var base_y := 720.0
-	result.surfaces.append(PackedVector2Array([
-		Vector2(start_x, base_y),
-		Vector2(start_x + width * 0.12, top_y + 48.0),
-		Vector2(start_x + width * 0.32, top_y + 12.0),
-		Vector2(start_x + width * 0.56, top_y),
-		Vector2(start_x + width * 0.78, top_y + 22.0),
-		Vector2(start_x + width, base_y),
-	]))
-	result.aim_guides.append(Vector2(start_x + width * 0.56, top_y))
-
-
-func _append_hanging_branch(
-	result: CourseGeometry,
-	start_x: float,
+	center_x: float,
 	ceiling_y: float,
 	width: float,
 	height: float,
 ) -> void:
 	result.obstacles.append(PackedVector2Array([
-		Vector2(start_x, ceiling_y),
-		Vector2(start_x + width, ceiling_y),
-		Vector2(start_x + width * 0.82, ceiling_y + height * 0.54),
-		Vector2(start_x + width * 0.56, ceiling_y + height),
-		Vector2(start_x + width * 0.34, ceiling_y + height * 0.68),
-		Vector2(start_x + width * 0.12, ceiling_y + height * 0.42),
+		Vector2(center_x - width * 0.48, ceiling_y),
+		Vector2(center_x + width * 0.42, ceiling_y),
+		Vector2(center_x + width * 0.34, ceiling_y + height * 0.46),
+		Vector2(center_x + width * 0.15, ceiling_y + height * 0.88),
+		Vector2(center_x, ceiling_y + height),
+		Vector2(center_x - width * 0.20, ceiling_y + height * 0.82),
+		Vector2(center_x - width * 0.40, ceiling_y + height * 0.43),
 	]))
 
 
@@ -180,39 +305,35 @@ func _append_broken_pot_gate(
 	center_x: float,
 	center_y: float,
 ) -> void:
-	var outer_width := 190.0
-	var outer_height := 230.0
-	var opening_width := 82.0
-	var opening_height := 104.0
-	var left := center_x - outer_width * 0.5
-	var right := center_x + outer_width * 0.5
-	var top := center_y - outer_height * 0.5
-	var bottom := center_y + outer_height * 0.5
-	var opening_left := center_x - opening_width * 0.5
-	var opening_right := center_x + opening_width * 0.5
-	var opening_top := center_y - opening_height * 0.5
-	var opening_bottom := center_y + opening_height * 0.5
+	var left := center_x - 105.0
+	var right := center_x + 105.0
+	var top := center_y - 126.0
+	var bottom := center_y + 126.0
+	var opening_left := center_x - 48.0
+	var opening_right := center_x + 48.0
+	var opening_top := center_y - 57.0
+	var opening_bottom := center_y + 57.0
 	result.obstacles.append(PackedVector2Array([
-		Vector2(left + 28.0, top),
-		Vector2(right - 24.0, top + 10.0),
+		Vector2(left + 30.0, top),
+		Vector2(right - 24.0, top + 12.0),
 		Vector2(opening_right, opening_top),
 		Vector2(opening_left, opening_top),
 	]))
 	result.obstacles.append(PackedVector2Array([
-		Vector2(left, top + 34.0),
+		Vector2(left, top + 38.0),
 		Vector2(opening_left, opening_top),
 		Vector2(opening_left, opening_bottom),
-		Vector2(left + 18.0, bottom - 22.0),
+		Vector2(left + 22.0, bottom - 20.0),
 	]))
 	result.obstacles.append(PackedVector2Array([
 		Vector2(opening_right, opening_top),
-		Vector2(right, top + 42.0),
-		Vector2(right - 12.0, bottom - 30.0),
+		Vector2(right, top + 46.0),
+		Vector2(right - 16.0, bottom - 34.0),
 		Vector2(opening_right, opening_bottom),
 	]))
 	result.obstacles.append(PackedVector2Array([
 		Vector2(opening_left, opening_bottom),
 		Vector2(opening_right, opening_bottom),
-		Vector2(right - 30.0, bottom),
-		Vector2(left + 34.0, bottom - 8.0),
+		Vector2(right - 32.0, bottom),
+		Vector2(left + 38.0, bottom - 10.0),
 	]))

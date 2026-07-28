@@ -14,12 +14,18 @@ const TUNING_PARAMETERS := [
 	&"aim_forgiveness",
 	&"attach_catch_pct",
 	&"reel_rate",
+	&"auto_take_up",
+	&"take_up_pct",
 	&"burst_pull_pct",
 	&"burst_duration",
 	&"pull_cooldown",
 	&"dive_pull_pct",
 	&"dive_duration",
 	&"rope_damping",
+	&"course_rails",
+	&"lethal_rails",
+	&"mid_hazard_m",
+	&"boost_duration",
 ]
 const ACTION_TARGET_SIZE := Vector2(228.0, 228.0)
 const ACTION_SIDE_MARGIN := 36.0

@@ -45,7 +45,7 @@
       "\ud83d\udca1",
       "\ud83d\udcca"
     ],
-    "summary": "> **Status:** `in-progress`"
+    "summary": "> **Status:** `complete`"
   },
   {
     "slug": "control-owned-mobile-hud",
@@ -70,6 +70,21 @@
       "tutorial",
       "settings",
       "session",
+      "\ud83d\udca1",
+      "\ud83d\udcca"
+    ],
+    "summary": "> **Status:** `complete`"
+  },
+  {
+    "slug": "gameplay-foundation-pass",
+    "date": "2026-07-28",
+    "tags": [
+      "phase",
+      "0",
+      "10",
+      "gameplay",
+      "foundation",
+      "pass",
       "\ud83d\udca1",
       "\ud83d\udcca"
     ],

@@ -44,15 +44,16 @@ const TUTORIAL_STEPS := [
 		"body": "Use your left thumb to hold REEL while aiming with your right. "
 			+ "It shortens the line at a fixed rate while the rope constraint "
 			+ "guides you inward. It no longer stacks a separate speed boost. "
-			+ "The energy ring recharges afterward.",
-		"tip": "Reel changes your swing radius; release timing still controls speed.",
+			+ "Natural inward movement also keeps most of the shorter length, "
+			+ "while leaving a little stretch. The energy ring recharges afterward.",
+		"tip": "Reel changes swing radius; the automatic take-up prevents deep surprise drops.",
 	},
 	{
 		"title": "PULL TO THE TARGET",
 		"kicker": "05 · ANCHOR BURST",
 		"body": "Tap BURST while attached, or double-tap any solid target, to "
 			+ "cross half the web distance in a quick controlled pull. Tapping "
-			+ "a solid below performs a shorter 25% Dive Pull and never stays "
+			+ "a solid below performs a shorter 40% Dive Pull and never stays "
 			+ "attached. During either pull, tap an upper solid to recover with "
 			+ "a normal web immediately.",
 		"tip": "Burst gains height; lower anchor windows redirect you under high obstacles.",
@@ -60,10 +61,11 @@ const TUTORIAL_STEPS := [
 	{
 		"title": "SURVIVE & RECOVER",
 		"kicker": "06 · STAY ALIVE",
-		"body": "Hitting a warning-colored obstacle, falling below the course, or being "
-			+ "left behind ends the run. Tap after death to restart, or use "
-			+ "MENU to return here. DEBUG remains optional in Settings.",
-		"tip": "Ceilings and floors have gaps: read each silhouette and choose a route.",
+		"body": "Collect flies along suggested routes and watch for Burst Frenzy. "
+			+ "Hitting a warning-colored obstacle, falling below the course, or "
+			+ "being left behind ends the run. Laboratory rails can also be "
+			+ "tested as lethal in DEBUG. Tap after death to restart, or use MENU.",
+		"tip": "Ceilings and floors are mostly continuous but have deliberate gaps.",
 	},
 ]
 
