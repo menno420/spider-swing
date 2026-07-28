@@ -10,6 +10,7 @@ static func run() -> Dictionary:
 	passed += _test_primary_routes_are_real_buttons(failures)
 	passed += _test_tutorial_covers_current_mechanics(failures)
 	passed += _test_settings_are_validated_and_emitted(failures)
+	passed += _test_settings_are_scrollable_and_mobile_readable(failures)
 	passed += _test_settings_codec_round_trip(failures)
 	passed += _test_settings_repository_round_trip(failures)
 	passed += _test_composition_root_mounts_front_end_first(failures)
@@ -61,8 +62,8 @@ static func _test_primary_routes_are_real_buttons(
 static func _test_tutorial_covers_current_mechanics(
 	failures: PackedStringArray,
 ) -> int:
-	if FrontEndState.TUTORIAL_STEPS.size() != 5:
-		failures.append("tutorial must have exactly five focused steps")
+	if FrontEndState.TUTORIAL_STEPS.size() != 6:
+		failures.append("tutorial must have exactly six focused steps")
 		return 0
 	var combined := ""
 	for step: Dictionary in FrontEndState.TUTORIAL_STEPS:
@@ -70,9 +71,12 @@ static func _test_tutorial_covers_current_mechanics(
 			combined += " " + str(step.get(key, ""))
 	for required: String in [
 		"moves forward automatically",
-		"glowing cyan anchor",
+		"cyan ceiling surface",
 		"tap anywhere",
 		"hold REEL",
+		"BURST",
+		"double-tap",
+		"striped obstacle",
 		"ends the run",
 		"MENU",
 	]:
@@ -104,6 +108,49 @@ static func _test_settings_are_validated_and_emitted(
 			state.settings.show_debug_tools:
 		failures.append("settings state did not retain validated choices")
 		return 0
+	return 1
+
+
+static func _test_settings_are_scrollable_and_mobile_readable(
+	failures: PackedStringArray,
+) -> int:
+	var state := FrontEndState.new()
+	state.configure(PlayerSettings.defaults())
+	var view := FrontEndView.new()
+	view.bind_state(state)
+	var scroll := view.find_child("SettingsScroll", true, false) as ScrollContainer
+	var content := view.find_child("SettingsContent", true, false) as VBoxContainer
+	var picker := view.find_child("SwingPreset", true, false) as OptionButton
+	var reset := view.front_end_button(&"ResetSettings")
+	var play := view.front_end_button(&"SettingsPlay")
+	if scroll == null or content == null:
+		failures.append("Settings is not backed by a named scrolling content area")
+		view.free()
+		return 0
+	if scroll.vertical_scroll_mode != ScrollContainer.SCROLL_MODE_AUTO or \
+			scroll.horizontal_scroll_mode != ScrollContainer.SCROLL_MODE_DISABLED:
+		failures.append("Settings scroll direction is not mobile-safe")
+		view.free()
+		return 0
+	if not scroll.follow_focus:
+		failures.append("Settings does not follow keyboard/controller focus")
+		view.free()
+		return 0
+	if picker == null or picker.custom_minimum_size.y < 64.0 or \
+			picker.get_theme_font_size("font_size") < 20:
+		failures.append("swing preset picker remains too small to read or tap")
+		view.free()
+		return 0
+	if reset.custom_minimum_size.y < 64.0 or \
+			play.custom_minimum_size.y < 64.0:
+		failures.append("Settings action buttons remain too small for mobile")
+		view.free()
+		return 0
+	if content.get_theme_constant("separation") < 18:
+		failures.append("Settings content remains visually cramped")
+		view.free()
+		return 0
+	view.free()
 	return 1
 
 
