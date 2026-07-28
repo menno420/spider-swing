@@ -1,0 +1,1 @@
+- `claude/codex-responsive-rope-actions` · **Responsive rope actions from Android playtest** · game/domain, game/simulation, game/presentation, tests, docs · 2026-07-28
