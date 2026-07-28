@@ -1,6 +1,6 @@
 # Phase 0.9 burst web independence session
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 
