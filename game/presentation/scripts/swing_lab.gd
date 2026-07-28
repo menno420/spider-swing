@@ -16,10 +16,12 @@ const GREEN := Color("73e0a4")
 const YELLOW := Color("ffd166")
 const RED := Color("ff6577")
 const MUTED := Color("8ba9b5")
+const OBSTACLE := Color("f06449")
+const OBSTACLE_DARK := Color("632e34")
 
 var _snapshot: SimulationSnapshot
 var _camera_x: float = 0.0
-var _feedback_message: String = "Tap a glowing anchor to attach"
+var _feedback_message: String = "Tap any cyan ceiling surface to attach"
 var _feedback_position: Vector2 = Vector2.ZERO
 var _feedback_color: Color = GREEN
 var _feedback_remaining: float = 3.0
@@ -59,7 +61,8 @@ func present_event(event: SimulationEvent) -> void:
 		SimulationEvent.Kind.INVALID_TARGET:
 			_feedback_color = RED
 		SimulationEvent.Kind.OUT_OF_RANGE, SimulationEvent.Kind.REEL_UNAVAILABLE, \
-				SimulationEvent.Kind.REEL_EMPTY:
+				SimulationEvent.Kind.REEL_EMPTY, \
+				SimulationEvent.Kind.BURST_UNAVAILABLE:
 			_feedback_color = YELLOW
 		_:
 			_feedback_color = GREEN
@@ -133,21 +136,70 @@ func _draw_course(size: Vector2) -> void:
 		Color(0.22, 0.5, 0.47, 0.5), 3.0)
 	if _snapshot == null:
 		return
-	for anchor: Vector2 in _snapshot.anchors:
-		var screen := _world_to_screen(anchor)
+
+	for surface: Rect2 in _snapshot.surface_segments:
+		var screen_surface := Rect2(
+			_world_to_screen(surface.position),
+			surface.size,
+		)
+		if screen_surface.end.x < -80.0 or screen_surface.position.x > size.x + 80.0:
+			continue
+		draw_rect(screen_surface, Color(0.07, 0.26, 0.29, 0.96))
+		draw_line(
+			Vector2(screen_surface.position.x, screen_surface.end.y),
+			Vector2(screen_surface.end.x, screen_surface.end.y),
+			CYAN,
+			5.0,
+		)
+
+	for guide: Vector2 in _snapshot.anchors:
+		var screen := _world_to_screen(guide)
 		if screen.x < -80.0 or screen.x > size.x + 80.0:
 			continue
-		var distance := anchor.distance_to(_snapshot.position)
+		var distance := guide.distance_to(_snapshot.position)
 		var in_range := distance >= 90.0 and distance <= 620.0
 		var color := GREEN if in_range else YELLOW
-		draw_line(screen + Vector2(0.0, -34.0), screen + Vector2(0.0, 34.0),
-			Color(0.48, 0.74, 0.64, 0.8), 6.0)
-		draw_circle(screen, 15.0, Color(color, 0.18))
-		draw_arc(screen, 17.0, 0.0, TAU, 32, color, 3.0)
-		draw_circle(screen, 4.0, WEB)
+		draw_circle(screen, 10.0, Color(color, 0.12))
+		draw_arc(screen, 11.0, 0.0, TAU, 24, Color(color, 0.72), 2.0)
+		draw_circle(screen, 3.0, WEB)
+
+	for obstacle: Rect2 in _snapshot.obstacles:
+		var screen_obstacle := Rect2(
+			_world_to_screen(obstacle.position),
+			obstacle.size,
+		)
+		if screen_obstacle.end.x < -80.0 or \
+				screen_obstacle.position.x > size.x + 80.0:
+			continue
+		_draw_obstacle(screen_obstacle)
+
 	var kill_x := _world_to_screen(Vector2(_snapshot.left_kill_boundary, 0.0)).x
 	if kill_x > 0.0 and kill_x < size.x:
 		draw_line(Vector2(kill_x, 0.0), Vector2(kill_x, size.y), RED, 3.0)
+
+
+func _draw_obstacle(rect: Rect2) -> void:
+	draw_rect(rect, OBSTACLE_DARK)
+	draw_rect(rect.grow(-5.0), Color(OBSTACLE, 0.72))
+	draw_rect(rect, YELLOW, false, 4.0)
+	var stripe_start := rect.position.x - rect.size.y
+	while stripe_start < rect.end.x:
+		var clipped_from_x := maxf(rect.position.x, stripe_start)
+		var clipped_to_x := minf(rect.end.x, stripe_start + rect.size.y)
+		if clipped_from_x < clipped_to_x:
+			draw_line(
+				Vector2(
+					clipped_from_x,
+					rect.end.y - (clipped_from_x - stripe_start),
+				),
+				Vector2(
+					clipped_to_x,
+					rect.end.y - (clipped_to_x - stripe_start),
+				),
+				Color(YELLOW, 0.82),
+				8.0,
+			)
+		stripe_start += 36.0
 
 
 func _draw_web() -> void:
@@ -201,9 +253,8 @@ func _draw_hud(size: Vector2) -> void:
 	_draw_button(LabLayout.menu_rect(size), "MENU", false)
 	if _show_control_hints:
 		_draw_text(Vector2(142.0, 76.0),
-			"Tap anchor · tap again to release", 16, MUTED)
-		_draw_text(Vector2(142.0, 99.0),
-			_feedback_message, 17, _feedback_color)
+			"Tap cyan ceiling · tap again to release", 16, MUTED)
+		_draw_text(Vector2(142.0, 99.0), _feedback_message, 17, _feedback_color)
 	_draw_text(
 		Vector2(30.0, size.y - 18.0),
 		"BUILD %s" % ProjectSettings.get_setting(
@@ -231,7 +282,28 @@ func _draw_hud(size: Vector2) -> void:
 	draw_arc(center, radius, -PI * 0.5, -PI * 0.5 + TAU * energy_ratio,
 		64, CYAN if _snapshot.reel_lockout <= 0.0 else RED, 8.0)
 	var reel_label := "PULL" if _snapshot.reel_active else "REEL"
-	_draw_text(center + Vector2(-31.0, 7.0), reel_label, 19, WEB)
+	_draw_centered_text(center + Vector2(0.0, 7.0), reel_label, 22, WEB)
+
+	var burst_rect := LabLayout.burst_rect(size)
+	var burst_center := burst_rect.get_center()
+	var burst_radius := burst_rect.size.x * 0.44
+	var burst_ready := _snapshot.burst_cooldown <= 0.0
+	var burst_fill := Color(0.36, 0.19, 0.06, 0.96) if burst_ready \
+		else Color(0.12, 0.1, 0.08, 0.86)
+	draw_circle(burst_center, burst_radius, burst_fill)
+	draw_arc(burst_center, burst_radius, 0.0, TAU, 64,
+		YELLOW if burst_ready else Color(0.54, 0.47, 0.37, 0.64), 5.0)
+	var cooldown_ratio := 1.0 - clampf(
+		_snapshot.burst_cooldown /
+			maxf(_snapshot.burst_cooldown_capacity, 0.001),
+		0.0,
+		1.0,
+	)
+	draw_arc(burst_center, burst_radius, -PI * 0.5,
+		-PI * 0.5 + TAU * cooldown_ratio, 64, YELLOW, 9.0)
+	_draw_centered_text(burst_center + Vector2(0.0, 7.0),
+		"BURST" if burst_ready else "%.1f" % _snapshot.burst_cooldown,
+		20, WEB)
 
 	if _snapshot.run_state != &"active":
 		draw_rect(Rect2(Vector2.ZERO, size), Color(0.02, 0.04, 0.06, 0.62))
@@ -260,6 +332,10 @@ func _draw_debug(_size: Vector2) -> void:
 			_snapshot.rope_length, _snapshot.tension],
 		"Reel: %.1f / %.1f  lockout %.2f" % [
 			_snapshot.reel_energy, _snapshot.reel_capacity, _snapshot.reel_lockout],
+		"Burst cooldown: %.2f / %.2f" % [
+			_snapshot.burst_cooldown, _snapshot.burst_cooldown_capacity],
+		"geometry: %d surfaces  %d obstacles" % [
+			_snapshot.surface_segments.size(), _snapshot.obstacles.size()],
 		"preset: %s" % _snapshot.preset_name,
 		"recording: %s  replay: %s" % [
 			_snapshot.recording, _snapshot.replaying],
@@ -304,6 +380,17 @@ func _draw_button(rect: Rect2, label: String, active: bool) -> void:
 
 func _draw_text(position: Vector2, text: String, size: int, color: Color) -> void:
 	draw_string(_font, position, text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, size, color)
+
+
+func _draw_centered_text(
+	center: Vector2,
+	text: String,
+	size: int,
+	color: Color,
+) -> void:
+	var width := _font.get_string_size(
+		text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, size).x
+	_draw_text(center - Vector2(width * 0.5, 0.0), text, size, color)
 
 
 func _world_to_screen(world_position: Vector2) -> Vector2:
