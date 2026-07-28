@@ -18,12 +18,16 @@ The product *is* the swinging. Everything else exists to support it.
 
 ## Current phase: Phase 0 Swing Laboratory
 
-**The first playable physics candidate is implemented.** The project now boots
-directly into a graybox laboratory for attaching, swinging, preserving release
-momentum, and using a finite Reel-In energy reserve.
+**The first playable physics candidate is implemented.** The project now opens
+on a player-facing Home screen with Play, an animated five-step Tutorial, and
+persistent Settings. Play enters the graybox laboratory for attaching, swinging,
+preserving release momentum, and using a finite Reel-In energy reserve.
 
 ### What exists
 
+- A responsive starting screen with Play, Tutorial, and Settings; settings persist
+  the swing candidate, control hints, reduced motion, and debug-tool visibility.
+- A data-driven five-step animated tutorial plus an in-game Menu return path.
 - A deterministic 60 Hz point-mass spider motor with gravity, forward drive, drag,
   world boundaries, and a capped maximum-length web constraint.
 - Valid visible anchors, manual release, Reel-In drain/regeneration/lockout, and
@@ -64,8 +68,9 @@ refuses to run against a different version, and refuses a Mono build outright.
 2. Clone this repository.
 3. In the Godot project manager choose **Import**, select `project.godot` in the
    repository root, and open it.
-4. Press F5. You should see the playable graybox Swing Laboratory. Tap or click
-   a cyan anchor to attach, tap again to release, and hold Reel in the lower-right.
+4. Press F5. You should see the Spider Swing Home screen. Choose **Tutorial** for
+   the complete mechanics guide, **Settings** to select a swing candidate and
+   accessibility options, or **Play** to enter the laboratory.
 
 The engine will create `.godot/` on first open — that is regenerated import data
 and is git-ignored.
@@ -99,11 +104,9 @@ Every push to `main` builds an installable debug APK.
 2. Click the most recent successful run.
 3. Download the **`spider-swing-android-debug`** artifact from the Artifacts
    section (kept 14 days).
-4. Unzip it and install:
-
-```bash
-adb install -r spider-swing-debug.apk
-```
+4. Uninstall the previous Spider Swing development app, unzip the artifact, and
+   install `spider-swing-debug.apk`. Current CI runs use a fresh throwaway
+   signing key, so Android cannot update a differently signed older build.
 
 Debug build, debug-signed with a throwaway per-run keystore. Not signed for
 release, not on Google Play, and it installs alongside any future production build
@@ -122,7 +125,7 @@ peers and may not depend on each other.
 | `game/domain/` | Value objects, commands, events, identifiers, config contracts | nothing |
 | `game/content/` | Versioned data definitions | nothing |
 | `game/simulation/` | Fixed-step spider motor, web constraint, collision policy | `domain` |
-| `game/application/` | Run state machine, difficulty director, world stream, score, settlement | `domain`, `simulation` |
+| `game/application/` | Front-end state, run state machine, difficulty director, world stream, score, settlement | `domain`, `simulation` |
 | `game/adapters/` | Godot input, scenes, persistence, telemetry, platform | inward layers |
 | `game/presentation/` | UI, camera, audio, VFX, rendering | inward layers |
 | `game/bootstrap/` | The composition root | anything |
@@ -164,6 +167,7 @@ Twin-Web stays blocked until it has a dedicated, tested control specification.
 | [Repository layout](docs/technical/repository-layout.md) | What lives where. |
 | [Testing and verification](docs/technical/testing.md) | How to verify locally; what CI enforces. |
 | [Phase 0 Swing Laboratory](docs/technical/phase-0-swing-laboratory.md) | Controls, tuning candidates, diagnostics, and the real-device approval gate. |
+| [Front-end flow](docs/technical/front-end-flow.md) | Home, animated tutorial, persistent settings, lifecycle ownership, and tests. |
 | [Name status](docs/product/name-status.md) | Why the title is a codename and what review remains. |
 | [Substrate Kit provenance](docs/technical/substrate-kit-provenance.md) | How the vendored kit got here; how to re-verify the pin. |
 

@@ -6,6 +6,8 @@ Coordinates the run. Owns lifecycle and sequencing; does not own physics truth.
 
 ## What belongs here
 
+- **Front-end State** — owns Home/Tutorial/Settings navigation, tutorial
+  progression, validated player settings, and the request to begin a run.
 - **Run State Machine** — countdown, active run, dying, settlement, results,
   restart. Requests exactly one `RunSettlement` after death (GDD § 19.1).
 - **Difficulty Director** — selects curated chunks from speed, entry-state
@@ -27,4 +29,9 @@ Coordinates the run. Owns lifecycle and sequencing; does not own physics truth.
   has no effect (GDD § 20).
 - Never references `adapters` or `presentation`.
 
-Empty at bootstrap: Phase 0 populates it. See ADR 0002.
+## Current contents
+
+`FrontEndState` owns pre-run navigation and settings intent.
+`SwingLabSession` owns the active laboratory command buffer, fixed-step order,
+candidate presets, snapshots, recording, replay, and diagnostics. Neither imports
+adapters or presentation. See ADR 0002.

@@ -35,11 +35,10 @@ without a reported regression.
 - `python3 tools/verify.py` — passes. Six steps: architecture self-test,
   architecture scan, Godot discovery and version, headless import, boot smoke
   test, headless test runner.
-- `tests/test_runner.gd` — 22 checks, all passing, including nine deterministic
-  Phase 0 physics contracts, four GUI-owned mobile HUD contracts, and an exact
-  visible/Android build-version contract. The trajectory fixture produces the
-  same final state when driven through simulated 30, 60, 90, and 120 Hz render
-  loops.
+- `tests/test_runner.gd` — 31 checks, all passing: nine deterministic physics,
+  six GUI-owned mobile HUD, seven front-end navigation/settings, plus bootstrap
+  and exact build-version contracts. The trajectory fixture produces the same
+  final state when driven through simulated 30, 60, 90, and 120 Hz render loops.
 - `tools/check_architecture.py` — 14 fixtures, all passing, asserting both
   directions of the inward rule.
 
@@ -87,26 +86,26 @@ without a reported regression.
 
 ## In flight
 
-The Phase 0 candidate is implemented and the core swing already feels fun. The
-owner's second phone test reported no change after PR #7, so coordinate-only
-regressions and ambiguous same-named APK delivery are no longer accepted as proof.
-PR #8 replaces manual hit testing with Godot GUI controls, moves world taps to
-`_unhandled_input`, and gives the app a visible, manifest-verified build identity.
+Menno confirmed the PR #8 Reel and DEBUG controls work as expected on Android.
+PR #9 adds the next player-facing slice: Home before gameplay, a complete
+five-step animated tutorial, persisted settings with real runtime effects, and a
+clean Menu return path. Godot quality and the first Android export are green.
 
-**Owner exit gate:** uninstall the previous development app, install the PR #8
-artifact, launch `Spider Swing UI2 (dev)`, and confirm the lower-left HUD reads
-`BUILD 0.0.2-control-ui`. Then confirm DEBUG opens, verify Reel while attached,
-compare all three tuning candidates, and approve one baseline or request concrete
-changes. Phase 1 remains blocked until the physical controls and swing feel are
-approved.
+**Owner exit gate:** test the PR #9 Android artifact, confirm Home/Tutorial/
+Settings/Menu work and settings survive a relaunch, then compare
+`balanced_candidate`, `weighty_candidate`, and `agile_candidate` from
+Settings. Phase 1 remains blocked only on choosing or rejecting a physics
+baseline, not on the repaired mobile controls.
 
 ## Recently shipped (newest first)
 
-- **2026-07-28 — Control-owned mobile HUD correction candidate.** PR #8 makes
-  Reel, DEBUG, and panel controls native GUI buttons that consume touch before
-  world input; adds visible build version `0.0.2-control-ui`; increments Android
-  version code to 2 and app label to `Spider Swing UI2 (dev)`; and produces a
-  PR-scoped APK plus source manifest. Owner device verification remains open.
+- **2026-07-28 — Front-end flow candidate.** PR #9 opens on Home, adds Play,
+  a data-driven five-step animated Tutorial, real persistent Settings, a Menu
+  return path, reduced-motion behavior, and 31 passing Godot contracts.
+- **2026-07-28 — Control-owned mobile HUD correction.** PR #8 makes Reel, DEBUG,
+  and panel controls native GUI buttons that consume touch before world input;
+  adds visible build version `0.0.2-control-ui`; and produces a source-identified
+  APK. Menno confirmed Reel and DEBUG work as expected on Android.
 - **2026-07-28 — Mobile HUD touch-coordinate correction (superseded).** Real-device video
   reproduced a mismatch between physical viewport sizing and stretch-adjusted
   touch/canvas coordinates. Reel and DEBUG now share the canvas coordinate contract;

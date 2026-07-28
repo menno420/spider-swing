@@ -20,7 +20,8 @@ must not be built around unapproved movement.
 | Release web | Tap anywhere while attached | Left-click while attached |
 | Reel-In | Hold the lower-right Reel control | Hold the configured `reel_in` action |
 | Restart | Tap after death | `R` / configured `restart_run` |
-| Debug panel | Tap `DEBUG` in the upper-right | `F1` / configured `toggle_debug` |
+| Return to Home | Tap `MENU` in the upper-left | `Esc` / `ui_cancel` |
+| Debug panel | Tap `DEBUG` in the upper-right when enabled | `F1` / configured `toggle_debug` |
 
 Reel, DEBUG, and the debug-panel controls are real Godot `Button` nodes with
 `MOUSE_FILTER_STOP`. They own their hit regions and consume pointer events in
@@ -99,9 +100,9 @@ events; it cannot modify authoritative movement.
 Download the `spider-swing-android-debug` artifact from the relevant gameplay
 PR or latest `main` run. Current CI builds use a fresh ephemeral debug signing
 key, so uninstall the previous Spider Swing development app before installing a
-replacement. For this correction, launch **Spider Swing UI2 (dev)** and first
-confirm the lower-left HUD says `BUILD 0.0.2-control-ui`; otherwise the wrong
-binary is running. Then try all three candidates for several minutes.
+replacement. For the front-end build, launch **Spider Swing Menu (dev)** and
+confirm Home appears before gameplay. Settings can select the candidate before
+Play. Then try all three candidates for several minutes.
 
 Please report:
 

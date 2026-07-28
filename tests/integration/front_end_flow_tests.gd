@@ -11,6 +11,7 @@ static func run() -> Dictionary:
 	passed += _test_tutorial_covers_current_mechanics(failures)
 	passed += _test_settings_are_validated_and_emitted(failures)
 	passed += _test_settings_codec_round_trip(failures)
+	passed += _test_settings_repository_round_trip(failures)
 	passed += _test_composition_root_mounts_front_end_first(failures)
 	return {"passed": passed, "failures": failures}
 
@@ -127,6 +128,31 @@ static func _test_settings_codec_round_trip(
 	return 1
 
 
+static func _test_settings_repository_round_trip(
+	failures: PackedStringArray,
+) -> int:
+	var path := "user://front_end_flow_test_settings.json"
+	_remove_test_file(path)
+	_remove_test_file("%s.tmp" % path)
+	_remove_test_file("%s.bak" % path)
+	var repository := SaveRepository.new(path)
+	var expected := PlayerSettings.defaults()
+	expected.swing_preset = SwingConfig.PRESET_AGILE
+	expected.show_control_hints = false
+	expected.reduced_motion = true
+	if not repository.save_settings(expected):
+		failures.append("SaveRepository could not atomically write settings")
+		return 0
+	var actual := repository.load_settings()
+	_remove_test_file(path)
+	_remove_test_file("%s.tmp" % path)
+	_remove_test_file("%s.bak" % path)
+	if actual.to_dictionary() != expected.to_dictionary():
+		failures.append("SaveRepository did not restore its atomic write")
+		return 0
+	return 1
+
+
 static func _test_composition_root_mounts_front_end_first(
 	failures: PackedStringArray,
 ) -> int:
@@ -145,3 +171,8 @@ static func _test_composition_root_mounts_front_end_first(
 		failures.append("Play does not own the transition into gameplay")
 		return 0
 	return 1
+
+
+static func _remove_test_file(path: String) -> void:
+	if FileAccess.file_exists(path):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))

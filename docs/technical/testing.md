@@ -81,31 +81,24 @@ Run directly:
 godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-16 checks, all independent so one failure never hides the rest:
+31 checks, grouped so one subsystem failure never hides the rest:
 
-- the engine is the pinned 4.7.1;
-- the main scene resolves **and instantiates**;
-- all five input actions exist (`web_action`, `reel_in`, `pause`, `restart_run`,
-  `toggle_debug`);
-- the fixed physics tick rate is 60 Hz, both in `project.godot` and as the engine
-  reports it at runtime;
-- max physics catch-up steps per frame is 4;
-- the renderer is `gl_compatibility`, the reference viewport is 1280×720, and the
-  orientation is landscape;
-- the `Android Debug` export preset exists, targets Android, and carries the
-  development-only package identifier;
-- `domain`/`simulation`/`application` do not depend outward;
-- no autoload singleton has been introduced;
-- all three candidate presets validate;
-- release preserves velocity within tolerance;
-- Reel-In shortens the rope without teleporting the spider;
-- an invalid web target is inert and emits feedback;
-- repeated attach/release does not inject energy;
-- the upper boundary is nonlethal and the lower boundary requests death;
-- one recorded command trace produces the same trajectory from simulated 30, 60,
-  90, and 120 Hz render loops.
+- engine, main-scene, input-action, 60 Hz, renderer/viewport, Android preset,
+  inward-dependency, and no-autoload bootstrap contracts;
+- nine deterministic Phase 0 physics contracts, including momentum preservation,
+  Reel behavior, boundaries, and identical trajectories from simulated
+  30/60/90/120 Hz render loops;
+- six mobile HUD contracts proving Reel, DEBUG, and Menu are event-consuming
+  Buttons, UI actions do not leak into web input, debug tools can be removed, and
+  world input waits for Godot GUI handling;
+- seven front-end contracts proving Home starts before gameplay, Play/Tutorial/
+  Settings route correctly, the five tutorial steps cover live mechanics, settings
+  validate and emit once, serialization is stable, atomic filesystem persistence
+  round-trips, and only Play mounts the run.
 
-The Phase 0 group lives in `tests/unit/phase0_physics_tests.gd` and consumes
+The physics group lives in `tests/unit/phase0_physics_tests.gd`, mobile input in
+`tests/unit/mobile_hud_layout_tests.gd`, and the front-end flow in
+`tests/integration/front_end_flow_tests.gd`. The trajectory fixture is
 `tests/fixtures/phase0_trace.json`.
 
 ## `tools/check_architecture.py`
