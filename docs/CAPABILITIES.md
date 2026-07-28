@@ -215,4 +215,16 @@ never edit.
   `bd28a45` · and PRs can be closed with a comment
   (`POST /issues/<n>/comments` + `PATCH /pulls/<n>`), used to close two
   un-landable Dependabot bumps.
-
+- 2026-07-28 · capability · `owner-live` · **The GitHub app can publish an exact
+  multi-file commit without local `gh` or git credentials** · for PR #12,
+  `create_blob` → `create_tree` → `create_commit` → `update_ref` published 46
+  files as one commit; the remote and locally verified tree SHAs matched exactly
+  (`c971cc1982acb7c50c69071b0479e91eda3bd52a`) · use this batch path when the
+  workspace has neither `gh` nor `GITHUB_PAT`, rather than degrading to one commit
+  per Contents API update.
+- 2026-07-28 · capability · `owner-live` · **Repository visibility is currently
+  public by owner choice** · authenticated repository metadata reports
+  `visibility: public`, squash-only merges, `allow_auto_merge: false`; anonymous
+  `GET /repos/menno420/spider-swing/rulesets` returned an empty list · this
+  supersedes the private-plan wall only for current visibility, not as a promise
+  that the repository will remain public.

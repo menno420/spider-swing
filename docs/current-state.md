@@ -31,14 +31,22 @@ without a reported regression.
 - Six input actions are consumed through `InputRouter`: `web_action`, `reel_in`,
   `burst_action`, `pause`, `restart_run`, and `toggle_debug`. Large left-thumb
   Reel, right-thumb Burst, DEBUG, Menu, and debug-panel hit regions are real Godot
-  GUI controls that stop pointer events.
+  GUI controls that stop pointer events. Reel and Burst now share symmetric
+  228×228 reference-pixel hit regions from `LabLayout`, so their drawn controls,
+  actual buttons, and tests cannot drift apart.
   World attach/release runs in `_unhandled_input` only after GUI handling.
   Render-time events are buffered into commands; simulation never polls input.
 - The playable traversal lab has deterministic forward drive, gravity, continuous
   ceiling attachment with an 820-pixel shared range, manual release, first-tick
   plus sustained Reel-In pull, cooldown-limited anchor-directed Burst, three
   candidate presets, camera/world boundaries, and a bounded deterministic
-  seven-chunk geometry window that continues past 10,000 m.
+  seven-chunk geometry window that continues past 10,000 m. Reel guarantees an
+  immediate minimum inward speed without flattening tangential movement. Burst
+  cancels opposing radial motion, guarantees an anchor-dominant launch, retains
+  a tunable tangential share, and never caps away faster natural inward motion.
+- Accepted Reel and Burst actions emit authoritative events. Presentation renders
+  short rope/button flashes from those events and the input adapter supplies
+  distinct handheld haptics; unavailable actions do not fake success feedback.
 - The stream loops a small static obstacle vocabulary for avoidance testing. It is
   graybox instrumentation, not an authored or approved Phase 1 chunk pack.
 - Settings is a readable vertical scroll surface with larger type and 58–68-pixel
@@ -51,8 +59,8 @@ without a reported regression.
 - `python3 tools/verify.py` — passes. Six steps: architecture self-test,
   architecture scan, Godot discovery and version, headless import, boot smoke
   test, headless test runner.
-- `tests/test_runner.gd` — 41 checks, all passing: fifteen deterministic physics,
-  nine GUI-owned mobile HUD, eight front-end navigation/settings, plus bootstrap
+- `tests/test_runner.gd` — 42 checks, all passing: fifteen deterministic physics,
+  ten GUI-owned mobile HUD, eight front-end navigation/settings, plus bootstrap
   and exact build-version contracts. The front-end group performs a real
   filesystem settings round-trip. The trajectory fixture produces the same final
   state when driven through simulated 30, 60, 90, and 120 Hz render loops.
@@ -62,10 +70,11 @@ without a reported regression.
 **CI**
 
 - `game-quality` — **green.** Runs `tools/verify.py` on a clean runner with Godot
-  4.7.1 and uses no secrets. PR #11 run
-  [30372449569](https://github.com/menno420/spider-swing/actions/runs/30372449569)
-  passed all 41 runtime contracts, including the new first-tick Reel, extended
-  reach, and anchor-vector Burst tests.
+  4.7.1 and uses no secrets. PR #12 run
+  [30377680346](https://github.com/menno420/spider-swing/actions/runs/30377680346)
+  passed all 42 runtime contracts at source
+  `cc0bac54e74f49ed4147978bc7a6e702c4c50804`, including the responsive Reel,
+  decomposed Burst, touch-geometry, feedback, and Android workflow identity guards.
 - `substrate-gate` — kit-owned. A born-red session card deliberately holds a PR
   until close-out; it must be green on the completed card before merge.
 - `android-debug` — **green on `main`, APK proven.** Run #1 produced artifact
@@ -74,17 +83,17 @@ without a reported regression.
   signed, containing this project's own scripts and scenes, shipping exactly
   `arm64-v8a` + `x86_64`. Uses no secrets and never publishes.
   Run: https://github.com/menno420/spider-swing/actions/runs/30344755707
-- `android-debug` also runs for gameplay pull requests. PR #11 run
-  [30372450524](https://github.com/menno420/spider-swing/actions/runs/30372450524)
-  produced artifact `spider-swing-android-debug` ID `8693506101`, 56,715,449
+- `android-debug` also runs for gameplay pull requests. PR #12 run
+  [30377680073](https://github.com/menno420/spider-swing/actions/runs/30377680073)
+  produced artifact `spider-swing-android-debug` ID `8695654625`, 56,723,433
   bytes, digest
-  `sha256:129b61404fd4e4a7f7c4f2559b45805f82032776efb5cc5fe5b97a0cb653f94f`.
-  It was downloaded and verified as an Android APK with `classes.dex` and the
-  compiled main, swing-lab, and tutorial-preview scripts. It proves version
-  `0.2.1-anchor-pull-test`, source
-  `ce9e5f74bebad32bf5425b5b2368da9ae02f5ee1`, package
+  `sha256:9a6a22f0cc5a7d6165740101c29691f75aa02a10b38d626a2c81dd716271776a`.
+  It was downloaded and verified as an Android APK with `classes.dex`,
+  `AndroidManifest.xml`, and `assets/project.binary`. Its bundled build manifest
+  proves version `0.2.2-responsive-pull-test`, source
+  `cc0bac54e74f49ed4147978bc7a6e702c4c50804`, package
   `com.menno420.spiderswing.dev`, and display name
-  `Spider Swing Anchor Pull (dev)`.
+  `Spider Swing Responsive Pull (dev)`.
 - **Dependabot** — live. Its first run opened two bumps against the kit-owned
   `substrate-gate.yml`; both were closed because `adopt`/`upgrade` regenerates that
   file. The rule is documented in `.github/dependabot.yml`: kit-owned-only bumps get
@@ -101,28 +110,30 @@ without a reported regression.
 - No production art, analytics, ads, cloud save, or store SDK.
 - No production Android signing, no Google Play publishing, no iOS/macOS signing
   runner.
-- **`main` is unprotected**: branch protection and rulesets are unavailable on
-  private repositories on this account's plan (verified 403 on both the rulesets
-  and branch-protection endpoints — see `docs/CAPABILITIES.md`).
-  `allow_auto_merge` is therefore deliberately OFF, because arming it with zero
-  required contexts merges a PR instantly. One owner action is queued.
+- The owner has temporarily made the repository **public** to preserve Actions
+  availability. GitHub metadata confirms public visibility and
+  `allow_auto_merge: false`; the anonymous rulesets endpoint currently lists no
+  ruleset. The former private-plan 403 is historical rather than a current
+  visibility claim. Repository protection or visibility changes are not part of
+  this gameplay PR.
 
 ## In flight
 
-PR #11 carries the Phase 0.6 anchor-pull corrections derived from Menno's four
-1040×480 traversal recordings. The recordings confirmed the concept is fun and
-replayable while identifying reach, delayed Reel response, and screen-forward Burst
-as the connected feel gaps.
+PR #12 carries the Phase 0.7 responsive rope-actions candidate derived from
+Menno's five 1040×480 follow-up recordings. Those recordings showed that input
+generally registered, but the trajectory response was still too subtle under
+downward/lateral momentum and edge-biased thumb taps needed more forgiveness.
 
-**Owner exit gate:** test build `0.2.1-anchor-pull-test` on Android. Confirm natural
-targets roughly one guide interval beyond the old limit attach; Reel responds on
-the first tick and arrests a downward arc; Burst follows forward/upward/backward
-web directions and is inert while detached. Compare all three physics candidates.
-Phase 1 remains blocked on choosing or rejecting a movement baseline.
+**Owner exit gate:** test build `0.2.2-responsive-pull-test` on Android. Confirm
+edge taps reliably activate both thumb controls; Reel arrests a downward arc on
+the first tick; Burst follows forward/upward/backward web directions while
+retaining some swing; and flashes/haptics make acceptance clear. Compare all three
+physics candidates. Phase 1 remains blocked on choosing or rejecting a movement
+baseline.
 
 ## Recently shipped (newest first)
 
-- **2026-07-28 — Anchor-pull feel candidate (in PR #11).** Extends web reach from
+- **2026-07-28 — Anchor-pull feel candidate.** PR #11 extends web reach from
   620 to 820 pixels, gives Reel an immediate bounded inward response plus sustained
   pull, and makes Burst an attached-only 440 px/s impulse along the active web
   vector. The exact gameplay commit passes 41 Godot contracts and produces a
