@@ -18,8 +18,7 @@ production art. The owner-facing exit gate remains real-device feel approval.
 ## Previous-session review
 
 **previous-session review:** the founding bootstrap was reviewed against
-`main`, merged PRs #1/#5, live engine CI evidence, the pinned GDD checksum, and
-the proven Android APK. Its architecture and build substrate remained intact.
+`main`, merged PRs #1/#5, live engine CI evidence, the pinned GDD checksum, and the verified project shell. Its architecture and build substrate remained intact.
 
 ## Outcome
 
@@ -83,8 +82,8 @@ input paths, lifecycle owners, and mutable presentation state.
 
 ## Owner gates
 
-1. Install the Android artifact produced after merge, compare all three
-   candidates on a real phone, and approve one or request concrete changes.
+1. Play all three candidates on a real phone and approve one or request
+   concrete changes.
 2. The existing GitHub plan decision for protecting `main` remains open; this
    session did not change repository visibility or spend money.
 
