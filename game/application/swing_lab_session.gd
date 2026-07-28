@@ -16,6 +16,7 @@ const TUNING_PARAMETERS := [&"gravity", &"drive", &"reel_rate", &"rope_damping"]
 var _config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 var _world := SimulationWorld.new()
 var _course_stream := CourseStream.new()
+var _course_chunk_index: int = -1
 var _run := RunStateMachine.new()
 var _command_buffer: Array[InputCommand] = []
 var _sequence: int = 0
@@ -169,6 +170,7 @@ func replay_recording() -> void:
 
 
 func export_diagnostic() -> void:
+	var geometry := _course_stream.geometry()
 	var payload := {
 		"format": "spider-swing-phase0-diagnostic",
 		"version": 1,
@@ -181,8 +183,8 @@ func export_diagnostic() -> void:
 		"reel_energy": _world.web.reel_energy,
 		"burst_cooldown": _world.burst_cooldown_remaining,
 		"stream_chunks": [
-			_course_stream.geometry().first_chunk_index,
-			_course_stream.geometry().last_chunk_index,
+			geometry.first_chunk_index,
+			geometry.last_chunk_index,
 		],
 		"commands": _recorded_commands,
 	}
@@ -211,8 +213,12 @@ func _step_once() -> void:
 			_world.queue_command(command)
 		_command_buffer.clear()
 
-		_world.set_course_geometry(
-			_course_stream.update_for_position(_world.position.x))
+		var next_chunk_index := maxi(
+			0, floori(_world.position.x / CourseStream.CHUNK_WIDTH))
+		if next_chunk_index != _course_chunk_index:
+			_course_chunk_index = next_chunk_index
+			_world.set_course_geometry(
+				_course_stream.update_for_position(_world.position.x))
 		var events := _world.step(FIXED_DELTA)
 		for event: SimulationEvent in events:
 			if event.kind == SimulationEvent.Kind.DEATH_REQUESTED:
@@ -260,6 +266,8 @@ func _reset_run(clear_replay: bool = true) -> void:
 	_run.reset()
 	_course_stream.reset()
 	_world.reset(_config, _course_stream.geometry())
+	_course_chunk_index = maxi(
+		0, floori(_world.position.x / CourseStream.CHUNK_WIDTH))
 	_command_buffer.clear()
 	_sequence = 0
 	if clear_replay:
