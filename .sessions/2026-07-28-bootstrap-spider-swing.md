@@ -184,10 +184,47 @@ work.
 | `game-quality` | **success on its first real run** | https://github.com/menno420/spider-swing/actions/runs/30343017818 |
 | `substrate-gate` | red by design while this card was born-red | https://github.com/menno420/spider-swing/actions/runs/30343017817 |
 | `auto-merge-enabler` | red — surfacing the verified plan limit below, not a defect | https://github.com/menno420/spider-swing/actions/runs/30343017799 |
-| `android-debug` | first run is the merge commit; proof appended below | https://github.com/menno420/spider-swing/actions/workflows/android-debug.yml |
+| `android-debug` | **success on its first run** (the merge commit) | https://github.com/menno420/spider-swing/actions/runs/30344755707 |
 
-**PR:** https://github.com/menno420/spider-swing/pull/1
-**Phase 0 issue:** https://github.com/menno420/spider-swing/issues/2
+**PR:** https://github.com/menno420/spider-swing/pull/1 — merged as `bd28a45`
+**Phase 0 issue:** https://github.com/menno420/spider-swing/issues/2 — open
+
+### Android debug APK — proven, not assumed
+
+`android-debug` #1 succeeded on the merge commit and produced artifact
+**`spider-swing-android-debug`** (56,597,773 bytes zipped, not expired).
+The artifact was **downloaded and inspected**, because "the workflow went green" is
+not the same claim as "the APK is real and installable":
+
+- `file` reports `Android package (APK), with classes.dex` — 56,968,605 bytes.
+- Signed: three `META-INF` signature entries (the ephemeral per-run debug
+  keystore).
+- Contains **this** project, not a template stub:
+  `assets/game/bootstrap/main.gdc`, `assets/game/presentation/scripts/swing_lab.gdc`,
+  and both exported scenes.
+- Ships exactly the two intended ABIs: `lib/arm64-v8a/libgodot_android.so` and
+  `lib/x86_64/libgodot_android.so`. No 32-bit, matching the preset.
+
+Install with `adb install -r spider-swing-debug.apk`. It will show the Swing
+Laboratory placeholder — there is no gameplay to test yet.
+
+**Godot Android CI facts worth not rediscovering** (verified on the 4.7.1 binary
+before writing the workflow, then confirmed by the green run): Godot 4.7.1 **does**
+honour `ANDROID_HOME` for the SDK path — with a complete SDK the
+"Invalid Android SDK path in Editor Settings" error clears and it proceeds to
+`apksigner` — and it creates `editor_settings-4.7.tres` itself, so a headless
+Android export needs **no** pre-seeded editor-settings file. Debug signing comes
+from `GODOT_ANDROID_KEYSTORE_DEBUG_PATH` / `_USER` / `_PASSWORD`.
+
+### Dependabot's first run — two un-landable PRs, closed
+
+Dependabot ran on the merge and opened #3 and #4, bumping `actions/checkout` and
+`actions/setup-python`. Both diffs touched **only** the kit-owned
+`substrate-gate.yml`, which `adopt`/`upgrade` regenerates — so merging either would
+have been silently reverted by the next kit operation. Both were closed with that
+reason stated on the PR, and `.github/dependabot.yml` now documents the rule so a
+future agent does not merge one: kit-owned-only bumps get closed, host-owned bumps
+get merged, and the durable fix is upstream in the kit's gate template.
 
 ---
 

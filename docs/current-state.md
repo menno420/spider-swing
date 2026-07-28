@@ -40,11 +40,16 @@ without a reported regression.
   4.7.1. Passed on its first real run. Uses no secrets.
 - `substrate-gate` — kit-owned. Held the bootstrap PR red by design until the
   founding session card flipped to complete, then green.
-- `android-debug` — configured to export `spider-swing-android-debug` on pushes to
-  `main` and on manual dispatch. Uses no secrets and never publishes. Its **first
-  run is the merge commit itself** (`workflow_dispatch` is not available until the
-  workflow exists on the default branch), so the proven APK evidence is appended to
-  the founding session card immediately after merge.
+- `android-debug` — **green on `main`, APK proven.** Run #1 produced artifact
+  `spider-swing-android-debug`; it was downloaded and inspected, not just assumed
+  from a green tick: `Android package (APK), with classes.dex`, 56,968,605 bytes,
+  signed, containing this project's own scripts and scenes, shipping exactly
+  `arm64-v8a` + `x86_64`. Uses no secrets and never publishes.
+  Run: https://github.com/menno420/spider-swing/actions/runs/30344755707
+- **Dependabot** — live. Its first run opened two bumps against the kit-owned
+  `substrate-gate.yml`; both were closed because `adopt`/`upgrade` regenerates that
+  file. The rule is documented in `.github/dependabot.yml`: kit-owned-only bumps get
+  closed, host-owned bumps get merged.
 - All host-owned `uses:` references are pinned to full commit SHAs resolved from
   upstream refs, with release tags in trailing comments.
 
