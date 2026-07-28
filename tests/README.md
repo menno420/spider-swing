@@ -27,11 +27,12 @@ failure never hides the rest.
 
 ## What exists now
 
-42 runtime contracts: bootstrap/build truth plus fifteen deterministic physics,
+46 runtime contracts: bootstrap/build truth plus nineteen deterministic physics,
 ten mobile HUD, and eight front-end checks. The physics group proves continuous
-ceiling targeting, momentum-preserving release, immediate/sustained Reel behavior,
-anchor-directed Burst decomposition and cooldown, bounded endless geometry,
-authoritative obstacles/boundaries, and equivalent trajectories through simulated
+solid targeting, larger aim forgiveness, momentum-preserving release,
+speed-neutral Reel shortening, exact percentage Burst/Dive Pull travel, detached
+double-tap targeting, shaped bounded geometry, authoritative polygon
+obstacles/boundaries, and equivalent trajectories through simulated
 30/60/90/120 Hz render loops. The HUD group proves the 228×228 thumb targets,
 event consumption, shared geometry, gesture separation, and success feedback.
 

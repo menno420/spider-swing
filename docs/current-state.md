@@ -22,9 +22,10 @@ without a reported regression.
 - The app opens on Home before gameplay. `FrontEndState` owns Home, Tutorial, and
   Settings navigation; the bootstrap composition root alone mounts or unmounts
   the front end and simulation.
-- The six-step in-engine Tutorial teaches movement, continuous ceiling targets,
-  release and momentum, Reel energy, anchor-directed Burst, striped obstacles, restart,
-  Menu, and optional diagnostics without a prerecorded binary asset.
+- The six-step in-engine Tutorial teaches movement, forgiving solid targets,
+  release and momentum, speed-neutral rope-shortening Reel, percentage Burst,
+  one-shot downward Dive Pull, shaped obstacles/gaps, restart, Menu, and optional
+  diagnostics without a prerecorded binary asset.
 - `SaveRepository` exclusively owns versioned local settings writes. Swing
   candidate, control hints, reduced motion, and debug-tool visibility all have
   verified runtime effects and survive relaunch.
@@ -36,19 +37,29 @@ without a reported regression.
   actual buttons, and tests cannot drift apart.
   World attach/release runs in `_unhandled_input` only after GUI handling.
   Render-time events are buffered into commands; simulation never polls input.
-- The playable traversal lab has deterministic forward drive, gravity, continuous
-  ceiling attachment with an 820-pixel shared range, manual release, first-tick
-  plus sustained Reel-In pull, cooldown-limited anchor-directed Burst, three
-  candidate presets, camera/world boundaries, and a bounded deterministic
-  seven-chunk geometry window that continues past 10,000 m. Reel guarantees an
-  immediate minimum inward speed without flattening tangential movement. Burst
-  cancels opposing radial motion, guarantees an anchor-dominant launch, retains
-  a tunable tangential share, and never caps away faster natural inward motion.
-- Accepted Reel and Burst actions emit authoritative events. Presentation renders
-  short rope/button flashes from those events and the input adapter supplies
+- The playable traversal lab has deterministic forward drive, stronger candidate
+  gravity, polygonal solid targeting with an 820-pixel web range and 220-pixel
+  aim-forgiveness band, manual release, an 8% gentle attach catch, three named
+  presets, camera/world boundaries, and a bounded deterministic seven-chunk
+  geometry window that continues past 10,000 m.
+- Reel now shortens the authoritative rope length (480 px/s in Balanced) and
+  spends energy without adding a separate inward acceleration or minimum-speed
+  correction. Anchor Burst crosses 50% of the resolved starting distance over
+  0.20 seconds. A lower target becomes a one-shot 25% Dive Pull over 0.16 seconds
+  and never leaves a rope. Both paths retain bounded tangential carry, use fixed
+  exit speeds, share a cooldown, and sweep against lethal polygon geometry.
+- Double-tap carries a target in the authoritative command, so Burst works
+  atomically even when the first tap has not attached yet. Ceiling pieces,
+  hanging/floor branches, obstacles, and broken-pot gates all resolve through one
+  solid-edge targeting policy.
+- Accepted Reel, Burst, and Dive Pull actions emit authoritative events.
+  Presentation renders short directional flashes and the input adapter supplies
   distinct handheld haptics; unavailable actions do not fake success feedback.
-- The stream loops a small static obstacle vocabulary for avoidance testing. It is
-  graybox instrumentation, not an authored or approved Phase 1 chunk pack.
+- The stream varies ceiling heights and gaps and loops a small shaped obstacle
+  vocabulary for route testing. It remains prototype instrumentation, not an
+  authored or approved Phase 1 chunk pack.
+- The debug panel exposes gravity, drive, range, aim forgiveness, attach catch,
+  Reel shortening speed, Burst/Dive percentages and durations, and rope damping.
 - Settings is a readable vertical scroll surface with larger type and 58–68-pixel
   controls, verified by runtime contracts and designed around the owner's
   recorded 1040×480 viewport.
@@ -59,11 +70,14 @@ without a reported regression.
 - `python3 tools/verify.py` — passes. Six steps: architecture self-test,
   architecture scan, Godot discovery and version, headless import, boot smoke
   test, headless test runner.
-- `tests/test_runner.gd` — 42 checks, all passing: fifteen deterministic physics,
+- `tests/test_runner.gd` — 46 checks, all passing: nineteen deterministic physics,
   ten GUI-owned mobile HUD, eight front-end navigation/settings, plus bootstrap
-  and exact build-version contracts. The front-end group performs a real
-  filesystem settings round-trip. The trajectory fixture produces the same final
-  state when driven through simulated 30, 60, 90, and 120 Hz render loops.
+  and exact build-version contracts. Physics covers exact 50%/25% pull shares,
+  detached targeted Burst, speed-neutral Reel shortening, solid polygon
+  targeting/collision, tuning controls, and shaped bounded streaming. The
+  front-end group performs a real filesystem settings round-trip. The trajectory
+  fixture produces the same final state when driven through simulated 30, 60,
+  90, and 120 Hz render loops.
 - `tools/check_architecture.py` — 14 fixtures, all passing, asserting both
   directions of the inward rule.
 
@@ -119,16 +133,20 @@ without a reported regression.
 
 ## In flight
 
-No implementation work remains in flight after PR #12. The next step is the owner
-device exit gate: test build `0.2.2-responsive-pull-test` on Android. Confirm
-edge taps reliably activate both thumb controls; Reel arrests a downward arc on
-the first tick; Burst follows forward/upward/backward web directions while
-retaining some swing; and flashes/haptics make acceptance clear. Compare all three
-physics candidates. Phase 1 remains blocked on choosing or rejecting a movement
-baseline.
+PR #13 is the active percentage-pull feel pass. Its local Godot 4.7.1 gate passes
+46 contracts. The next owner exit gate is Android build
+`0.3.0-percentage-pull-test`: judge the larger solid aim band, Reel height control
+without runaway speed, exact-feeling 50% Burst, 25% downward Dive Pull, and the
+new shaped route silhouettes. Phase 1 remains blocked on choosing or rejecting a
+movement baseline.
 
 ## Recently shipped (newest first)
 
+- **2026-07-28 — Percentage-pull traversal candidate (PR #13 in flight).**
+  Separates Reel shortening from speed gain, makes Burst/Dive distance-shaped and
+  atomically targetable, accepts all retained solid polygons as anchors, adds
+  shaped ceiling/floor/obstacle silhouettes, exposes the new feel controls, and
+  passes 46 local Godot contracts.
 - **2026-07-28 — Responsive rope-actions candidate.** PR #12 enlarges both thumb
   targets to symmetric 228×228 regions, gives Reel a guaranteed first-tick radial
   response, decomposes Burst into anchor-directed and retained tangential motion,

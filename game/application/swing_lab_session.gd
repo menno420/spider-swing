@@ -11,15 +11,7 @@ signal event_published(event: SimulationEvent)
 
 const FIXED_DELTA := 1.0 / 60.0
 const COURSE_SEED := 1337
-const TUNING_PARAMETERS := [
-	&"gravity",
-	&"drive",
-	&"web_range",
-	&"reel_rate",
-	&"reel_engage",
-	&"burst_pull",
-	&"rope_damping",
-]
+const TUNING_PARAMETERS := LabLayout.TUNING_PARAMETERS
 
 var _config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 var _world := SimulationWorld.new()
@@ -61,12 +53,7 @@ func request_web_tap(world_target: Vector2) -> void:
 	if _run.state != RunStateMachine.State.ACTIVE:
 		request_restart()
 		return
-	var command: InputCommand
-	if _world.web.attached:
-		command = InputCommand.release(_next_sequence(), _world.tick)
-	else:
-		command = InputCommand.attach(world_target, _next_sequence(), _world.tick)
-	_buffer(command)
+	_buffer(InputCommand.attach(world_target, _next_sequence(), _world.tick))
 
 
 func set_reel_active(active: bool) -> void:
@@ -84,14 +71,10 @@ func request_burst() -> void:
 func request_burst_from_gesture(world_target: Vector2) -> void:
 	if _run.state != RunStateMachine.State.ACTIVE:
 		return
-	if _world.web.attached and world_target.distance_to(_world.web.anchor) <= \
-			_config.surface_snap_distance * 1.25:
-		request_burst()
-		return
-	event_published.emit(SimulationEvent.make(
-		SimulationEvent.Kind.BURST_UNAVAILABLE,
+	_buffer(InputCommand.burst_at(
 		world_target,
-		"Double-tap the attached web target",
+		_next_sequence(),
+		_world.tick,
 	))
 
 
@@ -190,6 +173,18 @@ func export_diagnostic() -> void:
 		"rope_length": _world.web.rope_length,
 		"reel_energy": _world.web.reel_energy,
 		"burst_cooldown": _world.burst_cooldown_remaining,
+		"pull": {
+			"active": _world.pull_active,
+			"kind": str(_world.pull_kind),
+			"travel_distance": _world.pull_distance_total,
+			"remaining_distance": _world.pull_distance_remaining,
+		},
+		"tuning": {
+			"burst_distance_fraction": _config.burst_distance_fraction,
+			"dive_distance_fraction": _config.dive_distance_fraction,
+			"reel_retraction_rate": _config.reel_retraction_rate,
+			"surface_snap_distance": _config.surface_snap_distance,
+		},
 		"stream_chunks": [
 			geometry.first_chunk_index,
 			geometry.last_chunk_index,
@@ -308,12 +303,19 @@ func _make_snapshot() -> SimulationSnapshot:
 	snapshot.reel_lockout = _world.web.reel_lockout_remaining
 	snapshot.burst_cooldown = _world.burst_cooldown_remaining
 	snapshot.burst_cooldown_capacity = _config.burst_cooldown
+	snapshot.pull_active = _world.pull_active
+	snapshot.pull_kind = _world.pull_kind
+	snapshot.pull_anchor = _world.pull_anchor
+	snapshot.pull_distance_total = _world.pull_distance_total
+	snapshot.pull_distance_remaining = _world.pull_distance_remaining
 	snapshot.run_state = _run.state_name()
 	snapshot.death_cause = _run.death_cause
 	snapshot.preset_name = _config.preset_name
 	snapshot.anchors = _world.anchors.duplicate()
-	snapshot.surface_segments = _world.surface_segments.duplicate()
-	snapshot.obstacles = _world.obstacles.duplicate()
+	for surface: PackedVector2Array in _world.surfaces:
+		snapshot.surfaces.append(surface.duplicate())
+	for obstacle: PackedVector2Array in _world.obstacles:
+		snapshot.obstacles.append(obstacle.duplicate())
 	snapshot.debug_visible = _debug_visible
 	snapshot.debug_paused = _debug_paused
 	snapshot.slow_motion = _slow_motion

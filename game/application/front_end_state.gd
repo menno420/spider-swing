@@ -26,9 +26,9 @@ const TUTORIAL_STEPS := [
 	{
 		"title": "TAP THE CEILING",
 		"kicker": "02 · ATTACH",
-		"body": "Tap any cyan ceiling surface to fire a web. The small glowing "
-			+ "markers are aim guides, not the only valid attachment points. "
-			+ "Targets outside your range are rejected.",
+		"body": "Tap any solid ceiling or obstacle edge to fire a web. The small "
+			+ "glowing markers are aim guides, not the only valid attachment "
+			+ "points. Nearby taps are forgiven; out-of-range targets are not.",
 		"tip": "Aim ahead along the ceiling to build a longer forward arc.",
 	},
 	{
@@ -42,25 +42,27 @@ const TUTORIAL_STEPS := [
 		"title": "HOLD THE LARGE REEL",
 		"kicker": "04 · REEL-IN",
 		"body": "Use your left thumb to hold REEL while aiming with your right. "
-			+ "It immediately redirects you toward the web, then keeps pulling "
-			+ "and shortening the line. The energy ring recharges afterward.",
-		"tip": "Reel is a correction tool, not a permanent boost.",
+			+ "It shortens the line at a fixed rate while the rope constraint "
+			+ "guides you inward. It no longer stacks a separate speed boost. "
+			+ "The energy ring recharges afterward.",
+		"tip": "Reel changes your swing radius; release timing still controls speed.",
 	},
 	{
 		"title": "PULL TO THE TARGET",
 		"kicker": "05 · ANCHOR BURST",
-		"body": "While attached, tap BURST to cancel movement away from the web "
-			+ "and launch strongly toward its target. The web releases as you "
-			+ "launch, then Burst recharges. You can also double-tap the target.",
-		"tip": "Aim first: Burst follows the web direction and is unavailable detached.",
+		"body": "Tap BURST while attached, or double-tap any solid target, to "
+			+ "cross half the web distance in a quick controlled pull. Tapping "
+			+ "a solid below performs a shorter 25% Dive Pull and never stays "
+			+ "attached.",
+		"tip": "Burst gains height; Dive Pull redirects you under high obstacles.",
 	},
 	{
 		"title": "SURVIVE & RECOVER",
 		"kicker": "06 · STAY ALIVE",
-		"body": "Hitting a striped obstacle, falling below the course, or being "
+		"body": "Hitting a warning-colored obstacle, falling below the course, or being "
 			+ "left behind ends the run. Tap after death to restart, or use "
 			+ "MENU to return here. DEBUG remains optional in Settings.",
-		"tip": "Read the orange warning shapes early and choose a clean arc.",
+		"tip": "Ceilings and floors have gaps: read each silhouette and choose a route.",
 	},
 ]
 

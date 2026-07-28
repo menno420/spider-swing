@@ -26,11 +26,13 @@ The tutorial is data-driven by `FrontEndState.TUTORIAL_STEPS` and illustrated by
 `TutorialPreview`. Its six focused steps cover:
 
 1. automatic forward movement and distance;
-2. continuous cyan ceiling surfaces, optional aim guides, and range;
+2. forgiving solid ceiling/obstacle targets, optional aim guides, and range;
 3. manual release with momentum preservation;
-4. attached-only left-thumb Reel use and finite energy;
-5. anchor-directed Burst, its dedicated button, and the double-tap shortcut;
-6. striped obstacles, lethal boundaries, restart, Menu, and optional debug tooling.
+4. speed-neutral rope-shortening Reel use and finite energy;
+5. percentage-based Anchor Burst, detached double-tap targeting, and one-shot
+   downward Dive Pull;
+6. shaped warning obstacles, ceiling/floor gaps, lethal boundaries, restart,
+   Menu, and optional debug tooling.
 
 The preview is an in-engine animation rather than a prerecorded video. This is a
 deliberate reversible decision: the guide stays synchronized with live mechanics,

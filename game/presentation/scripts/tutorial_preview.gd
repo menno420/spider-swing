@@ -139,11 +139,33 @@ func _draw_reel(area: Rect2) -> void:
 
 
 func _draw_burst(area: Rect2) -> void:
-	var travel := 0.55 if reduced_motion else fposmod(_elapsed * 0.7, 1.0)
-	var anchor := Vector2(area.size.x * 0.72, area.size.y * 0.2)
+	var cycle := 0.2 if reduced_motion else fposmod(_elapsed * 0.32, 1.0)
+	var diving := cycle >= 0.5
+	var travel := 0.5 if reduced_motion else fposmod(_elapsed * 0.8, 1.0)
 	var start := Vector2(area.size.x * 0.24, area.size.y * 0.7)
+	var upper_anchor := Vector2(area.size.x * 0.72, area.size.y * 0.2)
+	var lower_anchor := Vector2(area.size.x * 0.70, area.size.y * 0.86)
+	var anchor := lower_anchor if diving else upper_anchor
+	var distance_share := 0.25 if diving else 0.5
 	var pull_direction := (anchor - start).normalized()
-	var spider := start + pull_direction * area.size.x * 0.4 * travel
+	var spider := start + (anchor - start) * distance_share * travel
+	var ceiling := PackedVector2Array([
+		Vector2(area.size.x * 0.52, area.size.y * 0.11),
+		Vector2(area.size.x * 0.90, area.size.y * 0.11),
+		Vector2(area.size.x * 0.90, area.size.y * 0.20),
+		Vector2(area.size.x * 0.52, area.size.y * 0.20),
+	])
+	draw_colored_polygon(ceiling, Color(0.07, 0.26, 0.29, 0.96))
+	var branch := PackedVector2Array([
+		Vector2(area.size.x * 0.53, area.size.y * 0.94),
+		Vector2(area.size.x * 0.63, area.size.y * 0.78),
+		Vector2(area.size.x * 0.74, area.size.y * 0.86),
+		Vector2(area.size.x * 0.86, area.size.y * 0.94),
+	])
+	draw_colored_polygon(branch, Color(0.25, 0.11, 0.07))
+	draw_polyline(PackedVector2Array([
+		branch[0], branch[1], branch[2], branch[3],
+	]), ORANGE, 4.0, true)
 	_draw_anchor(anchor, true)
 	draw_line(start, anchor, Color(INK, 0.34), 3.0, true)
 	for index in range(5):
@@ -156,6 +178,12 @@ func _draw_burst(area: Rect2) -> void:
 			true,
 		)
 	_draw_spider(spider)
+	_draw_centered(
+		"25% DIVE" if diving else "50% BURST",
+		Vector2(area.size.x * 0.48, area.size.y * 0.30),
+		16,
+		YELLOW,
+	)
 	var button := Rect2(
 		area.size.x - 134.0,
 		area.size.y - 112.0,
@@ -177,17 +205,17 @@ func _draw_boundaries(area: Rect2) -> void:
 	if not reduced_motion:
 		spider.y += sin(_elapsed * 2.0) * 22.0
 	_draw_spider(spider)
-	var obstacle := Rect2(area.size.x * 0.64, floor_y - 120.0, 64.0, 120.0)
-	draw_rect(obstacle, Color(0.25, 0.11, 0.07), true)
-	draw_rect(obstacle, ORANGE, false, 4.0)
-	for offset in range(-40, 100, 20):
-		draw_line(
-			Vector2(obstacle.position.x + float(offset), obstacle.end.y),
-			Vector2(obstacle.position.x + float(offset) + 80.0,
-				obstacle.position.y),
-			Color(ORANGE, 0.45),
-			3.0,
-		)
+	var obstacle := PackedVector2Array([
+		Vector2(area.size.x * 0.61, floor_y),
+		Vector2(area.size.x * 0.66, floor_y - 72.0),
+		Vector2(area.size.x * 0.72, floor_y - 132.0),
+		Vector2(area.size.x * 0.79, floor_y - 84.0),
+		Vector2(area.size.x * 0.85, floor_y),
+	])
+	draw_colored_polygon(obstacle, Color(0.25, 0.11, 0.07))
+	var closed_obstacle := obstacle.duplicate()
+	closed_obstacle.append(obstacle[0])
+	draw_polyline(closed_obstacle, ORANGE, 4.0, true)
 	var menu := Rect2(28.0, 24.0, 92.0, 42.0)
 	draw_rect(menu, Color(0.08, 0.24, 0.28), true)
 	draw_rect(menu, CYAN, false, 2.0)

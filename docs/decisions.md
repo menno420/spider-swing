@@ -20,8 +20,9 @@
 
 ## [D-0002] Make rope actions radial, immediate, and event-readable
 
-- status: decided
+- status: superseded
 - date: 2026-07-28
+- superseded-by: D-0003
 - verdict: Reel guarantees a first-tick inward response while Burst launches
   toward the active anchor with controlled tangential retention; both report
   accepted actions through domain events.
@@ -30,3 +31,17 @@
   player's web aim. Radial contracts preserve the swing vocabulary while explicit
   feedback separates an accepted action from a missed or unavailable one.
 - provenance: Menno's Phase 0.6 real-device recordings and PR #12
+
+## [D-0003] Separate rope shortening from deterministic percentage pulls
+
+- status: decided
+- date: 2026-07-28
+- supersedes: D-0002
+- verdict: Reel changes authoritative rope length without a second acceleration,
+  while Burst and Dive Pull cross configurable shares of a resolved solid-target
+  distance over bounded durations.
+- why: Extended Android playtesting found that the radial Reel assistance
+  accumulated excessive speed and impulse-based Burst varied with incoming
+  momentum. Distance-shaped pulls make the requested outcome predictable while
+  preserving collision risk, tangential carry, cooldown, and live owner tuning.
+- provenance: Menno's Phase 0.8 playtest direction and PR #13
