@@ -13,6 +13,10 @@ static func reel_rect(viewport_size: Vector2) -> Rect2:
 	return Rect2(viewport_size.x - 184.0, viewport_size.y - 184.0, 148.0, 148.0)
 
 
+static func menu_rect(_viewport_size: Vector2) -> Rect2:
+	return Rect2(24.0, 24.0, 92.0, 52.0)
+
+
 static func debug_toggle_rect(viewport_size: Vector2) -> Rect2:
 	return Rect2(viewport_size.x - 88.0, 24.0, 64.0, 52.0)
 

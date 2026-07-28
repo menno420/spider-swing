@@ -3,7 +3,7 @@ extends SceneTree
 
 const MAIN_SCENE_PATH := "res://game/bootstrap/main.tscn"
 const EXPORT_PRESETS_PATH := "res://export_presets.cfg"
-const BUILD_VERSION := "0.0.2-control-ui"
+const BUILD_VERSION := "0.1.0-front-end"
 const REQUIRED_INPUT_ACTIONS := [
 	"web_action", "reel_in", "pause", "restart_run", "toggle_debug"]
 
@@ -23,6 +23,7 @@ func _initialize() -> void:
 	_check_inward_dependencies()
 	_check_phase0_physics()
 	_check_mobile_hud_layout()
+	_check_front_end_flow()
 	print("")
 	if _failures.is_empty():
 		print("[test_runner] PASS — %d check(s) passed" % _passed)
@@ -136,7 +137,7 @@ func _check_android_preset() -> void:
 				"com.menno420.spiderswing.dev":
 			_fail("development package identifier drifted")
 			return
-		if int(config.get_value(options, "version/code", 0)) != 2 or \
+		if int(config.get_value(options, "version/code", 0)) != 3 or \
 				str(config.get_value(options, "version/name", "")) != \
 				BUILD_VERSION:
 			_fail("Android Debug build identity drifted")
@@ -209,8 +210,20 @@ func _check_mobile_hud_layout() -> void:
 	var failures: PackedStringArray = result["failures"]
 	if failures.is_empty():
 		_passed += int(result["passed"])
-		print("  ✓ Mobile HUD layout: %d coordinate checks" %
+		print("  ✓ Mobile HUD layout: %d GUI contracts" %
 			int(result["passed"]))
 		return
 	for failure: String in failures:
 		_fail("Mobile HUD layout — %s" % failure)
+
+
+func _check_front_end_flow() -> void:
+	var result := FrontEndFlowTests.run()
+	var failures: PackedStringArray = result["failures"]
+	if failures.is_empty():
+		_passed += int(result["passed"])
+		print("  ✓ Front-end flow: %d navigation and settings contracts" %
+			int(result["passed"]))
+		return
+	for failure: String in failures:
+		_fail("Front-end flow — %s" % failure)

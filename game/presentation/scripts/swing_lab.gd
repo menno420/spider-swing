@@ -24,11 +24,25 @@ var _feedback_position: Vector2 = Vector2.ZERO
 var _feedback_color: Color = GREEN
 var _feedback_remaining: float = 3.0
 var _font: Font
+var _show_control_hints: bool = true
+var _reduced_motion: bool = false
+var _show_debug_tools: bool = true
 
 
 func _ready() -> void:
 	_font = ThemeDB.fallback_font
 	set_process(true)
+	queue_redraw()
+
+
+func configure_player_options(
+	show_control_hints: bool,
+	reduced_motion: bool,
+	show_debug_tools: bool,
+) -> void:
+	_show_control_hints = show_control_hints
+	_reduced_motion = reduced_motion
+	_show_debug_tools = show_debug_tools
 	queue_redraw()
 
 
@@ -66,8 +80,11 @@ func _process(delta: float) -> void:
 		0.0,
 		_snapshot.furthest_x - viewport_size.x / 3.0 + look_ahead,
 	)
-	var follow := 1.0 - exp(-_snapshot.camera_follow_strength * delta)
-	_camera_x = lerpf(_camera_x, target, follow)
+	if _reduced_motion:
+		_camera_x = target
+	else:
+		var follow := 1.0 - exp(-_snapshot.camera_follow_strength * delta)
+		_camera_x = lerpf(_camera_x, target, follow)
 	_feedback_remaining = maxf(0.0, _feedback_remaining - delta)
 	queue_redraw()
 
@@ -86,25 +103,26 @@ func _draw() -> void:
 	_draw_spider()
 	_draw_feedback()
 	_draw_hud(size)
-	if _snapshot.debug_visible:
+	if _show_debug_tools and _snapshot.debug_visible:
 		_draw_debug(size)
 
 
 func _draw_parallax(size: Vector2) -> void:
 	draw_rect(Rect2(0.0, size.y * 0.72, size.x, size.y * 0.28), BACKGROUND_DEEP)
-	var far_offset := fposmod(-_camera_x * 0.08, 240.0)
+	var parallax_x := 0.0 if _reduced_motion else _camera_x
+	var far_offset := fposmod(-parallax_x * 0.08, 240.0)
 	for index in range(-1, 8):
 		var x := far_offset + float(index) * 240.0
 		draw_circle(Vector2(x, 135.0 + float(index % 3) * 54.0), 105.0,
 			Color(0.13, 0.34, 0.32, 0.55))
-	var near_offset := fposmod(-_camera_x * 0.22, 310.0)
+	var near_offset := fposmod(-parallax_x * 0.22, 310.0)
 	for index in range(-1, 6):
 		var x := near_offset + float(index) * 310.0
 		draw_circle(Vector2(x, size.y + 25.0), 155.0,
 			Color(0.08, 0.28, 0.25, 0.9))
 	for y in range(90, int(size.y), 90):
 		draw_line(Vector2(0.0, float(y)), Vector2(size.x, float(y)), GRID, 1.0)
-	var grid_offset := fposmod(-_camera_x, 120.0)
+	var grid_offset := fposmod(-parallax_x, 120.0)
 	for x in range(-120, int(size.x) + 120, 120):
 		draw_line(Vector2(float(x) + grid_offset, 0.0),
 			Vector2(float(x) + grid_offset, size.y), GRID, 1.0)
@@ -162,7 +180,7 @@ func _draw_spider() -> void:
 	draw_circle(center + Vector2(-9.0, -4.0).rotated(rotation), 6.0, SPIDER_ACCENT)
 	draw_circle(center + Vector2(17.0, -5.0).rotated(rotation), 3.2, WEB)
 	draw_circle(center + Vector2(17.0, -5.0).rotated(rotation), 1.4, Color("15202b"))
-	if _snapshot.debug_visible:
+	if _show_debug_tools and _snapshot.debug_visible:
 		draw_arc(center, 18.0, 0.0, TAU, 40, CYAN, 1.5)
 		draw_line(center, center + _snapshot.velocity * 0.12, YELLOW, 2.0)
 
@@ -179,9 +197,13 @@ func _draw_feedback() -> void:
 
 func _draw_hud(size: Vector2) -> void:
 	var distance_metres := _snapshot.distance_pixels / 10.0
-	_draw_text(Vector2(28.0, 48.0), "%05.1f m" % distance_metres, 28, WEB)
-	_draw_text(Vector2(30.0, 76.0), "Tap anchor · tap again to release", 16, MUTED)
-	_draw_text(Vector2(30.0, 99.0), _feedback_message, 17, _feedback_color)
+	_draw_text(Vector2(142.0, 48.0), "%05.1f m" % distance_metres, 28, WEB)
+	_draw_button(LabLayout.menu_rect(size), "MENU", false)
+	if _show_control_hints:
+		_draw_text(Vector2(142.0, 76.0),
+			"Tap anchor · tap again to release", 16, MUTED)
+		_draw_text(Vector2(142.0, 99.0),
+			_feedback_message, 17, _feedback_color)
 	_draw_text(
 		Vector2(30.0, size.y - 18.0),
 		"BUILD %s" % ProjectSettings.get_setting(
@@ -192,8 +214,9 @@ func _draw_hud(size: Vector2) -> void:
 		MUTED,
 	)
 
-	var debug_rect := LabLayout.debug_toggle_rect(size)
-	_draw_button(debug_rect, "DEBUG", _snapshot.debug_visible)
+	if _show_debug_tools:
+		var debug_rect := LabLayout.debug_toggle_rect(size)
+		_draw_button(debug_rect, "DEBUG", _snapshot.debug_visible)
 
 	var reel_rect := LabLayout.reel_rect(size)
 	var center := reel_rect.get_center()
