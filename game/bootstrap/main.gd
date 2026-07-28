@@ -105,6 +105,8 @@ func _mount_swing_lab(settings: PlayerSettings) -> PackedStringArray:
 	_session.event_published.connect(_view.present_event)
 	_input_router.web_tapped.connect(_on_web_tapped)
 	_input_router.reel_changed.connect(_session.set_reel_active)
+	_input_router.burst_requested.connect(_session.request_burst)
+	_input_router.burst_gesture.connect(_on_burst_gesture)
 	_input_router.restart_requested.connect(_session.request_restart)
 	_input_router.menu_requested.connect(_return_to_menu)
 	_input_router.debug_toggle_requested.connect(_session.toggle_debug)
@@ -175,6 +177,12 @@ func _save_settings(settings: PlayerSettings) -> void:
 func _on_web_tapped(screen_position: Vector2) -> void:
 	if _session != null and _view != null:
 		_session.request_web_tap(_view.screen_to_world(screen_position))
+
+
+func _on_burst_gesture(screen_position: Vector2) -> void:
+	if _session != null and _view != null:
+		_session.request_burst_from_gesture(
+			_view.screen_to_world(screen_position))
 
 
 func _report_boot(failures: PackedStringArray) -> void:
