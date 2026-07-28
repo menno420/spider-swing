@@ -1,0 +1,1 @@
+- `codex/anchor-pull-feel` · **scope** — tune reach, immediate Reel response, and anchor-directed Burst from Menno's four Android recordings · game/domain, game/simulation, tests, tutorial/docs, build identity · 2026-07-28
