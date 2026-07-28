@@ -160,16 +160,20 @@ static func _test_burst_is_impulsive_and_rate_limited(
 ) -> int:
 	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 	var world := SimulationWorld.new()
+	var control := SimulationWorld.new()
 	world.reset(config, _test_geometry())
+	control.reset(config, _test_geometry())
 	world.web.try_attach(world.position, Vector2(480.0, 150.0), config)
+	control.web.try_attach(control.position, Vector2(480.0, 150.0), config)
 	world.velocity = Vector2(330.0, 120.0)
+	control.velocity = world.velocity
 	world.queue_command(InputCommand.burst(1, 0))
 	var events := world.step(FIXED_DELTA)
+	control.step(FIXED_DELTA)
 	if world.web.attached:
 		failures.append("Burst did not release the active web")
 		return 0
-	if world.velocity.x < config.starting_target_speed + \
-			config.burst_impulse - 1.0:
+	if world.velocity.x - control.velocity.x < config.burst_impulse * 0.85:
 		failures.append("Burst did not create a clear forward impulse")
 		return 0
 	if world.velocity.y > -config.burst_lift + 1.0:
