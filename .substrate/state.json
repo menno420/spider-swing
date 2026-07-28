@@ -1,0 +1,167 @@
+{
+  "graduation": {
+    "criteria": {
+      "blocking_questions": 0,
+      "critical_slots_filled_pct": 0.8
+    },
+    "soft_target_sessions": 50
+  },
+  "graduation_proposed": false,
+  "kit_version": "1.20.2",
+  "last_compaction_session": 0,
+  "mode": "guided",
+  "mode_history": [
+    {
+      "date": "2026-07-28",
+      "mode": "guided",
+      "session": 0
+    }
+  ],
+  "open_questions": [],
+  "planted_doc_hashes": {
+    ".claude/CLAUDE.md": "170b65073716ae20466e79a20013004eed625c11054636c47cb9710703bb2e28",
+    ".session-journal.md": "22b26b4041907622fbeeef492722070e6417cff06e68f05d2eebb863c28dc501",
+    "CONSTITUTION.md": "5d5ccf89b6abc0ade0ac105783607f6d6c2e6df2f79a65304e46d8ab1dbf03ed",
+    "control/README.md": "e58b66675c33ad81ab238d71841f20e1c8a9169b1da134c9d3814527d3a20e07",
+    "control/claims/README.md": "0600c85ac5e6542122f59dee9133abea92a56f174531f5fe6a8c51561970b6b7",
+    "control/inbox.md": "a93901ce20e4eeff132cb0c18ffb832ec89913c7ef5370f5689c46fc6f4ed6f0",
+    "control/status.md": "52dee344ceaf11eeac40be5c7d91b6e40458adb37e1f6e9e222c0c4951c94cf4",
+    "docs/AGENT_ORIENTATION.md": "6991806668db4b13baf44e82f5415370f2a19d3255d3fb3df60c446f89373933",
+    "docs/CAPABILITIES.md": "83a60757ef43f9559a2a7d2ae099c41e08488ae9f2dd24cdba496b9ff51d5d36",
+    "docs/ROUTINES.md": "b66de2c85fd025c8545bc4f715b7a6b20d4a322d5bd7acddab29404e39909e90",
+    "docs/SKILLS.md": "629469997fc72581022c6b4c4627a42f2b59965293d2cd68b0cd50b00298a717",
+    "docs/ai-project-workflow.md": "1a8556b451b68dc7f25dd5e76b9e8e1bbcfaee0cc218556d8f67406af8bd0243",
+    "docs/architecture.md": "af29e27c2ec2c0d8a898f28294cb5834424e6e7ea1a1cefbfdc9add2f8da8bd5",
+    "docs/collaboration-model.md": "b340786a93ce93346c43d118831bba5082570efa365dc3791e649664e7e218f9",
+    "docs/current-state.md": "9243374d6f1b944f64f965ac9834b93406d25cc3729ffb5abb8474144c3a36b7",
+    "docs/decisions.md": "e422b2e598bd95dda20abc167f22c7a79f9327f865726999ce8bc92fbbb6f2d0",
+    "docs/helper-policy.md": "3104a3e4c39433d8af14698b142c32ea24bd5546c963dee33b86632b5fda7789",
+    "docs/ideas/README.md": "6dc1caa60fa6098b24e7a2161a610bdd517100e3798990a07950b022542a68fb",
+    "docs/owner-profile.md": "0e0152e41e0a803246b5ded1bf7e6ef4abdf6f46940f05688bb8cf56b081762a",
+    "docs/ownership.md": "2a47170cc53a67cd98ff929555f0732961816bec67815ef79bd032144fcbe7ba",
+    "docs/question-router.md": "bd286d432ac98268af5c99f116df67b0f597693e7cef5963e8195fe119375a7f",
+    "docs/reading-path.md": "8624a4c01e7e5a04b9f303817826c4390f927023178eba25d0466ee5b0fecadf",
+    "docs/repo-navigation-map.md": "fa07a118d32a03225ee7819cabe3a687cbb8b7bcdc39a1a8e68fae9412da2f24",
+    "docs/runtime_contracts.md": "5908ba04f50e847ba2e44b49e0c315e69375a60b4afd9a00a032ae273afd1196",
+    "docs/seat-digest.md": "85ed27c78156ac4c14ecb5f6387478e21a4857875611f6529d2a9c07cf0ab0d9",
+    "scripts/env-setup.sh": "cd2145129fcba288ff9399ad44146a09017d85813e282c16bcba22340b613a2c"
+  },
+  "project_id": "a0d9e3b0a494",
+  "promotion_rights": "propose",
+  "quiet_sessions": 0,
+  "reflection_buffer": {
+    "active_count": 0,
+    "last_mined": null
+  },
+  "review_log": [],
+  "session_anchor": {
+    "branch": "claude/bootstrap-spider-swing",
+    "epoch": 1785226384.762257,
+    "head": "14cfc9a25b2962e044c2d7af627c5e406171ff05",
+    "ts": "2026-07-28T08:13:04+00:00"
+  },
+  "session_count": 0,
+  "slot_values": {
+    "architecture_layers": {
+      "question_id": "Q-004",
+      "source": "user",
+      "value": "domain contains engine-independent value objects, commands, events, identifiers, and configuration contracts and imports no Godot-facing layer; simulation contains the fixed-step spider motor, web constraint, collision policy, and deterministic run model and imports domain only; application contains the run state machine, difficulty director, world stream orchestration, effects, score, and settlement and imports domain plus simulation; adapters contain Godot input, scenes, persistence, telemetry, and platform integration and import inward-facing contracts; presentation contains UI, camera, audio, VFX, and rendering, consumes application APIs and domain events, and never mutates authoritative simulation state directly."
+    },
+    "doc_roots": {
+      "question_id": "Q-007",
+      "source": "user",
+      "value": "Durable documentation lives under docs/, with root-level CONSTITUTION.md and README.md acting as entry points. Game design lives under docs/game-design/, technical decisions under docs/technical/adr/, and current truth remains in the Substrate-generated living ledgers."
+    },
+    "drift_resolution": {
+      "question_id": "Q-011",
+      "source": "user",
+      "value": "Source code, executable tests, merged commits, and build artifacts outrank stale prose. When documentation disagrees with verified source, follow the source and correct the documentation in the same PR. Record genuine design changes in the decision ledger rather than preserving contradictory history in binding docs."
+    },
+    "fleet_dark_repos": {
+      "question_id": "Q-016",
+      "source": "user",
+      "value": "Do not guess about private or inaccessible repositories. Read only explicitly accessible sibling repositories, attempt access once when relevant, and record the exact capability result."
+    },
+    "fleet_siblings": {
+      "question_id": "Q-015",
+      "source": "user",
+      "value": "menno420/substrate-kit may be read for the pinned kit release, adopter contract, and canonical program-law IDs; menno420/fleet-manager may be read for fleet registration and portfolio status when Spider Swing is formally registered. Spider Swing has no runtime dependency on either repository and must not copy their product-specific code."
+    },
+    "fleet_status_command": {
+      "question_id": "Q-014",
+      "source": "user",
+      "value": "none yet"
+    },
+    "integration_mode": {
+      "question_id": "Q-001",
+      "source": "user",
+      "value": "guided"
+    },
+    "mutation_seam": {
+      "question_id": "Q-009",
+      "source": "user",
+      "value": "Touch and UI input becomes buffered InputCommand values; fixed-step simulation consumes commands and produces authoritative state plus DomainEvent values; presentation, audio, haptics, and telemetry consume those events without mutating simulation; after death RunStateMachine requests one RunSettlement; ProgressionService validates and applies that settlement; SaveRepository performs one atomic versioned write. Collision callbacks, UI nodes, presentation code, and telemetry may never write currency, records, unlocks, or save files directly."
+    },
+    "new_area_ownership": {
+      "question_id": "Q-013",
+      "source": "user",
+      "value": "A new area is created only with a named owning system, an explicit inward dependency direction, and an entry in project.index.json naming its folio, binding documents, source roots, non-duplication list, phase gate, and verification command. The agent that introduces the area owns it until it is handed over in a merged PR; no area may duplicate a system already listed in another area's non-duplication list."
+    },
+    "owner_profile": {
+      "question_id": "Q-008",
+      "source": "user",
+      "value": "Menno defines the product vision, evaluates feel, notices inconsistencies, and values honesty above inflated progress claims. He does not code and relies on autonomous Claude and Codex agents to make contained reversible technical decisions, implement end-to-end, verify against source, keep CI green, and land or clearly park their own PRs. Explain owner actions in plain language and ask only for genuine product forks, credentials, irreversible publishing, spending, or repository settings that tooling cannot safely perform."
+    },
+    "ownership_model": {
+      "question_id": "Q-006",
+      "source": "user",
+      "value": "RunStateMachine owns run lifecycle transitions; SimulationWorld owns authoritative fixed-step state; InputRouter emits commands but never mutates simulation; WebController and WebConstraint own attachment and rope state; DifficultyDirector selects chunks while WorldStream owns spawned instances; CollisionPolicy owns the one authoritative outcome for every contact; EffectState owns power-up activation and expiry; ScoreSettlement creates one idempotent run settlement; ProgressionService applies validated settlements and purchases; SaveRepository exclusively owns persistent writes; Presentation consumes events and cannot grant rewards or alter simulation truth."
+    },
+    "primary_language": {
+      "question_id": "Q-003",
+      "source": "user",
+      "value": "Godot 4.7.1 Standard with GDScript; Python 3.10+ is used only for repository verification and the vendored Substrate Kit."
+    },
+    "project_name": {
+      "question_id": "Q-002",
+      "source": "user",
+      "value": "Spider Swing"
+    },
+    "review_ritual": {
+      "question_id": "Q-010",
+      "source": "user",
+      "value": "Agents work through ready born-red PRs, finish the declared scope, run the exact game-quality and Substrate gates, and land work only on green. Reversible implementation decisions are decide-and-flag. The owner reviews playable feel, branding, monetization, production signing, and external publication rather than routine code. Production releases require a real-device playtest and an explicit owner-controlled signing/publishing step."
+    },
+    "staleness_review": {
+      "question_id": "Q-012",
+      "source": "user",
+      "value": "Living ledgers (docs/current-state.md, docs/CAPABILITIES.md, control/status.md) are re-verified against the live surface every session that changes behaviour, and at minimum every 14 days per the configured staleness cadence. Binding docs and ADRs are reviewed whenever a merged change contradicts them, and the contradiction is corrected in the same PR rather than deferred."
+    },
+    "verify_command": {
+      "question_id": "Q-005",
+      "source": "user",
+      "value": "python3 tools/verify.py"
+    }
+  },
+  "slots": {
+    "architecture_layers": "filled",
+    "doc_roots": "filled",
+    "drift_resolution": "filled",
+    "fleet_dark_repos": "filled",
+    "fleet_siblings": "filled",
+    "fleet_status_command": "filled",
+    "integration_mode": "filled",
+    "mutation_seam": "filled",
+    "new_area_ownership": "filled",
+    "owner_profile": "filled",
+    "ownership_model": "filled",
+    "primary_language": "filled",
+    "project_name": "filled",
+    "review_ritual": "filled",
+    "staleness_review": "filled",
+    "verify_command": "filled"
+  },
+  "stage": "integration",
+  "stance": "debug",
+  "version": 1
+}
