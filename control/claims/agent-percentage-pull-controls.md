@@ -1,0 +1,1 @@
+- `agent/percentage-pull-controls` · **Percentage pulls, controlled Reel, and solid-object traversal** · game/domain, game/simulation, game/application, game/presentation, tests, docs · 2026-07-28
