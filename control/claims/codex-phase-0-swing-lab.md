@@ -1,0 +1,1 @@
+- `codex-phase-0-swing-lab` · **Phase 0 Swing Laboratory** — implement issue #2 end-to-end: deterministic swing physics, buffered input, Reel-In, graybox presentation, diagnostics, tests, and Android playtest artifact · 2026-07-28
