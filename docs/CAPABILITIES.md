@@ -215,6 +215,18 @@ never edit.
   `357b885290e8ad692b8ef04c1dcfaf7892cfb03e`, package
   `com.menno420.spiderswing.dev`, and display name
   `Spider Swing Percentage Pull (dev)`.
+- 2026-07-28 · capability · `owner-live` · **A recovery-web gameplay APK is
+  source-identifiable and downloadable through the connected GitHub venue** ·
+  PR #14 run `30393906389` produced `spider-swing-android-debug` artifact
+  [`8702034654`](https://github.com/menno420/spider-swing/actions/runs/30393906389/artifacts/8702034654);
+  the downloaded 56,747,428-byte ZIP matched GitHub's digest
+  `b23c0f462339b017c2a564873522db0357fb4937e1ee70b88913eaa179597339`,
+  its 57,128,524-byte APK passed archive verification with SHA-256
+  `4633b9b84b16cf52c29436ad355aec223cb201267be7a1b2eecd80f2705c6b4b`,
+  and `build-info.txt` proved version `0.3.1-recovery-web-test`, source
+  `1d4e3269c317a4b1323ccfe9e7c57eaea137d7d4`, package
+  `com.menno420.spiderswing.dev`, and display name
+  `Spider Swing Recovery Web (dev)`.
 - 2026-07-28 · capability · `owner-live` · **Branch deletion works** — this REFUTES
   the seeded `Branch deletion` wall above (last-verified 2026-07-10) ·
   `claude/bootstrap-spider-swing` was deleted automatically on merge with

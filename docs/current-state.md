@@ -98,6 +98,11 @@ without a reported regression.
   `357b885290e8ad692b8ef04c1dcfaf7892cfb03e`, including exact percentage pulls,
   speed-neutral Reel, solid polygon targeting/collision, shaped streaming,
   touch geometry, feedback, and Android workflow identity guards.
+- PR #14 `game-quality` run
+  [30393908882](https://github.com/menno420/spider-swing/actions/runs/30393908882)
+  passes all 50 contracts at source
+  `1d4e3269c317a4b1323ccfe9e7c57eaea137d7d4`, including pull interruption,
+  double-tap recovery fallback, tap-mode tuning, and lower anchor coverage.
 - `substrate-gate` — kit-owned. A born-red session card deliberately holds a PR
   until close-out; it must be green on the completed card before merge.
 - `android-debug` — **green on `main`, APK proven.** Run #1 produced artifact
@@ -129,6 +134,18 @@ without a reported regression.
   `357b885290e8ad692b8ef04c1dcfaf7892cfb03e`, package
   `com.menno420.spiderswing.dev`, and display name
   `Spider Swing Percentage Pull (dev)`.
+- PR #14 `android-debug` run
+  [30393906389](https://github.com/menno420/spider-swing/actions/runs/30393906389)
+  produced downloadable artifact
+  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30393906389/artifacts/8702034654)
+  ID `8702034654`, 56,747,428 bytes, digest
+  `sha256:b23c0f462339b017c2a564873522db0357fb4937e1ee70b88913eaa179597339`.
+  The downloaded 57,128,524-byte APK passed archive verification and had SHA-256
+  `4633b9b84b16cf52c29436ad355aec223cb201267be7a1b2eecd80f2705c6b4b`.
+  Its bundled manifest proves version `0.3.1-recovery-web-test`, source
+  `1d4e3269c317a4b1323ccfe9e7c57eaea137d7d4`, package
+  `com.menno420.spiderswing.dev`, and display name
+  `Spider Swing Recovery Web (dev)`.
 - **Dependabot** — live. Its first run opened two bumps against the kit-owned
   `substrate-gate.yml`; both were closed because `adopt`/`upgrade` regenerates that
   file. The rule is documented in `.github/dependabot.yml`: kit-owned-only bumps get
@@ -154,13 +171,13 @@ without a reported regression.
 
 ## In flight
 
-PR #14 is the active recovery-web follow-up. Source and local Godot 4.7.1 gates
-pass 50 contracts; CI and Android artifact evidence are still required before
-merge. The next owner exit gate is device feel: confirm that a Burst can always
-hand off to an immediate recovery web, compare DEBUG `TAP RELEASE` with
-`RETARGET`, judge the 1000-pixel right-hand reach, and use the new lower anchor
-windows before hazards. Phase 1 remains blocked on choosing or rejecting a
-movement baseline.
+PR #14 is the active, APK-proven recovery-web follow-up. Local and CI Godot 4.7.1
+gates pass 50 contracts, and Android artifact `8702034654` carries build
+`0.3.1-recovery-web-test`. The next owner exit gate is device feel: confirm that
+a Burst can always hand off to an immediate recovery web, compare DEBUG
+`TAP RELEASE` with `RETARGET`, judge the 1000-pixel right-hand reach, and use the
+new lower anchor windows before hazards. Phase 1 remains blocked on choosing or
+rejecting a movement baseline.
 
 ## Recently shipped (newest first)
 

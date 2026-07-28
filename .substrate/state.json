@@ -50,7 +50,7 @@
   "promotion_rights": "propose",
   "quiet_sessions": 0,
   "reflection_buffer": {
-    "active_count": 0,
+    "active_count": 1,
     "last_mined": "2026-07-28"
   },
   "review_log": [],
