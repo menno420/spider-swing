@@ -182,6 +182,15 @@ func _draw_hud(size: Vector2) -> void:
 	_draw_text(Vector2(28.0, 48.0), "%05.1f m" % distance_metres, 28, WEB)
 	_draw_text(Vector2(30.0, 76.0), "Tap anchor · tap again to release", 16, MUTED)
 	_draw_text(Vector2(30.0, 99.0), _feedback_message, 17, _feedback_color)
+	_draw_text(
+		Vector2(30.0, size.y - 18.0),
+		"BUILD %s" % ProjectSettings.get_setting(
+			"application/config/version",
+			"unknown",
+		),
+		13,
+		MUTED,
+	)
 
 	var debug_rect := LabLayout.debug_toggle_rect(size)
 	_draw_button(debug_rect, "DEBUG", _snapshot.debug_visible)
@@ -215,6 +224,8 @@ func _draw_debug(_size: Vector2) -> void:
 	draw_rect(panel, Color(0.02, 0.07, 0.1, 0.9))
 	draw_rect(panel, CYAN, false, 2.0)
 	var lines := [
+		"build: %s" % ProjectSettings.get_setting(
+			"application/config/version", "unknown"),
 		"tick: %d  seed: %d" % [_snapshot.tick, _snapshot.seed],
 		"state: %s  web: %s" % [
 			_snapshot.run_state,

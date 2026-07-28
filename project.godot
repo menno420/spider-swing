@@ -14,7 +14,7 @@ config_version=5
 
 config/name="Spider Swing"
 config/description="Android-first 2D physics swing game. \"Spider Swing\" is an internal codename, not an approved release name — see docs/product/name-status.md."
-config/version="0.0.0-bootstrap"
+config/version="0.0.2-control-ui"
 run/main_scene="res://game/bootstrap/main.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 
@@ -40,9 +40,9 @@ window/handheld/orientation=0
 [input]
 
 ; Phase 0 input surface only: these actions are DEFINED here so the router and
-; the tests have a stable contract to bind to. No gameplay consumes them yet.
+; the tests have a stable contract to bind to. The Phase 0 input adapter consumes them.
 ; Keyboard bindings are the desktop/CI development surface; touch bindings are
-; added with the Phase 0 input router (see the Phase 0 issue), because touch
+; handled through GUI-owned Phase 0 controls, because touch
 ; needs the buffered-command seam described in docs/runtime_contracts.md, not a
 ; raw action poll.
 

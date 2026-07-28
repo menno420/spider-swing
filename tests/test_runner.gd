@@ -3,6 +3,7 @@ extends SceneTree
 
 const MAIN_SCENE_PATH := "res://game/bootstrap/main.tscn"
 const EXPORT_PRESETS_PATH := "res://export_presets.cfg"
+const BUILD_VERSION := "0.0.2-control-ui"
 const REQUIRED_INPUT_ACTIONS := [
 	"web_action", "reel_in", "pause", "restart_run", "toggle_debug"]
 
@@ -101,6 +102,8 @@ func _check_project_configuration() -> void:
 		"display/window/size/viewport_height", 0))
 	var orientation := int(ProjectSettings.get_setting(
 		"display/window/handheld/orientation", -1))
+	var build_version := str(ProjectSettings.get_setting(
+		"application/config/version", ""))
 	if ticks == 60 and Engine.physics_ticks_per_second == 60 and catchup == 4:
 		_ok("fixed simulation is 60 Hz with four catch-up steps")
 	else:
@@ -110,6 +113,11 @@ func _check_project_configuration() -> void:
 		_ok("renderer, viewport, and landscape orientation are locked")
 	else:
 		_fail("renderer or display configuration drifted")
+	if build_version == BUILD_VERSION:
+		_ok("visible build identity is %s" % BUILD_VERSION)
+	else:
+		_fail("project build identity is %s but expected %s" % [
+			build_version, BUILD_VERSION])
 
 
 func _check_android_preset() -> void:
@@ -128,7 +136,12 @@ func _check_android_preset() -> void:
 				"com.menno420.spiderswing.dev":
 			_fail("development package identifier drifted")
 			return
-		_ok("Android Debug preset is development-only")
+		if int(config.get_value(options, "version/code", 0)) != 2 or \
+				str(config.get_value(options, "version/name", "")) != \
+				BUILD_VERSION:
+			_fail("Android Debug build identity drifted")
+			return
+		_ok("Android Debug preset is development-only and uniquely versioned")
 		return
 	_fail("Android Debug preset is missing")
 

@@ -22,11 +22,12 @@ must not be built around unapproved movement.
 | Restart | Tap after death | `R` / configured `restart_run` |
 | Debug panel | Tap `DEBUG` in the upper-right | `F1` / configured `toggle_debug` |
 
-Touching the Reel control or any debug control never also fires a web. Multiple
-touches are tracked independently, so the player may hold Reel with one finger
-and attach or release with another. On stretched Android displays, hit regions
-are evaluated in the same logical canvas coordinates used to draw the HUD; the
-1040×480 device recording is locked by a regression test as a 1560×720 canvas.
+Reel, DEBUG, and the debug-panel controls are real Godot `Button` nodes with
+`MOUSE_FILTER_STOP`. They own their hit regions and consume pointer events in
+Godot's GUI pipeline. World attach/release input is handled only afterward in
+`_unhandled_input`, so pressing a HUD control cannot also release the web.
+Multiple touches remain independent, allowing the player to hold Reel with one
+finger and attach or release with another.
 
 Holding Reel while detached intentionally does not move the spider or spend
 energy. It now reports `Attach a web before Reel-In`. While attached, the control
@@ -81,8 +82,9 @@ Phase 0 deterministic suite. The suite guards:
 - release-time velocity preservation;
 - Reel shortening without a position teleport;
 - detached Reel remaining inert with explicit attach-first feedback;
-- 1040×480 Android HUD coordinates mapping to the logical canvas for both Reel
-  and DEBUG, while the reference viewport remains unchanged;
+- Reel and DEBUG existing as event-consuming Godot GUI controls, Reel emitting
+  held/released state without a web tap, and world input remaining in
+  `_unhandled_input`;
 - inert invalid targets with explicit feedback;
 - repeated attach/release without hidden energy injection;
 - a nonlethal upper world boundary and lethal lower boundary;
@@ -94,8 +96,12 @@ events; it cannot modify authoritative movement.
 
 ## Owner device playtest
 
-Download the latest `spider-swing-android-debug` artifact, install it on an
-Android phone, and try all three candidates for several minutes.
+Download the `spider-swing-android-debug` artifact from the relevant gameplay
+PR or latest `main` run. Current CI builds use a fresh ephemeral debug signing
+key, so uninstall the previous Spider Swing development app before installing a
+replacement. For this correction, launch **Spider Swing UI2 (dev)** and first
+confirm the lower-left HUD says `BUILD 0.0.2-control-ui`; otherwise the wrong
+binary is running. Then try all three candidates for several minutes.
 
 Please report:
 
