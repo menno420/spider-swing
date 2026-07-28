@@ -98,10 +98,10 @@ without a reported regression.
   `357b885290e8ad692b8ef04c1dcfaf7892cfb03e`, including exact percentage pulls,
   speed-neutral Reel, solid polygon targeting/collision, shaped streaming,
   touch geometry, feedback, and Android workflow identity guards.
-- PR #14 `game-quality` run
-  [30393908882](https://github.com/menno420/spider-swing/actions/runs/30393908882)
-  passes all 50 contracts at source
-  `1d4e3269c317a4b1323ccfe9e7c57eaea137d7d4`, including pull interruption,
+- PR #14 and merged-main `game-quality` run
+  [30394635476](https://github.com/menno420/spider-swing/actions/runs/30394635476)
+  passed all 50 contracts at merged source
+  `5dcbd3410eff573f24add454819cdbd33248e5d5`, including pull interruption,
   double-tap recovery fallback, tap-mode tuning, and lower anchor coverage.
 - `substrate-gate` — kit-owned. A born-red session card deliberately holds a PR
   until close-out; it must be green on the completed card before merge.
@@ -171,17 +171,17 @@ without a reported regression.
 
 ## In flight
 
-PR #14 is the active, APK-proven recovery-web follow-up. Local and CI Godot 4.7.1
-gates pass 50 contracts, and Android artifact `8702034654` carries build
-`0.3.1-recovery-web-test`. The next owner exit gate is device feel: confirm that
-a Burst can always hand off to an immediate recovery web, compare DEBUG
-`TAP RELEASE` with `RETARGET`, judge the 1000-pixel right-hand reach, and use the
-new lower anchor windows before hazards. Phase 1 remains blocked on choosing or
-rejecting a movement baseline.
+PR #15 is the active single-intent input fix. The `0.3.1` device recording
+proved that Godot's raw touchscreen event and emulated mouse copy both reached
+world input: the first recovered from Burst and the second immediately released
+that new web. Local Godot 4.7.1 tests now reproduce the exact event pair, ignore
+only the synthetic mouse copy, preserve physical mouse and Control HUD paths, and
+pass 53 contracts. Phase 1 remains blocked on choosing or rejecting a movement
+baseline after the corrected device build is tested.
 
 ## Recently shipped (newest first)
 
-- **2026-07-28 — Recovery-web controls (PR #14 in progress).** Makes percentage
+- **2026-07-28 — Recovery-web controls (PR #14 merged).** Makes percentage
   pulls interruptible by ordinary webs, converts otherwise-unavailable rapid
   double-taps into recovery intent, promotes 1000-pixel reach, exposes tap mode
   and cooldown tuning, and authors lower anchor windows before hazards.

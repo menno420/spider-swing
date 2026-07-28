@@ -4,9 +4,9 @@ extends SceneTree
 const MAIN_SCENE_PATH := "res://game/bootstrap/main.tscn"
 const EXPORT_PRESETS_PATH := "res://export_presets.cfg"
 const ANDROID_WORKFLOW_PATH := "res://.github/workflows/android-debug.yml"
-const BUILD_VERSION := "0.3.1-recovery-web-test"
-const ANDROID_VERSION_CODE := 8
-const ANDROID_APP_NAME := "Spider Swing Recovery Web (dev)"
+const BUILD_VERSION := "0.3.2-single-intent-test"
+const ANDROID_VERSION_CODE := 9
+const ANDROID_APP_NAME := "Spider Swing Single-Intent Web (dev)"
 const REQUIRED_INPUT_ACTIONS := [
 	"web_action", "reel_in", "burst_action", "pause", "restart_run",
 	"toggle_debug"]
@@ -109,6 +109,10 @@ func _check_project_configuration() -> void:
 		"display/window/handheld/orientation", -1))
 	var build_version := str(ProjectSettings.get_setting(
 		"application/config/version", ""))
+	var mouse_from_touch := bool(ProjectSettings.get_setting(
+		"input_devices/pointing/emulate_mouse_from_touch", false))
+	var touch_from_mouse := bool(ProjectSettings.get_setting(
+		"input_devices/pointing/emulate_touch_from_mouse", true))
 	if ticks == 60 and Engine.physics_ticks_per_second == 60 and catchup == 4:
 		_ok("fixed simulation is 60 Hz with four catch-up steps")
 	else:
@@ -118,6 +122,10 @@ func _check_project_configuration() -> void:
 		_ok("renderer, viewport, and landscape orientation are locked")
 	else:
 		_fail("renderer or display configuration drifted")
+	if mouse_from_touch and not touch_from_mouse:
+		_ok("touch emulation direction is explicit and adapter-arbitrated")
+	else:
+		_fail("touch emulation can duplicate or disable the mobile GUI path")
 	if build_version == BUILD_VERSION:
 		_ok("visible build identity is %s" % BUILD_VERSION)
 	else:

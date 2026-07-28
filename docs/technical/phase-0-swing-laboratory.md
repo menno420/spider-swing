@@ -140,32 +140,40 @@ record/replay, and JSON export. Runtime changes reset when the app restarts.
   and a bounded seven-chunk window;
 - nonlethal upper and lethal lower/left/obstacle boundaries;
 - symmetric event-consuming Reel and Burst touch targets;
+- one gameplay intent for each Android touchscreen press even though the
+  Control-based HUD keeps Godot touch-to-mouse emulation enabled;
 - fixed-rate trajectory equivalence at simulated 30/60/90/120 Hz render rates.
 
 ## Owner device playtest
 
-Install `0.3.1-recovery-web-test` after uninstalling the previous ephemerally
+Install `0.3.2-single-intent-test` after uninstalling the previous ephemerally
 signed dev app, then check:
 
-1. tap naturally on the forward/right side and confirm the 1000-pixel baseline
+1. from `RUN ENDED`, tap once to restart and confirm that the same physical tap
+   does not also attach a web;
+2. Burst, then tap one valid upper solid once; the recovery web must remain
+   visibly attached and must not immediately report `Momentum preserved`;
+3. repeat the same recovery with fast single taps and double-taps during the
+   pull and cooldown; each physical press must produce one resulting action;
+4. tap naturally on the forward/right side and confirm the 1000-pixel baseline
    reaches useful ceiling and obstacle edges;
-2. Burst, then immediately tap an upper solid several times at different points
+5. Burst, then immediately tap an upper solid several times at different points
    in the pull; every valid tap should create a visible recovery web;
-3. repeat with fast double-taps during the pull and cooldown; none should report
+6. repeat with fast double-taps during the pull and cooldown; none should report
    `Pull already active` while the spider remains detached;
-4. use DEBUG `TAP RELEASE`, then `TAP RETARGET`, and decide whether deliberate
+7. use DEBUG `TAP RELEASE`, then `TAP RETARGET`, and decide whether deliberate
    two-tap release/attach or atomic one-tap replacement feels more natural;
-5. hold Reel during a downward arc and judge whether height becomes manageable
+8. hold Reel during a downward arc and judge whether height becomes manageable
    without the previous runaway speed gain;
-6. compare several starting web lengths and confirm Burst always covers roughly
+9. compare several starting web lengths and confirm Burst always covers roughly
    half the visible rope distance;
-7. use the cyan lower-root windows before hazards and confirm a 25% Dive Pull
+10. use the cyan lower-root windows before hazards and confirm a 25% Dive Pull
    redirects the spider without leaving a rope attached;
-8. deliberately Burst toward a badly timed obstacle and confirm the control
+11. deliberately Burst toward a badly timed obstacle and confirm the control
    remains powerful but unsafe;
-9. use DEBUG to change range, cooldown, Burst %, Dive %, both durations, and Reel
+12. use DEBUG to change range, cooldown, Burst %, Dive %, both durations, and Reel
    speed, then name the closest values;
-10. judge whether the lower anchor windows appear when useful without making the
+13. judge whether the lower anchor windows appear when useful without making the
    entire floor a permanent safety net.
 
 Phase 1 remains gated on an explicitly approved movement baseline.
