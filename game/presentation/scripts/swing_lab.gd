@@ -78,6 +78,17 @@ func present_event(event: SimulationEvent) -> void:
 				float(event.data.get("direction_x", 0.0)),
 				float(event.data.get("direction_y", 0.0)),
 			).normalized()
+		SimulationEvent.Kind.DIVE_STARTED:
+			_burst_feedback_remaining = BURST_FEEDBACK_DURATION
+			_burst_feedback_origin = Vector2(
+				float(event.data.get("origin_x", 0.0)),
+				float(event.data.get("origin_y", 0.0)),
+			)
+			_burst_feedback_anchor = event.position
+			_burst_feedback_direction = Vector2(
+				float(event.data.get("direction_x", 0.0)),
+				float(event.data.get("direction_y", 0.0)),
+			).normalized()
 		SimulationEvent.Kind.INVALID_TARGET:
 			_feedback_color = RED
 		SimulationEvent.Kind.OUT_OF_RANGE, SimulationEvent.Kind.REEL_UNAVAILABLE, \
@@ -160,20 +171,14 @@ func _draw_course(size: Vector2) -> void:
 	if _snapshot == null:
 		return
 
-	for surface: Rect2 in _snapshot.surface_segments:
-		var screen_surface := Rect2(
-			_world_to_screen(surface.position),
-			surface.size,
-		)
-		if screen_surface.end.x < -80.0 or screen_surface.position.x > size.x + 80.0:
+	for surface: PackedVector2Array in _snapshot.surfaces:
+		var screen_surface := _polygon_to_screen(surface)
+		var surface_bounds := _polygon_bounds(screen_surface)
+		if surface_bounds.end.x < -80.0 or \
+				surface_bounds.position.x > size.x + 80.0:
 			continue
-		draw_rect(screen_surface, Color(0.07, 0.26, 0.29, 0.96))
-		draw_line(
-			Vector2(screen_surface.position.x, screen_surface.end.y),
-			Vector2(screen_surface.end.x, screen_surface.end.y),
-			CYAN,
-			5.0,
-		)
+		draw_colored_polygon(screen_surface, Color(0.07, 0.26, 0.29, 0.96))
+		_draw_closed_polyline(screen_surface, CYAN, 4.0)
 
 	for guide: Vector2 in _snapshot.anchors:
 		var screen := _world_to_screen(guide)
@@ -187,13 +192,11 @@ func _draw_course(size: Vector2) -> void:
 		draw_arc(screen, 11.0, 0.0, TAU, 24, Color(color, 0.72), 2.0)
 		draw_circle(screen, 3.0, WEB)
 
-	for obstacle: Rect2 in _snapshot.obstacles:
-		var screen_obstacle := Rect2(
-			_world_to_screen(obstacle.position),
-			obstacle.size,
-		)
-		if screen_obstacle.end.x < -80.0 or \
-				screen_obstacle.position.x > size.x + 80.0:
+	for obstacle: PackedVector2Array in _snapshot.obstacles:
+		var screen_obstacle := _polygon_to_screen(obstacle)
+		var obstacle_bounds := _polygon_bounds(screen_obstacle)
+		if obstacle_bounds.end.x < -80.0 or \
+				obstacle_bounds.position.x > size.x + 80.0:
 			continue
 		_draw_obstacle(screen_obstacle)
 
@@ -202,28 +205,21 @@ func _draw_course(size: Vector2) -> void:
 		draw_line(Vector2(kill_x, 0.0), Vector2(kill_x, size.y), RED, 3.0)
 
 
-func _draw_obstacle(rect: Rect2) -> void:
-	draw_rect(rect, OBSTACLE_DARK)
-	draw_rect(rect.grow(-5.0), Color(OBSTACLE, 0.72))
-	draw_rect(rect, YELLOW, false, 4.0)
-	var stripe_start := rect.position.x - rect.size.y
-	while stripe_start < rect.end.x:
-		var clipped_from_x := maxf(rect.position.x, stripe_start)
-		var clipped_to_x := minf(rect.end.x, stripe_start + rect.size.y)
-		if clipped_from_x < clipped_to_x:
-			draw_line(
-				Vector2(
-					clipped_from_x,
-					rect.end.y - (clipped_from_x - stripe_start),
-				),
-				Vector2(
-					clipped_to_x,
-					rect.end.y - (clipped_to_x - stripe_start),
-				),
-				Color(YELLOW, 0.82),
-				8.0,
-			)
-		stripe_start += 36.0
+func _draw_obstacle(polygon: PackedVector2Array) -> void:
+	draw_colored_polygon(polygon, OBSTACLE_DARK)
+	_draw_closed_polyline(polygon, YELLOW, 4.0)
+	var center := Vector2.ZERO
+	for point: Vector2 in polygon:
+		center += point
+	center /= float(maxi(polygon.size(), 1))
+	draw_circle(center, 10.0, Color(OBSTACLE, 0.76))
+	for index in range(0, polygon.size(), 2):
+		draw_line(
+			center,
+			center.lerp(polygon[index], 0.82),
+			Color(OBSTACLE, 0.72),
+			6.0,
+		)
 
 
 func _draw_web() -> void:
@@ -330,7 +326,7 @@ func _draw_hud(size: Vector2) -> void:
 	_draw_button(LabLayout.menu_rect(size), "MENU", false)
 	if _show_control_hints:
 		_draw_text(Vector2(142.0, 76.0),
-			"Tap cyan ceiling · tap again to release", 16, MUTED)
+			"Tap solid above to web · tap solid below to Dive Pull", 16, MUTED)
 		_draw_text(Vector2(142.0, 99.0), _feedback_message, 17, _feedback_color)
 	_draw_text(
 		Vector2(30.0, size.y - 18.0),
@@ -383,8 +379,10 @@ func _draw_hud(size: Vector2) -> void:
 	)
 	draw_arc(burst_center, burst_radius, -PI * 0.5,
 		-PI * 0.5 + TAU * cooldown_ratio, 64, YELLOW, 9.0)
-	var burst_label := "ATTACH" if not _snapshot.web_attached else (
+	var burst_label := "PULL" if _snapshot.pull_active else (
+		"ATTACH" if not _snapshot.web_attached else (
 		"BURST" if burst_ready else "%.1f" % _snapshot.burst_cooldown)
+	)
 	_draw_centered_text(
 		burst_center + Vector2(0.0, 7.0), burst_label, 20, WEB)
 
@@ -415,13 +413,13 @@ func _draw_debug(_size: Vector2) -> void:
 			_snapshot.rope_length, _snapshot.tension],
 		"Reel: %.1f / %.1f  lockout %.2f" % [
 			_snapshot.reel_energy, _snapshot.reel_capacity, _snapshot.reel_lockout],
-		"Burst: %.2f / %.2f  attached %s" % [
+		"Pull CD: %.2f / %.2f  %s" % [
 			_snapshot.burst_cooldown,
 			_snapshot.burst_cooldown_capacity,
-			_snapshot.web_attached,
+			_snapshot.pull_kind if _snapshot.pull_active else &"ready",
 		],
 		"geometry: %d surfaces  %d obstacles" % [
-			_snapshot.surface_segments.size(), _snapshot.obstacles.size()],
+			_snapshot.surfaces.size(), _snapshot.obstacles.size()],
 		"preset: %s" % _snapshot.preset_name,
 		"recording: %s  replay: %s" % [
 			_snapshot.recording, _snapshot.replaying],
@@ -437,8 +435,15 @@ func _draw_debug(_size: Vector2) -> void:
 	_draw_button(LabLayout.tuning_previous_rect(), "<", false)
 	_draw_button(LabLayout.tuning_minus_rect(), "-", false)
 	draw_rect(Rect2(136.0, 520.0, 126.0, 42.0), Color(0.06, 0.16, 0.2, 0.9))
-	_draw_text(Vector2(146.0, 547.0), "%s %.2f" % [
-		_snapshot.selected_parameter, _snapshot.selected_parameter_value], 14, WEB)
+	_draw_text(
+		Vector2(143.0, 547.0),
+		_format_tuning_value(
+			_snapshot.selected_parameter,
+			_snapshot.selected_parameter_value,
+		),
+		13,
+		WEB,
+	)
 	_draw_button(LabLayout.tuning_plus_rect(), "+", false)
 	_draw_button(LabLayout.tuning_next_rect(), ">", false)
 
@@ -477,6 +482,65 @@ func _draw_centered_text(
 	var width := _font.get_string_size(
 		text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, size).x
 	_draw_text(center - Vector2(width * 0.5, 0.0), text, size, color)
+
+
+func _format_tuning_value(parameter: StringName, value: float) -> String:
+	match parameter:
+		&"attach_catch_pct":
+			return "CATCH %.0f%%" % (value * 100.0)
+		&"burst_pull_pct":
+			return "BURST %.0f%%" % (value * 100.0)
+		&"dive_pull_pct":
+			return "DIVE %.0f%%" % (value * 100.0)
+		&"burst_duration":
+			return "B TIME %.2fs" % value
+		&"dive_duration":
+			return "D TIME %.2fs" % value
+		&"aim_forgiveness":
+			return "AIM %.0fpx" % value
+		&"reel_rate":
+			return "REEL %.0f/s" % value
+		&"web_range":
+			return "RANGE %.0f" % value
+		&"rope_damping":
+			return "DAMP %.2f" % value
+		&"gravity":
+			return "GRAV %.0f" % value
+		&"drive":
+			return "DRIVE %.0f" % value
+	return "%s %.2f" % [parameter, value]
+
+
+func _polygon_to_screen(polygon: PackedVector2Array) -> PackedVector2Array:
+	var converted := PackedVector2Array()
+	for point: Vector2 in polygon:
+		converted.append(_world_to_screen(point))
+	return converted
+
+
+func _polygon_bounds(polygon: PackedVector2Array) -> Rect2:
+	if polygon.is_empty():
+		return Rect2()
+	var minimum := polygon[0]
+	var maximum := polygon[0]
+	for point: Vector2 in polygon:
+		minimum.x = minf(minimum.x, point.x)
+		minimum.y = minf(minimum.y, point.y)
+		maximum.x = maxf(maximum.x, point.x)
+		maximum.y = maxf(maximum.y, point.y)
+	return Rect2(minimum, maximum - minimum)
+
+
+func _draw_closed_polyline(
+	polygon: PackedVector2Array,
+	color: Color,
+	width: float,
+) -> void:
+	if polygon.size() < 2:
+		return
+	var closed := polygon.duplicate()
+	closed.append(polygon[0])
+	draw_polyline(closed, color, width, true)
 
 
 func _world_to_screen(world_position: Vector2) -> Vector2:

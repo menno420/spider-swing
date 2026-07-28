@@ -81,15 +81,16 @@ Run directly:
 godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-42 checks, grouped so one subsystem failure never hides the rest:
+46 checks, grouped so one subsystem failure never hides the rest:
 
 - engine, main-scene, input-action, 60 Hz, renderer/viewport, Android preset,
   inward-dependency, and no-autoload bootstrap contracts;
-- fifteen deterministic physics contracts, including extended arbitrary-point
-  ceiling attachment, momentum preservation, first-tick/sustained Reel behavior,
-  anchor-directed Burst behavior, bounded streaming,
-  obstacle outcomes, boundaries, and identical trajectories from simulated
-  30/60/90/120 Hz render loops;
+- nineteen deterministic physics contracts, including extended arbitrary-point
+  solid attachment, larger aim forgiveness, momentum preservation, speed-neutral
+  Reel shortening, exact Burst/Dive distance shares, detached targeted Burst,
+  polygon anchoring/collision, bounded shaped streaming, boundaries, runtime
+  pull tuning, and identical trajectories from simulated 30/60/90/120 Hz render
+  loops;
 - ten mobile HUD contracts proving large separated Reel and Burst controls,
   DEBUG, and Menu are event-consuming
   Buttons, GUI geometry shares one layout source, accepted actions drive visual
@@ -161,5 +162,5 @@ Keep simulation checks deterministic: fixed seeds and recorded input traces in
 `tests/fixtures/`, never wall-clock timing. Register suites in
 `tests/test_runner.gd`. The remaining GDD §22.2 targets arrive with their owning
 phases: production chunk validation and moving-hazard coverage in Phase 1, settlement
-idempotence in Phase 2. The Phase 0.5 graybox stream and static rectangle collision
-checks are intentionally smaller test seams, not the Phase 1 content system.
+idempotence in Phase 2. The Phase 0.8 polygon stream and static collision checks
+are intentionally smaller test seams, not the Phase 1 content system.

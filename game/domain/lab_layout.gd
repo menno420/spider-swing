@@ -6,7 +6,19 @@ class_name LabLayout
 ## other or duplicates hit regions.
 
 const REFERENCE_SIZE := Vector2(1280.0, 720.0)
-const TUNING_PARAMETERS := [&"gravity", &"drive", &"reel_rate", &"rope_damping"]
+const TUNING_PARAMETERS := [
+	&"gravity",
+	&"drive",
+	&"web_range",
+	&"aim_forgiveness",
+	&"attach_catch_pct",
+	&"reel_rate",
+	&"burst_pull_pct",
+	&"burst_duration",
+	&"dive_pull_pct",
+	&"dive_duration",
+	&"rope_damping",
+]
 const ACTION_TARGET_SIZE := Vector2(228.0, 228.0)
 const ACTION_SIDE_MARGIN := 36.0
 const ACTION_BOTTOM_MARGIN := 32.0

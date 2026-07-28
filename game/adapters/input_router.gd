@@ -191,6 +191,8 @@ func present_simulation_event(event: SimulationEvent) -> void:
 			Input.vibrate_handheld(28, 0.35)
 		SimulationEvent.Kind.BURST_STARTED:
 			Input.vibrate_handheld(52, 0.8)
+		SimulationEvent.Kind.DIVE_STARTED:
+			Input.vibrate_handheld(38, 0.62)
 
 
 func _make_anchored_button(

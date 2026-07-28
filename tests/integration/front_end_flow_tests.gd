@@ -71,12 +71,15 @@ static func _test_tutorial_covers_current_mechanics(
 			combined += " " + str(step.get(key, ""))
 	for required: String in [
 		"moves forward automatically",
-		"cyan ceiling surface",
+		"solid ceiling or obstacle edge",
 		"tap anywhere",
 		"hold REEL",
+		"fixed rate",
 		"BURST",
 		"double-tap",
-		"striped obstacle",
+		"half the web distance",
+		"25% Dive Pull",
+		"warning-colored obstacle",
 		"ends the run",
 		"MENU",
 	]:

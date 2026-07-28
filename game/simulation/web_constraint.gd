@@ -46,7 +46,11 @@ func try_attach(
 
 	attached = true
 	anchor = target
-	rope_length = clampf(distance, config.web_minimum_length, config.web_maximum_length)
+	rope_length = clampf(
+		distance * (1.0 - config.attachment_catch_fraction),
+		config.web_minimum_length,
+		config.web_maximum_length,
+	)
 	tension = 0.0
 	return AttachResult.ATTACHED
 
@@ -62,58 +66,12 @@ func set_reel_active(active: bool) -> void:
 
 
 func engage_reel(
-	position: Vector2,
+	_position: Vector2,
 	velocity: Vector2,
-	config: SwingConfig,
+	_config: SwingConfig,
 ) -> Vector2:
-	if reel_active:
-		return velocity
 	set_reel_active(true)
-	if not reel_active:
-		return velocity
-	var to_anchor := anchor - position
-	if to_anchor.length_squared() <= 0.0001:
-		return velocity
-	return _ensure_minimum_inward_speed(
-		velocity,
-		to_anchor.normalized(),
-		config.reel_engage_minimum_speed,
-		config.reel_maximum_pull_speed,
-	)
-
-
-func calculate_burst_launch(
-	position: Vector2,
-	velocity: Vector2,
-	config: SwingConfig,
-) -> Dictionary:
-	if not attached:
-		return {"valid": false}
-	var to_anchor := anchor - position
-	if to_anchor.length_squared() <= 0.0001:
-		return {"valid": false}
-
-	var inward_direction := to_anchor.normalized()
-	var inward_speed := velocity.dot(inward_direction)
-	var tangential_velocity := velocity - inward_direction * inward_speed
-	var assisted_launch_speed := clampf(
-		maxf(0.0, inward_speed) + config.burst_pull_impulse,
-		config.burst_minimum_pull_speed,
-		config.burst_maximum_pull_speed,
-	)
-	# Burst may add a bounded pull, but it must never erase naturally earned
-	# inward speed when the spider is already travelling quickly to the anchor.
-	var launch_speed := maxf(inward_speed, assisted_launch_speed)
-	var launch_velocity := (
-		tangential_velocity * config.burst_tangential_retention
-		+ inward_direction * launch_speed
-	)
-	return {
-		"valid": true,
-		"anchor": anchor,
-		"direction": inward_direction,
-		"velocity": launch_velocity,
-	}
+	return velocity
 
 
 func advance_resource(delta: float, config: SwingConfig) -> bool:
@@ -150,15 +108,6 @@ func solve(
 	config: SwingConfig,
 ) -> Dictionary:
 	tension = 0.0
-	if attached and reel_active and reel_energy > 0.0:
-		var to_anchor := anchor - position
-		if to_anchor.length_squared() > 0.0001:
-			velocity = _add_bounded_inward_speed(
-				velocity,
-				to_anchor.normalized(),
-				config.reel_pull_acceleration * delta,
-				config.reel_maximum_pull_speed,
-			)
 	var predicted := position + velocity * delta
 	if not attached:
 		return {"position": predicted, "velocity": velocity}
@@ -190,27 +139,3 @@ func solve(
 	)
 
 	return {"position": predicted, "velocity": velocity}
-
-
-func _add_bounded_inward_speed(
-	velocity: Vector2,
-	inward_direction: Vector2,
-	requested_speed: float,
-	maximum_speed: float,
-) -> Vector2:
-	var inward_speed := velocity.dot(inward_direction)
-	var available := maxf(0.0, maximum_speed - inward_speed)
-	return velocity + inward_direction * minf(requested_speed, available)
-
-
-func _ensure_minimum_inward_speed(
-	velocity: Vector2,
-	inward_direction: Vector2,
-	minimum_speed: float,
-	maximum_speed: float,
-) -> Vector2:
-	var inward_speed := velocity.dot(inward_direction)
-	if inward_speed >= minimum_speed:
-		return velocity
-	var target_speed := minf(minimum_speed, maximum_speed)
-	return velocity + inward_direction * (target_speed - inward_speed)

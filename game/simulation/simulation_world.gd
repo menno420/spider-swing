@@ -4,6 +4,7 @@ class_name SimulationWorld
 
 const START_POSITION := Vector2(220.0, 390.0)
 const START_VELOCITY := Vector2(360.0, -30.0)
+const PULL_CLEARANCE := 10.0
 
 var config: SwingConfig
 var position: Vector2 = START_POSITION
@@ -13,10 +14,20 @@ var distance_pixels: float = 0.0
 var furthest_x: float = START_POSITION.x
 var tick: int = 0
 var anchors: PackedVector2Array = PackedVector2Array()
-var surface_segments: Array[Rect2] = []
-var obstacles: Array[Rect2] = []
+var surfaces: Array[PackedVector2Array] = []
+var obstacles: Array[PackedVector2Array] = []
 var burst_cooldown_remaining: float = 0.0
+var pull_active: bool = false
+var pull_kind: StringName = &""
+var pull_anchor: Vector2 = Vector2.ZERO
+var pull_distance_total: float = 0.0
+var pull_distance_remaining: float = 0.0
+var pull_duration_remaining: float = 0.0
 var web := WebConstraint.new()
+var _pull_direction: Vector2 = Vector2.ZERO
+var _pull_tangential_velocity: Vector2 = Vector2.ZERO
+var _pull_radial_speed: float = 0.0
+var _pull_exit_speed: float = 0.0
 var _commands: Array[InputCommand] = []
 
 
@@ -30,14 +41,19 @@ func reset(active_config: SwingConfig, geometry: CourseGeometry) -> void:
 	tick = 0
 	set_course_geometry(geometry)
 	burst_cooldown_remaining = 0.0
+	_cancel_pull()
 	web.reset(config)
 	_commands.clear()
 
 
 func set_course_geometry(geometry: CourseGeometry) -> void:
 	anchors = geometry.aim_guides.duplicate()
-	surface_segments = geometry.surface_segments.duplicate()
-	obstacles = geometry.obstacles.duplicate()
+	surfaces.clear()
+	for surface: PackedVector2Array in geometry.surfaces:
+		surfaces.append(surface.duplicate())
+	obstacles.clear()
+	for obstacle: PackedVector2Array in geometry.obstacles:
+		obstacles.append(obstacle.duplicate())
 
 
 func queue_command(command: InputCommand) -> void:
@@ -53,26 +69,38 @@ func step(delta: float) -> Array[SimulationEvent]:
 		_consume(command, events)
 	_commands.clear()
 
-	var motor_result := SpiderMotor.apply_forces(
-		velocity, distance_pixels, delta, config)
-	velocity = motor_result["velocity"]
-	target_speed = float(motor_result["target_speed"])
+	var hit_obstacle := false
+	if pull_active:
+		hit_obstacle = _advance_pull(delta, events)
+	else:
+		var previous_position := position
+		var motor_result := SpiderMotor.apply_forces(
+			velocity, distance_pixels, delta, config)
+		velocity = motor_result["velocity"]
+		target_speed = float(motor_result["target_speed"])
 
-	if web.advance_resource(delta, config):
-		events.append(SimulationEvent.make(
-			SimulationEvent.Kind.REEL_EMPTY,
-			position,
-			"Reel energy empty",
-		))
+		if web.advance_resource(delta, config):
+			events.append(SimulationEvent.make(
+				SimulationEvent.Kind.REEL_EMPTY,
+				position,
+				"Reel energy empty",
+			))
 
-	var constraint_result := web.solve(position, velocity, delta, config)
-	position = constraint_result["position"]
-	velocity = constraint_result["velocity"]
+		var constraint_result := web.solve(position, velocity, delta, config)
+		position = constraint_result["position"]
+		velocity = constraint_result["velocity"]
+		var contact := _first_obstacle_contact(previous_position, position)
+		if bool(contact["found"]):
+			position = contact["position"]
+			hit_obstacle = true
+			events.append(_obstacle_death_event())
 
 	furthest_x = maxf(furthest_x, position.x)
 	distance_pixels = maxf(0.0, furthest_x - START_POSITION.x)
 	tick += 1
 
+	if hit_obstacle:
+		return events
 	if position.y > config.lower_world_boundary:
 		events.append(SimulationEvent.make(
 			SimulationEvent.Kind.DEATH_REQUESTED,
@@ -86,15 +114,7 @@ func step(delta: float) -> Array[SimulationEvent]:
 			position,
 			"Lost behind the camera",
 			{"cause": &"camera_boundary"},
-			))
-	elif _collides_with_obstacle(position):
-		events.append(SimulationEvent.make(
-			SimulationEvent.Kind.DEATH_REQUESTED,
-			position,
-			"Hit a laboratory obstacle",
-			{"cause": &"obstacle"},
 		))
-
 	return events
 
 
@@ -102,35 +122,50 @@ func left_kill_boundary() -> float:
 	return furthest_x - config.camera_left_kill_distance
 
 
-func nearest_surface_point(target: Vector2) -> Dictionary:
+func nearest_solid_point(target: Vector2) -> Dictionary:
 	var best_distance := INF
 	var best := Vector2.ZERO
-	for surface: Rect2 in surface_segments:
-		var candidate := Vector2(
-			clampf(target.x, surface.position.x, surface.end.x),
-			surface.end.y,
-		)
-		var distance := candidate.distance_to(target)
-		if distance < best_distance:
-			best_distance = distance
-			best = candidate
+	var best_kind: StringName = &""
+	for surface: PackedVector2Array in surfaces:
+		var candidate := SolidGeometry.closest_point_on_polygon(target, surface)
+		if bool(candidate["found"]) and float(candidate["distance"]) < best_distance:
+			best_distance = float(candidate["distance"])
+			best = candidate["point"]
+			best_kind = &"surface"
+	for obstacle: PackedVector2Array in obstacles:
+		var candidate := SolidGeometry.closest_point_on_polygon(target, obstacle)
+		if bool(candidate["found"]) and float(candidate["distance"]) < best_distance:
+			best_distance = float(candidate["distance"])
+			best = candidate["point"]
+			best_kind = &"obstacle"
 	return {
 		"found": best_distance <= config.surface_snap_distance,
 		"anchor": best,
 		"distance": best_distance,
+		"kind": best_kind,
 	}
 
 
 func _collides_with_obstacle(center: Vector2) -> bool:
-	for obstacle: Rect2 in obstacles:
-		var closest := Vector2(
-			clampf(center.x, obstacle.position.x, obstacle.end.x),
-			clampf(center.y, obstacle.position.y, obstacle.end.y),
-		)
-		if center.distance_squared_to(closest) <= \
-				config.player_collision_radius * config.player_collision_radius:
+	for obstacle: PackedVector2Array in obstacles:
+		if SolidGeometry.circle_intersects_polygon(
+			center,
+			config.player_collision_radius,
+			obstacle,
+		):
 			return true
 	return false
+
+
+func _first_obstacle_contact(start: Vector2, finish: Vector2) -> Dictionary:
+	var motion := finish - start
+	var maximum_step := maxf(config.player_collision_radius * 0.5, 4.0)
+	var samples := maxi(1, ceili(motion.length() / maximum_step))
+	for sample in range(1, samples + 1):
+		var candidate := start.lerp(finish, float(sample) / float(samples))
+		if _collides_with_obstacle(candidate):
+			return {"found": true, "position": candidate}
+	return {"found": false, "position": finish}
 
 
 func _consume(
@@ -139,45 +174,11 @@ func _consume(
 ) -> void:
 	match command.kind:
 		InputCommand.Kind.ATTACH:
-			var nearest := nearest_surface_point(command.world_target)
-			if not bool(nearest["found"]):
-				events.append(SimulationEvent.make(
-					SimulationEvent.Kind.INVALID_TARGET,
-					command.world_target,
-					"No web-compatible ceiling surface",
-				))
-				return
-			var selected_anchor: Vector2 = nearest["anchor"]
-			var result := web.try_attach(position, selected_anchor, config)
-			match result:
-				WebConstraint.AttachResult.ATTACHED:
-					events.append(SimulationEvent.make(
-						SimulationEvent.Kind.ATTACHED,
-						selected_anchor,
-						"Web attached",
-					))
-				WebConstraint.AttachResult.OUT_OF_RANGE:
-					events.append(SimulationEvent.make(
-						SimulationEvent.Kind.OUT_OF_RANGE,
-						selected_anchor,
-						"Surface out of range",
-					))
-				_:
-					events.append(SimulationEvent.make(
-						SimulationEvent.Kind.INVALID_TARGET,
-						selected_anchor,
-						"Surface outside attachment cone",
-					))
+			_consume_web_tap(command.world_target, events)
 		InputCommand.Kind.RELEASE:
-			if web.attached:
-				web.release()
-				events.append(SimulationEvent.make(
-					SimulationEvent.Kind.RELEASED,
-					position,
-					"Momentum preserved",
-				))
+			_release_web(events)
 		InputCommand.Kind.REEL_START:
-			if not web.attached:
+			if pull_active or not web.attached:
 				events.append(SimulationEvent.make(
 					SimulationEvent.Kind.REEL_UNAVAILABLE,
 					position,
@@ -191,7 +192,7 @@ func _consume(
 					events.append(SimulationEvent.make(
 						SimulationEvent.Kind.REEL_STARTED,
 						web.anchor,
-						"Reel engaged",
+						"Reel shortening",
 						{
 							"origin_x": position.x,
 							"origin_y": position.y,
@@ -204,47 +205,296 @@ func _consume(
 		InputCommand.Kind.REEL_STOP:
 			web.set_reel_active(false)
 		InputCommand.Kind.BURST:
-			if burst_cooldown_remaining > 0.0:
-				events.append(SimulationEvent.make(
-					SimulationEvent.Kind.BURST_UNAVAILABLE,
-					position,
-					"Burst recharging",
-					{"remaining": burst_cooldown_remaining},
-				))
-				return
-			if not web.attached:
-				events.append(SimulationEvent.make(
-					SimulationEvent.Kind.BURST_UNAVAILABLE,
-					position,
-					"Attach a web before Burst",
-				))
-				return
-			var launch := web.calculate_burst_launch(position, velocity, config)
-			if not bool(launch.get("valid", false)):
-				events.append(SimulationEvent.make(
-					SimulationEvent.Kind.BURST_UNAVAILABLE,
-					position,
-					"Web target is too close for Burst",
-				))
-				return
-			var pull_direction: Vector2 = launch["direction"]
-			var burst_anchor: Vector2 = launch["anchor"]
-			var burst_velocity_before := velocity
-			velocity = launch["velocity"]
-			web.release()
-			burst_cooldown_remaining = config.burst_cooldown
+			_consume_burst(command, events)
+
+
+func _consume_web_tap(
+	world_target: Vector2,
+	events: Array[SimulationEvent],
+) -> void:
+	var nearest := nearest_solid_point(world_target)
+	if web.attached:
+		if bool(nearest["found"]) and _is_downward_target(nearest["anchor"]):
+			_try_start_dive(nearest["anchor"], events)
+			return
+		_release_web(events)
+		return
+
+	if not bool(nearest["found"]):
+		events.append(SimulationEvent.make(
+			SimulationEvent.Kind.INVALID_TARGET,
+			world_target,
+			"No solid surface near that tap",
+		))
+		return
+	var selected_anchor: Vector2 = nearest["anchor"]
+	if _is_downward_target(selected_anchor):
+		_try_start_dive(selected_anchor, events)
+		return
+	var result := web.try_attach(position, selected_anchor, config)
+	match result:
+		WebConstraint.AttachResult.ATTACHED:
 			events.append(SimulationEvent.make(
-				SimulationEvent.Kind.BURST_STARTED,
-				burst_anchor,
-				"Anchor Pull",
-				{
-					"direction_x": pull_direction.x,
-					"direction_y": pull_direction.y,
-					"origin_x": position.x,
-					"origin_y": position.y,
-					"velocity_before_x": burst_velocity_before.x,
-					"velocity_before_y": burst_velocity_before.y,
-					"velocity_after_x": velocity.x,
-					"velocity_after_y": velocity.y,
-				},
+				SimulationEvent.Kind.ATTACHED,
+				selected_anchor,
+				"Web attached",
 			))
+		WebConstraint.AttachResult.OUT_OF_RANGE:
+			events.append(SimulationEvent.make(
+				SimulationEvent.Kind.OUT_OF_RANGE,
+				selected_anchor,
+				"Solid target out of range",
+			))
+		_:
+			events.append(SimulationEvent.make(
+				SimulationEvent.Kind.INVALID_TARGET,
+				selected_anchor,
+				"Target outside attachment cone",
+			))
+
+
+func _consume_burst(
+	command: InputCommand,
+	events: Array[SimulationEvent],
+) -> void:
+	if pull_active:
+		events.append(SimulationEvent.make(
+			SimulationEvent.Kind.BURST_UNAVAILABLE,
+			position,
+			"Pull already active",
+		))
+		return
+	if burst_cooldown_remaining > 0.0:
+		events.append(SimulationEvent.make(
+			SimulationEvent.Kind.BURST_UNAVAILABLE,
+			position,
+			"Pull recharging",
+			{"remaining": burst_cooldown_remaining},
+		))
+		return
+
+	var selected_anchor := Vector2.ZERO
+	if command.has_world_target:
+		var nearest := nearest_solid_point(command.world_target)
+		if not bool(nearest["found"]):
+			events.append(SimulationEvent.make(
+				SimulationEvent.Kind.BURST_UNAVAILABLE,
+				command.world_target,
+				"No solid target near that double-tap",
+			))
+			return
+		selected_anchor = nearest["anchor"]
+	elif web.attached:
+		selected_anchor = web.anchor
+	else:
+		events.append(SimulationEvent.make(
+			SimulationEvent.Kind.BURST_UNAVAILABLE,
+			position,
+			"Aim with a double-tap or attach first",
+		))
+		return
+
+	if not _target_within_web_range(selected_anchor):
+		events.append(SimulationEvent.make(
+			SimulationEvent.Kind.OUT_OF_RANGE,
+			selected_anchor,
+			"Solid target out of range",
+		))
+		return
+	if _is_downward_target(selected_anchor):
+		_try_start_dive(selected_anchor, events)
+		return
+	if _start_pull(
+		selected_anchor,
+		config.burst_distance_fraction,
+		config.burst_pull_duration,
+		config.burst_exit_speed,
+		config.burst_tangential_retention,
+		&"burst",
+	):
+		burst_cooldown_remaining = config.burst_cooldown
+		events.append(_pull_started_event(
+			SimulationEvent.Kind.BURST_STARTED,
+			selected_anchor,
+			"Anchor Burst %.0f%%" % (config.burst_distance_fraction * 100.0),
+		))
+	else:
+		events.append(SimulationEvent.make(
+			SimulationEvent.Kind.BURST_UNAVAILABLE,
+			selected_anchor,
+			"Target is too close for Burst",
+		))
+
+
+func _try_start_dive(
+	selected_anchor: Vector2,
+	events: Array[SimulationEvent],
+) -> void:
+	if pull_active or burst_cooldown_remaining > 0.0:
+		events.append(SimulationEvent.make(
+			SimulationEvent.Kind.BURST_UNAVAILABLE,
+			selected_anchor,
+			"Pull recharging",
+			{"remaining": burst_cooldown_remaining},
+		))
+		return
+	if not _target_within_web_range(selected_anchor):
+		events.append(SimulationEvent.make(
+			SimulationEvent.Kind.OUT_OF_RANGE,
+			selected_anchor,
+			"Downward target out of range",
+		))
+		return
+	if _start_pull(
+		selected_anchor,
+		config.dive_distance_fraction,
+		config.dive_pull_duration,
+		config.dive_exit_speed,
+		config.dive_tangential_retention,
+		&"dive",
+	):
+		burst_cooldown_remaining = config.burst_cooldown
+		events.append(_pull_started_event(
+			SimulationEvent.Kind.DIVE_STARTED,
+			selected_anchor,
+			"Dive Pull %.0f%%" % (config.dive_distance_fraction * 100.0),
+		))
+	else:
+		events.append(SimulationEvent.make(
+			SimulationEvent.Kind.BURST_UNAVAILABLE,
+			selected_anchor,
+			"Target is too close for Dive Pull",
+		))
+
+
+func _start_pull(
+	selected_anchor: Vector2,
+	distance_fraction: float,
+	duration: float,
+	exit_speed: float,
+	tangential_retention: float,
+	mode: StringName,
+) -> bool:
+	var to_anchor := selected_anchor - position
+	var anchor_distance := to_anchor.length()
+	var maximum_travel := maxf(
+		0.0,
+		anchor_distance - config.player_collision_radius - PULL_CLEARANCE,
+	)
+	var requested_travel := minf(
+		anchor_distance * distance_fraction,
+		maximum_travel,
+	)
+	if requested_travel < 4.0 or duration <= 0.0:
+		return false
+
+	_pull_direction = to_anchor / anchor_distance
+	var inward_speed := velocity.dot(_pull_direction)
+	_pull_tangential_velocity = (
+		velocity - _pull_direction * inward_speed
+	) * tangential_retention
+	_pull_radial_speed = requested_travel / duration
+	_pull_exit_speed = exit_speed
+	pull_active = true
+	pull_kind = mode
+	pull_anchor = selected_anchor
+	pull_distance_total = requested_travel
+	pull_distance_remaining = requested_travel
+	pull_duration_remaining = duration
+	web.release()
+	return true
+
+
+func _advance_pull(
+	delta: float,
+	events: Array[SimulationEvent],
+) -> bool:
+	var radial_step := minf(_pull_radial_speed * delta, pull_distance_remaining)
+	var proposed := (
+		position
+		+ _pull_direction * radial_step
+		+ _pull_tangential_velocity * delta
+	)
+	var contact := _first_obstacle_contact(position, proposed)
+	if bool(contact["found"]):
+		position = contact["position"]
+		velocity = Vector2.ZERO
+		_cancel_pull()
+		events.append(_obstacle_death_event())
+		return true
+
+	position = proposed
+	pull_distance_remaining = maxf(0.0, pull_distance_remaining - radial_step)
+	pull_duration_remaining = maxf(0.0, pull_duration_remaining - delta)
+	if pull_distance_remaining <= 0.001 or pull_duration_remaining <= 0.001:
+		velocity = (
+			_pull_tangential_velocity
+			+ _pull_direction * _pull_exit_speed
+		)
+		_cancel_pull(false)
+	return false
+
+
+func _cancel_pull(clear_identity: bool = true) -> void:
+	pull_active = false
+	pull_distance_remaining = 0.0
+	pull_duration_remaining = 0.0
+	_pull_direction = Vector2.ZERO
+	_pull_tangential_velocity = Vector2.ZERO
+	_pull_radial_speed = 0.0
+	_pull_exit_speed = 0.0
+	if clear_identity:
+		pull_kind = &""
+		pull_anchor = Vector2.ZERO
+		pull_distance_total = 0.0
+
+
+func _release_web(events: Array[SimulationEvent]) -> void:
+	if not web.attached:
+		return
+	web.release()
+	events.append(SimulationEvent.make(
+		SimulationEvent.Kind.RELEASED,
+		position,
+		"Momentum preserved",
+	))
+
+
+func _is_downward_target(target: Vector2) -> bool:
+	return target.y >= position.y + config.downward_target_threshold
+
+
+func _target_within_web_range(target: Vector2) -> bool:
+	var distance := position.distance_to(target)
+	return distance >= config.web_minimum_length and \
+		distance <= config.web_maximum_length
+
+
+func _pull_started_event(
+	event_kind: int,
+	selected_anchor: Vector2,
+	message: String,
+) -> SimulationEvent:
+	return SimulationEvent.make(
+		event_kind,
+		selected_anchor,
+		message,
+		{
+			"direction_x": _pull_direction.x,
+			"direction_y": _pull_direction.y,
+			"origin_x": position.x,
+			"origin_y": position.y,
+			"travel_distance": pull_distance_total,
+			"anchor_distance": position.distance_to(selected_anchor),
+			"pull_kind": pull_kind,
+		},
+	)
+
+
+func _obstacle_death_event() -> SimulationEvent:
+	return SimulationEvent.make(
+		SimulationEvent.Kind.DEATH_REQUESTED,
+		position,
+		"Hit a laboratory obstacle",
+		{"cause": &"obstacle"},
+	)
