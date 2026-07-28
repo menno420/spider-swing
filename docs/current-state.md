@@ -22,21 +22,27 @@ without a reported regression.
 - The app opens on Home before gameplay. `FrontEndState` owns Home, Tutorial, and
   Settings navigation; the bootstrap composition root alone mounts or unmounts
   the front end and simulation.
-- The five-step in-engine Tutorial teaches movement, valid web targets, release
-  and momentum, Reel energy, death boundaries, restart, Menu, and optional
-  diagnostics without a prerecorded binary asset.
+- The six-step in-engine Tutorial teaches movement, continuous ceiling targets,
+  release and momentum, Reel energy, Forward Burst, striped obstacles, restart,
+  Menu, and optional diagnostics without a prerecorded binary asset.
 - `SaveRepository` exclusively owns versioned local settings writes. Swing
   candidate, control hints, reduced motion, and debug-tool visibility all have
   verified runtime effects and survive relaunch.
-- Five input actions are consumed through `InputRouter`: `web_action`,
-  `reel_in`, `pause`, `restart_run`, and `toggle_debug`. Reel, DEBUG, Menu, and
-  debug-panel hit regions are real Godot GUI controls that stop pointer events.
+- Six input actions are consumed through `InputRouter`: `web_action`, `reel_in`,
+  `burst_action`, `pause`, `restart_run`, and `toggle_debug`. Large left-thumb
+  Reel, right-thumb Burst, DEBUG, Menu, and debug-panel hit regions are real Godot
+  GUI controls that stop pointer events.
   World attach/release runs in `_unhandled_input` only after GUI handling.
   Render-time events are buffered into commands; simulation never polls input.
-- The playable Phase 0 lab has deterministic forward drive, gravity, web
-  attachment/release, Reel-In energy, three candidate tuning presets, camera/world
-  boundaries, runtime diagnostics, input recording/replay, and code-drawn graybox
-  presentation.
+- The playable traversal lab has deterministic forward drive, gravity, continuous
+  ceiling attachment, manual release, Reel-In energy, cooldown-limited Forward
+  Burst, three candidate presets, camera/world boundaries, and a bounded
+  deterministic seven-chunk geometry window that continues past 10,000 m.
+- The stream loops a small static obstacle vocabulary for avoidance testing. It is
+  graybox instrumentation, not an authored or approved Phase 1 chunk pack.
+- Settings is a readable vertical scroll surface with larger type and 58–68-pixel
+  controls, verified by runtime contracts and designed around the owner's
+  recorded 1040×480 viewport.
 - No autoload singletons exist, and a test fails if one appears.
 
 **Verification**
@@ -44,8 +50,8 @@ without a reported regression.
 - `python3 tools/verify.py` — passes. Six steps: architecture self-test,
   architecture scan, Godot discovery and version, headless import, boot smoke
   test, headless test runner.
-- `tests/test_runner.gd` — 31 checks, all passing: nine deterministic physics,
-  six GUI-owned mobile HUD, seven front-end navigation/settings, plus bootstrap
+- `tests/test_runner.gd` — 39 checks, all passing: thirteen deterministic physics,
+  nine GUI-owned mobile HUD, eight front-end navigation/settings, plus bootstrap
   and exact build-version contracts. The front-end group performs a real
   filesystem settings round-trip. The trajectory fixture produces the same final
   state when driven through simulated 30, 60, 90, and 120 Hz render loops.
@@ -55,9 +61,9 @@ without a reported regression.
 **CI**
 
 - `game-quality` — **green.** Runs `tools/verify.py` on a clean runner with Godot
-  4.7.1 and uses no secrets. PR #9 run
-  [30361453579](https://github.com/menno420/spider-swing/actions/runs/30361453579)
-  passed all 31 runtime contracts.
+  4.7.1 and uses no secrets. PR #10 run
+  [30365948791](https://github.com/menno420/spider-swing/actions/runs/30365948791)
+  passed all 39 runtime contracts.
 - `substrate-gate` — kit-owned. A born-red session card deliberately holds a PR
   until close-out; it must be green on the completed card before merge.
 - `android-debug` — **green on `main`, APK proven.** Run #1 produced artifact
@@ -66,15 +72,17 @@ without a reported regression.
   signed, containing this project's own scripts and scenes, shipping exactly
   `arm64-v8a` + `x86_64`. Uses no secrets and never publishes.
   Run: https://github.com/menno420/spider-swing/actions/runs/30344755707
-- `android-debug` also runs for gameplay pull requests. PR #9 run
-  [30361449955](https://github.com/menno420/spider-swing/actions/runs/30361449955)
-  produced artifact `spider-swing-android-debug` ID `8688986336`, 56,692,335
+- `android-debug` also runs for gameplay pull requests. PR #10 run
+  [30365945501](https://github.com/menno420/spider-swing/actions/runs/30365945501)
+  produced artifact `spider-swing-android-debug` ID `8690806549`, 56,710,502
   bytes, digest
-  `sha256:2e085948033f73684d5c3b9d77624f540892c5dd2ee0d420cbc5b06d729e155b`.
-  It proves version `0.1.0-front-end`, source
-  `debc6a3f77caea5f0ee5cd014732e461dd4555f7`, package
+  `sha256:b091f4231df7d9c78053f54c91ba20b02c62578be0914fa8aed800aa4e9a3a8e`.
+  It was downloaded and verified as a valid APK bundle containing this project's
+  compiled `course_stream`, front-end, and swing-lab scripts. It proves version
+  `0.2.0-traversal-test`, source
+  `0b3827aaad7769f64f3e2a75e5525b565879a2d2`, package
   `com.menno420.spiderswing.dev`, and display name
-  `Spider Swing Menu (dev)`.
+  `Spider Swing Traversal (dev)`.
 - **Dependabot** — live. Its first run opened two bumps against the kit-owned
   `substrate-gate.yml`; both were closed because `adopt`/`upgrade` regenerates that
   file. The rule is documented in `.github/dependabot.yml`: kit-owned-only bumps get
@@ -84,8 +92,8 @@ without a reported regression.
 
 **Deliberately absent** — scope boundary, not gaps:
 
-- No procedural chunks, obstacles, flies, currency, alternate spiders,
-  progression, missions, or monetization.
+- No authored Phase 1 chunk pack, moving hazards, flies, currency, alternate
+  spiders, progression, missions, or monetization.
 - No approved physics baseline yet: `balanced_candidate`, `weighty_candidate`,
   and `agile_candidate` require owner real-device playtesting.
 - No production art, analytics, ads, cloud save, or store SDK.
@@ -99,17 +107,22 @@ without a reported regression.
 
 ## In flight
 
-No implementation PR remains in flight after PR #9. Menno confirmed the PR #8
-Reel and DEBUG controls work as expected on Android.
+No implementation PR remains in flight after PR #10. Menno confirmed the PR #9
+front end works and supplied the usability/traversal feedback implemented here.
 
-**Owner exit gate:** test the PR #9 Android artifact, confirm
-Home/Tutorial/Settings/Menu work and settings survive a relaunch, then compare
-`balanced_candidate`, `weighty_candidate`, and `agile_candidate` from Settings.
-Phase 1 remains blocked only on choosing or rejecting a physics baseline, not on
-mobile controls or front-end infrastructure.
+**Owner exit gate:** test build `0.2.0-traversal-test` on Android. Confirm Settings
+scrolls and reads comfortably, Reel is reachable while aiming, Burst is useful,
+continuous ceiling attachment is predictable, and every striped obstacle offers a
+readable route. Compare all three physics candidates. Phase 1 remains blocked on
+choosing or rejecting a movement baseline and this obstacle-readability review.
 
 ## Recently shipped (newest first)
 
+- **2026-07-28 — Mobile traversal and obstacle test.** PR #10 makes Settings
+  readable and scrollable, splits large Reel/Burst controls across the thumbs,
+  accepts any point on continuous ceiling surfaces, replaces the finite anchor
+  field with a bounded deterministic stream, adds static striped test obstacles,
+  and passes 39 Godot contracts with a verified Android artifact.
 - **2026-07-28 — Starting screen, tutorial, and settings.** PR #9 opens on Home,
   adds Play, a data-driven five-step animated Tutorial, real persistent Settings,
   a Menu return path, reduced-motion behavior, and 31 passing Godot contracts.
