@@ -8,7 +8,9 @@ static func run() -> Dictionary:
 	var passed := 0
 	passed += _test_real_controls_own_primary_hud(failures)
 	passed += _test_reel_button_emits_only_reel(failures)
+	passed += _test_menu_button_returns_without_world_tap(failures)
 	passed += _test_debug_button_and_panel_controls(failures)
+	passed += _test_debug_controls_can_be_disabled(failures)
 	passed += _test_world_input_waits_for_gui(failures)
 	return {"passed": passed, "failures": failures}
 
@@ -25,18 +27,21 @@ static func _test_real_controls_own_primary_hud(
 	var router := _make_router()
 	var reel := router.hud_button(&"Reel")
 	var debug := router.hud_button(&"Debug")
-	if reel == null or debug == null:
-		failures.append("Reel or DEBUG is not backed by a Godot Button")
+	var menu := router.hud_button(&"Menu")
+	if reel == null or debug == null or menu == null:
+		failures.append("Reel, DEBUG, or MENU is not backed by a Godot Button")
 		router.free()
 		return 0
 	if reel.mouse_filter != Control.MOUSE_FILTER_STOP or \
-			debug.mouse_filter != Control.MOUSE_FILTER_STOP:
+			debug.mouse_filter != Control.MOUSE_FILTER_STOP or \
+			menu.mouse_filter != Control.MOUSE_FILTER_STOP:
 		failures.append("primary HUD controls do not stop GUI input")
 		router.free()
 		return 0
 	if reel.anchor_left != 1.0 or reel.anchor_top != 1.0 or \
-			debug.anchor_left != 1.0 or debug.anchor_top != 0.0:
-		failures.append("primary HUD anchors are not tied to the intended corners")
+			debug.anchor_left != 1.0 or debug.anchor_top != 0.0 or \
+			menu.anchor_left != 0.0 or menu.anchor_top != 0.0:
+		failures.append("primary HUD anchors are not tied to intended corners")
 		router.free()
 		return 0
 	router.free()
@@ -69,6 +74,25 @@ static func _test_reel_button_emits_only_reel(
 	return 1
 
 
+static func _test_menu_button_returns_without_world_tap(
+	failures: PackedStringArray,
+) -> int:
+	var router := _make_router()
+	var menu_requests: Array[bool] = []
+	var world_taps: Array[Vector2] = []
+	router.menu_requested.connect(func() -> void:
+		menu_requests.append(true))
+	router.web_tapped.connect(func(position: Vector2) -> void:
+		world_taps.append(position))
+	router.hud_button(&"Menu").pressed.emit()
+	if menu_requests.size() != 1 or not world_taps.is_empty():
+		failures.append("MENU did not emit one clean return request")
+		router.free()
+		return 0
+	router.free()
+	return 1
+
+
 static func _test_debug_button_and_panel_controls(
 	failures: PackedStringArray,
 ) -> int:
@@ -90,6 +114,21 @@ static func _test_debug_button_and_panel_controls(
 	debug.pressed.emit()
 	if toggles.size() != 2 or pause.visible:
 		failures.append("DEBUG did not hide its GUI controls on second press")
+		router.free()
+		return 0
+	router.free()
+	return 1
+
+
+static func _test_debug_controls_can_be_disabled(
+	failures: PackedStringArray,
+) -> int:
+	var router := _make_router()
+	router.configure_debug_controls(false)
+	var debug := router.hud_button(&"Debug")
+	var utility := router.hud_button(&"Utility0")
+	if debug.visible or utility.visible:
+		failures.append("disabled laboratory tools remain touchable")
 		router.free()
 		return 0
 	router.free()

@@ -10,6 +10,7 @@ class_name InputRouter
 signal web_tapped(screen_position: Vector2)
 signal reel_changed(active: bool)
 signal restart_requested
+signal menu_requested
 signal debug_toggle_requested
 signal debug_pause_requested
 signal debug_frame_step_requested
@@ -28,7 +29,9 @@ var _keyboard_reel_active: bool = false
 var _touch_surface: Control
 var _reel_button: Button
 var _debug_button: Button
+var _menu_button: Button
 var _debug_controls: Array[Control] = []
+var _debug_controls_enabled: bool = true
 
 
 func _ready() -> void:
@@ -62,6 +65,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		web_tapped.emit(get_viewport().get_mouse_position())
 	elif event.is_action_pressed("restart_run"):
 		restart_requested.emit()
+	elif event.is_action_pressed("ui_cancel"):
+		_request_menu()
 	elif event.is_action_pressed("toggle_debug"):
 		_toggle_debug_from_touch()
 	elif event.is_action_pressed("pause"):
@@ -84,6 +89,13 @@ func install_touch_surface() -> void:
 	_touch_surface.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_touch_surface.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(_touch_surface)
+
+	_menu_button = _make_anchored_button(
+		&"Menu",
+		Vector2.ZERO,
+		Rect2(24.0, 24.0, 92.0, 52.0),
+	)
+	_menu_button.pressed.connect(_request_menu)
 
 	_reel_button = _make_anchored_button(
 		&"Reel",
@@ -139,6 +151,16 @@ func hud_button(button_name: StringName) -> Button:
 	return _touch_surface.get_node_or_null(NodePath(str(button_name))) as Button
 
 
+func configure_debug_controls(enabled: bool) -> void:
+	_debug_controls_enabled = enabled
+	if _debug_button != null:
+		_debug_button.visible = enabled
+	if not enabled and _debug_visible:
+		_debug_visible = false
+		_set_debug_controls_visible(false)
+		debug_toggle_requested.emit()
+
+
 func _make_anchored_button(
 	button_name: StringName,
 	anchor: Vector2,
@@ -177,6 +199,8 @@ func _set_touch_reel(active: bool) -> void:
 
 
 func _toggle_debug_from_touch() -> void:
+	if not _debug_controls_enabled:
+		return
 	_debug_visible = not _debug_visible
 	_set_debug_controls_visible(_debug_visible)
 	debug_toggle_requested.emit()
@@ -184,7 +208,12 @@ func _toggle_debug_from_touch() -> void:
 
 func _set_debug_controls_visible(visible: bool) -> void:
 	for control: Control in _debug_controls:
-		control.visible = visible
+		control.visible = visible and _debug_controls_enabled
+
+
+func _request_menu() -> void:
+	cancel_held_input()
+	menu_requested.emit()
 
 
 func _emit_preset(preset_name: StringName) -> void:
@@ -216,7 +245,7 @@ func _emit_utility(index: int) -> void:
 
 
 func _handle_debug_key(key: InputEventKey) -> void:
-	if not key.pressed or key.echo:
+	if not key.pressed or key.echo or not _debug_controls_enabled:
 		return
 	match key.keycode:
 		KEY_1:

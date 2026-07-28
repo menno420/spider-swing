@@ -20,16 +20,11 @@ endpoints; it does not drive physics (GDD § 17.2).
 
 ## Current contents
 
-`scenes/swing_lab.tscn` + `scripts/swing_lab.gd` — the bootstrap placeholder. It
-renders the "Spider Swing — Phase 0 Swing Laboratory" title and one line of runtime
-facts. There is no spider, no web, no camera follow, and no physics. Phase 0
-replaces it with the real Swing Laboratory.
+- `front_end.tscn` + `front_end.gd` — responsive Home, Tutorial, and Settings
+  surfaces bound to application-owned state.
+- `tutorial_preview.gd` — reduced-motion-aware in-engine mechanics animation.
+- `swing_lab.tscn` + `swing_lab.gd` — Phase 0 camera, anchors, spider, web,
+  HUD, Reel energy, feedback, and diagnostic overlays.
 
-## Coming in Phase 0
-
-Camera with speed-dependent look-ahead holding the spider in the left third
-(GDD § 4.2), and the diagnostic overlays from GDD § 22.1 — velocity, speed target,
-rope length, tension, Reel energy, player state, and collision/attachment hitbox
-overlays.
-
-See ADR 0002.
+The composition root mounts either the front end or the laboratory, never two
+competing roots. See ADR 0002 and `docs/technical/front-end-flow.md`.

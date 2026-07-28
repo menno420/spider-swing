@@ -44,7 +44,8 @@
         "docs/technical/adr/0002-simulation-and-event-boundaries.md",
         "docs/ownership.md",
         "docs/runtime_contracts.md",
-        "docs/technical/phase-0-swing-laboratory.md"
+        "docs/technical/phase-0-swing-laboratory.md",
+        "docs/technical/front-end-flow.md"
       ],
       "source_roots": [
         "game/application/",
@@ -57,9 +58,11 @@
         "a second settlement path — ScoreSettlement creates exactly one idempotent RunSettlement per run",
         "a reward grant outside ProgressionService",
         "a direct persistence write — SaveRepository (adapters) exclusively owns persistent writes",
-        "a parallel effect timer — EffectState owns power-up activation, refresh, and expiry"
+        "a parallel effect timer — EffectState owns power-up activation, refresh, and expiry",
+        "a second pre-run navigation owner — FrontEndState owns Home, Tutorial, Settings, and Play intent"
       ],
       "gates": [
+        "FrontEndState and the composition root ensure Home exists before any run; only Play mounts gameplay.",
         "Phase 0 RunStateMachine and SwingLabSession exist. They own lifecycle, command buffering, fixed-step call order, candidate presets, snapshots, recording, replay, and diagnostics.",
         "Seeded chunk selection and the difficulty director are Phase 1 and remain blocked by the Phase 0 owner feel gate.",
         "Run settlement, Silk, and progression are Phase 2. Phase 2 exit gate: economy grants cannot duplicate; progress survives app suspension and migration; upgrades do not affect standard records."
@@ -76,7 +79,8 @@
         "docs/technical/adr/0002-simulation-and-event-boundaries.md",
         "docs/runtime_contracts.md",
         "docs/game-design/Spider-Swing-GDD-v2.0.md",
-        "docs/technical/phase-0-swing-laboratory.md"
+        "docs/technical/phase-0-swing-laboratory.md",
+        "docs/technical/front-end-flow.md"
       ],
       "source_roots": [
         "game/adapters/",
@@ -93,7 +97,7 @@
       "gates": [
         "InputRouter consumes the five configured actions plus multi-touch screen events and emits intent without mutating simulation.",
         "UI and Reel touch rectangles are filtered before web input; simultaneous Reel plus attach/release is supported.",
-        "Save, telemetry, and platform adapters are Phase 2."
+        "SaveRepository now persists PlayerSettings atomically; progression, telemetry, and platform adapters remain Phase 2."
       ],
       "verification": [
         "python3 tools/verify.py --require-godot",
@@ -107,7 +111,8 @@
         "docs/technical/adr/0002-simulation-and-event-boundaries.md",
         "docs/technical/adr/0001-engine-and-runtime.md",
         "docs/game-design/Spider-Swing-GDD-v2.0.md",
-        "docs/technical/phase-0-swing-laboratory.md"
+        "docs/technical/phase-0-swing-laboratory.md",
+        "docs/technical/front-end-flow.md"
       ],
       "source_roots": [
         "game/presentation/scenes/",
@@ -120,9 +125,11 @@
         "a reward, currency, record, or unlock grant from a UI node",
         "a physics-driving visual web — the visual web follows authoritative endpoints (GDD 17.2)",
         "a dependency on game/adapters/ — equal-rank peers",
-        "a second HUD root or a competing camera controller"
+        "a second HUD root or a competing camera controller",
+        "a second front-end navigation root — FrontEndView renders the state owned by FrontEndState"
       ],
       "gates": [
+        "Home, animated Tutorial, Settings, and the Menu return path are implemented before Phase 1 content.",
         "Phase 0 code-drawn graybox view consumes snapshots/events and includes camera look-ahead, visible anchors/web/tension, HUD, Reel energy, tuning controls, and diagnostic overlays.",
         "The view is intentionally not production art. Phase 1 may add fair-slice readability only after the owner approves a physics baseline.",
         "Production art is Phase 2 (release-quality first biome). Avoid Spider-Man / superhero visual similarity (GDD 17.1)."

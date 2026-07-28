@@ -28,4 +28,12 @@ telemetry, platform integration.
 - Never references `presentation` — they are peers. Shared needs go inward into
   `domain`, or invert through an event.
 
-Empty at bootstrap: Phase 0 populates it. See ADR 0002.
+## Current contents
+
+- `input_router.gd` owns GUI-consumed Reel, DEBUG, and Menu input before world
+  taps reach `_unhandled_input`.
+- `save_repository.gd` is the exclusive persistent writer. It currently stores
+  versioned PlayerSettings through a recoverable temp/backup rotation and is the
+  seam future progression persistence must extend rather than duplicate.
+
+See ADR 0002 and `docs/technical/front-end-flow.md`.
