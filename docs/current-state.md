@@ -19,8 +19,17 @@ without a reported regression.
   and exits 0. Verified both locally and in CI.
 - Compatibility renderer, landscape, 1280×720 reference viewport with
   `canvas_items`/`expand` stretch, **60 Hz** fixed tick, 4 max catch-up steps.
+- The app opens on Home before gameplay. `FrontEndState` owns Home, Tutorial, and
+  Settings navigation; the bootstrap composition root alone mounts or unmounts
+  the front end and simulation.
+- The five-step in-engine Tutorial teaches movement, valid web targets, release
+  and momentum, Reel energy, death boundaries, restart, Menu, and optional
+  diagnostics without a prerecorded binary asset.
+- `SaveRepository` exclusively owns versioned local settings writes. Swing
+  candidate, control hints, reduced motion, and debug-tool visibility all have
+  verified runtime effects and survive relaunch.
 - Five input actions are consumed through `InputRouter`: `web_action`,
-  `reel_in`, `pause`, `restart_run`, and `toggle_debug`. Reel, DEBUG, and
+  `reel_in`, `pause`, `restart_run`, and `toggle_debug`. Reel, DEBUG, Menu, and
   debug-panel hit regions are real Godot GUI controls that stop pointer events.
   World attach/release runs in `_unhandled_input` only after GUI handling.
   Render-time events are buffered into commands; simulation never polls input.
@@ -37,31 +46,35 @@ without a reported regression.
   test, headless test runner.
 - `tests/test_runner.gd` — 31 checks, all passing: nine deterministic physics,
   six GUI-owned mobile HUD, seven front-end navigation/settings, plus bootstrap
-  and exact build-version contracts. The trajectory fixture produces the same
-  final state when driven through simulated 30, 60, 90, and 120 Hz render loops.
+  and exact build-version contracts. The front-end group performs a real
+  filesystem settings round-trip. The trajectory fixture produces the same final
+  state when driven through simulated 30, 60, 90, and 120 Hz render loops.
 - `tools/check_architecture.py` — 14 fixtures, all passing, asserting both
   directions of the inward rule.
 
 **CI**
 
 - `game-quality` — **green.** Runs `tools/verify.py` on a clean runner with Godot
-  4.7.1. Passed on its first real run. Uses no secrets.
-- `substrate-gate` — kit-owned. Held the bootstrap PR red by design until the
-  founding session card flipped to complete, then green.
+  4.7.1 and uses no secrets. PR #9 run
+  [30361453579](https://github.com/menno420/spider-swing/actions/runs/30361453579)
+  passed all 31 runtime contracts.
+- `substrate-gate` — kit-owned. A born-red session card deliberately holds a PR
+  until close-out; it must be green on the completed card before merge.
 - `android-debug` — **green on `main`, APK proven.** Run #1 produced artifact
   `spider-swing-android-debug`; it was downloaded and inspected, not just assumed
   from a green tick: `Android package (APK), with classes.dex`, 56,968,605 bytes,
   signed, containing this project's own scripts and scenes, shipping exactly
   `arm64-v8a` + `x86_64`. Uses no secrets and never publishes.
   Run: https://github.com/menno420/spider-swing/actions/runs/30344755707
-- `android-debug` also runs for gameplay pull requests. PR #8 run
-  [#30356316047](https://github.com/menno420/spider-swing/actions/runs/30356316047)
-  produced artifact `spider-swing-android-debug` (56,653,674-byte archive,
-  SHA-256 `06f3d5b4b8069e0f4e391d541fa3e7509cf8922bf6de203860116fa455159fd5`).
-  Its `build-info.txt` proves version `0.0.2-control-ui`, source
-  `3322e8ca9fbac1771a761d39dcc798b3584f70f7`, package
+- `android-debug` also runs for gameplay pull requests. PR #9 run
+  [30361449955](https://github.com/menno420/spider-swing/actions/runs/30361449955)
+  produced artifact `spider-swing-android-debug` ID `8688986336`, 56,692,335
+  bytes, digest
+  `sha256:2e085948033f73684d5c3b9d77624f540892c5dd2ee0d420cbc5b06d729e155b`.
+  It proves version `0.1.0-front-end`, source
+  `debc6a3f77caea5f0ee5cd014732e461dd4555f7`, package
   `com.menno420.spiderswing.dev`, and display name
-  `Spider Swing UI2 (dev)`.
+  `Spider Swing Menu (dev)`.
 - **Dependabot** — live. Its first run opened two bumps against the kit-owned
   `substrate-gate.yml`; both were closed because `adopt`/`upgrade` regenerates that
   file. The rule is documented in `.github/dependabot.yml`: kit-owned-only bumps get
@@ -86,22 +99,20 @@ without a reported regression.
 
 ## In flight
 
-Menno confirmed the PR #8 Reel and DEBUG controls work as expected on Android.
-PR #9 adds the next player-facing slice: Home before gameplay, a complete
-five-step animated tutorial, persisted settings with real runtime effects, and a
-clean Menu return path. Godot quality and the first Android export are green.
+No implementation PR remains in flight after PR #9. Menno confirmed the PR #8
+Reel and DEBUG controls work as expected on Android.
 
-**Owner exit gate:** test the PR #9 Android artifact, confirm Home/Tutorial/
-Settings/Menu work and settings survive a relaunch, then compare
-`balanced_candidate`, `weighty_candidate`, and `agile_candidate` from
-Settings. Phase 1 remains blocked only on choosing or rejecting a physics
-baseline, not on the repaired mobile controls.
+**Owner exit gate:** test the PR #9 Android artifact, confirm
+Home/Tutorial/Settings/Menu work and settings survive a relaunch, then compare
+`balanced_candidate`, `weighty_candidate`, and `agile_candidate` from Settings.
+Phase 1 remains blocked only on choosing or rejecting a physics baseline, not on
+mobile controls or front-end infrastructure.
 
 ## Recently shipped (newest first)
 
-- **2026-07-28 — Front-end flow candidate.** PR #9 opens on Home, adds Play,
-  a data-driven five-step animated Tutorial, real persistent Settings, a Menu
-  return path, reduced-motion behavior, and 31 passing Godot contracts.
+- **2026-07-28 — Starting screen, tutorial, and settings.** PR #9 opens on Home,
+  adds Play, a data-driven five-step animated Tutorial, real persistent Settings,
+  a Menu return path, reduced-motion behavior, and 31 passing Godot contracts.
 - **2026-07-28 — Control-owned mobile HUD correction.** PR #8 makes Reel, DEBUG,
   and panel controls native GUI buttons that consume touch before world input;
   adds visible build version `0.0.2-control-ui`; and produces a source-identified
