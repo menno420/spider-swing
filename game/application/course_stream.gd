@@ -56,18 +56,23 @@ func _append_chunk(result: CourseGeometry, chunk_index: int) -> void:
 
 	if chunk_index < 2:
 		_append_ceiling(result, start_x, CHUNK_WIDTH + 2.0, ceiling_y)
+		if chunk_index == 1:
+			_append_lower_anchor_window(result, start_x + 430.0, 610.0, 170.0)
 		return
 
 	match pattern:
 		0:
 			_append_ceiling(result, start_x, CHUNK_WIDTH + 2.0, ceiling_y)
+			_append_lower_anchor_window(result, start_x + 210.0, 610.0, 170.0)
 			_append_floor_branch(result, start_x + 530.0, 680.0, 210.0, 138.0)
 		1:
 			_append_ceiling(result, start_x, 430.0, ceiling_y)
 			_append_ceiling(result, start_x + 630.0, 332.0, ceiling_y + 28.0)
+			_append_lower_anchor_window(result, start_x + 260.0, 600.0, 160.0)
 			_append_floor_branch(result, start_x + 500.0, 680.0, 190.0, 172.0)
 		2:
 			_append_ceiling(result, start_x + 190.0, 772.0, ceiling_y)
+			_append_lower_anchor_window(result, start_x + 360.0, 605.0, 180.0)
 			_append_hanging_branch(
 				result,
 				start_x + 610.0,
@@ -78,9 +83,11 @@ func _append_chunk(result: CourseGeometry, chunk_index: int) -> void:
 		3:
 			_append_ceiling(result, start_x, 310.0, ceiling_y + 22.0)
 			_append_ceiling(result, start_x + 520.0, 442.0, ceiling_y)
+			_append_lower_anchor_window(result, start_x + 205.0, 600.0, 150.0)
 			_append_broken_pot_gate(result, start_x + 410.0, 365.0)
 		4:
 			_append_ceiling(result, start_x, 650.0, ceiling_y)
+			_append_lower_anchor_window(result, start_x + 120.0, 610.0, 170.0)
 			_append_floor_branch(result, start_x + 360.0, 680.0, 260.0, 195.0)
 			_append_hanging_branch(
 				result,
@@ -92,6 +99,7 @@ func _append_chunk(result: CourseGeometry, chunk_index: int) -> void:
 		5:
 			_append_ceiling(result, start_x + 120.0, 350.0, ceiling_y + 28.0)
 			_append_ceiling(result, start_x + 650.0, 312.0, ceiling_y)
+			_append_lower_anchor_window(result, start_x + 315.0, 605.0, 160.0)
 			_append_broken_pot_gate(result, start_x + 515.0, 330.0)
 
 
@@ -128,6 +136,26 @@ func _append_floor_branch(
 		Vector2(start_x + width, floor_y - height * 0.40),
 		Vector2(start_x + width, floor_y),
 	]))
+
+
+func _append_lower_anchor_window(
+	result: CourseGeometry,
+	start_x: float,
+	top_y: float,
+	width: float,
+) -> void:
+	# A short, nonlethal root silhouette creates an intentional Dive Pull window
+	# without turning the entire floor into a permanent safety net.
+	var base_y := 720.0
+	result.surfaces.append(PackedVector2Array([
+		Vector2(start_x, base_y),
+		Vector2(start_x + width * 0.12, top_y + 48.0),
+		Vector2(start_x + width * 0.32, top_y + 12.0),
+		Vector2(start_x + width * 0.56, top_y),
+		Vector2(start_x + width * 0.78, top_y + 22.0),
+		Vector2(start_x + width, base_y),
+	]))
+	result.aim_guides.append(Vector2(start_x + width * 0.56, top_y))
 
 
 func _append_hanging_branch(

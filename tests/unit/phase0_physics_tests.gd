@@ -20,10 +20,14 @@ static func run() -> Dictionary:
 	passed += _test_aim_forgiveness_extends_beyond_old_band(failures)
 	passed += _test_extended_web_reach(failures)
 	passed += _test_burst_crosses_configured_fraction(failures)
+	passed += _test_pull_can_be_interrupted_by_recovery_web(failures)
+	passed += _test_double_tap_falls_back_to_recovery_web(failures)
 	passed += _test_downward_web_is_a_short_one_shot_pull(failures)
 	passed += _test_obstacle_is_a_valid_anchor(failures)
+	passed += _test_attached_tap_modes_are_explicit(failures)
 	passed += _test_pull_tuning_controls(failures)
 	passed += _test_course_stream_is_endless_and_bounded(failures)
+	passed += _test_course_stream_places_lower_anchor_windows(failures)
 	passed += _test_obstacle_collision_is_authoritative(failures)
 	passed += _test_attach_release_does_not_inject_energy(failures)
 	passed += _test_top_is_not_lethal(failures)
@@ -229,9 +233,9 @@ static func _test_extended_web_reach(failures: PackedStringArray) -> int:
 	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 	var world := SimulationWorld.new()
 	world.reset(config, _test_geometry())
-	var target := Vector2(950.0, 150.0)
-	if target.distance_to(world.position) <= 620.0:
-		failures.append("extended-reach fixture does not exceed the old limit")
+	var target := Vector2(1180.0, 150.0)
+	if target.distance_to(world.position) <= 820.0:
+		failures.append("right-hand reach fixture does not exceed the old limit")
 		return 0
 	world.queue_command(InputCommand.attach(target, 1, 0))
 	var events := world.step(FIXED_DELTA)
@@ -316,6 +320,79 @@ static func _test_burst_crosses_configured_fraction(
 	return 1
 
 
+static func _test_pull_can_be_interrupted_by_recovery_web(
+	failures: PackedStringArray,
+) -> int:
+	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	config.gravity = 0.0001
+	config.horizontal_drive_acceleration = 0.0001
+	config.air_drag = 0.0
+	var world := SimulationWorld.new()
+	world.reset(config, _test_geometry())
+	world.queue_command(InputCommand.burst_at(Vector2(640.0, 150.0), 1, 0))
+	world.step(FIXED_DELTA)
+	if not world.pull_active or world.web.attached:
+		failures.append("recovery fixture did not begin with an active detached Burst")
+		return 0
+	var cooldown_before := world.burst_cooldown_remaining
+	var recovery_anchor := Vector2(1080.0, 150.0)
+	world.queue_command(InputCommand.attach(
+		recovery_anchor,
+		2,
+		world.tick,
+	))
+	var events := world.step(FIXED_DELTA)
+	if world.pull_active or not world.web.attached:
+		failures.append("a normal tap did not interrupt Burst with a recovery web")
+		return 0
+	if world.web.anchor.distance_to(recovery_anchor) > 0.001:
+		failures.append("recovery web resolved to the wrong solid point")
+		return 0
+	if not _contains_event(events, SimulationEvent.Kind.ATTACHED) or \
+			_contains_event(events, SimulationEvent.Kind.BURST_UNAVAILABLE):
+		failures.append("recovery web did not report one accepted attach")
+		return 0
+	if world.burst_cooldown_remaining >= cooldown_before or \
+			world.burst_cooldown_remaining <= 0.0:
+		failures.append("recovery attach reset or removed the Burst cooldown")
+		return 0
+	return 1
+
+
+static func _test_double_tap_falls_back_to_recovery_web(
+	failures: PackedStringArray,
+) -> int:
+	var session := SwingLabSession.new()
+	session._reset_run()
+	session._world.pull_active = true
+	session.request_burst_from_gesture(Vector2(720.0, 150.0))
+	if session._command_buffer.size() != 1 or \
+			session._command_buffer[0].kind != InputCommand.Kind.ATTACH:
+		failures.append("double-tap during an active pull did not become recovery")
+		session.free()
+		return 0
+	session._command_buffer.clear()
+	session._world.pull_active = false
+	session._world.burst_cooldown_remaining = 1.0
+	session.request_burst_from_gesture(Vector2(720.0, 150.0))
+	if session._command_buffer.size() != 1 or \
+			session._command_buffer[0].kind != InputCommand.Kind.ATTACH:
+		failures.append(
+			"detached double-tap during cooldown swallowed the recovery web")
+		session.free()
+		return 0
+	session._command_buffer.clear()
+	session._world.burst_cooldown_remaining = 0.0
+	session.request_burst_from_gesture(Vector2(720.0, 150.0))
+	if session._command_buffer.size() != 1 or \
+			session._command_buffer[0].kind != InputCommand.Kind.BURST:
+		failures.append("ready detached double-tap no longer requests Burst")
+		session.free()
+		return 0
+	session.free()
+	return 1
+
+
 static func _test_downward_web_is_a_short_one_shot_pull(
 	failures: PackedStringArray,
 ) -> int:
@@ -384,14 +461,71 @@ static func _test_obstacle_is_a_valid_anchor(
 	return 1
 
 
+static func _test_attached_tap_modes_are_explicit(
+	failures: PackedStringArray,
+) -> int:
+	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	config.gravity = 0.0001
+	config.horizontal_drive_acceleration = 0.0001
+	config.air_drag = 0.0
+	var release_world := SimulationWorld.new()
+	release_world.reset(config, _test_geometry())
+	release_world.web.try_attach(
+		release_world.position,
+		Vector2(480.0, 150.0),
+		config,
+	)
+	release_world.queue_command(InputCommand.attach(
+		Vector2(720.0, 150.0),
+		1,
+		0,
+	))
+	release_world.step(FIXED_DELTA)
+	if release_world.web.attached:
+		failures.append("default attached tap no longer performs deliberate release")
+		return 0
+
+	var retarget_config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	retarget_config.web_tap_retargets_when_attached = true
+	retarget_config.gravity = 0.0001
+	retarget_config.horizontal_drive_acceleration = 0.0001
+	retarget_config.air_drag = 0.0
+	var retarget_world := SimulationWorld.new()
+	retarget_world.reset(retarget_config, _test_geometry())
+	retarget_world.web.try_attach(
+		retarget_world.position,
+		Vector2(480.0, 150.0),
+		retarget_config,
+	)
+	retarget_world.queue_command(InputCommand.attach(
+		Vector2(720.0, 150.0),
+		1,
+		0,
+	))
+	var events := retarget_world.step(FIXED_DELTA)
+	if not retarget_world.web.attached or \
+			retarget_world.web.anchor.distance_to(Vector2(720.0, 150.0)) > 0.001:
+		failures.append("RETARGET mode did not replace the web atomically")
+		return 0
+	if not _contains_event(events, SimulationEvent.Kind.ATTACHED):
+		failures.append("RETARGET mode emitted no accepted attach")
+		return 0
+	return 1
+
+
 static func _test_pull_tuning_controls(failures: PackedStringArray) -> int:
 	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 	var burst_before := config.burst_distance_fraction
 	var dive_before := config.dive_distance_fraction
 	var reel_before := config.reel_retraction_rate
+	var range_before := config.web_maximum_length
+	var cooldown_before := config.burst_cooldown
 	config.adjust(&"burst_pull_pct", 1.0)
 	config.adjust(&"dive_pull_pct", -1.0)
 	config.adjust(&"reel_rate", 1.0)
+	config.adjust(&"web_range", 1.0)
+	config.adjust(&"pull_cooldown", -1.0)
+	config.adjust(&"tap_retarget", 1.0)
 	if absf(config.burst_distance_fraction - (burst_before + 0.05)) > 0.001:
 		failures.append("debug Burst percentage adjustment is not 5%")
 		return 0
@@ -401,12 +535,24 @@ static func _test_pull_tuning_controls(failures: PackedStringArray) -> int:
 	if absf(config.reel_retraction_rate - (reel_before + 20.0)) > 0.001:
 		failures.append("debug Reel shortening adjustment is not 20 px/s")
 		return 0
+	if absf(config.web_maximum_length - (range_before + 50.0)) > 0.001:
+		failures.append("debug web range adjustment is not 50 px")
+		return 0
+	if absf(config.burst_cooldown - (cooldown_before - 0.10)) > 0.001:
+		failures.append("debug pull cooldown adjustment is not 0.10 seconds")
+		return 0
+	if not config.web_tap_retargets_when_attached:
+		failures.append("debug tap mode did not enable RETARGET")
+		return 0
 	for parameter: StringName in [
 		&"burst_pull_pct",
 		&"dive_pull_pct",
 		&"burst_duration",
+		&"pull_cooldown",
 		&"dive_duration",
 		&"reel_rate",
+		&"web_range",
+		&"tap_retarget",
 		&"aim_forgiveness",
 		&"attach_catch_pct",
 	]:
@@ -446,6 +592,37 @@ static func _test_course_stream_is_endless_and_bounded(
 	if not found_non_rectangular:
 		failures.append("streamed obstacle vocabulary is still rectangle-only")
 		return 0
+	return 1
+
+
+static func _test_course_stream_places_lower_anchor_windows(
+	failures: PackedStringArray,
+) -> int:
+	var stream := CourseStream.new()
+	stream.reset()
+	var geometry := stream.update_for_position(
+		CourseStream.CHUNK_WIDTH * 3.0 + 100.0)
+	for chunk_index in range(
+		geometry.first_chunk_index,
+		geometry.last_chunk_index + 1,
+	):
+		if chunk_index < 1:
+			continue
+		var chunk_start := float(chunk_index) * CourseStream.CHUNK_WIDTH
+		var chunk_end := chunk_start + CourseStream.CHUNK_WIDTH
+		var found_window := false
+		for surface: PackedVector2Array in geometry.surfaces:
+			var bounds := SolidGeometry.bounds(surface)
+			if bounds.position.x < chunk_start or bounds.end.x > chunk_end:
+				continue
+			if bounds.position.y >= 560.0 and bounds.size.x <= 220.0:
+				found_window = true
+				break
+		if not found_window:
+			failures.append(
+				"chunk %d has no authored lower anchor before its hazards" %
+				chunk_index)
+			return 0
 	return 1
 
 
@@ -597,7 +774,7 @@ static func _contains_event(events: Array[SimulationEvent], kind: int) -> bool:
 static func _test_geometry() -> CourseGeometry:
 	var geometry := CourseGeometry.new()
 	geometry.surfaces.append(
-		_rectangle_polygon(Rect2(0.0, 112.0, 960.0, 38.0)))
+		_rectangle_polygon(Rect2(0.0, 112.0, 1400.0, 38.0)))
 	geometry.aim_guides.append_array(PackedVector2Array([
 		Vector2(320.0, 150.0),
 		Vector2(480.0, 150.0),

@@ -1,0 +1,12 @@
+[
+  {
+    "id": "R-0001",
+    "lesson": "Recurring attention on tools/verify.py",
+    "evidence": "2026-07-28-percentage-pull-controls.md:L66, 2026-07-28-playtest-traversal-slice.md:L41, 2026-07-28-recovery-web-controls.md:L25, 2026-07-28-responsive-rope-actions.md:L73",
+    "tags": [
+      "recurring-path"
+    ],
+    "status": "provisional",
+    "date": "2026-07-28"
+  }
+]

@@ -213,9 +213,28 @@ func _consume_web_tap(
 	events: Array[SimulationEvent],
 ) -> void:
 	var nearest := nearest_solid_point(world_target)
+	if pull_active:
+		if not bool(nearest["found"]):
+			events.append(SimulationEvent.make(
+				SimulationEvent.Kind.INVALID_TARGET,
+				world_target,
+				"No solid surface near that recovery tap",
+			))
+			return
+		var recovery_anchor: Vector2 = nearest["anchor"]
+		if _is_downward_target(recovery_anchor):
+			_interrupt_pull(events)
+			return
+		_try_attach(recovery_anchor, events, true)
+		return
+
 	if web.attached:
 		if bool(nearest["found"]) and _is_downward_target(nearest["anchor"]):
 			_try_start_dive(nearest["anchor"], events)
+			return
+		if bool(nearest["found"]) and \
+				config.web_tap_retargets_when_attached:
+			_try_attach(nearest["anchor"], events, false, true)
 			return
 		_release_web(events)
 		return
@@ -231,13 +250,29 @@ func _consume_web_tap(
 	if _is_downward_target(selected_anchor):
 		_try_start_dive(selected_anchor, events)
 		return
+	_try_attach(selected_anchor, events)
+
+
+func _try_attach(
+	selected_anchor: Vector2,
+	events: Array[SimulationEvent],
+	recovery: bool = false,
+	retarget: bool = false,
+) -> void:
 	var result := web.try_attach(position, selected_anchor, config)
 	match result:
 		WebConstraint.AttachResult.ATTACHED:
+			if recovery:
+				_interrupt_pull(events, false)
 			events.append(SimulationEvent.make(
 				SimulationEvent.Kind.ATTACHED,
 				selected_anchor,
-				"Web attached",
+				"Recovery web attached" if recovery else (
+					"Web retargeted" if retarget else "Web attached"),
+				{
+					"interrupted_pull": recovery,
+					"retargeted": retarget,
+				},
 			))
 		WebConstraint.AttachResult.OUT_OF_RANGE:
 			events.append(SimulationEvent.make(
@@ -251,6 +286,25 @@ func _consume_web_tap(
 				selected_anchor,
 				"Target outside attachment cone",
 			))
+
+
+func _interrupt_pull(
+	events: Array[SimulationEvent],
+	emit_cancel_feedback: bool = true,
+) -> void:
+	if not pull_active:
+		return
+	velocity = _pull_tangential_velocity + _pull_direction * _pull_exit_speed
+	var interrupted_kind := pull_kind
+	_cancel_pull(false)
+	if emit_cancel_feedback:
+		events.append(SimulationEvent.make(
+			SimulationEvent.Kind.RELEASED,
+			position,
+			"%s cancelled" % (
+				"Dive Pull" if interrupted_kind == &"dive" else "Anchor Burst"),
+			{"interrupted_pull": true, "pull_kind": interrupted_kind},
+		))
 
 
 func _consume_burst(

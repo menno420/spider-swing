@@ -45,3 +45,17 @@
   momentum. Distance-shaped pulls make the requested outcome predictable while
   preserving collision risk, tangential carry, cooldown, and live owner tuning.
 - provenance: Menno's Phase 0.8 playtest direction and PR #13
+
+## [D-0004] Keep ordinary web control available during percentage pulls
+
+- status: decided
+- date: 2026-07-28
+- verdict: Burst and Dive Pull are interruptible movement transitions; their
+  shared cooldown gates repeated power use but never blocks an ordinary
+  recovery web.
+- why: Android recordings showed that fast recovery taps were classified as
+  double-taps and routed back into an already-active or cooling-down Burst,
+  leaving the spider detached until death. Routing unavailable detached gestures
+  to web intent and handing pull velocity into a normal constraint makes the
+  player's target selection authoritative without removing obstacle risk.
+- provenance: Menno's Phase 0.8 recovery playtest recordings and PR #14

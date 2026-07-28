@@ -53,8 +53,9 @@ const TUTORIAL_STEPS := [
 		"body": "Tap BURST while attached, or double-tap any solid target, to "
 			+ "cross half the web distance in a quick controlled pull. Tapping "
 			+ "a solid below performs a shorter 25% Dive Pull and never stays "
-			+ "attached.",
-		"tip": "Burst gains height; Dive Pull redirects you under high obstacles.",
+			+ "attached. During either pull, tap an upper solid to recover with "
+			+ "a normal web immediately.",
+		"tip": "Burst gains height; lower anchor windows redirect you under high obstacles.",
 	},
 	{
 		"title": "SURVIVE & RECOVER",

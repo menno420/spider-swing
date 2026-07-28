@@ -1,5 +1,20 @@
 [
   {
+    "slug": "anchor-pull-feel",
+    "date": "2026-07-28",
+    "tags": [
+      "phase",
+      "0",
+      "6",
+      "anchor-pull",
+      "feel",
+      "session",
+      "\ud83d\udca1",
+      "\ud83d\udcca"
+    ],
+    "summary": "> **Status:** `complete`"
+  },
+  {
     "slug": "bootstrap-spider-swing",
     "date": "2026-07-28",
     "tags": [
@@ -12,6 +27,127 @@
       "substrate",
       "\ud83d\udca1",
       "\u2691",
+      "\ud83d\udcca"
+    ],
+    "summary": "> **Status:** `complete`"
+  },
+  {
+    "slug": "control-owned-mobile-hud",
+    "date": "2026-07-28",
+    "tags": [
+      "control-owned",
+      "mobile",
+      "hud",
+      "correction",
+      "session",
+      "\ud83d\udca1",
+      "\ud83d\udcca"
+    ],
+    "summary": "> **Status:** `complete`"
+  },
+  {
+    "slug": "front-end-flow",
+    "date": "2026-07-28",
+    "tags": [
+      "front-end",
+      "menu",
+      "tutorial",
+      "settings",
+      "session",
+      "\ud83d\udca1",
+      "\ud83d\udcca"
+    ],
+    "summary": "> **Status:** `complete`"
+  },
+  {
+    "slug": "mobile-hud-touch-fix",
+    "date": "2026-07-28",
+    "tags": [
+      "mobile",
+      "hud",
+      "touch-coordinate",
+      "fix",
+      "session",
+      "\ud83d\udca1",
+      "\ud83d\udcca"
+    ],
+    "summary": "> **Status:** `complete`"
+  },
+  {
+    "slug": "percentage-pull-controls",
+    "date": "2026-07-28",
+    "tags": [
+      "phase",
+      "0",
+      "8",
+      "percentage",
+      "pull",
+      "controls",
+      "session",
+      "\ud83d\udca1",
+      "\ud83d\udcca"
+    ],
+    "summary": "> **Status:** `complete`"
+  },
+  {
+    "slug": "phase-0-swing-laboratory",
+    "date": "2026-07-28",
+    "tags": [
+      "phase",
+      "0",
+      "swing",
+      "laboratory",
+      "implementation",
+      "session",
+      "\ud83d\udca1",
+      "\ud83d\udcca"
+    ],
+    "summary": "> **Status:** `complete`"
+  },
+  {
+    "slug": "playtest-traversal-slice",
+    "date": "2026-07-28",
+    "tags": [
+      "phase",
+      "0",
+      "5",
+      "mobile",
+      "traversal",
+      "obstacle",
+      "test",
+      "session",
+      "\ud83d\udca1",
+      "\ud83d\udcca"
+    ],
+    "summary": "> **Status:** `complete`"
+  },
+  {
+    "slug": "recovery-web-controls",
+    "date": "2026-07-28",
+    "tags": [
+      "phase",
+      "0",
+      "8",
+      "recovery",
+      "web",
+      "controls",
+      "session",
+      "\ud83d\udca1",
+      "\ud83d\udcca"
+    ],
+    "summary": "> **Status:** `in-progress`"
+  },
+  {
+    "slug": "responsive-rope-actions",
+    "date": "2026-07-28",
+    "tags": [
+      "phase",
+      "0",
+      "7",
+      "responsive",
+      "rope-actions",
+      "session",
+      "\ud83d\udca1",
       "\ud83d\udcca"
     ],
     "summary": "> **Status:** `complete`"

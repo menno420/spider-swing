@@ -38,7 +38,7 @@ without a reported regression.
   World attach/release runs in `_unhandled_input` only after GUI handling.
   Render-time events are buffered into commands; simulation never polls input.
 - The playable traversal lab has deterministic forward drive, stronger candidate
-  gravity, polygonal solid targeting with an 820-pixel web range and 220-pixel
+  gravity, polygonal solid targeting with a 1000-pixel web range and 220-pixel
   aim-forgiveness band, manual release, an 8% gentle attach catch, three named
   presets, camera/world boundaries, and a bounded deterministic seven-chunk
   geometry window that continues past 10,000 m.
@@ -52,14 +52,21 @@ without a reported regression.
   atomically even when the first tap has not attached yet. Ceiling pieces,
   hanging/floor branches, obstacles, and broken-pot gates all resolve through one
   solid-edge targeting policy.
+- Burst and Dive Pull are interruptible transitions rather than input locks. A
+  valid upper-solid tap attaches a recovery web immediately, and a platform
+  double-tap made while pulling—or while detached during cooldown—falls back to
+  that web intent. Cooldown still gates another power action.
 - Accepted Reel, Burst, and Dive Pull actions emit authoritative events.
   Presentation renders short directional flashes and the input adapter supplies
   distinct handheld haptics; unavailable actions do not fake success feedback.
-- The stream varies ceiling heights and gaps and loops a small shaped obstacle
-  vocabulary for route testing. It remains prototype instrumentation, not an
-  authored or approved Phase 1 chunk pack.
-- The debug panel exposes gravity, drive, range, aim forgiveness, attach catch,
-  Reel shortening speed, Burst/Dive percentages and durations, and rope damping.
+- The stream varies ceiling heights and gaps, loops a small shaped obstacle
+  vocabulary, and places a short lower anchor window before each challenge
+  pattern's key hazard. The gaps between those windows remain unavailable. It is
+  prototype instrumentation, not an authored or approved Phase 1 chunk pack.
+- The debug panel exposes gravity, drive, 500–1400 px range, default RELEASE vs
+  optional atomic RETARGET tap behavior, aim forgiveness, attach catch, Reel
+  shortening speed, shared pull cooldown, Burst/Dive percentages and durations,
+  and rope damping.
 - Settings is a readable vertical scroll surface with larger type and 58–68-pixel
   controls, verified by runtime contracts and designed around the owner's
   recorded 1040×480 viewport.
@@ -70,11 +77,12 @@ without a reported regression.
 - `python3 tools/verify.py` — passes. Six steps: architecture self-test,
   architecture scan, Godot discovery and version, headless import, boot smoke
   test, headless test runner.
-- `tests/test_runner.gd` — 46 checks, all passing: nineteen deterministic physics,
+- `tests/test_runner.gd` — 50 checks, all passing: twenty-three deterministic physics,
   ten GUI-owned mobile HUD, eight front-end navigation/settings, plus bootstrap
   and exact build-version contracts. Physics covers exact 50%/25% pull shares,
-  detached targeted Burst, speed-neutral Reel shortening, solid polygon
-  targeting/collision, tuning controls, and shaped bounded streaming. The
+  detached targeted Burst, recovery-web interruption, double-tap fallback,
+  release/retarget modes, speed-neutral Reel shortening, solid polygon
+  targeting/collision, tuning controls, and lower-window bounded streaming. The
   front-end group performs a real filesystem settings round-trip. The trajectory
   fixture produces the same final state when driven through simulated 30, 60,
   90, and 120 Hz render loops.
@@ -90,6 +98,11 @@ without a reported regression.
   `357b885290e8ad692b8ef04c1dcfaf7892cfb03e`, including exact percentage pulls,
   speed-neutral Reel, solid polygon targeting/collision, shaped streaming,
   touch geometry, feedback, and Android workflow identity guards.
+- PR #14 `game-quality` run
+  [30393908882](https://github.com/menno420/spider-swing/actions/runs/30393908882)
+  passes all 50 contracts at source
+  `1d4e3269c317a4b1323ccfe9e7c57eaea137d7d4`, including pull interruption,
+  double-tap recovery fallback, tap-mode tuning, and lower anchor coverage.
 - `substrate-gate` — kit-owned. A born-red session card deliberately holds a PR
   until close-out; it must be green on the completed card before merge.
 - `android-debug` — **green on `main`, APK proven.** Run #1 produced artifact
@@ -121,6 +134,18 @@ without a reported regression.
   `357b885290e8ad692b8ef04c1dcfaf7892cfb03e`, package
   `com.menno420.spiderswing.dev`, and display name
   `Spider Swing Percentage Pull (dev)`.
+- PR #14 `android-debug` run
+  [30393906389](https://github.com/menno420/spider-swing/actions/runs/30393906389)
+  produced downloadable artifact
+  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30393906389/artifacts/8702034654)
+  ID `8702034654`, 56,747,428 bytes, digest
+  `sha256:b23c0f462339b017c2a564873522db0357fb4937e1ee70b88913eaa179597339`.
+  The downloaded 57,128,524-byte APK passed archive verification and had SHA-256
+  `4633b9b84b16cf52c29436ad355aec223cb201267be7a1b2eecd80f2705c6b4b`.
+  Its bundled manifest proves version `0.3.1-recovery-web-test`, source
+  `1d4e3269c317a4b1323ccfe9e7c57eaea137d7d4`, package
+  `com.menno420.spiderswing.dev`, and display name
+  `Spider Swing Recovery Web (dev)`.
 - **Dependabot** — live. Its first run opened two bumps against the kit-owned
   `substrate-gate.yml`; both were closed because `adopt`/`upgrade` regenerates that
   file. The rule is documented in `.github/dependabot.yml`: kit-owned-only bumps get
@@ -146,16 +171,20 @@ without a reported regression.
 
 ## In flight
 
-PR #13 is the active, APK-proven percentage-pull feel pass. Local and
-`game-quality` Godot 4.7.1 gates pass 46 contracts, and Android artifact
-`8700462786` carries build `0.3.0-percentage-pull-test`. The next owner exit gate
-is device feel: judge the larger solid aim band, Reel height control without
-runaway speed, exact-feeling 50% Burst, 25% downward Dive Pull, and the new shaped
-route silhouettes. Phase 1 remains blocked on choosing or rejecting a movement
-baseline.
+PR #14 is the active, APK-proven recovery-web follow-up. Local and CI Godot 4.7.1
+gates pass 50 contracts, and Android artifact `8702034654` carries build
+`0.3.1-recovery-web-test`. The next owner exit gate is device feel: confirm that
+a Burst can always hand off to an immediate recovery web, compare DEBUG
+`TAP RELEASE` with `RETARGET`, judge the 1000-pixel right-hand reach, and use the
+new lower anchor windows before hazards. Phase 1 remains blocked on choosing or
+rejecting a movement baseline.
 
 ## Recently shipped (newest first)
 
+- **2026-07-28 — Recovery-web controls (PR #14 in progress).** Makes percentage
+  pulls interruptible by ordinary webs, converts otherwise-unavailable rapid
+  double-taps into recovery intent, promotes 1000-pixel reach, exposes tap mode
+  and cooldown tuning, and authors lower anchor windows before hazards.
 - **2026-07-28 — Percentage-pull traversal candidate (PR #13 ready).**
   Separates Reel shortening from speed gain, makes Burst/Dive distance-shaped and
   atomically targetable, accepts all retained solid polygons as anchors, adds
