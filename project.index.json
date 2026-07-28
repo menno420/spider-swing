@@ -27,9 +27,9 @@
         "an input poll inside simulation — simulation consumes buffered InputCommand values only"
       ],
       "gates": [
-        "PHASE 0 IMPLEMENTED CANDIDATE. Deterministic motor, web constraint, manual release, Reel-In energy, boundaries, and trajectory tests exist on PR #6.",
-        "Phase 0 owner gate remains open: compare balanced_candidate, weighty_candidate, and agile_candidate on a real Android device; approve one named baseline or request changes.",
-        "The core physics prototype must be approved before progression, monetization, missions, multiple spiders, or large content sets are built (GDD 1)."
+        "PHASE 0.5 PLAYABLE TEST. Deterministic motor, continuous ceiling attachment, manual release, Reel-In, Forward Burst, static obstacle collision, boundaries, and fixed-rate tests exist.",
+        "The bounded deterministic CourseStream is graybox test instrumentation; production chunk validation, moving hazards, and authored content remain Phase 1.",
+        "Owner gate remains open: test the three physics candidates and the new traversal controls on Android; approve one baseline or request changes."
       ],
       "verification": [
         "python3 tools/verify.py --require-godot",
@@ -59,13 +59,14 @@
         "a reward grant outside ProgressionService",
         "a direct persistence write — SaveRepository (adapters) exclusively owns persistent writes",
         "a parallel effect timer — EffectState owns power-up activation, refresh, and expiry",
-        "a second pre-run navigation owner — FrontEndState owns Home, Tutorial, Settings, and Play intent"
+        "a second pre-run navigation owner — FrontEndState owns Home, Tutorial, Settings, and Play intent",
+        "a second course stream — CourseStream owns the bounded deterministic graybox geometry window"
       ],
       "gates": [
         "FrontEndState and the composition root ensure Home exists before any run; only Play mounts gameplay.",
-        "Phase 0 RunStateMachine and SwingLabSession exist. They own lifecycle, command buffering, fixed-step call order, candidate presets, snapshots, recording, replay, and diagnostics.",
-        "Seeded chunk selection and the difficulty director are Phase 1 and remain blocked by the Phase 0 owner feel gate.",
-        "Run settlement, Silk, and progression are Phase 2. Phase 2 exit gate: economy grants cannot duplicate; progress survives app suspension and migration; upgrades do not affect standard records."
+        "SwingLabSession owns lifecycle, buffered commands, fixed-step order, presets, snapshots, recording, replay, diagnostics, and the CourseStream refresh boundary.",
+        "CourseStream supplies bounded deterministic graybox ceiling/obstacle geometry. The production DifficultyDirector and validated authored chunks remain Phase 1.",
+        "Run settlement, Silk, and progression remain Phase 2."
       ],
       "verification": [
         "python3 tools/verify.py --require-godot",
@@ -95,9 +96,9 @@
         "input action definitions outside project.godot's [input] section"
       ],
       "gates": [
-        "InputRouter consumes the five configured actions plus multi-touch screen events and emits intent without mutating simulation.",
-        "UI and Reel touch rectangles are filtered before web input; simultaneous Reel plus attach/release is supported.",
-        "SaveRepository now persists PlayerSettings atomically; progression, telemetry, and platform adapters remain Phase 2."
+        "InputRouter consumes six configured actions plus touch events and emits intent without mutating simulation.",
+        "Large lower-left Reel and lower-right Burst Buttons consume GUI input; double-tap has a separate Burst gesture path; simultaneous Reel plus aiming is supported.",
+        "SaveRepository persists PlayerSettings atomically; progression, telemetry, and platform adapters remain Phase 2."
       ],
       "verification": [
         "python3 tools/verify.py --require-godot",
@@ -129,10 +130,9 @@
         "a second front-end navigation root — FrontEndView renders the state owned by FrontEndState"
       ],
       "gates": [
-        "Home, animated Tutorial, Settings, and the Menu return path are implemented before Phase 1 content.",
-        "Phase 0 code-drawn graybox view consumes snapshots/events and includes camera look-ahead, visible anchors/web/tension, HUD, Reel energy, tuning controls, and diagnostic overlays.",
-        "The view is intentionally not production art. Phase 1 may add fair-slice readability only after the owner approves a physics baseline.",
-        "Production art is Phase 2 (release-quality first biome). Avoid Spider-Man / superhero visual similarity (GDD 17.1)."
+        "Home, six-step animated Tutorial, scrolling readable Settings, and Menu return are implemented.",
+        "The code-drawn graybox view consumes snapshots/events and shows continuous ceiling surfaces, aim guides, striped test obstacles, Reel and Burst state, tuning controls, and diagnostics.",
+        "The view and obstacles are test instrumentation, not production art or an approved Phase 1 content pack."
       ],
       "verification": [
         "python3 tools/verify.py --require-godot",
@@ -162,9 +162,8 @@
         "an upgrade granting starting Silk per run — a removed exploit (GDD 15.1)"
       ],
       "gates": [
-        "EMPTY BY DESIGN. Phase 0 uses a graybox debug course, not authored content.",
-        "Phase 1 adds three static obstacle chunks and one moving-hazard family. Every chunk must declare the full GDD 9.1 envelope and pass route validation.",
-        "Phase 1 exit gate: no observed unavoidable deaths in fixed-seed testing; every chunk valid for its declared speed/state range; every required route completable by the unupgraded Classic spider.",
+        "NO AUTHORED CONTENT YET. CourseStream generates a tiny deterministic graybox obstacle vocabulary solely for movement and avoidance playtests.",
+        "Phase 1 adds validated authored chunks and one moving-hazard family with the complete GDD 9.1 envelope.",
         "No Git LFS until real large binary assets justify it."
       ],
       "verification": [
