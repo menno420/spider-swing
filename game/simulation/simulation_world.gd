@@ -143,6 +143,13 @@ func _consume(
 					"Momentum preserved",
 				))
 		InputCommand.Kind.REEL_START:
-			web.set_reel_active(true)
+			if not web.attached:
+				events.append(SimulationEvent.make(
+					SimulationEvent.Kind.REEL_UNAVAILABLE,
+					position,
+					"Attach a web before Reel-In",
+				))
+			else:
+				web.set_reel_active(true)
 		InputCommand.Kind.REEL_STOP:
 			web.set_reel_active(false)

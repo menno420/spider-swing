@@ -13,6 +13,7 @@ static func run() -> Dictionary:
 	passed += _test_presets(failures)
 	passed += _test_release_preserves_velocity(failures)
 	passed += _test_reel_shortens_without_teleport(failures)
+	passed += _test_detached_reel_reports_unavailable(failures)
 	passed += _test_invalid_target_is_inert(failures)
 	passed += _test_attach_release_does_not_inject_energy(failures)
 	passed += _test_top_is_not_lethal(failures)
@@ -80,6 +81,27 @@ static func _test_reel_shortens_without_teleport(
 	if world.position.distance_to(position_before) > maximum_motion:
 		failures.append("Reel teleported the spider by %.3f px" %
 			world.position.distance_to(position_before))
+		return 0
+	return 1
+
+
+static func _test_detached_reel_reports_unavailable(
+	failures: PackedStringArray,
+) -> int:
+	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	var world := SimulationWorld.new()
+	world.reset(config, PackedVector2Array())
+	var energy_before := world.web.reel_energy
+	world.queue_command(InputCommand.reel(true, 1, 0))
+	var events := world.step(FIXED_DELTA)
+	if world.web.reel_active:
+		failures.append("detached Reel incorrectly became active")
+		return 0
+	if absf(world.web.reel_energy - energy_before) > 0.001:
+		failures.append("detached Reel consumed energy")
+		return 0
+	if not _contains_event(events, SimulationEvent.Kind.REEL_UNAVAILABLE):
+		failures.append("detached Reel emitted no attach-first feedback")
 		return 0
 	return 1
 

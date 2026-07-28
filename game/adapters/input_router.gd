@@ -2,6 +2,12 @@ extends Node
 class_name InputRouter
 ## Captures render-time input and emits intent without mutating simulation.
 
+enum PrimaryTouchRegion {
+	WORLD,
+	REEL,
+	DEBUG,
+}
+
 signal web_tapped(screen_position: Vector2)
 signal reel_changed(active: bool)
 signal restart_requested
@@ -20,6 +26,34 @@ var _reel_touch_ids: Dictionary = {}
 var _reel_active: bool = false
 var _debug_visible: bool = false
 var _keyboard_reel_active: bool = false
+
+
+static func logical_canvas_size(
+	visible_screen_size: Vector2,
+	stretch_transform: Transform2D,
+) -> Vector2:
+	## InputEvent positions have already been adjusted by Godot's stretch
+	## transform, while Viewport.get_visible_rect() reports physical screen
+	## pixels. Convert only the size into the same logical canvas coordinates
+	## used by those events and by SwingLabView._draw().
+	if visible_screen_size.x <= 0.0 or visible_screen_size.y <= 0.0:
+		return LabLayout.REFERENCE_SIZE
+	var logical_size := stretch_transform.affine_inverse().basis_xform(
+		visible_screen_size)
+	if logical_size.x <= 0.0 or logical_size.y <= 0.0:
+		return LabLayout.REFERENCE_SIZE
+	return logical_size
+
+
+static func classify_primary_touch(
+	position: Vector2,
+	logical_canvas_size_value: Vector2,
+) -> int:
+	if LabLayout.reel_rect(logical_canvas_size_value).has_point(position):
+		return PrimaryTouchRegion.REEL
+	if LabLayout.debug_toggle_rect(logical_canvas_size_value).has_point(position):
+		return PrimaryTouchRegion.DEBUG
+	return PrimaryTouchRegion.WORLD
 
 
 func _ready() -> void:
@@ -63,10 +97,15 @@ func _input(event: InputEvent) -> void:
 
 func _handle_screen_touch(touch: InputEventScreenTouch) -> void:
 	if touch.pressed:
-		if LabLayout.reel_rect(_viewport_size()).has_point(touch.position):
-			_reel_touch_ids[touch.index] = true
-			_publish_reel_state()
-			return
+		match classify_primary_touch(touch.position, _viewport_size()):
+			PrimaryTouchRegion.REEL:
+				_reel_touch_ids[touch.index] = true
+				_publish_reel_state()
+				return
+			PrimaryTouchRegion.DEBUG:
+				_debug_visible = not _debug_visible
+				debug_toggle_requested.emit()
+				return
 		if _handle_ui_press(touch.position):
 			return
 		web_tapped.emit(touch.position)
@@ -175,5 +214,8 @@ func _publish_reel_state() -> void:
 
 
 func _viewport_size() -> Vector2:
-	var size := get_viewport().get_visible_rect().size
-	return LabLayout.REFERENCE_SIZE if size.x <= 0.0 or size.y <= 0.0 else size
+	var viewport := get_viewport()
+	return logical_canvas_size(
+		viewport.get_visible_rect().size,
+		viewport.get_stretch_transform(),
+	)

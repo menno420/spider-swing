@@ -21,7 +21,9 @@ without a reported regression.
   `canvas_items`/`expand` stretch, **60 Hz** fixed tick, 4 max catch-up steps.
 - Five input actions are consumed through `InputRouter`: `web_action`,
   `reel_in`, `pause`, `restart_run`, and `toggle_debug`. Render-time touch
-  events are buffered into commands; simulation never polls input.
+  events are buffered into commands; simulation never polls input. HUD hit regions
+  are resolved in the stretched logical canvas, including the verified 1040×480
+  Android layout.
 - The playable Phase 0 lab has deterministic forward drive, gravity, web
   attachment/release, Reel-In energy, three candidate tuning presets, camera/world
   boundaries, runtime diagnostics, input recording/replay, and code-drawn graybox
@@ -33,8 +35,9 @@ without a reported regression.
 - `python3 tools/verify.py` — passes. Six steps: architecture self-test,
   architecture scan, Godot discovery and version, headless import, boot smoke
   test, headless test runner.
-- `tests/test_runner.gd` — 16 checks, all passing, including eight deterministic
-  Phase 0 physics contracts. The trajectory fixture produces the same final state
+- `tests/test_runner.gd` — 21 checks, all passing, including nine deterministic
+  Phase 0 physics contracts and four mobile HUD coordinate regressions derived
+  from the owner's 1040×480 recording. The trajectory fixture produces the same final state
   when driven through simulated 30, 60, 90, and 120 Hz render loops.
 - `tools/check_architecture.py` — 14 fixtures, all passing, asserting both
   directions of the inward rule.
@@ -75,15 +78,24 @@ without a reported regression.
 
 ## In flight
 
-The Phase 0 candidate is implemented and verified. Godot import, boot,
-architecture checks, and all 16 runner checks pass in `game-quality`.
+The Phase 0 candidate is implemented. The owner's first phone run confirms the
+core swing already feels fun, while exposing a physical-screen/logical-canvas
+mismatch that made the drawn Reel and DEBUG controls miss touch input. PR #7 maps
+HUD hit regions through the inverse stretch transform, adds detached-Reel feedback,
+and locks the recorded device geometry with regression tests.
 
-**Owner exit gate:** install the Android artifact produced from the Phase 0 merge,
-compare all three tuning candidates, and approve one baseline or request concrete
-changes. Phase 1 remains blocked until the swing feel is approved.
+**Owner exit gate:** install the replacement Android artifact produced by PR #7,
+confirm DEBUG opens, verify Reel while attached, compare all three tuning
+candidates, and approve one baseline or request concrete changes. Phase 1 remains
+blocked until the swing feel and controls are approved.
 
 ## Recently shipped (newest first)
 
+- **2026-07-28 — Mobile HUD touch-coordinate correction.** Real-device video
+  reproduced a mismatch between physical viewport sizing and stretch-adjusted
+  touch/canvas coordinates. Reel and DEBUG now share the canvas coordinate contract;
+  detached Reel reports why it cannot pull and attached Reel has explicit active
+  feedback. No physics tuning values changed.
 - **2026-07-28 — Phase 0 Swing Laboratory.** Deterministic point-mass simulation,
   capped rope constraint, momentum-preserving manual release, Reel energy,
   buffered multitouch input, three named tuning candidates, read-only graybox

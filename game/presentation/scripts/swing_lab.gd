@@ -44,7 +44,8 @@ func present_event(event: SimulationEvent) -> void:
 	match event.kind:
 		SimulationEvent.Kind.INVALID_TARGET:
 			_feedback_color = RED
-		SimulationEvent.Kind.OUT_OF_RANGE, SimulationEvent.Kind.REEL_EMPTY:
+		SimulationEvent.Kind.OUT_OF_RANGE, SimulationEvent.Kind.REEL_UNAVAILABLE, \
+				SimulationEvent.Kind.REEL_EMPTY:
 			_feedback_color = YELLOW
 		_:
 			_feedback_color = GREEN
@@ -188,12 +189,17 @@ func _draw_hud(size: Vector2) -> void:
 	var reel_rect := LabLayout.reel_rect(size)
 	var center := reel_rect.get_center()
 	var radius := reel_rect.size.x * 0.44
-	draw_circle(center, radius, Color(0.04, 0.12, 0.16, 0.82))
-	draw_arc(center, radius, 0.0, TAU, 64, Color(0.55, 0.72, 0.76, 0.55), 4.0)
+	var reel_fill := Color(0.04, 0.3, 0.34, 0.94) if _snapshot.reel_active \
+		else Color(0.04, 0.12, 0.16, 0.82)
+	draw_circle(center, radius, reel_fill)
+	draw_arc(center, radius, 0.0, TAU, 64,
+		CYAN if _snapshot.reel_active else Color(0.55, 0.72, 0.76, 0.55),
+		6.0 if _snapshot.reel_active else 4.0)
 	var energy_ratio := _snapshot.reel_energy / maxf(_snapshot.reel_capacity, 0.001)
 	draw_arc(center, radius, -PI * 0.5, -PI * 0.5 + TAU * energy_ratio,
 		64, CYAN if _snapshot.reel_lockout <= 0.0 else RED, 8.0)
-	_draw_text(center + Vector2(-31.0, 7.0), "REEL", 19, WEB)
+	var reel_label := "PULL" if _snapshot.reel_active else "REEL"
+	_draw_text(center + Vector2(-31.0, 7.0), reel_label, 19, WEB)
 
 	if _snapshot.run_state != &"active":
 		draw_rect(Rect2(Vector2.ZERO, size), Color(0.02, 0.04, 0.06, 0.62))
