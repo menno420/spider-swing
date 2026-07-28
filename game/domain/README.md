@@ -18,7 +18,8 @@ expected; importing `game/simulation/`, `game/application/`, `game/adapters/`, o
 - Stable content identifiers (GDD § 19.3): runtime logic refers to IDs, never to
   scene names or display text.
 - Versioned gameplay configuration contracts — the tunable-parameter set in
-  GDD § 6.6.
+  GDD § 6.6, including shared web range and the authoritative Reel/Burst pull
+  strengths.
 - `RunSettlement` and its identity, so idempotent settlement is expressible in one
   place (GDD § 15.1, § 20).
 
