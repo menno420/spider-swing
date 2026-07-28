@@ -83,6 +83,13 @@ headless smoke-test entry point, and test/config infrastructure. Held.
 - [x] Governance: squash-only merges, merge commits and rebase disabled,
       delete-branch-on-merge on, `allow_auto_merge` deliberately **off**.
 - [x] Phase 0 implementation issue opened and left open for the next agent.
+- [x] **Fixed a real CI conflict found by running the gates, not by reading them.**
+      The kit-owned `substrate-gate` runs this repository's confirmed
+      `verify_command` (`python3 tools/verify.py`) in a job that installs Python
+      but **not** Godot — so the gate went red on a missing engine even though its
+      own hygiene checks had passed. Resolved by giving `verify.py` three outcomes
+      instead of two, and by moving the strict engine assertion into the job that
+      actually installs the engine. Detail in the verification section below.
 
 ---
 
@@ -116,6 +123,45 @@ not merely to pass. Injecting four regressions into a scratch copy (tick rate 60
 `simulation → presentation` preload) produced **exit 1** with all five expected
 failures reported and 8 checks still passing. A gate that cannot go red is not a
 gate.
+
+### The `verify_command` / toolchain conflict, and how it was resolved
+
+The kit-owned `substrate-gate` runs the interview's `verify_command` as its test
+step. That command is `python3 tools/verify.py`, which needs Godot — but the gate's
+job installs only Python (`3.14.6` via `actions/setup-python`). The gate's hygiene
+checks passed and printed `check: all checks passed`; the *next* step then failed on
+a missing engine. So the red was a toolchain mismatch, not a hygiene failure.
+
+Three candidate fixes were considered. Making `verify.py` lenient about a missing
+engine everywhere would have made `game-quality` meaningless the day an install
+silently broke. Changing `verify_command` away from `tools/verify.py` would have
+contradicted the single-entry-point requirement. Editing the kit-owned gate would be
+overwritten by the next `adopt`.
+
+What landed instead puts the strict assertion in the job that owns the engine:
+
+| Situation | Result |
+| --- | --- |
+| Godot installed, correct version | everything runs |
+| Godot absent, no flag | engine-independent checks run **strictly**; engine steps report `SKIP` behind a loud banner stating nothing about the Godot project was verified |
+| Godot absent, `--require-godot` | **hard failure** |
+| Godot present but wrong version, or a Mono/.NET build | **hard failure in every mode** — never a skip |
+
+`game-quality` installs Godot and runs `--require-godot`, so a skip there could only
+mean the install failed, and it is an error. `substrate-gate` stays useful in its
+Python-only job: it still runs the architecture self-test and scan strictly.
+
+All five paths verified by direct execution, real exit codes: present +
+`--require-godot` → 0 (6 PASS) · absent → 0 (2 PASS, 4 SKIP) · absent +
+`--require-godot` → 1 · wrong version 4.6.3 → 1 · Mono build → 1.
+
+*Guard recipe:* this class recurs for any adopter whose `verify_command` needs a
+toolchain the kit's Python-only gate does not install. The durable fix is kit-side —
+either let the gate's verify step be opted out of, or document that
+`verify_command` must be runnable with Python alone. Anchor: the
+`verify suite` step in `.github/workflows/substrate-gate.yml`, generated from the
+kit's gate template; the adopter-side lever is `tools/verify.py`'s
+`--require-godot` split.
 
 ### `python3 bootstrap.py check --strict` → **exit 0** at close
 
