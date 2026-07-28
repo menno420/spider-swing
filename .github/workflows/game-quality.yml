@@ -94,9 +94,17 @@ jobs:
         # architecture scan, engine version check, headless import, boot smoke
         # test, and the headless test runner. Any failure exits nonzero and
         # fails this job.
+        #
+        # --require-godot is what makes THIS the gate that proves the engine: a
+        # missing Godot is a hard failure here, never a skip. (The kit-owned
+        # substrate-gate also runs this script, because it is the repository's
+        # confirmed verify_command, but that job is Python-only by design and
+        # reports the engine steps as SKIPPED.) Since this job installs Godot,
+        # a skip here could only mean the install silently failed — so it must
+        # be an error.
         env:
           # setup-godot exports GODOT and GODOT4; verify.py probes GODOT_BIN,
           # GODOT, GODOT4, then PATH. Set GODOT_BIN explicitly so the resolution
           # order is unambiguous in the log.
           GODOT_BIN: ${{ env.GODOT }}
-        run: python3 tools/verify.py
+        run: python3 tools/verify.py --require-godot

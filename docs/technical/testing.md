@@ -35,6 +35,28 @@ It **never downloads anything**. A missing Godot is reported with instructions,
 not silently fetched — a verification tool that installs its own dependencies can
 pass on a machine that could not actually build.
 
+### Engine present, absent, or wrong
+
+Two CI jobs run this script and they have different toolchains, so it has three
+outcomes rather than two:
+
+| Situation | Result |
+| --- | --- |
+| Godot installed, correct version | Everything runs. |
+| Godot **absent**, no flag | Engine-independent checks run strictly; engine steps report **`SKIP`** behind a loud banner saying nothing about the Godot project was verified. Exit 0 if the strict checks passed. |
+| Godot **absent**, `--require-godot` | **Hard failure.** |
+| Godot present but **wrong version**, or a **Mono/.NET** build | **Hard failure, always** — in every mode. An engine that is present but wrong is a real defect, never a skip. |
+
+`game-quality` installs Godot and runs `python3 tools/verify.py --require-godot`,
+so **the gate that proves the engine can never silently skip it** — a skip there
+could only mean the install failed.
+
+The kit-owned `substrate-gate` also runs this script, because it is the
+repository's confirmed `verify_command` interview slot, but that job is Python-only
+by design. There it does real work — the architecture self-test and scan — and
+honestly reports the engine steps as skipped instead of manufacturing a pass or
+turning a red gate into a complaint about a tool that job was never meant to have.
+
 ### Local setup
 
 Install Godot 4.7.1 **Standard** (not .NET) from the
@@ -48,8 +70,8 @@ python3 tools/verify.py
 
 Requires Python 3.10+. Nothing to `pip install` — the tooling is stdlib-only.
 
-For a fast pass on a machine without Godot, `python3 tools/verify.py --skip-godot`
-runs only the engine-independent checks. CI never uses that flag.
+For a fast pass that skips the engine steps even when Godot *is* installed, use
+`python3 tools/verify.py --skip-godot`. CI never uses that flag.
 
 ## What `tests/test_runner.gd` asserts
 
