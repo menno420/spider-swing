@@ -1,0 +1,82 @@
+name: Bug report
+description: Something behaves differently from the GDD or from what you expected.
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For a **feel** problem ("the swing is floaty", "that death felt unfair"),
+        this is the right place — describe what you expected. The GDD treats
+        understandable deaths and predictable control as requirements, not polish.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you saw, in plain language.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead
+      description: |
+        If the GDD covers it, quote or point at the section — that turns a
+        preference into a contract.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: |
+        Steps, and anything that makes it reliable. If you have a run seed or a
+        diagnostic export from the debug build, include it — a fixed seed turns an
+        anecdote into a test.
+      placeholder: |
+        1. Start a run
+        2. Attach a web at ...
+        3. ...
+    validations:
+      required: false
+
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where did you see it
+      options:
+        - On a real Android device
+        - In the Godot editor on desktop
+        - In CI
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Device and Android version
+      description: Only if you saw it on a device.
+      placeholder: e.g. Pixel 6a, Android 14
+    validations:
+      required: false
+
+  - type: input
+    id: build
+    attributes:
+      label: Which build
+      description: |
+        The Actions run or artifact you installed, or the commit SHA. "Latest
+        debug APK" is fine if that is all you have.
+    validations:
+      required: false
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Screenshots, screen recordings, logs. Drag files in directly.
+    validations:
+      required: false

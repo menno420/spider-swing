@@ -1,0 +1,74 @@
+name: Feature or change request
+description: Propose a gameplay, content, or infrastructure change.
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Phase gates are real.** The GDD (§ 23) stages delivery deliberately, and
+        the core physics prototype must be approved before progression,
+        monetization, missions, multiple spiders, or large content sets are built.
+        A good request says which phase it belongs to — including "later than now".
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What should change
+      description: The change itself, in plain language.
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: |
+        What it improves for the player. If it serves one of the GDD's three core
+        promises — control, flow, ownership — say which.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: phase
+    attributes:
+      label: Which phase does this belong to
+      options:
+        - Phase 0 — Swing Laboratory (core physics)
+        - Phase 1 — Fair Endless Slice
+        - Phase 2 — MVP Progression
+        - Phase 3 — Content Expansion
+        - Infrastructure / tooling (not phase-gated)
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: gdd
+    attributes:
+      label: Does the GDD already cover this
+      description: |
+        Point at the section if so. If this **contradicts** the GDD, say so
+        plainly — the GDD is the product source of truth, and changing it is a
+        deliberate decision rather than a side effect of implementation.
+    validations:
+      required: false
+
+  - type: textarea
+    id: fairness
+    attributes:
+      label: Fairness and monetization check
+      description: |
+        Only if it touches difficulty, currency, upgrades, or purchases. The GDD's
+        boundaries: real money buys cosmetics and convenience only; gameplay
+        modifiers are earned; standard records ignore permanent upgrades; every
+        required route stays possible with the unupgraded Classic spider.
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What else would solve this, and why this is better.
+    validations:
+      required: false

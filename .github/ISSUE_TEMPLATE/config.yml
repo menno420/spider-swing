@@ -1,0 +1,20 @@
+# Keep blank issues available: an agent filing a scoped implementation issue
+# should not have to fit a player-facing bug/feature form.
+blank_issues_enabled: true
+
+contact_links:
+  - name: Game Design Document
+    url: https://github.com/menno420/spider-swing/blob/main/docs/game-design/Spider-Swing-GDD-v2.0.md
+    about: The product and gameplay source of truth — fairness rules, system boundaries, and release gates. Read this before proposing a gameplay change.
+
+  - name: Architecture decisions (ADRs)
+    url: https://github.com/menno420/spider-swing/tree/main/docs/technical/adr
+    about: Engine and runtime, simulation and event boundaries, Android build strategy. Binding decisions, superseded rather than deleted.
+
+  - name: Release name status
+    url: https://github.com/menno420/spider-swing/blob/main/docs/product/name-status.md
+    about: 'The title "Spider Swing" is an internal codename, not approved release branding. Naming, trademark, and store-conflict review are still open.'
+
+  - name: Testing and verification
+    url: https://github.com/menno420/spider-swing/blob/main/docs/technical/testing.md
+    about: How to run the two gates locally before opening a PR.

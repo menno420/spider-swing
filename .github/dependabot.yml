@@ -1,0 +1,38 @@
+# Dependabot — GitHub Actions only.
+#
+# Actions are the only dependency ecosystem this repository has: Godot is pinned
+# by .godot-version and installed by CI, GDScript has no package manager, and the
+# Python tooling is stdlib-only with nothing to update.
+#
+# Actions are pinned to full commit SHAs, which is exactly the case Dependabot
+# handles well — it bumps the SHA and updates the trailing tag comment, so the
+# pin stays immutable while still receiving security fixes.
+#
+# Note: Dependabot cannot update the kit-owned workflows' action references
+# meaningfully, because `bootstrap.py adopt` regenerates those files from the
+# kit's own template. Bumps there arrive with a kit upgrade instead.
+version: 2
+
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Amsterdam
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci"
+      include: scope
+    labels:
+      - type:infrastructure
+    groups:
+      # One PR for routine action bumps rather than five. Security updates still
+      # arrive separately and immediately.
+      github-actions:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch

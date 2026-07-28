@@ -1,0 +1,138 @@
+# Testing and verification
+
+> **Status:** `reference`
+>
+> How to verify Spider Swing locally and what CI enforces.
+
+## The two gates
+
+There are exactly two commands. Both must pass before work lands.
+
+```bash
+python3 tools/verify.py            # host + game code
+python3 bootstrap.py check --strict # Substrate doc/session hygiene
+```
+
+They are deliberately separate and **never call each other**. `tools/verify.py`
+must not invoke the Substrate checker: the Substrate workflow runs
+`bootstrap.py check` itself and also runs `tools/verify.py`, so calling one from
+the other would recurse.
+
+## `python3 tools/verify.py`
+
+The single host verification entry point. Runs five steps in order and reports a
+summary; any failure exits nonzero.
+
+| Step | What it proves |
+| --- | --- |
+| 1. Godot discovery | A Godot binary is locatable via `GODOT_BIN`, `GODOT`, `GODOT4`, or PATH. |
+| 2. Version check | The binary reports the version pinned in `.godot-version` (4.7.1) and is **not** a Mono/.NET build. |
+| 3. Architecture check | `tools/check_architecture.py --self-test` (14 fixtures), then the repository scan. |
+| 4. Headless import | `godot --headless --import` — the project imports with no script parse errors. |
+| 5. Headless run | The boot smoke test, then `tests/test_runner.gd`. |
+
+It **never downloads anything**. A missing Godot is reported with instructions,
+not silently fetched — a verification tool that installs its own dependencies can
+pass on a machine that could not actually build.
+
+### Local setup
+
+Install Godot 4.7.1 **Standard** (not .NET) from the
+[Godot download archive](https://godotengine.org/download/archive/), then either
+put it on PATH as `godot` or point `GODOT_BIN` at it:
+
+```bash
+export GODOT_BIN=/path/to/Godot_v4.7.1-stable_linux.x86_64
+python3 tools/verify.py
+```
+
+Requires Python 3.10+. Nothing to `pip install` — the tooling is stdlib-only.
+
+For a fast pass on a machine without Godot, `python3 tools/verify.py --skip-godot`
+runs only the engine-independent checks. CI never uses that flag.
+
+## What `tests/test_runner.gd` asserts
+
+Run directly:
+
+```bash
+godot --headless --path . --script res://tests/test_runner.gd
+```
+
+15 checks, all independent so one failure never hides the rest:
+
+- the engine is the pinned 4.7.1;
+- the main scene resolves **and instantiates**;
+- all five input actions exist (`web_action`, `reel_in`, `pause`, `restart_run`,
+  `toggle_debug`);
+- the fixed physics tick rate is 60 Hz, both in `project.godot` and as the engine
+  reports it at runtime;
+- max physics catch-up steps per frame is 4;
+- the renderer is `gl_compatibility`, the reference viewport is 1280×720, and the
+  orientation is landscape;
+- the `Android Debug` export preset exists, targets Android, and carries the
+  development-only package identifier;
+- `domain`/`simulation`/`application` do not depend outward;
+- no autoload singleton has been introduced.
+
+These are configuration and architecture contracts, not gameplay tests. There are
+no swing-physics tests because there is no swing physics yet.
+
+## `tools/check_architecture.py`
+
+Enforces the inward dependency direction from
+[ADR 0002](adr/0002-simulation-and-event-boundaries.md) across GDScript `preload`,
+`load`, `extends` (including `class_name` resolution through a class index), bare
+`res://game/<layer>/` references, and `[ext_resource]` paths in `.tscn`/`.tres`.
+
+```bash
+python3 tools/check_architecture.py             # scan the repository
+python3 tools/check_architecture.py --self-test  # check the checker
+```
+
+The self-test carries 14 fixtures asserting **both** directions — that legal
+inward references pass and that each illegal outward reference is caught — so the
+checker cannot silently degrade into a no-op that approves everything. Comment
+lines are stripped before scanning, so prose mentioning another layer is not a
+dependency.
+
+It is a deterministic static text scan with a known limit: a dynamic
+`load(some_variable)` is not resolvable statically. That gap is covered by review,
+not by pretending the scan is total.
+
+## CI
+
+| Workflow | Trigger | Required? | Proves |
+| --- | --- | --- | --- |
+| `game-quality` | PRs, pushes to `main`, dispatch | **Yes** | `python3 tools/verify.py` passes on a clean runner with Godot 4.7.1. Uses no secrets. |
+| `substrate-gate` | PRs, pushes to `main` | **Yes** | Substrate doc/session hygiene, and runs `tools/verify.py` as its test step. Kit-owned. |
+| `android-debug` | pushes to `main`, dispatch | No | The project exports an installable debug APK. Uses no secrets. |
+| `auto-merge-enabler` | PR events | No | Arms native auto-merge on agent PRs. Kit-owned. |
+| `branch-sweep` | schedule | No | Tidies merged agent branches. Kit-owned. |
+
+`android-debug` is deliberately **not** a required check: it depends on external
+SDK downloads, so making it required would convert a third-party outage into a
+merge block. See ADR 0003.
+
+### Kit-owned workflows
+
+`substrate-gate.yml`, `auto-merge-enabler.yml`, and `branch-sweep.yml` are
+generated by `python3 bootstrap.py adopt --include-claude --wire-enforcement`.
+**Do not hand-edit them** — adopt/upgrade overwrites them in place. Change
+`substrate.config.json` and regenerate. Host-specific CI belongs in
+`game-quality.yml` or `android-debug.yml`.
+
+The two host-owned workflows pin every `uses:` reference to a full commit SHA with
+the release tag in a trailing comment. The kit-owned workflows use upstream's own
+tag references; that is the kit's template, and hand-pinning them would be
+overwritten on the next upgrade.
+
+## Adding tests in Phase 0
+
+Phase 0's acceptance criteria include fixed-rate and trajectory tests. Put them in
+`tests/unit/` and `tests/integration/`, register them in `tests/test_runner.gd`,
+and keep them deterministic: fixed seeds and recorded input traces in
+`tests/fixtures/`, never wall-clock timing. The GDD's automated-check list (§ 22.2)
+is the target set — release preserves velocity within tolerance, Reel-In never
+teleports, settlement is idempotent, one outcome per collision, a seed reproduces
+its chunk sequence.

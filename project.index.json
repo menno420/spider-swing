@@ -3,13 +3,204 @@
   "project": "spider-swing",
   "areas": [
     {
-      "name": "example-area",
-      "folio": "",
-      "binding_docs": [],
-      "source_roots": [],
-      "do_not_create": [],
-      "gates": [],
-      "verification": []
+      "name": "gameplay-simulation",
+      "folio": "game/simulation/README.md",
+      "binding_docs": [
+        "docs/game-design/Spider-Swing-GDD-v2.0.md",
+        "docs/technical/adr/0002-simulation-and-event-boundaries.md",
+        "docs/runtime_contracts.md",
+        "docs/architecture.md"
+      ],
+      "source_roots": [
+        "game/simulation/",
+        "game/domain/",
+        "tests/unit/",
+        "tests/integration/"
+      ],
+      "do_not_create": [
+        "a second spider motor — one fixed-step motor owns gravity, forward drive, and velocity limits",
+        "a second web constraint or a parallel rope implementation",
+        "a collision resolver outside CollisionPolicy — exactly one authoritative outcome per contact (GDD 13.2)",
+        "a global gameplay Manager autoload (GDD 19 forbids it; tests/test_runner.gd fails on any autoload)",
+        "a second source of simulation truth — SimulationWorld owns authoritative fixed-step state",
+        "an input poll inside simulation — simulation consumes buffered InputCommand values only"
+      ],
+      "gates": [
+        "PHASE 0 NOT STARTED. This area is empty by design; the bootstrap deliberately implemented no swing physics.",
+        "Phase 0 exit gate (GDD 23): attach/release predictable across supported frame rates; release preserves momentum; Reel-In useful without being mandatory; most test deaths correctly attributable by the player; one named physics preset approved as the baseline.",
+        "The core physics prototype must be approved before progression, monetization, missions, multiple spiders, or large content sets are built (GDD 1)."
+      ],
+      "verification": [
+        "python3 tools/verify.py",
+        "python3 bootstrap.py check --strict"
+      ]
+    },
+    {
+      "name": "run-application-orchestration",
+      "folio": "game/application/README.md",
+      "binding_docs": [
+        "docs/game-design/Spider-Swing-GDD-v2.0.md",
+        "docs/technical/adr/0002-simulation-and-event-boundaries.md",
+        "docs/ownership.md",
+        "docs/runtime_contracts.md"
+      ],
+      "source_roots": [
+        "game/application/",
+        "game/domain/",
+        "tests/integration/"
+      ],
+      "do_not_create": [
+        "a second run lifecycle owner — RunStateMachine owns run transitions",
+        "a chunk spawner inside DifficultyDirector — the director selects, WorldStream owns spawned instances",
+        "a second settlement path — ScoreSettlement creates exactly one idempotent RunSettlement per run",
+        "a reward grant outside ProgressionService",
+        "a direct persistence write — SaveRepository (adapters) exclusively owns persistent writes",
+        "a parallel effect timer — EffectState owns power-up activation, refresh, and expiry"
+      ],
+      "gates": [
+        "PHASE 0 NOT STARTED. Empty by design.",
+        "Seeded chunk selection and the difficulty director are Phase 1, not Phase 0.",
+        "Run settlement, Silk, and progression are Phase 2. Phase 2 exit gate: economy grants cannot duplicate; progress survives app suspension and migration; upgrades do not affect standard records."
+      ],
+      "verification": [
+        "python3 tools/verify.py",
+        "python3 bootstrap.py check --strict"
+      ]
+    },
+    {
+      "name": "godot-adapters",
+      "folio": "game/adapters/README.md",
+      "binding_docs": [
+        "docs/technical/adr/0002-simulation-and-event-boundaries.md",
+        "docs/runtime_contracts.md",
+        "docs/game-design/Spider-Swing-GDD-v2.0.md"
+      ],
+      "source_roots": [
+        "game/adapters/",
+        "game/bootstrap/",
+        "project.godot"
+      ],
+      "do_not_create": [
+        "a second input path — InputRouter converts touch/UI into buffered commands and never mutates simulation",
+        "a second persistence writer — SaveRepository is the exclusive owner of persistent writes",
+        "a telemetry path that writes gameplay state; telemetry is read-only with respect to truth",
+        "a dependency on game/presentation/ — adapters and presentation are equal-rank peers",
+        "input action definitions outside project.godot's [input] section"
+      ],
+      "gates": [
+        "Input action names exist as definitions (web_action, reel_in, pause, restart_run, toggle_debug); no consumer is wired yet.",
+        "Touch bindings arrive with the Phase 0 input router, through the buffered-command seam — not a raw action poll.",
+        "Save, telemetry, and platform adapters are Phase 2."
+      ],
+      "verification": [
+        "python3 tools/verify.py",
+        "python3 bootstrap.py check --strict"
+      ]
+    },
+    {
+      "name": "presentation",
+      "folio": "game/presentation/README.md",
+      "binding_docs": [
+        "docs/technical/adr/0002-simulation-and-event-boundaries.md",
+        "docs/technical/adr/0001-engine-and-runtime.md",
+        "docs/game-design/Spider-Swing-GDD-v2.0.md"
+      ],
+      "source_roots": [
+        "game/presentation/scenes/",
+        "game/presentation/scripts/",
+        "game/bootstrap/main.tscn",
+        "game/bootstrap/main.gd"
+      ],
+      "do_not_create": [
+        "any write to authoritative simulation state from presentation",
+        "a reward, currency, record, or unlock grant from a UI node",
+        "a physics-driving visual web — the visual web follows authoritative endpoints (GDD 17.2)",
+        "a dependency on game/adapters/ — equal-rank peers",
+        "a second HUD root or a competing camera controller"
+      ],
+      "gates": [
+        "Bootstrap placeholder only: swing_lab.tscn renders the Phase 0 title and one runtime-facts line. No spider, no web, no camera follow.",
+        "Phase 0 adds the camera with speed-dependent look-ahead (spider held in the left third, GDD 4.2) and the diagnostic overlays from GDD 22.1.",
+        "Production art is Phase 2 (release-quality first biome). Avoid Spider-Man / superhero visual similarity (GDD 17.1)."
+      ],
+      "verification": [
+        "python3 tools/verify.py",
+        "python3 bootstrap.py check --strict"
+      ]
+    },
+    {
+      "name": "content",
+      "folio": "game/content/README.md",
+      "binding_docs": [
+        "docs/game-design/Spider-Swing-GDD-v2.0.md",
+        "docs/technical/adr/0002-simulation-and-event-boundaries.md",
+        "docs/technical/repository-layout.md"
+      ],
+      "source_roots": [
+        "game/content/",
+        "assets/source/",
+        "assets/runtime/",
+        "tests/fixtures/"
+      ],
+      "do_not_create": [
+        "a spider variant that forks the player controller — spiders are data profiles (GDD 19.4)",
+        "a power-up that patches collision callbacks — effects use definitions and policy hooks",
+        "an obstacle chunk that modifies the director — chunks use validated metadata and sockets",
+        "content referenced by scene name or display text instead of a stable ID (GDD 19.3)",
+        "a spider that is a strict upgrade over Classic (GDD 14)",
+        "an upgrade granting starting Silk per run — a removed exploit (GDD 15.1)"
+      ],
+      "gates": [
+        "EMPTY BY DESIGN. Phase 0 uses a graybox debug course, not authored content.",
+        "Phase 1 adds three static obstacle chunks and one moving-hazard family. Every chunk must declare the full GDD 9.1 envelope and pass route validation.",
+        "Phase 1 exit gate: no observed unavoidable deaths in fixed-seed testing; every chunk valid for its declared speed/state range; every required route completable by the unupgraded Classic spider.",
+        "No Git LFS until real large binary assets justify it."
+      ],
+      "verification": [
+        "python3 tools/verify.py",
+        "python3 bootstrap.py check --strict"
+      ]
+    },
+    {
+      "name": "build-release-infrastructure",
+      "folio": "docs/technical/testing.md",
+      "binding_docs": [
+        "docs/technical/adr/0003-android-build-strategy.md",
+        "docs/technical/adr/0001-engine-and-runtime.md",
+        "docs/technical/repository-layout.md",
+        "docs/technical/substrate-kit-provenance.md",
+        "docs/product/name-status.md"
+      ],
+      "source_roots": [
+        "tools/verify.py",
+        "tools/check_architecture.py",
+        "tests/test_runner.gd",
+        ".github/workflows/game-quality.yml",
+        ".github/workflows/android-debug.yml",
+        ".github/dependabot.yml",
+        "export_presets.cfg",
+        ".godot-version"
+      ],
+      "do_not_create": [
+        "a second host verification entry point — python3 tools/verify.py is the only one",
+        "a call to bootstrap.py check from tools/verify.py — the Substrate workflow runs its own check and this would recurse",
+        "a hand edit to substrate-gate.yml, auto-merge-enabler.yml, or branch-sweep.yml — kit-owned, regenerated by adopt/upgrade; change substrate.config.json instead",
+        "an unpinned `uses:` reference in a host-owned workflow — full commit SHA plus a tag comment, resolved from upstream and never invented",
+        "a production keystore, signing secret, store credential, or release/upload workflow",
+        "a CodeQL workflow — GDScript is not meaningfully covered by the standard language matrix",
+        "an engine version that disagrees with .godot-version"
+      ],
+      "gates": [
+        "Required merge checks: substrate-gate and game-quality.",
+        "android-debug is intentionally NOT a required check: it depends on external SDK downloads, so requiring it would turn a third-party outage into a merge block.",
+        "Production Android signing, Google Play publishing, and iOS signing are all deliberately absent and each is an owner-controlled step (ADR 0003).",
+        "No production credential, key, token, signing material, or store integration may be committed."
+      ],
+      "verification": [
+        "python3 tools/verify.py",
+        "python3 bootstrap.py check --strict",
+        "python3 tools/check_architecture.py --self-test"
+      ]
     }
   ]
 }
