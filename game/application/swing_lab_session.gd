@@ -15,6 +15,8 @@ const TUNING_PARAMETERS := [&"gravity", &"drive", &"reel_rate", &"rope_damping"]
 
 var _config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 var _world := SimulationWorld.new()
+var _course_stream := CourseStream.new()
+var _course_chunk_index: int = -1
 var _run := RunStateMachine.new()
 var _command_buffer: Array[InputCommand] = []
 var _sequence: int = 0
@@ -63,6 +65,26 @@ func set_reel_active(active: bool) -> void:
 	if _run.state != RunStateMachine.State.ACTIVE:
 		return
 	_buffer(InputCommand.reel(active, _next_sequence(), _world.tick))
+
+
+func request_burst() -> void:
+	if _run.state != RunStateMachine.State.ACTIVE:
+		return
+	_buffer(InputCommand.burst(_next_sequence(), _world.tick))
+
+
+func request_burst_from_gesture(world_target: Vector2) -> void:
+	if _run.state != RunStateMachine.State.ACTIVE:
+		return
+	if _world.web.attached and world_target.distance_to(_world.web.anchor) <= \
+			_config.surface_snap_distance * 1.25:
+		request_burst()
+		return
+	event_published.emit(SimulationEvent.make(
+		SimulationEvent.Kind.BURST_UNAVAILABLE,
+		world_target,
+		"Double-tap the attached web target",
+	))
 
 
 func request_restart() -> void:
@@ -148,6 +170,7 @@ func replay_recording() -> void:
 
 
 func export_diagnostic() -> void:
+	var geometry := _course_stream.geometry()
 	var payload := {
 		"format": "spider-swing-phase0-diagnostic",
 		"version": 1,
@@ -158,6 +181,11 @@ func export_diagnostic() -> void:
 		"velocity": [_world.velocity.x, _world.velocity.y],
 		"rope_length": _world.web.rope_length,
 		"reel_energy": _world.web.reel_energy,
+		"burst_cooldown": _world.burst_cooldown_remaining,
+		"stream_chunks": [
+			geometry.first_chunk_index,
+			geometry.last_chunk_index,
+		],
 		"commands": _recorded_commands,
 	}
 	var path := "user://swing_lab_diagnostic.json"
@@ -185,6 +213,12 @@ func _step_once() -> void:
 			_world.queue_command(command)
 		_command_buffer.clear()
 
+		var next_chunk_index := maxi(
+			0, floori(_world.position.x / CourseStream.CHUNK_WIDTH))
+		if next_chunk_index != _course_chunk_index:
+			_course_chunk_index = next_chunk_index
+			_world.set_course_geometry(
+				_course_stream.update_for_position(_world.position.x))
 		var events := _world.step(FIXED_DELTA)
 		for event: SimulationEvent in events:
 			if event.kind == SimulationEvent.Kind.DEATH_REQUESTED:
@@ -230,7 +264,10 @@ func _discard_expired_commands(commands: Array[InputCommand]) -> Array[InputComm
 
 func _reset_run(clear_replay: bool = true) -> void:
 	_run.reset()
-	_world.reset(_config, _build_course())
+	_course_stream.reset()
+	_world.reset(_config, _course_stream.geometry())
+	_course_chunk_index = maxi(
+		0, floori(_world.position.x / CourseStream.CHUNK_WIDTH))
 	_command_buffer.clear()
 	_sequence = 0
 	if clear_replay:
@@ -242,18 +279,6 @@ func _reset_run(clear_replay: bool = true) -> void:
 		"Swing Laboratory ready",
 	))
 	_publish_snapshot()
-
-
-func _build_course() -> PackedVector2Array:
-	var course := PackedVector2Array()
-	var heights := PackedFloat32Array([150.0, 245.0, 115.0, 300.0, 185.0, 265.0])
-	for index in range(72):
-		course.append(Vector2(
-			480.0 + float(index) * 285.0,
-			heights[index % heights.size()],
-		))
-	return course
-
 
 func _make_snapshot() -> SimulationSnapshot:
 	var snapshot := SimulationSnapshot.new()
@@ -272,10 +297,14 @@ func _make_snapshot() -> SimulationSnapshot:
 	snapshot.reel_capacity = _config.reel_energy_capacity
 	snapshot.reel_active = _world.web.reel_active
 	snapshot.reel_lockout = _world.web.reel_lockout_remaining
+	snapshot.burst_cooldown = _world.burst_cooldown_remaining
+	snapshot.burst_cooldown_capacity = _config.burst_cooldown
 	snapshot.run_state = _run.state_name()
 	snapshot.death_cause = _run.death_cause
 	snapshot.preset_name = _config.preset_name
 	snapshot.anchors = _world.anchors.duplicate()
+	snapshot.surface_segments = _world.surface_segments.duplicate()
+	snapshot.obstacles = _world.obstacles.duplicate()
 	snapshot.debug_visible = _debug_visible
 	snapshot.debug_paused = _debug_paused
 	snapshot.slow_motion = _slow_motion

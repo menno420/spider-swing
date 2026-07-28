@@ -1,1 +1,0 @@
-- `codex/playtest-traversal-slice` · **Phase 0.5 mobile traversal and obstacle test** — readable scrolling settings, ergonomic Reel and Burst controls, continuous ceiling targets, streamed course, fair test obstacles, tests and Android artifact · game/domain/, game/simulation/, game/application/, game/adapters/, game/presentation/, tests/, docs/ · 2026-07-28

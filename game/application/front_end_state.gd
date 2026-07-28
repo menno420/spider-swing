@@ -24,11 +24,12 @@ const TUTORIAL_STEPS := [
 		"tip": "Watch the space ahead, not only the spider.",
 	},
 	{
-		"title": "TAP AN ANCHOR",
+		"title": "TAP THE CEILING",
 		"kicker": "02 · ATTACH",
-		"body": "Tap a glowing cyan anchor to fire a web. Targets outside your "
-			+ "range are rejected, so choose the next reachable point.",
-		"tip": "Higher anchors create longer, safer arcs.",
+		"body": "Tap any cyan ceiling surface to fire a web. The small glowing "
+			+ "markers are aim guides, not the only valid attachment points. "
+			+ "Targets outside your range are rejected.",
+		"tip": "Aim ahead along the ceiling to build a longer forward arc.",
 	},
 	{
 		"title": "RELEASE WITH MOMENTUM",
@@ -38,19 +39,28 @@ const TUTORIAL_STEPS := [
 		"tip": "Release while rising to carry momentum forward.",
 	},
 	{
-		"title": "HOLD REEL",
+		"title": "HOLD THE LARGE REEL",
 		"kicker": "04 · REEL-IN",
-		"body": "While attached, hold REEL to shorten the web and pull upward. "
-			+ "The energy ring drains while pulling and recharges afterward.",
+		"body": "Use your left thumb to hold REEL while aiming with your right. "
+			+ "It shortens the web and pulls upward; the energy ring drains "
+			+ "while pulling and recharges afterward.",
 		"tip": "Reel is a correction tool, not a permanent boost.",
 	},
 	{
+		"title": "BURST THROUGH",
+		"kicker": "05 · FORWARD BURST",
+		"body": "Tap BURST for a short straight push forward. It releases the "
+			+ "current web and then recharges. You can also double-tap the "
+			+ "attached web target for the same action.",
+		"tip": "Save Burst for a late obstacle correction or a weak release.",
+	},
+	{
 		"title": "SURVIVE & RECOVER",
-		"kicker": "05 · STAY ALIVE",
-		"body": "Falling below the course or being left behind ends the run. "
-			+ "Tap after death to restart, or use MENU to return here. DEBUG is "
-			+ "an optional laboratory tool controlled in Settings.",
-		"tip": "The upper boundary is safe; the bottom and left edge are not.",
+		"kicker": "06 · STAY ALIVE",
+		"body": "Hitting a striped obstacle, falling below the course, or being "
+			+ "left behind ends the run. Tap after death to restart, or use "
+			+ "MENU to return here. DEBUG remains optional in Settings.",
+		"tip": "Read the orange warning shapes early and choose a clean arc.",
 	},
 ]
 

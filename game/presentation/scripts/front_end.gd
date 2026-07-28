@@ -194,12 +194,22 @@ func _build_settings() -> void:
 	_place(back, _settings, 0.025, 0.035, 0.16, 0.11)
 
 	var card := _panel(PANEL)
-	_place(card, _settings, 0.22, 0.08, 0.78, 0.92)
+	_place(card, _settings, 0.16, 0.05, 0.84, 0.96)
+	var scroll := ScrollContainer.new()
+	scroll.name = "SettingsScroll"
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	scroll.follow_focus = true
+	_fill_with_margin(scroll, card, 28.0)
 	var content := VBoxContainer.new()
-	content.add_theme_constant_override("separation", 15)
-	_fill_with_margin(content, card, 34.0)
+	content.name = "SettingsContent"
+	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content.add_theme_constant_override("separation", 20)
+	scroll.add_child(content)
 	content.add_child(_section_label("SETTINGS"))
-	content.add_child(_label("Make the laboratory fit how you play.", 28, INK))
+	var title := _label("Make the laboratory fit how you play.", 34, INK)
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	content.add_child(title)
 	content.add_child(_paragraph(
 		"Every option below affects the current build and is restored the next "
 		+ "time the game opens.",
@@ -207,7 +217,7 @@ func _build_settings() -> void:
 	content.add_child(_setting_heading("SWING FEEL"))
 	_preset_picker = OptionButton.new()
 	_preset_picker.name = "SwingPreset"
-	_preset_picker.custom_minimum_size.y = 58.0
+	_preset_picker.custom_minimum_size.y = 68.0
 	_preset_picker.add_item("Balanced · steady and readable")
 	_preset_picker.add_item("Weighty · heavier momentum")
 	_preset_picker.add_item("Agile · quicker corrections")
@@ -237,16 +247,20 @@ func _build_settings() -> void:
 		"Keeps DEBUG available for tuning and diagnostics."))
 
 	var actions := HBoxContainer.new()
-	actions.add_theme_constant_override("separation", 14)
+	actions.add_theme_constant_override("separation", 18)
 	content.add_child(actions)
-	var reset := _button(&"ResetSettings", "RESET DEFAULTS", MUTED, 56.0)
+	var reset := _button(&"ResetSettings", "RESET DEFAULTS", MUTED, 68.0)
 	reset.pressed.connect(_on_reset_settings)
 	reset.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	actions.add_child(reset)
-	var play := _button(&"SettingsPlay", "PLAY WITH THESE", GREEN, 56.0)
+	var play := _button(&"SettingsPlay", "PLAY WITH THESE", GREEN, 68.0)
 	play.pressed.connect(_on_play)
 	play.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	actions.add_child(play)
+	var scroll_hint := _label("Swipe up or down for every option.", 17, CYAN)
+	scroll_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	scroll_hint.custom_minimum_size.y = 42.0
+	content.add_child(scroll_hint)
 
 
 func _render() -> void:
@@ -413,7 +427,7 @@ func _label(text_value: String, font_size: int, color: Color) -> Label:
 
 
 func _paragraph(text_value: String) -> Label:
-	var label := _label(text_value, 18, MUTED)
+	var label := _label(text_value, 21, MUTED)
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	return label
 
@@ -426,15 +440,15 @@ func _section_label(text_value: String) -> Label:
 
 
 func _setting_heading(text_value: String) -> Label:
-	var label := _label(text_value, 15, CYAN)
-	label.custom_minimum_size.y = 30.0
+	var label := _label(text_value, 18, CYAN)
+	label.custom_minimum_size.y = 36.0
 	return label
 
 
 func _setting_description(text_value: String) -> Label:
-	var label := _label(text_value, 14, MUTED)
+	var label := _label(text_value, 18, MUTED)
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	label.custom_minimum_size.y = 38.0
+	label.custom_minimum_size.y = 48.0
 	return label
 
 
@@ -483,14 +497,14 @@ func _button_style(
 func _toggle(text_value: String) -> CheckButton:
 	var toggle := CheckButton.new()
 	toggle.text = text_value
-	toggle.custom_minimum_size.y = 46.0
-	toggle.add_theme_font_size_override("font_size", 19)
+	toggle.custom_minimum_size.y = 58.0
+	toggle.add_theme_font_size_override("font_size", 23)
 	toggle.add_theme_color_override("font_color", INK)
 	return toggle
 
 
 func _style_option_button(option: OptionButton) -> void:
-	option.add_theme_font_size_override("font_size", 18)
+	option.add_theme_font_size_override("font_size", 22)
 	option.add_theme_color_override("font_color", INK)
 	option.add_theme_stylebox_override(
 		"normal", _button_style(PANEL_SOFT, ORANGE))

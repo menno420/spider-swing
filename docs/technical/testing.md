@@ -81,18 +81,21 @@ Run directly:
 godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-31 checks, grouped so one subsystem failure never hides the rest:
+39 checks, grouped so one subsystem failure never hides the rest:
 
 - engine, main-scene, input-action, 60 Hz, renderer/viewport, Android preset,
   inward-dependency, and no-autoload bootstrap contracts;
-- nine deterministic Phase 0 physics contracts, including momentum preservation,
-  Reel behavior, boundaries, and identical trajectories from simulated
+- thirteen deterministic physics contracts, including arbitrary-point ceiling
+  attachment, momentum preservation, Reel and Burst behavior, bounded streaming,
+  obstacle outcomes, boundaries, and identical trajectories from simulated
   30/60/90/120 Hz render loops;
-- six mobile HUD contracts proving Reel, DEBUG, and Menu are event-consuming
+- nine mobile HUD contracts proving large separated Reel and Burst controls,
+  DEBUG, and Menu are event-consuming
   Buttons, UI actions do not leak into web input, debug tools can be removed, and
   world input waits for Godot GUI handling;
-- seven front-end contracts proving Home starts before gameplay, Play/Tutorial/
-  Settings route correctly, the five tutorial steps cover live mechanics, settings
+- eight front-end contracts proving Home starts before gameplay, Play/Tutorial/
+  Settings route correctly, the six tutorial steps cover live mechanics, Settings
+  is scrollable and mobile-readable, options
   validate and emit once, serialization is stable, atomic filesystem persistence
   round-trips, and only Play mounts the run.
 
@@ -155,5 +158,6 @@ overwritten on the next upgrade.
 Keep simulation checks deterministic: fixed seeds and recorded input traces in
 `tests/fixtures/`, never wall-clock timing. Register suites in
 `tests/test_runner.gd`. The remaining GDD §22.2 targets arrive with their owning
-phases: collision policy and seeded chunk selection in Phase 1, settlement
-idempotence in Phase 2.
+phases: production chunk validation and moving-hazard coverage in Phase 1, settlement
+idempotence in Phase 2. The Phase 0.5 graybox stream and static rectangle collision
+checks are intentionally smaller test seams, not the Phase 1 content system.

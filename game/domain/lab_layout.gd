@@ -10,7 +10,11 @@ const TUNING_PARAMETERS := [&"gravity", &"drive", &"reel_rate", &"rope_damping"]
 
 
 static func reel_rect(viewport_size: Vector2) -> Rect2:
-	return Rect2(viewport_size.x - 184.0, viewport_size.y - 184.0, 148.0, 148.0)
+	return Rect2(28.0, viewport_size.y - 218.0, 190.0, 190.0)
+
+
+static func burst_rect(viewport_size: Vector2) -> Rect2:
+	return Rect2(viewport_size.x - 206.0, viewport_size.y - 206.0, 178.0, 178.0)
 
 
 static func menu_rect(_viewport_size: Vector2) -> Rect2:

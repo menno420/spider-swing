@@ -2,118 +2,83 @@
 
 > **Status:** `reference`
 >
-> Implemented candidate; owner device playtest and baseline approval remain open.
+> Playable traversal-test candidate; owner device playtest and baseline approval
+> remain open.
 
-The Swing Laboratory is the first playable Spider Swing milestone. It exists to
-answer one question before content production begins: does attaching, swinging,
-releasing, and reeling feel good on a real phone?
-
-It deliberately contains no procedural chunks, obstacles, flies, currency,
-progression, alternate spiders, monetization, or production art. Those systems
-must not be built around unapproved movement.
+The Swing Laboratory answers whether attaching, swinging, releasing, reeling,
+bursting, and avoiding readable hazards feels good on a real phone. The current
+obstacles and course loop are test instrumentation, not approved Phase 1 content.
 
 ## Play controls
 
 | Action | Android touch | Desktop |
 | --- | --- | --- |
-| Attach web | Tap a visible cyan anchor | Left-click an anchor |
-| Release web | Tap anywhere while attached | Left-click while attached |
-| Reel-In | Hold the lower-right Reel control | Hold the configured `reel_in` action |
-| Restart | Tap after death | `R` / configured `restart_run` |
-| Return to Home | Tap `MENU` in the upper-left | `Esc` / `ui_cancel` |
-| Debug panel | Tap `DEBUG` in the upper-right when enabled | `F1` / configured `toggle_debug` |
+| Attach web | Tap anywhere on the cyan ceiling underside | Left-click the ceiling |
+| Release web | Tap the world while attached | Left-click while attached |
+| Reel-In | Hold the large lower-left `REEL` control | Hold `reel_in` |
+| Forward Burst | Tap the large lower-right `BURST`, or double-tap the attached web target | `B` / `burst_action`, or double-click the web target |
+| Restart | Tap after death | `R` / `restart_run` |
+| Return Home | Tap `MENU` | `Esc` / `ui_cancel` |
+| Debug panel | Tap `DEBUG` when enabled | `F1` / `toggle_debug` |
 
-Reel, DEBUG, and the debug-panel controls are real Godot `Button` nodes with
-`MOUSE_FILTER_STOP`. They own their hit regions and consume pointer events in
-Godot's GUI pipeline. World attach/release input is handled only afterward in
-`_unhandled_input`, so pressing a HUD control cannot also release the web.
-Multiple touches remain independent, allowing the player to hold Reel with one
-finger and attach or release with another.
+The small ceiling rings are aim guides only. Every point on the cyan underside is
+a valid target if it is within web range and the attachment cone.
 
-Holding Reel while detached intentionally does not move the spider or spend
-energy. It now reports `Attach a web before Reel-In`. While attached, the control
-changes to `PULL`, brightens, drains its ring, and shortens the rope.
+Reel and Burst are separate native Godot `Button` nodes. Reel occupies a 190×190
+left-thumb region; Burst occupies a 178×178 right-thumb region. Both stop pointer
+events before world input, so neither control releases a web. Reel is a held,
+energy-limited correction. Burst is a discrete forward impulse with a 1.65-second
+cooldown; it releases the current web and adds a small upward stabilisation.
 
-## Candidate presets
+## Endless test course
 
-The lab ships three deliberately named candidates:
+`CourseStream` derives geometry from deterministic 960-pixel chunk indices. It
+retains two chunks behind the spider and four ahead, so distance is not capped by
+a prebuilt anchor list and retained state does not grow with a run.
 
-- `balanced_candidate` — the neutral first tuning pass;
-- `weighty_candidate` — more gravity, momentum, and deliberate Reel;
-- `agile_candidate` — faster response, lower gravity, and stronger Reel.
+Each chunk owns:
 
-None is called a baseline. The owner must play on a real Android device and
-choose one, request changes, or reject all three before the Phase 0 exit gate is
-complete.
+- one continuous web-compatible ceiling segment;
+- optional visual aim guides;
+- zero or more static obstacle rectangles.
 
-## Debug and reproduction tools
+The first two chunks are intentionally safe. Later chunks loop a small graybox
+vocabulary: low posts, tall posts, ceiling-hanging blocks, and paired gates. The
+orange/yellow diagonal treatment means “lethal obstacle.” Moving hazards,
+collectibles, production balancing, and content theming remain deferred.
 
-Open the `DEBUG` panel for:
+## Candidate presets and diagnostics
 
-- pause and single fixed-step;
-- quarter-speed simulation;
-- gravity, forward drive, Reel rate, and rope-damping adjustment;
-- input recording and deterministic replay;
-- a diagnostic JSON export containing the seed, preset, position, velocity,
-  rope length, Reel energy, and recorded commands.
-
-The export is written to `user://swing_lab_diagnostic.json`. The visible event
-message reports the absolute platform path.
-
-Desktop shortcuts:
-
-| Key | Action |
-| --- | --- |
-| `1`, `2`, `3` | Select candidate preset |
-| `,`, `.` | Select previous/next tuning value |
-| `-`, `=` | Decrease/increase the selected value |
-| `F2` | Pause |
-| `F3` | Advance one 60 Hz tick |
-| `F4` | Toggle quarter-speed |
-| `F6` | Start/stop recording |
-| `F7` | Replay |
-| `F8` | Export diagnostic JSON |
+The three candidates remain `balanced_candidate`, `weighty_candidate`, and
+`agile_candidate`; none is approved as the baseline. The optional debug panel
+still provides fixed-step controls, runtime tuning, deterministic recording and
+replay, and JSON export. Diagnostics now include Burst cooldown and retained
+stream-chunk indices.
 
 ## Verification contract
 
-`python3 tools/verify.py --require-godot` covers the bootstrap contracts and the
-Phase 0 deterministic suite. The suite guards:
+`python3 tools/verify.py --require-godot` guards:
 
-- named preset validation;
-- release-time velocity preservation;
-- Reel shortening without a position teleport;
-- detached Reel remaining inert with explicit attach-first feedback;
-- Reel and DEBUG existing as event-consuming Godot GUI controls, Reel emitting
-  held/released state without a web tap, and world input remaining in
-  `_unhandled_input`;
-- inert invalid targets with explicit feedback;
-- repeated attach/release without hidden energy injection;
-- a nonlethal upper world boundary and lethal lower boundary;
-- identical trajectory results when the same timestamped trace is fed from
-  simulated 30, 60, 90, and 120 Hz render loops.
-
-The simulation advances only at 60 Hz. Presentation consumes snapshots and
-events; it cannot modify authoritative movement.
+- named preset validation and fixed-rate trajectory equivalence;
+- release-time momentum preservation and Reel resource behavior;
+- arbitrary-point ceiling attachment rather than guide-only attachment;
+- Burst release, impulse, cooldown, and separate GUI/gesture routing;
+- deterministic geometry after 10,000 m with a bounded seven-chunk window;
+- authoritative obstacle collision outcomes;
+- nonlethal upper and lethal lower/left/obstacle boundaries;
+- large, separated, event-consuming Reel and Burst controls.
 
 ## Owner device playtest
 
-Download the `spider-swing-android-debug` artifact from the relevant gameplay
-PR or latest `main` run. Current CI builds use a fresh ephemeral debug signing
-key, so uninstall the previous Spider Swing development app before installing a
-replacement. For the front-end build, launch **Spider Swing Menu (dev)** and
-confirm Home appears before gameplay. Settings can select the candidate before
-Play. Then try all three candidates for several minutes.
+Install the `0.2.0-traversal-test` Android artifact after uninstalling the previous
+ephemerally signed dev app. Please report:
 
-Please report:
+1. whether Settings is comfortably readable and scrolls at 1040×480;
+2. whether left-thumb Reel is reachable without looking away from the course;
+3. whether Burst feels useful, excessive, or unclear;
+4. whether tapping between guide rings attaches where expected;
+5. which static obstacle pattern feels unfair or unreadable;
+6. whether the course continues well beyond the former 2,000 m region;
+7. which physics candidate you prefer, or what each gets wrong.
 
-1. the candidate you preferred;
-2. whether attaching ever felt delayed or unclear;
-3. whether release preserved the momentum you expected;
-4. whether attached Reel changes to `PULL`, drains energy, and visibly shortens
-   the rope;
-5. whether detached Reel gives the yellow attach-first message;
-6. whether the DEBUG panel opens and all its touch controls respond;
-7. any unfair top, bottom, or left-edge death;
-8. the exported diagnostic file after a run that felt wrong.
-
-Phase 1 may begin only after the feel baseline is explicitly approved.
+Phase 1 remains gated on an explicitly approved movement baseline.

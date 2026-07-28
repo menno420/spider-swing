@@ -54,6 +54,8 @@ func _draw() -> void:
 		3:
 			_draw_reel(area)
 		4:
+			_draw_burst(area)
+		5:
 			_draw_boundaries(area)
 
 
@@ -88,6 +90,16 @@ func _draw_attachment(area: Rect2) -> void:
 	var anchor := Vector2(area.size.x * 0.7, area.size.y * 0.26)
 	var progress := 1.0 if reduced_motion else clampf(
 		fposmod(_elapsed, 1.6) / 1.1, 0.0, 1.0)
+	var ceiling := Rect2(24.0, area.size.y * 0.12, area.size.x - 48.0, 46.0)
+	draw_rect(ceiling, Color(0.07, 0.26, 0.29, 0.96))
+	draw_line(
+		Vector2(ceiling.position.x, ceiling.end.y),
+		Vector2(ceiling.end.x, ceiling.end.y),
+		CYAN,
+		5.0,
+	)
+	for x in range(90, int(area.size.x) - 40, 120):
+		_draw_anchor(Vector2(float(x), ceiling.end.y), true)
 	_draw_anchor(anchor, true)
 	_draw_spider(spider)
 	var web_end := spider.lerp(anchor, progress)
@@ -126,6 +138,27 @@ func _draw_reel(area: Rect2) -> void:
 	_draw_centered("HOLD", center + Vector2(0.0, 6.0), 16, INK)
 
 
+func _draw_burst(area: Rect2) -> void:
+	var travel := 0.55 if reduced_motion else fposmod(_elapsed * 0.7, 1.0)
+	var start := Vector2(area.size.x * 0.24, area.size.y * 0.52)
+	var spider := start + Vector2(area.size.x * 0.42 * travel, -24.0 * travel)
+	for index in range(5):
+		var trail := spider - Vector2(26.0 + float(index) * 24.0, 0.0)
+		draw_line(trail, trail + Vector2(18.0, 0.0),
+			Color(YELLOW, 1.0 - float(index) * 0.16), 5.0, true)
+	_draw_spider(spider)
+	var button := Rect2(
+		area.size.x - 134.0,
+		area.size.y - 112.0,
+		94.0,
+		72.0,
+	)
+	draw_rect(button, Color(0.24, 0.16, 0.05, 0.96), true)
+	draw_rect(button, YELLOW, false, 3.0)
+	_draw_centered("BURST", button.get_center() + Vector2(0.0, 6.0),
+		15, INK)
+
+
 func _draw_boundaries(area: Rect2) -> void:
 	var floor_y := area.size.y * 0.78
 	draw_line(Vector2(24.0, floor_y), Vector2(area.size.x - 24.0, floor_y),
@@ -136,6 +169,17 @@ func _draw_boundaries(area: Rect2) -> void:
 	if not reduced_motion:
 		spider.y += sin(_elapsed * 2.0) * 22.0
 	_draw_spider(spider)
+	var obstacle := Rect2(area.size.x * 0.64, floor_y - 120.0, 64.0, 120.0)
+	draw_rect(obstacle, Color(0.25, 0.11, 0.07), true)
+	draw_rect(obstacle, ORANGE, false, 4.0)
+	for offset in range(-40, 100, 20):
+		draw_line(
+			Vector2(obstacle.position.x + float(offset), obstacle.end.y),
+			Vector2(obstacle.position.x + float(offset) + 80.0,
+				obstacle.position.y),
+			Color(ORANGE, 0.45),
+			3.0,
+		)
 	var menu := Rect2(28.0, 24.0, 92.0, 42.0)
 	draw_rect(menu, Color(0.08, 0.24, 0.28), true)
 	draw_rect(menu, CYAN, false, 2.0)

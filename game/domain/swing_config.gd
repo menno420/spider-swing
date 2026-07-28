@@ -33,6 +33,9 @@ const PRESET_AGILE := &"agile_candidate"
 @export var reel_drain_rate: float = 30.0
 @export var reel_regeneration_rate: float = 18.0
 @export var reel_empty_lockout: float = 0.75
+@export var burst_impulse: float = 390.0
+@export var burst_lift: float = 75.0
+@export var burst_cooldown: float = 1.65
 @export var camera_follow_strength: float = 8.0
 @export var camera_look_ahead: float = 0.22
 @export var player_collision_radius: float = 18.0
@@ -40,6 +43,7 @@ const PRESET_AGILE := &"agile_candidate"
 @export var lower_world_boundary: float = 780.0
 @export var camera_left_kill_distance: float = 520.0
 @export var death_confirmation_seconds: float = 0.45
+@export var surface_snap_distance: float = 170.0
 
 
 static func preset_names() -> PackedStringArray:
@@ -138,6 +142,8 @@ func validate() -> PackedStringArray:
 		failures.append("web length range is invalid")
 	if reel_energy_capacity <= 0.0:
 		failures.append("Reel energy capacity must be positive")
+	if burst_impulse <= 0.0 or burst_cooldown <= 0.0:
+		failures.append("Burst impulse and cooldown must be positive")
 	if attachment_correction_cap <= 0.0:
 		failures.append("attachment correction cap must be positive")
 	if input_buffer_duration <= 0.0:

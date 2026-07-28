@@ -16,36 +16,40 @@ The product *is* the swinging. Everything else exists to support it.
 > `com.menno420.spiderswing.dev` are all development identifiers and are all
 > expected to change.
 
-## Current phase: Phase 0 Swing Laboratory
+## Current phase: Phase 0.5 traversal test
 
-**The first playable physics candidate is implemented.** The project now opens
-on a player-facing Home screen with Play, an animated five-step Tutorial, and
-persistent Settings. Play enters the graybox laboratory for attaching, swinging,
-preserving release momentum, and using a finite Reel-In energy reserve.
+**The first playable traversal test is implemented.** The project opens on a
+player-facing Home screen with Play, a six-step Tutorial, and readable scrolling
+Settings. Play enters an endless graybox laboratory with continuous ceiling
+attachment, momentum-preserving release, left-thumb Reel, Forward Burst, and a
+small static obstacle vocabulary.
 
 ### What exists
 
 - A responsive starting screen with Play, Tutorial, and Settings; settings persist
   the swing candidate, control hints, reduced motion, and debug-tool visibility.
-- A data-driven five-step animated tutorial plus an in-game Menu return path.
+- A data-driven six-step animated tutorial plus an in-game Menu return path.
 - A deterministic 60 Hz point-mass spider motor with gravity, forward drive, drag,
   world boundaries, and a capped maximum-length web constraint.
-- Valid visible anchors, manual release, Reel-In drain/regeneration/lockout, and
-  multi-touch input that keeps UI touches out of the web path.
+- Continuous cyan ceiling surfaces with optional aim guides, manual release,
+  Reel-In drain/regeneration/lockout, and multi-touch input that keeps UI touches
+  out of the web path.
 - Three named tuning candidates: `balanced_candidate`, `weighty_candidate`, and
   `agile_candidate`.
-- A code-drawn graybox view with camera follow, web tension feedback, HUD, Reel
-  energy ring, event messages, pause/frame-step/slow-motion, runtime tuning,
+- A deterministic bounded course stream, striped static test obstacles, a distinct
+  cooldown-limited Forward Burst, and a code-drawn view with camera follow, Reel
+  and Burst rings, pause/frame-step/slow-motion, runtime tuning,
   deterministic input recording/replay, and diagnostic export.
-- Eight deterministic Phase 0 physics tests, including identical results from
+- Thirteen deterministic physics tests, including identical results from
   simulated 30/60/90/120 Hz render loops.
 - The existing headless, architecture, CI, and Android debug build substrate.
 
 ### What is deliberately not implemented
 
-No procedural chunks, obstacles, flies, currency, progression, missions, alternate
-spiders, monetization, or production art. Those belong to later phases and must not
-be built around movement the owner has not approved on a real phone.
+No authored Phase 1 chunk pack, moving hazards, flies, currency, progression,
+missions, alternate spiders, monetization, or production art. The current looped
+ceiling and static obstacles are deliberately small graybox test instruments, not
+approved production content.
 
 Phase 0 is tracked in [issue #2](../../issues/2). The implementation is ready for
 device playtesting, but none of its three presets is an approved baseline yet.
@@ -149,7 +153,7 @@ Full criteria in the GDD § 23.
 
 | Phase | Scope | Exit gate |
 | --- | --- | --- |
-| **0 — Swing Laboratory** | Spider body and forward drive, valid anchors, attach/swing/manual release, Reel-In energy, camera and world boundaries, graybox debug course, runtime tuning and diagnostics | Attach/release predictable across frame rates; release preserves momentum; Reel-In useful but not mandatory; test players can attribute their deaths; one named physics preset approved as baseline |
+| **0 — Swing Laboratory** | Spider body and forward drive, continuous ceiling targets, attach/swing/manual release, Reel-In energy, Forward Burst, camera and world boundaries, streamed graybox test course, runtime tuning and diagnostics | Attach/release predictable across frame rates; release preserves momentum; Reel-In useful but not mandatory; test players can attribute their deaths; one named physics preset approved as baseline |
 | **1 — Fair Endless Slice** | Seeded chunk selection, three static chunks + one moving-hazard family, small flies, Shield and Tension flies, distance score, death/results/sub-2s restart, local best, basic audio and haptics | No unavoidable deaths in fixed-seed testing; special-fly hits readable; performance target met on the lowest supported device |
 | **2 — MVP Progression** | Run settlement and Silk, atomic versioned save, Magnet Fly, Classic customization, small capped upgrades, three mission templates, settings and accessibility, analytics adapter, release-quality first biome | Economy grants cannot duplicate; progress survives suspension and migration; upgrades do not affect standard records |
 | **3 — Content Expansion** | Alternate spiders with trade-offs, more biomes and chunk packs, cosmetics, daily fixed-seed challenge, platform services, tested rewarded ads, Rush Fly | — |
