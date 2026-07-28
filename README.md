@@ -16,13 +16,14 @@ The product *is* the swinging. Everything else exists to support it.
 > `com.menno420.spiderswing.dev` are all development identifiers and are all
 > expected to change.
 
-## Current phase: Phase 0.8 percentage-pull traversal test
+## Current phase: Phase 0.8 recovery-web traversal test
 
 **The first playable traversal test is implemented.** The project opens on a
 player-facing Home screen with Play, a six-step Tutorial, and readable scrolling
 Settings. Play enters an endless laboratory with forgiving solid-object
-attachment, momentum-preserving release, rope-shortening Reel, percentage-based
-Anchor Burst and Dive Pull, and a small shaped obstacle vocabulary.
+attachment, momentum-preserving release, rope-shortening Reel, interruptible
+percentage-based Anchor Burst and Dive Pull, and a small shaped obstacle
+vocabulary.
 
 ### What exists
 
@@ -31,24 +32,27 @@ Anchor Burst and Dive Pull, and a small shaped obstacle vocabulary.
 - A data-driven six-step animated tutorial plus an in-game Menu return path.
 - A deterministic 60 Hz point-mass spider motor with gravity, forward drive, drag,
   world boundaries, and a capped maximum-length web constraint.
-- Polygonal ceilings and obstacles with optional aim guides, an 820-pixel shared
+- Polygonal ceilings and obstacles with optional aim guides, a 1000-pixel shared
   web range, a 220-pixel aim-forgiveness band, manual release, Reel-In
   drain/regeneration/lockout, and multi-touch input that keeps UI touches out of
   the web path. Every solid edge is a valid target.
 - Three named tuning candidates: `balanced_candidate`, `weighty_candidate`, and
   `agile_candidate`.
 - A deterministic bounded course stream with ceiling gaps, changing heights,
-  branch silhouettes, and broken-pot gates. Burst crosses 50% of the selected
-  web distance; downward taps make a one-shot 25% Dive Pull; both are
-  collision-checked and share a cooldown.
+  branch silhouettes, broken-pot gates, and short lower anchor windows before
+  key hazards. Burst crosses 50% of the selected web distance; downward taps
+  make a one-shot 25% Dive Pull; both are collision-checked and share a cooldown.
+  Either pull can be cancelled immediately by a recovery-web tap.
 - A code-drawn view with camera follow, 228-pixel thumb targets,
   action flashes/haptics, pause/frame-step/slow-motion, runtime controls for
-  Burst/Dive percentages and durations, Reel shortening speed, attach catch,
-  aim forgiveness, deterministic input recording/replay, and diagnostic export.
-- Nineteen deterministic physics tests (46 runtime contracts total), including
-  exact pull-distance shares, detached double-tap targeting, speed-neutral Reel
-  shortening, polygon anchors/collisions, extended reach, and identical results
-  from simulated 30/60/90/120 Hz render loops.
+  Burst/Dive percentages and durations, pull cooldown, Reel shortening speed,
+  attach catch, aim forgiveness, range, RELEASE/RETARGET tap behavior,
+  deterministic input recording/replay, and diagnostic export.
+- Twenty-three deterministic physics tests (50 runtime contracts total),
+  including interruptible recovery webs, double-tap fallback, explicit
+  release/retarget modes, lower anchor coverage, exact pull-distance shares,
+  speed-neutral Reel shortening, polygon anchors/collisions, extended reach, and
+  identical results from simulated 30/60/90/120 Hz render loops.
 - The existing headless, architecture, CI, and Android debug build substrate.
 
 ### What is deliberately not implemented

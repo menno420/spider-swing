@@ -81,16 +81,17 @@ Run directly:
 godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-46 checks, grouped so one subsystem failure never hides the rest:
+50 checks, grouped so one subsystem failure never hides the rest:
 
 - engine, main-scene, input-action, 60 Hz, renderer/viewport, Android preset,
   inward-dependency, and no-autoload bootstrap contracts;
-- nineteen deterministic physics contracts, including extended arbitrary-point
+- twenty-three deterministic physics contracts, including extended arbitrary-point
   solid attachment, larger aim forgiveness, momentum preservation, speed-neutral
-  Reel shortening, exact Burst/Dive distance shares, detached targeted Burst,
-  polygon anchoring/collision, bounded shaped streaming, boundaries, runtime
-  pull tuning, and identical trajectories from simulated 30/60/90/120 Hz render
-  loops;
+  Reel shortening, exact Burst/Dive distance shares, recovery-web interruption,
+  detached cooldown double-tap fallback, explicit release/retarget behavior,
+  polygon anchoring/collision, bounded shaped streaming with lower anchor
+  coverage, boundaries, runtime pull tuning, and identical trajectories from
+  simulated 30/60/90/120 Hz render loops;
 - ten mobile HUD contracts proving large separated Reel and Burst controls,
   DEBUG, and Menu are event-consuming
   Buttons, GUI geometry shares one layout source, accepted actions drive visual

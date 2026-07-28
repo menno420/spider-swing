@@ -494,6 +494,8 @@ func _format_tuning_value(parameter: StringName, value: float) -> String:
 			return "DIVE %.0f%%" % (value * 100.0)
 		&"burst_duration":
 			return "B TIME %.2fs" % value
+		&"pull_cooldown":
+			return "P CD %.1fs" % value
 		&"dive_duration":
 			return "D TIME %.2fs" % value
 		&"aim_forgiveness":
@@ -502,6 +504,8 @@ func _format_tuning_value(parameter: StringName, value: float) -> String:
 			return "REEL %.0f/s" % value
 		&"web_range":
 			return "RANGE %.0f" % value
+		&"tap_retarget":
+			return "TAP %s" % ("RETARGET" if value > 0.5 else "RELEASE")
 		&"rope_damping":
 			return "DAMP %.2f" % value
 		&"gravity":

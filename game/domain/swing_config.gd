@@ -6,7 +6,7 @@ class_name SwingConfig
 ## are deliberately not called "baseline": only the owner can approve that
 ## label after real-device playtesting.
 
-const SCHEMA_VERSION := 4
+const SCHEMA_VERSION := 5
 const PRESET_BALANCED := &"balanced_candidate"
 const PRESET_WEIGHTY := &"weighty_candidate"
 const PRESET_AGILE := &"agile_candidate"
@@ -22,7 +22,8 @@ const PRESET_AGILE := &"agile_candidate"
 @export var maximum_horizontal_overspeed: float = 360.0
 @export var air_drag: float = 0.055
 @export var web_minimum_length: float = 90.0
-@export var web_maximum_length: float = 820.0
+@export var web_maximum_length: float = 1000.0
+@export var web_tap_retargets_when_attached: bool = false
 @export var attachment_cone_degrees: float = 155.0
 @export var attachment_snap_radius: float = 76.0
 @export var attachment_correction_cap: float = 720.0
@@ -66,12 +67,14 @@ static func from_preset(name: StringName) -> SwingConfig:
 
 func apply_preset(name: StringName) -> void:
 	preset_name = name
-	web_maximum_length = 820.0
+	web_maximum_length = 1000.0
+	web_tap_retargets_when_attached = false
 	attachment_catch_fraction = 0.08
 	burst_distance_fraction = 0.50
 	burst_pull_duration = 0.20
 	burst_exit_speed = 420.0
 	burst_tangential_retention = 0.62
+	burst_cooldown = 1.65
 	dive_distance_fraction = 0.25
 	dive_pull_duration = 0.16
 	dive_exit_speed = 280.0
@@ -130,8 +133,11 @@ func adjust(parameter: StringName, direction: float) -> float:
 			return horizontal_drive_acceleration
 		&"web_range":
 			web_maximum_length = clampf(
-				web_maximum_length + 20.0 * direction, 500.0, 1000.0)
+				web_maximum_length + 50.0 * direction, 500.0, 1400.0)
 			return web_maximum_length
+		&"tap_retarget":
+			web_tap_retargets_when_attached = direction > 0.0
+			return 1.0 if web_tap_retargets_when_attached else 0.0
 		&"reel_rate":
 			reel_retraction_rate = clampf(
 				reel_retraction_rate + 20.0 * direction, 80.0, 720.0)
@@ -152,6 +158,10 @@ func adjust(parameter: StringName, direction: float) -> float:
 			burst_pull_duration = clampf(
 				burst_pull_duration + 0.02 * direction, 0.08, 0.40)
 			return burst_pull_duration
+		&"pull_cooldown":
+			burst_cooldown = clampf(
+				burst_cooldown + 0.10 * direction, 0.30, 2.50)
+			return burst_cooldown
 		&"dive_pull_pct":
 			dive_distance_fraction = clampf(
 				dive_distance_fraction + 0.05 * direction, 0.05, 0.50)
@@ -174,6 +184,8 @@ func value_for(parameter: StringName) -> float:
 			return horizontal_drive_acceleration
 		&"web_range":
 			return web_maximum_length
+		&"tap_retarget":
+			return 1.0 if web_tap_retargets_when_attached else 0.0
 		&"reel_rate":
 			return reel_retraction_rate
 		&"aim_forgiveness":
@@ -184,6 +196,8 @@ func value_for(parameter: StringName) -> float:
 			return burst_distance_fraction
 		&"burst_duration":
 			return burst_pull_duration
+		&"pull_cooldown":
+			return burst_cooldown
 		&"dive_pull_pct":
 			return dive_distance_fraction
 		&"dive_duration":

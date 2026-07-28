@@ -71,6 +71,19 @@ func request_burst() -> void:
 func request_burst_from_gesture(world_target: Vector2) -> void:
 	if _run.state != RunStateMachine.State.ACTIVE:
 		return
+	# A platform-classified double tap must never swallow the ordinary web that
+	# can recover from a pull. While a pull owns motion, or while its cooldown
+	# leaves a detached spider unable to Burst, reinterpret the target as the
+	# immediately useful web intent.
+	if _world.pull_active or (
+		not _world.web.attached and _world.burst_cooldown_remaining > 0.0
+	):
+		_buffer(InputCommand.attach(
+			world_target,
+			_next_sequence(),
+			_world.tick,
+		))
+		return
 	_buffer(InputCommand.burst_at(
 		world_target,
 		_next_sequence(),
@@ -184,6 +197,10 @@ func export_diagnostic() -> void:
 			"dive_distance_fraction": _config.dive_distance_fraction,
 			"reel_retraction_rate": _config.reel_retraction_rate,
 			"surface_snap_distance": _config.surface_snap_distance,
+			"web_maximum_length": _config.web_maximum_length,
+			"tap_retargets_when_attached":
+				_config.web_tap_retargets_when_attached,
+			"pull_cooldown": _config.burst_cooldown,
 		},
 		"stream_chunks": [
 			geometry.first_chunk_index,
