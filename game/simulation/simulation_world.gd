@@ -184,7 +184,23 @@ func _consume(
 					"Attach a web before Reel-In",
 				))
 			else:
+				var was_reeling := web.reel_active
+				var reel_velocity_before := velocity
 				velocity = web.engage_reel(position, velocity, config)
+				if not was_reeling and web.reel_active:
+					events.append(SimulationEvent.make(
+						SimulationEvent.Kind.REEL_STARTED,
+						web.anchor,
+						"Reel engaged",
+						{
+							"origin_x": position.x,
+							"origin_y": position.y,
+							"velocity_before_x": reel_velocity_before.x,
+							"velocity_before_y": reel_velocity_before.y,
+							"velocity_after_x": velocity.x,
+							"velocity_after_y": velocity.y,
+						},
+					))
 		InputCommand.Kind.REEL_STOP:
 			web.set_reel_active(false)
 		InputCommand.Kind.BURST:
@@ -203,18 +219,19 @@ func _consume(
 					"Attach a web before Burst",
 				))
 				return
-			var pull_vector := web.anchor - position
-			if pull_vector.length_squared() <= 0.0001:
+			var launch := web.calculate_burst_launch(position, velocity, config)
+			if not bool(launch.get("valid", false)):
 				events.append(SimulationEvent.make(
 					SimulationEvent.Kind.BURST_UNAVAILABLE,
 					position,
 					"Web target is too close for Burst",
 				))
 				return
-			var pull_direction := pull_vector.normalized()
-			var burst_anchor := web.anchor
+			var pull_direction: Vector2 = launch["direction"]
+			var burst_anchor: Vector2 = launch["anchor"]
+			var burst_velocity_before := velocity
+			velocity = launch["velocity"]
 			web.release()
-			velocity += pull_direction * config.burst_pull_impulse
 			burst_cooldown_remaining = config.burst_cooldown
 			events.append(SimulationEvent.make(
 				SimulationEvent.Kind.BURST_STARTED,
@@ -223,5 +240,11 @@ func _consume(
 				{
 					"direction_x": pull_direction.x,
 					"direction_y": pull_direction.y,
+					"origin_x": position.x,
+					"origin_y": position.y,
+					"velocity_before_x": burst_velocity_before.x,
+					"velocity_before_y": burst_velocity_before.y,
+					"velocity_after_x": velocity.x,
+					"velocity_after_y": velocity.y,
 				},
 			))

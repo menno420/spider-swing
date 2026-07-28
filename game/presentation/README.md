@@ -24,7 +24,8 @@ endpoints; it does not drive physics (GDD § 17.2).
   surfaces bound to application-owned state.
 - `tutorial_preview.gd` — reduced-motion-aware in-engine mechanics animation.
 - `swing_lab.tscn` + `swing_lab.gd` — Phase 0 camera, anchors, spider, web,
-  HUD, Reel energy, feedback, and diagnostic overlays.
+  HUD, Reel energy, authoritative-event-driven action flashes, and diagnostic
+  overlays.
 
 The composition root mounts either the front end or the laboratory, never two
 competing roots. See ADR 0002 and `docs/technical/front-end-flow.md`.

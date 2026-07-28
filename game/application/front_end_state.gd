@@ -42,16 +42,16 @@ const TUTORIAL_STEPS := [
 		"title": "HOLD THE LARGE REEL",
 		"kicker": "04 · REEL-IN",
 		"body": "Use your left thumb to hold REEL while aiming with your right. "
-			+ "It shortens the web and pulls upward; the energy ring drains "
-			+ "while pulling and recharges afterward.",
+			+ "It immediately redirects you toward the web, then keeps pulling "
+			+ "and shortening the line. The energy ring recharges afterward.",
 		"tip": "Reel is a correction tool, not a permanent boost.",
 	},
 	{
 		"title": "PULL TO THE TARGET",
 		"kicker": "05 · ANCHOR BURST",
-		"body": "While attached, tap BURST for a quick strong pull toward your "
-			+ "current web target. The web releases as you launch, then Burst "
-			+ "recharges. You can also double-tap the attached target.",
+		"body": "While attached, tap BURST to cancel movement away from the web "
+			+ "and launch strongly toward its target. The web releases as you "
+			+ "launch, then Burst recharges. You can also double-tap the target.",
 		"tip": "Aim first: Burst follows the web direction and is unavailable detached.",
 	},
 	{

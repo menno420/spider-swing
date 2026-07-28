@@ -112,28 +112,31 @@ static func _test_reel_engages_on_first_tick(
 	control.web.try_attach(control.position, anchor, config)
 	var inward := (anchor - reeled.position).normalized()
 	reeled.queue_command(InputCommand.reel(true, 1, 0))
-	reeled.step(FIXED_DELTA)
+	var events := reeled.step(FIXED_DELTA)
 	control.step(FIXED_DELTA)
-	var inward_gain := (
-		reeled.velocity.dot(inward)
-		- control.velocity.dot(inward)
-	)
-	if inward_gain < config.reel_engage_impulse * 0.8:
+	var inward_speed := reeled.velocity.dot(inward)
+	if inward_speed < config.reel_engage_minimum_speed * 0.95:
 		failures.append(
-			"Reel first tick added %.2f inward speed, expected at least %.2f" % [
-				inward_gain,
-				config.reel_engage_impulse * 0.8,
+			"Reel first tick produced %.2f inward speed, expected at least %.2f" % [
+				inward_speed,
+				config.reel_engage_minimum_speed * 0.95,
 			])
 		return 0
 	if reeled.velocity.y >= control.velocity.y - 80.0:
 		failures.append("Reel first tick did not clearly arrest downward motion")
 		return 0
+	if not _contains_event(events, SimulationEvent.Kind.REEL_STARTED):
+		failures.append("Reel first tick emitted no success feedback event")
+		return 0
 	var velocity_after_first_start := reeled.velocity
 	reeled.queue_command(InputCommand.reel(true, 2, reeled.tick))
-	reeled.step(FIXED_DELTA)
+	events = reeled.step(FIXED_DELTA)
 	if reeled.velocity.distance_to(velocity_after_first_start) > \
-			config.reel_engage_impulse * 0.75:
-		failures.append("repeated Reel start reapplied the engagement impulse")
+			config.reel_engage_minimum_speed * 0.75:
+		failures.append("repeated Reel start reapplied the engagement correction")
+		return 0
+	if _contains_event(events, SimulationEvent.Kind.REEL_STARTED):
+		failures.append("held Reel emitted duplicate success feedback")
 		return 0
 	return 1
 
@@ -243,21 +246,30 @@ static func _test_burst_is_impulsive_and_rate_limited(
 	world.velocity = Vector2(120.0, 90.0)
 	control.velocity = world.velocity
 	var pull_direction := (anchor - world.position).normalized()
+	var perpendicular := Vector2(-pull_direction.y, pull_direction.x)
+	var inward_before := world.velocity.dot(pull_direction)
+	var tangential_before := world.velocity.dot(perpendicular)
 	world.queue_command(InputCommand.burst(1, 0))
 	var events := world.step(FIXED_DELTA)
 	control.step(FIXED_DELTA)
 	if world.web.attached:
 		failures.append("Burst did not release the active web")
 		return 0
-	var delta_velocity := world.velocity - control.velocity
-	var pull_gain := delta_velocity.dot(pull_direction)
-	if pull_gain < config.burst_pull_impulse * 0.95:
-		failures.append("Burst added %.2f along the web, expected %.2f" % [
-			pull_gain, config.burst_pull_impulse * 0.95])
+	var inward_after := world.velocity.dot(pull_direction)
+	if inward_before >= 0.0:
+		failures.append("Burst fixture does not begin with opposing rope motion")
 		return 0
-	var perpendicular := Vector2(-pull_direction.y, pull_direction.x)
-	if absf(delta_velocity.dot(perpendicular)) > 0.5:
-		failures.append("Burst injected velocity outside the anchor direction")
+	if inward_after < config.burst_minimum_pull_speed * 0.95:
+		failures.append("Burst launched at %.2f along the web, expected at least %.2f" % [
+			inward_after, config.burst_minimum_pull_speed * 0.95])
+		return 0
+	var expected_tangential := tangential_before * \
+		config.burst_tangential_retention
+	if absf(world.velocity.dot(perpendicular) - expected_tangential) > 1.0:
+		failures.append("Burst did not preserve the configured tangential share")
+		return 0
+	if world.velocity.normalized().dot(pull_direction) < 0.8:
+		failures.append("Burst launch direction is not visibly anchor-dominant")
 		return 0
 	if not _contains_event(events, SimulationEvent.Kind.BURST_STARTED):
 		failures.append("Burst emitted no success event")
@@ -269,7 +281,7 @@ static func _test_burst_is_impulsive_and_rate_limited(
 		failures.append("Burst cooldown did not reject a repeated activation")
 		return 0
 	if world.velocity.distance_to(velocity_after) > \
-			config.burst_pull_impulse * 0.5:
+			config.burst_minimum_pull_speed * 0.5:
 		failures.append("rejected Burst still injected an impulse")
 		return 0
 
@@ -290,6 +302,18 @@ static func _test_burst_is_impulsive_and_rate_limited(
 		return 0
 	if not _contains_event(events, SimulationEvent.Kind.BURST_UNAVAILABLE):
 		failures.append("detached Burst emitted no attach-first feedback")
+		return 0
+
+	var fast_inward := SimulationWorld.new()
+	fast_inward.reset(config, _test_geometry())
+	fast_inward.web.try_attach(fast_inward.position, anchor, config)
+	fast_inward.velocity = pull_direction * (
+		config.burst_maximum_pull_speed + 120.0)
+	fast_inward.queue_command(InputCommand.burst(1, 0))
+	fast_inward.step(FIXED_DELTA)
+	if fast_inward.velocity.dot(pull_direction) < \
+			config.burst_maximum_pull_speed + 100.0:
+		failures.append("Burst erased naturally earned inward speed")
 		return 0
 	return 1
 

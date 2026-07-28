@@ -17,3 +17,16 @@
   discipline let agents work correctly with little steering; adopting the
   kit starts spider-swing governed instead of accreting rules ad hoc.
 - provenance: substrate-kit adoption interview
+
+## [D-0002] Make rope actions radial, immediate, and event-readable
+
+- status: decided
+- date: 2026-07-28
+- verdict: Reel guarantees a first-tick inward response while Burst launches
+  toward the active anchor with controlled tangential retention; both report
+  accepted actions through domain events.
+- why: Android recordings showed that correct input could still feel late or
+  weak, especially while falling, and a screen-forward boost did not match the
+  player's web aim. Radial contracts preserve the swing vocabulary while explicit
+  feedback separates an accepted action from a missed or unavailable one.
+- provenance: Menno's Phase 0.6 real-device recordings and PR #12

@@ -29,7 +29,7 @@ The tutorial is data-driven by `FrontEndState.TUTORIAL_STEPS` and illustrated by
 2. continuous cyan ceiling surfaces, optional aim guides, and range;
 3. manual release with momentum preservation;
 4. attached-only left-thumb Reel use and finite energy;
-5. the forward Burst button and double-tap shortcut;
+5. anchor-directed Burst, its dedicated button, and the double-tap shortcut;
 6. striped obstacles, lethal boundaries, restart, Menu, and optional debug tooling.
 
 The preview is an in-engine animation rather than a prerecorded video. This is a

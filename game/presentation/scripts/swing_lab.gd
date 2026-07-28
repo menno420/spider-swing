@@ -18,6 +18,8 @@ const RED := Color("ff6577")
 const MUTED := Color("8ba9b5")
 const OBSTACLE := Color("f06449")
 const OBSTACLE_DARK := Color("632e34")
+const REEL_FEEDBACK_DURATION := 0.22
+const BURST_FEEDBACK_DURATION := 0.3
 
 var _snapshot: SimulationSnapshot
 var _camera_x: float = 0.0
@@ -29,6 +31,11 @@ var _font: Font
 var _show_control_hints: bool = true
 var _reduced_motion: bool = false
 var _show_debug_tools: bool = true
+var _reel_feedback_remaining: float = 0.0
+var _burst_feedback_remaining: float = 0.0
+var _burst_feedback_origin: Vector2 = Vector2.ZERO
+var _burst_feedback_anchor: Vector2 = Vector2.ZERO
+var _burst_feedback_direction: Vector2 = Vector2.ZERO
 
 
 func _ready() -> void:
@@ -58,6 +65,19 @@ func present_event(event: SimulationEvent) -> void:
 	_feedback_position = event.position
 	_feedback_remaining = 1.2
 	match event.kind:
+		SimulationEvent.Kind.REEL_STARTED:
+			_reel_feedback_remaining = REEL_FEEDBACK_DURATION
+		SimulationEvent.Kind.BURST_STARTED:
+			_burst_feedback_remaining = BURST_FEEDBACK_DURATION
+			_burst_feedback_origin = Vector2(
+				float(event.data.get("origin_x", 0.0)),
+				float(event.data.get("origin_y", 0.0)),
+			)
+			_burst_feedback_anchor = event.position
+			_burst_feedback_direction = Vector2(
+				float(event.data.get("direction_x", 0.0)),
+				float(event.data.get("direction_y", 0.0)),
+			).normalized()
 		SimulationEvent.Kind.INVALID_TARGET:
 			_feedback_color = RED
 		SimulationEvent.Kind.OUT_OF_RANGE, SimulationEvent.Kind.REEL_UNAVAILABLE, \
@@ -74,6 +94,8 @@ func screen_to_world(screen_position: Vector2) -> Vector2:
 
 
 func _process(delta: float) -> void:
+	_reel_feedback_remaining = maxf(0.0, _reel_feedback_remaining - delta)
+	_burst_feedback_remaining = maxf(0.0, _burst_feedback_remaining - delta)
 	if _snapshot == null:
 		return
 	var viewport_size := get_viewport_rect().size
@@ -103,6 +125,7 @@ func _draw() -> void:
 		_draw_text(Vector2(32.0, 58.0), "Loading Swing Laboratory…", 24, WEB)
 		return
 	_draw_web()
+	_draw_action_feedback()
 	_draw_spider()
 	_draw_feedback()
 	_draw_hud(size)
@@ -215,6 +238,59 @@ func _draw_web() -> void:
 		draw_circle(spider.lerp(anchor, pulse), 7.0, CYAN)
 
 
+func _draw_action_feedback() -> void:
+	if _reel_feedback_remaining > 0.0 and _snapshot.web_attached:
+		var reel_alpha := clampf(
+			_reel_feedback_remaining / REEL_FEEDBACK_DURATION,
+			0.0,
+			1.0,
+		)
+		var spider := _world_to_screen(_snapshot.position)
+		var anchor := _world_to_screen(_snapshot.anchor)
+		draw_line(spider, anchor, Color(CYAN, reel_alpha * 0.82), 9.0)
+		var reel_progress := 1.0 - reel_alpha
+		var reel_radius := 28.0 if _reduced_motion else \
+			28.0 + reel_progress * 24.0
+		draw_arc(
+			spider,
+			reel_radius,
+			0.0,
+			TAU,
+			40,
+			Color(CYAN, reel_alpha),
+			5.0,
+		)
+
+	if _burst_feedback_remaining <= 0.0:
+		return
+	var burst_alpha := clampf(
+		_burst_feedback_remaining / BURST_FEEDBACK_DURATION,
+		0.0,
+		1.0,
+	)
+	var origin := _world_to_screen(_burst_feedback_origin)
+	var anchor := _world_to_screen(_burst_feedback_anchor)
+	draw_line(origin, anchor, Color(YELLOW, burst_alpha * 0.72), 10.0)
+	draw_line(
+		origin,
+		origin + _burst_feedback_direction * 150.0,
+		Color(WEB, burst_alpha),
+		7.0,
+	)
+	var burst_progress := 1.0 - burst_alpha
+	var burst_radius := 32.0 if _reduced_motion else \
+		32.0 + burst_progress * 38.0
+	draw_arc(
+		origin,
+		burst_radius,
+		0.0,
+		TAU,
+		48,
+		Color(YELLOW, burst_alpha),
+		6.0,
+	)
+
+
 func _draw_spider() -> void:
 	var center := _world_to_screen(_snapshot.position)
 	var rotation := clampf(_snapshot.velocity.angle() * 0.16, -0.35, 0.35)
@@ -279,6 +355,8 @@ func _draw_hud(size: Vector2) -> void:
 	draw_arc(center, radius, 0.0, TAU, 64,
 		CYAN if _snapshot.reel_active else Color(0.55, 0.72, 0.76, 0.55),
 		6.0 if _snapshot.reel_active else 4.0)
+	if _reel_feedback_remaining > 0.0:
+		draw_arc(center, radius + 8.0, 0.0, TAU, 64, WEB, 7.0)
 	var energy_ratio := _snapshot.reel_energy / maxf(_snapshot.reel_capacity, 0.001)
 	draw_arc(center, radius, -PI * 0.5, -PI * 0.5 + TAU * energy_ratio,
 		64, CYAN if _snapshot.reel_lockout <= 0.0 else RED, 8.0)
@@ -295,6 +373,8 @@ func _draw_hud(size: Vector2) -> void:
 	draw_circle(burst_center, burst_radius, burst_fill)
 	draw_arc(burst_center, burst_radius, 0.0, TAU, 64,
 		YELLOW if burst_ready else Color(0.54, 0.47, 0.37, 0.64), 5.0)
+	if _burst_feedback_remaining > 0.0:
+		draw_arc(burst_center, burst_radius + 8.0, 0.0, TAU, 64, WEB, 8.0)
 	var cooldown_ratio := 1.0 - clampf(
 		_snapshot.burst_cooldown /
 			maxf(_snapshot.burst_cooldown_capacity, 0.001),
