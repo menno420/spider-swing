@@ -12,6 +12,7 @@ var left_kill_boundary: float = 0.0
 var web_attached: bool = false
 var anchor: Vector2 = Vector2.ZERO
 var rope_length: float = 0.0
+var web_maximum_length: float = 0.0
 var tension: float = 0.0
 var reel_energy: float = 0.0
 var reel_capacity: float = 100.0

@@ -140,12 +140,21 @@ func _draw_reel(area: Rect2) -> void:
 
 func _draw_burst(area: Rect2) -> void:
 	var travel := 0.55 if reduced_motion else fposmod(_elapsed * 0.7, 1.0)
-	var start := Vector2(area.size.x * 0.24, area.size.y * 0.52)
-	var spider := start + Vector2(area.size.x * 0.42 * travel, -24.0 * travel)
+	var anchor := Vector2(area.size.x * 0.72, area.size.y * 0.2)
+	var start := Vector2(area.size.x * 0.24, area.size.y * 0.7)
+	var pull_direction := (anchor - start).normalized()
+	var spider := start + pull_direction * area.size.x * 0.4 * travel
+	_draw_anchor(anchor, true)
+	draw_line(start, anchor, Color(INK, 0.34), 3.0, true)
 	for index in range(5):
-		var trail := spider - Vector2(26.0 + float(index) * 24.0, 0.0)
-		draw_line(trail, trail + Vector2(18.0, 0.0),
-			Color(YELLOW, 1.0 - float(index) * 0.16), 5.0, true)
+		var trail := spider - pull_direction * (26.0 + float(index) * 24.0)
+		draw_line(
+			trail,
+			trail + pull_direction * 18.0,
+			Color(YELLOW, 1.0 - float(index) * 0.16),
+			5.0,
+			true,
+		)
 	_draw_spider(spider)
 	var button := Rect2(
 		area.size.x - 134.0,
@@ -157,7 +166,6 @@ func _draw_burst(area: Rect2) -> void:
 	draw_rect(button, YELLOW, false, 3.0)
 	_draw_centered("BURST", button.get_center() + Vector2(0.0, 6.0),
 		15, INK)
-
 
 func _draw_boundaries(area: Rect2) -> void:
 	var floor_y := area.size.y * 0.78

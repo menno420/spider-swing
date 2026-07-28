@@ -11,7 +11,15 @@ signal event_published(event: SimulationEvent)
 
 const FIXED_DELTA := 1.0 / 60.0
 const COURSE_SEED := 1337
-const TUNING_PARAMETERS := [&"gravity", &"drive", &"reel_rate", &"rope_damping"]
+const TUNING_PARAMETERS := [
+	&"gravity",
+	&"drive",
+	&"web_range",
+	&"reel_rate",
+	&"reel_engage",
+	&"burst_pull",
+	&"rope_damping",
+]
 
 var _config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 var _world := SimulationWorld.new()
@@ -292,6 +300,7 @@ func _make_snapshot() -> SimulationSnapshot:
 	snapshot.web_attached = _world.web.attached
 	snapshot.anchor = _world.web.anchor
 	snapshot.rope_length = _world.web.rope_length
+	snapshot.web_maximum_length = _config.web_maximum_length
 	snapshot.tension = _world.web.tension
 	snapshot.reel_energy = _world.web.reel_energy
 	snapshot.reel_capacity = _config.reel_energy_capacity

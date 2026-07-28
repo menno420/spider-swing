@@ -23,7 +23,7 @@ without a reported regression.
   Settings navigation; the bootstrap composition root alone mounts or unmounts
   the front end and simulation.
 - The six-step in-engine Tutorial teaches movement, continuous ceiling targets,
-  release and momentum, Reel energy, Forward Burst, striped obstacles, restart,
+  release and momentum, Reel energy, anchor-directed Burst, striped obstacles, restart,
   Menu, and optional diagnostics without a prerecorded binary asset.
 - `SaveRepository` exclusively owns versioned local settings writes. Swing
   candidate, control hints, reduced motion, and debug-tool visibility all have
@@ -35,9 +35,10 @@ without a reported regression.
   World attach/release runs in `_unhandled_input` only after GUI handling.
   Render-time events are buffered into commands; simulation never polls input.
 - The playable traversal lab has deterministic forward drive, gravity, continuous
-  ceiling attachment, manual release, Reel-In energy, cooldown-limited Forward
-  Burst, three candidate presets, camera/world boundaries, and a bounded
-  deterministic seven-chunk geometry window that continues past 10,000 m.
+  ceiling attachment with an 820-pixel shared range, manual release, first-tick
+  plus sustained Reel-In pull, cooldown-limited anchor-directed Burst, three
+  candidate presets, camera/world boundaries, and a bounded deterministic
+  seven-chunk geometry window that continues past 10,000 m.
 - The stream loops a small static obstacle vocabulary for avoidance testing. It is
   graybox instrumentation, not an authored or approved Phase 1 chunk pack.
 - Settings is a readable vertical scroll surface with larger type and 58–68-pixel
@@ -50,7 +51,7 @@ without a reported regression.
 - `python3 tools/verify.py` — passes. Six steps: architecture self-test,
   architecture scan, Godot discovery and version, headless import, boot smoke
   test, headless test runner.
-- `tests/test_runner.gd` — 39 checks, all passing: thirteen deterministic physics,
+- `tests/test_runner.gd` — 41 checks, all passing: fifteen deterministic physics,
   nine GUI-owned mobile HUD, eight front-end navigation/settings, plus bootstrap
   and exact build-version contracts. The front-end group performs a real
   filesystem settings round-trip. The trajectory fixture produces the same final
@@ -61,9 +62,10 @@ without a reported regression.
 **CI**
 
 - `game-quality` — **green.** Runs `tools/verify.py` on a clean runner with Godot
-  4.7.1 and uses no secrets. PR #10 run
-  [30365948791](https://github.com/menno420/spider-swing/actions/runs/30365948791)
-  passed all 39 runtime contracts.
+  4.7.1 and uses no secrets. PR #11 run
+  [30372449569](https://github.com/menno420/spider-swing/actions/runs/30372449569)
+  passed all 41 runtime contracts, including the new first-tick Reel, extended
+  reach, and anchor-vector Burst tests.
 - `substrate-gate` — kit-owned. A born-red session card deliberately holds a PR
   until close-out; it must be green on the completed card before merge.
 - `android-debug` — **green on `main`, APK proven.** Run #1 produced artifact
@@ -72,17 +74,17 @@ without a reported regression.
   signed, containing this project's own scripts and scenes, shipping exactly
   `arm64-v8a` + `x86_64`. Uses no secrets and never publishes.
   Run: https://github.com/menno420/spider-swing/actions/runs/30344755707
-- `android-debug` also runs for gameplay pull requests. PR #10 run
-  [30365945501](https://github.com/menno420/spider-swing/actions/runs/30365945501)
-  produced artifact `spider-swing-android-debug` ID `8690806549`, 56,710,502
+- `android-debug` also runs for gameplay pull requests. PR #11 run
+  [30372450524](https://github.com/menno420/spider-swing/actions/runs/30372450524)
+  produced artifact `spider-swing-android-debug` ID `8693506101`, 56,715,449
   bytes, digest
-  `sha256:b091f4231df7d9c78053f54c91ba20b02c62578be0914fa8aed800aa4e9a3a8e`.
-  It was downloaded and verified as a valid APK bundle containing this project's
-  compiled `course_stream`, front-end, and swing-lab scripts. It proves version
-  `0.2.0-traversal-test`, source
-  `0b3827aaad7769f64f3e2a75e5525b565879a2d2`, package
+  `sha256:129b61404fd4e4a7f7c4f2559b45805f82032776efb5cc5fe5b97a0cb653f94f`.
+  It was downloaded and verified as an Android APK with `classes.dex` and the
+  compiled main, swing-lab, and tutorial-preview scripts. It proves version
+  `0.2.1-anchor-pull-test`, source
+  `ce9e5f74bebad32bf5425b5b2368da9ae02f5ee1`, package
   `com.menno420.spiderswing.dev`, and display name
-  `Spider Swing Traversal (dev)`.
+  `Spider Swing Anchor Pull (dev)`.
 - **Dependabot** — live. Its first run opened two bumps against the kit-owned
   `substrate-gate.yml`; both were closed because `adopt`/`upgrade` regenerates that
   file. The rule is documented in `.github/dependabot.yml`: kit-owned-only bumps get
@@ -107,17 +109,24 @@ without a reported regression.
 
 ## In flight
 
-No implementation PR remains in flight after PR #10. Menno confirmed the PR #9
-front end works and supplied the usability/traversal feedback implemented here.
+PR #11 carries the Phase 0.6 anchor-pull corrections derived from Menno's four
+1040×480 traversal recordings. The recordings confirmed the concept is fun and
+replayable while identifying reach, delayed Reel response, and screen-forward Burst
+as the connected feel gaps.
 
-**Owner exit gate:** test build `0.2.0-traversal-test` on Android. Confirm Settings
-scrolls and reads comfortably, Reel is reachable while aiming, Burst is useful,
-continuous ceiling attachment is predictable, and every striped obstacle offers a
-readable route. Compare all three physics candidates. Phase 1 remains blocked on
-choosing or rejecting a movement baseline and this obstacle-readability review.
+**Owner exit gate:** test build `0.2.1-anchor-pull-test` on Android. Confirm natural
+targets roughly one guide interval beyond the old limit attach; Reel responds on
+the first tick and arrests a downward arc; Burst follows forward/upward/backward
+web directions and is inert while detached. Compare all three physics candidates.
+Phase 1 remains blocked on choosing or rejecting a movement baseline.
 
 ## Recently shipped (newest first)
 
+- **2026-07-28 — Anchor-pull feel candidate (in PR #11).** Extends web reach from
+  620 to 820 pixels, gives Reel an immediate bounded inward response plus sustained
+  pull, and makes Burst an attached-only 440 px/s impulse along the active web
+  vector. The exact gameplay commit passes 41 Godot contracts and produces a
+  verified Android APK.
 - **2026-07-28 — Mobile traversal and obstacle test.** PR #10 makes Settings
   readable and scrollable, splits large Reel/Burst controls across the thumbs,
   accepts any point on continuous ceiling surfaces, replaces the finite anchor

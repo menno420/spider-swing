@@ -47,12 +47,12 @@ const TUTORIAL_STEPS := [
 		"tip": "Reel is a correction tool, not a permanent boost.",
 	},
 	{
-		"title": "BURST THROUGH",
-		"kicker": "05 · FORWARD BURST",
-		"body": "Tap BURST for a short straight push forward. It releases the "
-			+ "current web and then recharges. You can also double-tap the "
-			+ "attached web target for the same action.",
-		"tip": "Save Burst for a late obstacle correction or a weak release.",
+		"title": "PULL TO THE TARGET",
+		"kicker": "05 · ANCHOR BURST",
+		"body": "While attached, tap BURST for a quick strong pull toward your "
+			+ "current web target. The web releases as you launch, then Burst "
+			+ "recharges. You can also double-tap the attached target.",
+		"tip": "Aim first: Burst follows the web direction and is unavailable detached.",
 	},
 	{
 		"title": "SURVIVE & RECOVER",

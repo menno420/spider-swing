@@ -13,9 +13,11 @@ static func run() -> Dictionary:
 	passed += _test_presets(failures)
 	passed += _test_release_preserves_velocity(failures)
 	passed += _test_reel_shortens_without_teleport(failures)
+	passed += _test_reel_engages_on_first_tick(failures)
 	passed += _test_detached_reel_reports_unavailable(failures)
 	passed += _test_invalid_target_is_inert(failures)
 	passed += _test_continuous_surface_attachment(failures)
+	passed += _test_extended_web_reach(failures)
 	passed += _test_burst_is_impulsive_and_rate_limited(failures)
 	passed += _test_course_stream_is_endless_and_bounded(failures)
 	passed += _test_obstacle_collision_is_authoritative(failures)
@@ -89,6 +91,53 @@ static func _test_reel_shortens_without_teleport(
 	return 1
 
 
+static func _test_reel_engages_on_first_tick(
+	failures: PackedStringArray,
+) -> int:
+	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	config.gravity = 0.0001
+	config.horizontal_drive_acceleration = 0.0001
+	config.air_drag = 0.0
+	var geometry := _test_geometry()
+	var reeled := SimulationWorld.new()
+	var control := SimulationWorld.new()
+	reeled.reset(config, geometry)
+	control.reset(config, geometry)
+	reeled.position = Vector2(220.0, 600.0)
+	control.position = reeled.position
+	reeled.velocity = Vector2(380.0, 260.0)
+	control.velocity = reeled.velocity
+	var anchor := Vector2(480.0, 150.0)
+	reeled.web.try_attach(reeled.position, anchor, config)
+	control.web.try_attach(control.position, anchor, config)
+	var inward := (anchor - reeled.position).normalized()
+	reeled.queue_command(InputCommand.reel(true, 1, 0))
+	reeled.step(FIXED_DELTA)
+	control.step(FIXED_DELTA)
+	var inward_gain := (
+		reeled.velocity.dot(inward)
+		- control.velocity.dot(inward)
+	)
+	if inward_gain < config.reel_engage_impulse * 0.8:
+		failures.append(
+			"Reel first tick added %.2f inward speed, expected at least %.2f" % [
+				inward_gain,
+				config.reel_engage_impulse * 0.8,
+			])
+		return 0
+	if reeled.velocity.y >= control.velocity.y - 80.0:
+		failures.append("Reel first tick did not clearly arrest downward motion")
+		return 0
+	var velocity_after_first_start := reeled.velocity
+	reeled.queue_command(InputCommand.reel(true, 2, reeled.tick))
+	reeled.step(FIXED_DELTA)
+	if reeled.velocity.distance_to(velocity_after_first_start) > \
+			config.reel_engage_impulse * 0.75:
+		failures.append("repeated Reel start reapplied the engagement impulse")
+		return 0
+	return 1
+
+
 static func _test_detached_reel_reports_unavailable(
 	failures: PackedStringArray,
 ) -> int:
@@ -155,29 +204,60 @@ static func _test_continuous_surface_attachment(
 	return 1
 
 
+static func _test_extended_web_reach(failures: PackedStringArray) -> int:
+	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	var world := SimulationWorld.new()
+	world.reset(config, _test_geometry())
+	var target := Vector2(950.0, 150.0)
+	if target.distance_to(world.position) <= 620.0:
+		failures.append("extended-reach fixture does not exceed the old limit")
+		return 0
+	world.queue_command(InputCommand.attach(target, 1, 0))
+	var events := world.step(FIXED_DELTA)
+	if not world.web.attached:
+		failures.append("natural forward target beyond the old range did not attach")
+		return 0
+	if world.web.rope_length > config.web_maximum_length:
+		failures.append("extended attachment exceeded the configured range")
+		return 0
+	if not _contains_event(events, SimulationEvent.Kind.ATTACHED):
+		failures.append("extended attachment emitted no ATTACHED event")
+		return 0
+	return 1
+
+
 static func _test_burst_is_impulsive_and_rate_limited(
 	failures: PackedStringArray,
 ) -> int:
 	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	config.gravity = 0.0001
+	config.horizontal_drive_acceleration = 0.0001
+	config.air_drag = 0.0
+	config.maximum_horizontal_overspeed = 2000.0
 	var world := SimulationWorld.new()
 	var control := SimulationWorld.new()
 	world.reset(config, _test_geometry())
 	control.reset(config, _test_geometry())
-	world.web.try_attach(world.position, Vector2(480.0, 150.0), config)
-	control.web.try_attach(control.position, Vector2(480.0, 150.0), config)
-	world.velocity = Vector2(330.0, 120.0)
+	var anchor := Vector2(320.0, 150.0)
+	world.web.try_attach(world.position, anchor, config)
+	world.velocity = Vector2(120.0, 90.0)
 	control.velocity = world.velocity
+	var pull_direction := (anchor - world.position).normalized()
 	world.queue_command(InputCommand.burst(1, 0))
 	var events := world.step(FIXED_DELTA)
 	control.step(FIXED_DELTA)
 	if world.web.attached:
 		failures.append("Burst did not release the active web")
 		return 0
-	if world.velocity.x - control.velocity.x < config.burst_impulse * 0.85:
-		failures.append("Burst did not create a clear forward impulse")
+	var delta_velocity := world.velocity - control.velocity
+	var pull_gain := delta_velocity.dot(pull_direction)
+	if pull_gain < config.burst_pull_impulse * 0.95:
+		failures.append("Burst added %.2f along the web, expected %.2f" % [
+			pull_gain, config.burst_pull_impulse * 0.95])
 		return 0
-	if world.velocity.y > -config.burst_lift * 0.5:
-		failures.append("Burst did not finish its authoritative tick moving upward")
+	var perpendicular := Vector2(-pull_direction.y, pull_direction.x)
+	if absf(delta_velocity.dot(perpendicular)) > 0.5:
+		failures.append("Burst injected velocity outside the anchor direction")
 		return 0
 	if not _contains_event(events, SimulationEvent.Kind.BURST_STARTED):
 		failures.append("Burst emitted no success event")
@@ -188,8 +268,28 @@ static func _test_burst_is_impulsive_and_rate_limited(
 	if not _contains_event(events, SimulationEvent.Kind.BURST_UNAVAILABLE):
 		failures.append("Burst cooldown did not reject a repeated activation")
 		return 0
-	if world.velocity.x > velocity_after.x + config.burst_impulse * 0.5:
+	if world.velocity.distance_to(velocity_after) > \
+			config.burst_pull_impulse * 0.5:
 		failures.append("rejected Burst still injected an impulse")
+		return 0
+
+	var detached := SimulationWorld.new()
+	var detached_control := SimulationWorld.new()
+	detached.reset(config, _test_geometry())
+	detached_control.reset(config, _test_geometry())
+	detached.velocity = Vector2(240.0, -30.0)
+	detached_control.velocity = detached.velocity
+	detached.queue_command(InputCommand.burst(1, 0))
+	events = detached.step(FIXED_DELTA)
+	detached_control.step(FIXED_DELTA)
+	if detached.velocity.distance_to(detached_control.velocity) > 0.001:
+		failures.append("detached Burst changed velocity")
+		return 0
+	if detached.burst_cooldown_remaining > 0.0:
+		failures.append("detached Burst started its cooldown")
+		return 0
+	if not _contains_event(events, SimulationEvent.Kind.BURST_UNAVAILABLE):
+		failures.append("detached Burst emitted no attach-first feedback")
 		return 0
 	return 1
 

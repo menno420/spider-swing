@@ -27,9 +27,9 @@
         "an input poll inside simulation — simulation consumes buffered InputCommand values only"
       ],
       "gates": [
-        "PHASE 0.5 PLAYABLE TEST. Deterministic motor, continuous ceiling attachment, manual release, Reel-In, Forward Burst, static obstacle collision, boundaries, and fixed-rate tests exist.",
+        "PHASE 0.6 ANCHOR-PULL TEST. Deterministic motor, 820-pixel continuous ceiling attachment, manual release, first-tick plus sustained Reel-In, anchor-directed Burst, static obstacle collision, boundaries, and fixed-rate tests exist.",
         "The bounded deterministic CourseStream is graybox test instrumentation; production chunk validation, moving hazards, and authored content remain Phase 1.",
-        "Owner gate remains open: test the three physics candidates and the new traversal controls on Android; approve one baseline or request changes."
+        "Owner gate remains open: test the three physics candidates and the Phase 0.6 reach/Reel/anchor-Burst corrections on Android; approve one baseline or request changes."
       ],
       "verification": [
         "python3 tools/verify.py --require-godot",
@@ -97,7 +97,7 @@
       ],
       "gates": [
         "InputRouter consumes six configured actions plus touch events and emits intent without mutating simulation.",
-        "Large lower-left Reel and lower-right Burst Buttons consume GUI input; double-tap has a separate Burst gesture path; simultaneous Reel plus aiming is supported.",
+        "Large lower-left Reel and lower-right Burst Buttons consume GUI input; double-tap has a separate attached-anchor Burst gesture path; simultaneous Reel plus aiming is supported.",
         "SaveRepository persists PlayerSettings atomically; progression, telemetry, and platform adapters remain Phase 2."
       ],
       "verification": [
@@ -131,7 +131,7 @@
       ],
       "gates": [
         "Home, six-step animated Tutorial, scrolling readable Settings, and Menu return are implemented.",
-        "The code-drawn graybox view consumes snapshots/events and shows continuous ceiling surfaces, aim guides, striped test obstacles, Reel and Burst state, tuning controls, and diagnostics.",
+        "The code-drawn graybox view consumes snapshots/events and shows continuous ceiling surfaces, reach-aware aim guides, striped test obstacles, Reel and attached-Burst state, tuning controls, and diagnostics.",
         "The view and obstacles are test instrumentation, not production art or an approved Phase 1 content pack."
       ],
       "verification": [
