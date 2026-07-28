@@ -14,7 +14,7 @@ The authoritative simulation. Advances at a fixed 60 Hz independent of render ra
   allowance, plus Reel-In. Removes only the velocity component that would extend
   the rope past its allowed length; preserves tangential velocity except for
   configured drag; never teleports the spider (GDD § 6.3).
-- **Collision Policy** — the single authority on contact outcomes. Exactly one
+- **Simulation World collision seam** — currently resolves the graybox obstacle rectangles and boundaries; the Phase 1 Collision Policy expands this into exactly one
   outcome per contact, so repeated callbacks in the same tick cannot consume two
   shields or settle a run twice (GDD § 13.2).
 - **Run model** — the deterministic per-tick state the application layer reads.
@@ -33,4 +33,4 @@ events → update presentation.
 - Never references `application`, `adapters`, or `presentation`.
 - Must not add unbounded energy through repeated attach/release (GDD § 6.3).
 
-Empty at bootstrap: Phase 0 populates it. See ADR 0002.
+`SimulationWorld`, `SpiderMotor`, and `WebConstraint` now implement the Phase 0.5 traversal test. See ADR 0002.
