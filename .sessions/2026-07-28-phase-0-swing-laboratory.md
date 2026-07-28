@@ -56,7 +56,7 @@ production art. The owner-facing exit gate remains real-device feel approval.
   `docs/game-design/Spider-Swing-GDD-v2.0.md` remains the source of truth.
 - **Capability triage:** the checker’s stale software-release capability match is
   a documented vocabulary false positive; this PR creates no tag or publishing
-  surface. The reason-required exception is scoped to `docs/CAPABILITIES.md` plus
+  surface. The reason-required exception is scoped to the `CAPABILITIES.md` docs-root path plus
   `capability-entry-stale`.
 - **PR:** https://github.com/menno420/spider-swing/pull/6
 - **Final gate expectation:** this complete card removes the designed born-red
