@@ -116,6 +116,14 @@ without a reported regression.
   regression sends one raw touchscreen event followed by its emulated mouse copy
   and proves that exactly one command survives, Burst is interrupted, and the
   recovery web remains attached.
+- PR #16 `game-quality` run
+  [30402293219](https://github.com/menno420/spider-swing/actions/runs/30402293219)
+  passes all 59 contracts at source
+  `9050ea46d9894f6bb8198a6ee5a454e04e39f62a`. The added contracts cover
+  speed-neutral natural take-up, independent rail presence/lethality, the 1000 m
+  middle-hazard runway, organic pattern streaming, swept flies, Burst Frenzy,
+  idempotent persistent cosmetic milestones, all new debug controls, and exact
+  Android build metadata.
 - `substrate-gate` — kit-owned. A born-red session card deliberately holds a PR
   until close-out; it must be green on the completed card before merge.
 - `android-debug` — **green on `main`, APK proven.** Run #1 produced artifact
@@ -159,6 +167,19 @@ without a reported regression.
   `1d4e3269c317a4b1323ccfe9e7c57eaea137d7d4`, package
   `com.menno420.spiderswing.dev`, and display name
   `Spider Swing Recovery Web (dev)`.
+- PR #16 `android-debug` run
+  [30402293330](https://github.com/menno420/spider-swing/actions/runs/30402293330)
+  produced downloadable artifact
+  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30402293330/artifacts/8705188365)
+  ID `8705188365`, 56,779,277 bytes, digest
+  `sha256:bc87ecdf2814b7a7cf887d0b727416d748f18c9a02a890cd218df37c9b3be61b`.
+  The downloaded 57,162,004-byte APK passed archive verification and had
+  SHA-256
+  `5199c5c43562123f345da3833fcdc247a216965e21529abb2d4ffa4801982cfa`.
+  Its bundled manifest proves version `0.4.0-gameplay-foundation-test`, source
+  `9050ea46d9894f6bb8198a6ee5a454e04e39f62a`, package
+  `com.menno420.spiderswing.dev`, and display name
+  `Spider Swing Gameplay Foundation (dev)`.
 - **Dependabot** — live. Its first run opened two bumps against the kit-owned
   `substrate-gate.yml`; both were closed because `adopt`/`upgrade` regenerates that
   file. The rule is documented in `.github/dependabot.yml`: kit-owned-only bumps get
@@ -185,16 +206,19 @@ without a reported regression.
 
 ## In flight
 
-PR #16 is the gameplay-foundation pass. Local Godot 4.7.1 verification passes
-59 contracts for the 1120/40% candidate, speed-neutral natural take-up,
-independent rail presence/lethality, a 1000 m middle-hazard runway, organic
-graybox patterns, swept flies, Burst Frenzy, and idempotent persistent cosmetic
-milestones. CI and Android artifact evidence will be recorded before merge.
-Phase 1 remains blocked on choosing or rejecting a movement baseline after this
-device build is tested.
+No additional implementation should branch from this candidate before the owner
+tests it on-device. Phase 1 remains blocked on choosing or rejecting a movement
+baseline after the verified build is tested.
 
 ## Recently shipped (newest first)
 
+- **2026-07-28 — Configurable gameplay foundation (PR #16).** Promotes the
+  1120-gravity/40%-Dive comparison, adds speed-neutral automatic take-up,
+  independently configurable safe/lethal/hidden corridor rails, a 1000 m
+  middle-hazard runway, organic deterministic patterns, fly trails, Burst
+  Frenzy, two persistent palette milestones, and 59 passing contracts. Every
+  unsettled feel value remains available in DEBUG; no final economy or upgrade
+  cost was invented.
 - **2026-07-28 — Recovery-web controls (PR #14 merged).** Makes percentage
   pulls interruptible by ordinary webs, converts otherwise-unavailable rapid
   double-taps into recovery intent, promotes 1000-pixel reach, exposes tap mode

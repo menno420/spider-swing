@@ -177,6 +177,23 @@ never edit.
 
 **Godot / Android specifics worth not rediscovering**
 
+- 2026-07-28 · capability · `owner-live` · **The gameplay-foundation APK proves
+  newly added effects and progression code survive the full Android export
+  path** · PR #16 `game-quality` run
+  [30402293219](https://github.com/menno420/spider-swing/actions/runs/30402293219)
+  passed 59 contracts at source
+  `9050ea46d9894f6bb8198a6ee5a454e04e39f62a`; Android run
+  [30402293330](https://github.com/menno420/spider-swing/actions/runs/30402293330)
+  produced artifact
+  [`8705188365`](https://github.com/menno420/spider-swing/actions/runs/30402293330/artifacts/8705188365).
+  The downloaded 56,779,277-byte ZIP matched GitHub's SHA-256
+  `bc87ecdf2814b7a7cf887d0b727416d748f18c9a02a890cd218df37c9b3be61b`;
+  its 57,162,004-byte APK passed archive verification with SHA-256
+  `5199c5c43562123f345da3833fcdc247a216965e21529abb2d4ffa4801982cfa`
+  and contained `classes.dex`, `assets/project.binary`, and compiled
+  `effect_state`/`player_progress` scripts. `build-info.txt` proved version
+  `0.4.0-gameplay-foundation-test`, exact source, dev package, and corrected
+  display name `Spider Swing Gameplay Foundation (dev)`.
 - 2026-07-28 · capability · `any` · **`chickensoft-games/setup-godot` exports
   `GODOT` and `GODOT4` env vars** (confirmed by inspecting `dist/index.js` at the
   pinned SHA) and takes `use-dotnet: false` for a Standard build and
