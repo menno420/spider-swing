@@ -15,6 +15,10 @@ static func run() -> Dictionary:
 	passed += _test_reel_shortens_without_teleport(failures)
 	passed += _test_detached_reel_reports_unavailable(failures)
 	passed += _test_invalid_target_is_inert(failures)
+	passed += _test_continuous_surface_attachment(failures)
+	passed += _test_burst_is_impulsive_and_rate_limited(failures)
+	passed += _test_course_stream_is_endless_and_bounded(failures)
+	passed += _test_obstacle_collision_is_authoritative(failures)
 	passed += _test_attach_release_does_not_inject_energy(failures)
 	passed += _test_top_is_not_lethal(failures)
 	passed += _test_lower_boundary_is_lethal(failures)
@@ -38,14 +42,14 @@ static func _test_release_preserves_velocity(failures: PackedStringArray) -> int
 	config.gravity = 0.0001
 	config.horizontal_drive_acceleration = 0.0001
 	config.air_drag = 0.0
-	var anchors := PackedVector2Array([Vector2(480.0, 150.0)])
+	var geometry := _test_geometry()
 	var released := SimulationWorld.new()
 	var control := SimulationWorld.new()
-	released.reset(config, anchors)
-	control.reset(config, anchors)
+	released.reset(config, geometry)
+	control.reset(config, geometry)
 	released.velocity = Vector2(512.0, -147.0)
 	control.velocity = released.velocity
-	released.web.try_attach(released.position, anchors[0], config)
+	released.web.try_attach(released.position, Vector2(480.0, 150.0), config)
 	released.queue_command(InputCommand.release(1, 0))
 	released.step(FIXED_DELTA)
 	control.step(FIXED_DELTA)
@@ -60,10 +64,10 @@ static func _test_reel_shortens_without_teleport(
 	failures: PackedStringArray,
 ) -> int:
 	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
-	var anchors := PackedVector2Array([Vector2(480.0, 150.0)])
+	var geometry := _test_geometry()
 	var world := SimulationWorld.new()
-	world.reset(config, anchors)
-	world.web.try_attach(world.position, anchors[0], config)
+	world.reset(config, geometry)
+	world.web.try_attach(world.position, Vector2(480.0, 150.0), config)
 	var length_before := world.web.rope_length
 	var position_before := world.position
 	world.queue_command(InputCommand.reel(true, 1, 0))
@@ -90,7 +94,7 @@ static func _test_detached_reel_reports_unavailable(
 ) -> int:
 	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 	var world := SimulationWorld.new()
-	world.reset(config, PackedVector2Array())
+	world.reset(config, _test_geometry())
 	var energy_before := world.web.reel_energy
 	world.queue_command(InputCommand.reel(true, 1, 0))
 	var events := world.step(FIXED_DELTA)
@@ -108,11 +112,11 @@ static func _test_detached_reel_reports_unavailable(
 
 static func _test_invalid_target_is_inert(failures: PackedStringArray) -> int:
 	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
-	var anchors := PackedVector2Array([Vector2(480.0, 150.0)])
+	var geometry := _test_geometry()
 	var invalid := SimulationWorld.new()
 	var control := SimulationWorld.new()
-	invalid.reset(config, anchors)
-	control.reset(config, anchors)
+	invalid.reset(config, geometry)
+	control.reset(config, geometry)
 	invalid.queue_command(InputCommand.attach(Vector2(900.0, 650.0), 1, 0))
 	var events := invalid.step(FIXED_DELTA)
 	control.step(FIXED_DELTA)
@@ -126,6 +130,108 @@ static func _test_invalid_target_is_inert(failures: PackedStringArray) -> int:
 	if not _contains_event(events, SimulationEvent.Kind.INVALID_TARGET):
 		failures.append("invalid target emitted no feedback event")
 		return 0
+	return 1
+
+
+static func _test_continuous_surface_attachment(
+	failures: PackedStringArray,
+) -> int:
+	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	var world := SimulationWorld.new()
+	world.reset(config, _test_geometry())
+	var target := Vector2(537.0, 154.0)
+	world.queue_command(InputCommand.attach(target, 1, 0))
+	var events := world.step(FIXED_DELTA)
+	if not world.web.attached:
+		failures.append("an arbitrary point on the ceiling surface did not attach")
+		return 0
+	if absf(world.web.anchor.x - target.x) > 0.001 or \
+			absf(world.web.anchor.y - 150.0) > 0.001:
+		failures.append("surface attachment snapped to a guide instead of the tap")
+		return 0
+	if not _contains_event(events, SimulationEvent.Kind.ATTACHED):
+		failures.append("surface attachment emitted no ATTACHED event")
+		return 0
+	return 1
+
+
+static func _test_burst_is_impulsive_and_rate_limited(
+	failures: PackedStringArray,
+) -> int:
+	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	var world := SimulationWorld.new()
+	world.reset(config, _test_geometry())
+	world.web.try_attach(world.position, Vector2(480.0, 150.0), config)
+	world.velocity = Vector2(330.0, 120.0)
+	world.queue_command(InputCommand.burst(1, 0))
+	var events := world.step(FIXED_DELTA)
+	if world.web.attached:
+		failures.append("Burst did not release the active web")
+		return 0
+	if world.velocity.x < config.starting_target_speed + \
+			config.burst_impulse - 1.0:
+		failures.append("Burst did not create a clear forward impulse")
+		return 0
+	if world.velocity.y > -config.burst_lift + 1.0:
+		failures.append("Burst did not provide the configured lift")
+		return 0
+	if not _contains_event(events, SimulationEvent.Kind.BURST_STARTED):
+		failures.append("Burst emitted no success event")
+		return 0
+	var velocity_after := world.velocity
+	world.queue_command(InputCommand.burst(2, world.tick))
+	events = world.step(FIXED_DELTA)
+	if not _contains_event(events, SimulationEvent.Kind.BURST_UNAVAILABLE):
+		failures.append("Burst cooldown did not reject a repeated activation")
+		return 0
+	if world.velocity.x > velocity_after.x + config.burst_impulse * 0.5:
+		failures.append("rejected Burst still injected an impulse")
+		return 0
+	return 1
+
+
+static func _test_course_stream_is_endless_and_bounded(
+	failures: PackedStringArray,
+) -> int:
+	var stream := CourseStream.new()
+	stream.reset()
+	var geometry := stream.update_for_position(100000.0)
+	if geometry.surface_segments.is_empty() or \
+			geometry.surface_segments[-1].end.x <= 100000.0:
+		failures.append("course stream has no web surface beyond 10,000 m")
+		return 0
+	if stream.retained_chunk_count() > \
+			CourseStream.KEEP_BEHIND + CourseStream.GENERATE_AHEAD + 1:
+		failures.append("course stream grows without a bounded chunk window")
+		return 0
+	if geometry.obstacles.is_empty():
+		failures.append("distant streamed chunks contain no test obstacles")
+		return 0
+	return 1
+
+
+static func _test_obstacle_collision_is_authoritative(
+	failures: PackedStringArray,
+) -> int:
+	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	config.gravity = 0.0001
+	config.horizontal_drive_acceleration = 0.0001
+	config.air_drag = 0.0
+	var geometry := _test_geometry()
+	geometry.obstacles.append(Rect2(300.0, 320.0, 120.0, 150.0))
+	var world := SimulationWorld.new()
+	world.reset(config, geometry)
+	world.position = Vector2(350.0, 390.0)
+	world.velocity = Vector2.ZERO
+	var events := world.step(FIXED_DELTA)
+	if not _contains_event(events, SimulationEvent.Kind.DEATH_REQUESTED):
+		failures.append("obstacle contact did not request death")
+		return 0
+	for event: SimulationEvent in events:
+		if event.kind == SimulationEvent.Kind.DEATH_REQUESTED and \
+				event.data.get("cause", &"") != &"obstacle":
+			failures.append("obstacle death reported the wrong cause")
+			return 0
 	return 1
 
 
@@ -154,7 +260,7 @@ static func _test_attach_release_does_not_inject_energy(
 static func _test_top_is_not_lethal(failures: PackedStringArray) -> int:
 	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 	var world := SimulationWorld.new()
-	world.reset(config, PackedVector2Array())
+	world.reset(config, _test_geometry())
 	world.position.y = -500.0
 	var events := world.step(FIXED_DELTA)
 	if _contains_event(events, SimulationEvent.Kind.DEATH_REQUESTED):
@@ -166,7 +272,7 @@ static func _test_top_is_not_lethal(failures: PackedStringArray) -> int:
 static func _test_lower_boundary_is_lethal(failures: PackedStringArray) -> int:
 	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 	var world := SimulationWorld.new()
-	world.reset(config, PackedVector2Array())
+	world.reset(config, _test_geometry())
 	world.position.y = config.lower_world_boundary + 5.0
 	var events := world.step(FIXED_DELTA)
 	if not _contains_event(events, SimulationEvent.Kind.DEATH_REQUESTED):
@@ -205,9 +311,8 @@ static func _test_render_rate_independence(
 
 static func _simulate_trace(trace: Dictionary, render_rate: float) -> Dictionary:
 	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
-	var anchors := PackedVector2Array([Vector2(480.0, 150.0)])
 	var world := SimulationWorld.new()
-	world.reset(config, anchors)
+	world.reset(config, _test_geometry())
 	var commands: Array = trace.get("commands", [])
 	var cursor := 0
 	var duration_ticks := int(trace.get("duration_ticks", 180))
@@ -247,3 +352,14 @@ static func _contains_event(events: Array[SimulationEvent], kind: int) -> bool:
 		if event.kind == kind:
 			return true
 	return false
+
+
+static func _test_geometry() -> CourseGeometry:
+	var geometry := CourseGeometry.new()
+	geometry.surface_segments.append(Rect2(0.0, 112.0, 960.0, 38.0))
+	geometry.aim_guides.append_array(PackedVector2Array([
+		Vector2(320.0, 150.0),
+		Vector2(480.0, 150.0),
+		Vector2(640.0, 150.0),
+	]))
+	return geometry
