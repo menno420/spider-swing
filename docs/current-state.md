@@ -75,21 +75,20 @@ without a reported regression.
 
 ## In flight
 
-[PR #6 — Phase 0: Build the Swing Laboratory](https://github.com/menno420/spider-swing/pull/6)
-implements issue #2. Godot import, boot, architecture checks, and all 16 runner
-checks pass in `game-quality`.
+The Phase 0 candidate is implemented and verified. Godot import, boot,
+architecture checks, and all 16 runner checks pass in `game-quality`.
 
-**Owner exit gate:** install the next Android artifact, compare all three tuning
-candidates, and approve one baseline or request concrete changes. Phase 1 remains
-blocked until the swing feel is approved.
+**Owner exit gate:** install the Android artifact produced from the Phase 0 merge,
+compare all three tuning candidates, and approve one baseline or request concrete
+changes. Phase 1 remains blocked until the swing feel is approved.
 
 ## Recently shipped (newest first)
 
-- **2026-07-28 — Phase 0 candidate on PR #6.** Deterministic point-mass simulation,
+- **2026-07-28 — Phase 0 Swing Laboratory.** Deterministic point-mass simulation,
   capped rope constraint, momentum-preserving manual release, Reel energy,
   buffered multitouch input, three named tuning candidates, read-only graybox
   presentation, runtime tuning and reproduction tools, and eight physics contracts.
-  Awaiting merge and owner device approval.
+  Owner device approval remains the exit gate.
 - **2026-07-28 — founding bootstrap.** Substrate Kit v1.20.2 adopted in guided mode
   with enforcement wired and all 16 interview slots answered; a Godot 4.7.1 shell
   that boots and exits cleanly headless; the GDD placed byte-exact (SHA-256
