@@ -3,9 +3,10 @@ extends SceneTree
 
 const MAIN_SCENE_PATH := "res://game/bootstrap/main.tscn"
 const EXPORT_PRESETS_PATH := "res://export_presets.cfg"
-const BUILD_VERSION := "0.1.0-front-end"
+const BUILD_VERSION := "0.2.0-traversal-test"
 const REQUIRED_INPUT_ACTIONS := [
-	"web_action", "reel_in", "pause", "restart_run", "toggle_debug"]
+	"web_action", "reel_in", "burst_action", "pause", "restart_run",
+	"toggle_debug"]
 
 var _failures := PackedStringArray()
 var _passed := 0
@@ -137,7 +138,7 @@ func _check_android_preset() -> void:
 				"com.menno420.spiderswing.dev":
 			_fail("development package identifier drifted")
 			return
-		if int(config.get_value(options, "version/code", 0)) != 3 or \
+		if int(config.get_value(options, "version/code", 0)) != 4 or \
 				str(config.get_value(options, "version/name", "")) != \
 				BUILD_VERSION:
 			_fail("Android Debug build identity drifted")
