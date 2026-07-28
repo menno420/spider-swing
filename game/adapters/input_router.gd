@@ -63,6 +63,12 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if event is InputEventMouseButton:
 		var mouse := event as InputEventMouseButton
+		# Godot emits a synthetic mouse event after a touchscreen event when
+		# touch-to-mouse emulation is enabled for the Control-based HUD. The
+		# touchscreen event already owns world intent, so accepting this copy
+		# would turn one physical tap into attach+release (or two Bursts).
+		if mouse.device == InputEvent.DEVICE_ID_EMULATION:
+			return
 		if mouse.button_index == MOUSE_BUTTON_LEFT and mouse.pressed:
 			if mouse.double_click:
 				burst_gesture.emit(mouse.position)

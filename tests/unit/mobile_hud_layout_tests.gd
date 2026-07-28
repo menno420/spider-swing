@@ -12,6 +12,8 @@ static func run() -> Dictionary:
 	passed += _test_burst_button_emits_only_burst(failures)
 	passed += _test_action_feedback_is_event_driven(failures)
 	passed += _test_double_tap_has_a_separate_burst_route(failures)
+	passed += _test_touch_mouse_emulation_produces_one_intent(failures)
+	passed += _test_device_tap_keeps_recovery_web_attached(failures)
 	passed += _test_menu_button_returns_without_world_tap(failures)
 	passed += _test_debug_button_and_panel_controls(failures)
 	passed += _test_debug_controls_can_be_disabled(failures)
@@ -208,6 +210,116 @@ static func _test_double_tap_has_a_separate_burst_route(
 		failures.append("mouse double-click cannot exercise the Burst gesture")
 		return 0
 	return 1
+
+
+static func _test_touch_mouse_emulation_produces_one_intent(
+	failures: PackedStringArray,
+) -> int:
+	var router := _make_router()
+	var world_taps: Array[Vector2] = []
+	var burst_gestures: Array[Vector2] = []
+	router.web_tapped.connect(func(position: Vector2) -> void:
+		world_taps.append(position))
+	router.burst_gesture.connect(func(position: Vector2) -> void:
+		burst_gestures.append(position))
+
+	var position := Vector2(860.0, 140.0)
+	var touch := _pressed_touch(position)
+	router._unhandled_input(touch)
+	var emulated_mouse := _left_mouse_press(
+		position, InputEvent.DEVICE_ID_EMULATION)
+	router._unhandled_input(emulated_mouse)
+	if world_taps != [position] or not burst_gestures.is_empty():
+		failures.append((
+			"one touchscreen tap plus its emulated mouse copy emitted %d web " +
+			"intents and %d Burst intents") % [
+				world_taps.size(), burst_gestures.size()])
+		router.free()
+		return 0
+
+	world_taps.clear()
+	burst_gestures.clear()
+	touch.double_tap = true
+	emulated_mouse.double_click = true
+	router._unhandled_input(touch)
+	router._unhandled_input(emulated_mouse)
+	if not world_taps.is_empty() or burst_gestures != [position]:
+		failures.append((
+			"one touchscreen double-tap plus its emulated mouse copy emitted " +
+			"%d web intents and %d Burst intents") % [
+				world_taps.size(), burst_gestures.size()])
+		router.free()
+		return 0
+
+	world_taps.clear()
+	burst_gestures.clear()
+	var physical_mouse := _left_mouse_press(
+		position, InputEvent.DEVICE_ID_MOUSE)
+	router._unhandled_input(physical_mouse)
+	if world_taps != [position] or not burst_gestures.is_empty():
+		failures.append("filtering touch emulation also disabled physical mouse")
+		router.free()
+		return 0
+
+	router.free()
+	return 1
+
+
+static func _test_device_tap_keeps_recovery_web_attached(
+	failures: PackedStringArray,
+) -> int:
+	var router := _make_router()
+	var session := SwingLabSession.new()
+	session._reset_run()
+	router.web_tapped.connect(session.request_web_tap)
+	router.burst_gesture.connect(session.request_burst_from_gesture)
+	session._world.pull_active = true
+	session._world.pull_kind = &"burst"
+	session._world.burst_cooldown_remaining = 1.0
+
+	var target := Vector2(720.0, 150.0)
+	var touch := _pressed_touch(target)
+	var emulated_mouse := _left_mouse_press(
+		target, InputEvent.DEVICE_ID_EMULATION)
+	router._unhandled_input(touch)
+	router._unhandled_input(emulated_mouse)
+	if session._command_buffer.size() != 1:
+		failures.append(
+			"one post-Burst device tap buffered %d gameplay commands" %
+			session._command_buffer.size())
+		session.free()
+		router.free()
+		return 0
+	session._step_once()
+	if session._world.pull_active or not session._world.web.attached:
+		failures.append(
+			"one post-Burst device tap did not leave its recovery web attached")
+		session.free()
+		router.free()
+		return 0
+
+	session.free()
+	router.free()
+	return 1
+
+
+static func _pressed_touch(position: Vector2) -> InputEventScreenTouch:
+	var touch := InputEventScreenTouch.new()
+	touch.position = position
+	touch.pressed = true
+	return touch
+
+
+static func _left_mouse_press(
+	position: Vector2,
+	device: int,
+) -> InputEventMouseButton:
+	var mouse := InputEventMouseButton.new()
+	mouse.position = position
+	mouse.button_index = MOUSE_BUTTON_LEFT
+	mouse.pressed = true
+	mouse.device = device
+	return mouse
 
 
 static func _test_menu_button_returns_without_world_tap(

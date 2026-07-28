@@ -59,3 +59,17 @@
   to web intent and handing pull velocity into a normal constraint makes the
   player's target selection authoritative without removing obstacle risk.
 - provenance: Menno's Phase 0.8 recovery playtest recordings and PR #14
+
+## [D-0005] Arbitrate touchscreen and emulated mouse input at the adapter
+
+- status: decided
+- date: 2026-07-28
+- verdict: raw touchscreen presses own world intent on touch devices; their
+  emulated mouse copies are ignored by the gameplay adapter while physical mouse
+  input and Control-based HUD emulation remain available.
+- why: The recovery-web device recording proved one physical tap was delivered
+  twice. During Burst, the first command attached the recovery web and the
+  synthetic mouse copy immediately executed manual release, leaving the spider
+  detached while truthfully displaying `Momentum preserved`. Source arbitration
+  prevents every downstream state machine from having to deduplicate pointers.
+- provenance: Menno's `0.3.1-recovery-web-test` recording and PR #15

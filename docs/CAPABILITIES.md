@@ -227,6 +227,24 @@ never edit.
   `1d4e3269c317a4b1323ccfe9e7c57eaea137d7d4`, package
   `com.menno420.spiderswing.dev`, and display name
   `Spider Swing Recovery Web (dev)`.
+- 2026-07-28 · capability · `owner-live` · **A device-equivalent touch arbitration
+  regression and uniquely identified Android APK can prove the single-intent
+  fix before merge** · PR #15 run
+  [30396476300](https://github.com/menno420/spider-swing/actions/runs/30396476300)
+  passed 53 contracts at source
+  `4ecc2968c2404edca9c8c4125c48d44eff02a554`, including raw touchscreen plus
+  emulated-mouse sequencing and persistent post-Burst recovery attachment; run
+  [30396475709](https://github.com/menno420/spider-swing/actions/runs/30396475709)
+  produced artifact
+  [`8703014230`](https://github.com/menno420/spider-swing/actions/runs/30396475709/artifacts/8703014230).
+  The downloaded 56,750,675-byte ZIP matched GitHub's SHA-256
+  `f8f0b92751aa1dc752fc9d72c59e821b6ac72ae69dc8592c8071612a8214ae71`;
+  its 57,132,620-byte APK passed archive verification with SHA-256
+  `1a184b6b99ab8915090fbbfc812850296e1250e61ec207776307b3b1024caac1`,
+  and `build-info.txt` proved version `0.3.2-single-intent-test`, source
+  `4ecc2968c2404edca9c8c4125c48d44eff02a554`, package
+  `com.menno420.spiderswing.dev`, and display name
+  `Spider Swing Single-Intent Web (dev)`.
 - 2026-07-28 · capability · `owner-live` · **Branch deletion works** — this REFUTES
   the seeded `Branch deletion` wall above (last-verified 2026-07-10) ·
   `claude/bootstrap-spider-swing` was deleted automatically on merge with

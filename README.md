@@ -48,11 +48,13 @@ vocabulary.
   Burst/Dive percentages and durations, pull cooldown, Reel shortening speed,
   attach catch, aim forgiveness, range, RELEASE/RETARGET tap behavior,
   deterministic input recording/replay, and diagnostic export.
-- Twenty-three deterministic physics tests (50 runtime contracts total),
+- Twenty-three deterministic physics tests (53 runtime contracts total),
   including interruptible recovery webs, double-tap fallback, explicit
   release/retarget modes, lower anchor coverage, exact pull-distance shares,
   speed-neutral Reel shortening, polygon anchors/collisions, extended reach, and
-  identical results from simulated 30/60/90/120 Hz render loops.
+  identical results from simulated 30/60/90/120 Hz render loops. Adapter tests
+  prove that raw Android touch owns world intent while its emulated mouse copy
+  is ignored, so one physical tap cannot attach and immediately release.
 - The existing headless, architecture, CI, and Android debug build substrate.
 
 ### What is deliberately not implemented
