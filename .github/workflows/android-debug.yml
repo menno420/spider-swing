@@ -19,6 +19,13 @@
 name: android-debug
 
 on:
+  pull_request:
+    paths:
+      - 'game/**'
+      - 'tests/**'
+      - 'project.godot'
+      - 'export_presets.cfg'
+      - '.github/workflows/android-debug.yml'
   push:
     branches: [main]
   workflow_dispatch:
@@ -34,6 +41,8 @@ env:
   GODOT_VERSION: 4.7.1
   APK_PATH: build/spider-swing-debug.apk
   ARTIFACT_NAME: spider-swing-android-debug
+  BUILD_VERSION: 0.0.2-control-ui
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
 jobs:
   android-debug:
@@ -87,6 +96,15 @@ jobs:
           echo "ANDROID_HOME=${ANDROID_HOME:-<unset>}"
           echo "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT:-<unset>}"
 
+      - name: Assert the visible and Android build identities
+        run: |
+          set -euo pipefail
+          grep -F "config/version=\"${BUILD_VERSION}\"" project.godot
+          grep -F "version/name=\"${BUILD_VERSION}\"" export_presets.cfg
+          grep -F 'version/code=2' export_presets.cfg
+          grep -F 'package/name="Spider Swing UI2 (dev)"' export_presets.cfg
+          echo "build identity: ${BUILD_VERSION} @ ${SOURCE_SHA}"
+
       - name: Generate an ephemeral debug keystore
         # Throwaway, per-run, never uploaded, never a secret. A debug keystore
         # exists only so Android will install the APK at all; it carries no
@@ -112,6 +130,14 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build
+          {
+            echo "version=${BUILD_VERSION}"
+            echo "source_sha=${SOURCE_SHA}"
+            echo "workflow_run=${GITHUB_RUN_ID}"
+            echo "package=com.menno420.spiderswing.dev"
+            echo "display_name=Spider Swing UI2 (dev)"
+            echo "install_note=Uninstall the previous dev build first; CI debug signing is ephemeral."
+          } > build/build-info.txt
 
           # Import first, as a separate step. A cold export that also has to
           # import can report an import failure as an export failure, which is a
@@ -143,13 +169,21 @@ jobs:
             echo "::error::${APK_PATH} has no AndroidManifest.xml — not a valid APK"
             exit 1
           fi
-          echo "APK verified: valid zip, manifest present"
+          badging="$(${ANDROID_HOME}/build-tools/34.0.0/aapt dump badging "${APK_PATH}" | head -1)"
+          echo "${badging}"
+          if ! grep -Fq "versionName='${BUILD_VERSION}'" <<< "${badging}"; then
+            echo "::error::APK versionName does not match ${BUILD_VERSION}"
+            exit 1
+          fi
+          echo "APK verified: valid zip, manifest present, version ${BUILD_VERSION}"
 
       - name: Upload the debug APK
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ${{ env.ARTIFACT_NAME }}
-          path: ${{ env.APK_PATH }}
+          path: |
+            ${{ env.APK_PATH }}
+            build/build-info.txt
           retention-days: 14
           if-no-files-found: error
 
@@ -163,10 +197,15 @@ jobs:
             echo "| Artifact | \`${ARTIFACT_NAME}\` |"
             echo "| APK | \`${APK_PATH}\` |"
             echo "| Godot | ${GODOT_VERSION} Standard |"
+            echo "| Version | \`${BUILD_VERSION}\` |"
+            echo "| Source | \`${SOURCE_SHA}\` |"
+            echo "| App label | \`Spider Swing UI2 (dev)\` |"
             echo "| Package | \`com.menno420.spiderswing.dev\` (development only) |"
             echo "| Retention | 14 days |"
             echo ""
             echo "Debug build only. Not signed for release, not approved for Google Play."
-            echo "Download it from this run's Artifacts section and install with"
-            echo "\`adb install -r spider-swing-debug.apk\`."
+            echo "Download it from this run's Artifacts section. Because CI uses an"
+            echo "ephemeral debug signing key, uninstall the previous Spider Swing dev"
+            echo "app first, then install this APK. Confirm the HUD shows"
+            echo "\`BUILD ${BUILD_VERSION}\` before testing."
           } >> "$GITHUB_STEP_SUMMARY"
