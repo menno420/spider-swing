@@ -1,6 +1,6 @@
 # Phase 0.8 percentage pull controls session
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 
