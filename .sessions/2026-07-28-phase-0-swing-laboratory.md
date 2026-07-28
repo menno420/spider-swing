@@ -61,7 +61,7 @@ production art. The owner-facing exit gate remains real-device feel approval.
 ## Documentation audit
 
 **docs audit:** PASS. Durable docs describe the playable candidate, the exact
-controls, tuning candidates, deterministic checks, debug/reproduction workflow,
+controls, tuning candidates, deterministic checks, debug/reproduction process,
 later-phase boundary, and the real-device approval gate. The architecture index
 points each area to the implemented owner and forbids parallel motors, constraints,
 input paths, lifecycle owners, and mutable presentation state.
