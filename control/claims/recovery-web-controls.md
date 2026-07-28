@@ -1,1 +1,0 @@
-- `codex/recovery-web-controls` · **recovery-web-controls** — interrupt pulls with a recovery web, clarify double-tap replacement, extend right-hand reach, and add authored lower anchor windows · `game/{application,simulation,domain,adapters,presentation}/`, `tests/`, build identity, playtest docs · 2026-07-28
