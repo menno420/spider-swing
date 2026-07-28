@@ -24,6 +24,10 @@ func update_for_position(world_x: float) -> CourseGeometry:
 	var current_index := maxi(0, floori(world_x / CHUNK_WIDTH))
 	var first := maxi(0, current_index - KEEP_BEHIND)
 	var last := current_index + GENERATE_AHEAD
+	if not _geometry.surface_segments.is_empty() and \
+			_geometry.first_chunk_index == first and \
+			_geometry.last_chunk_index == last:
+		return _geometry.duplicate_geometry()
 	_geometry = _build_range(first, last)
 	return _geometry.duplicate_geometry()
 
