@@ -135,7 +135,7 @@ jobs:
             echo "source_sha=${SOURCE_SHA}"
             echo "workflow_run=${GITHUB_RUN_ID}"
             echo "package=com.menno420.spiderswing.dev"
-            echo "display_name=Spider Swing Single-Intent Web (dev)"
+            echo "display_name=Spider Swing Gameplay Foundation (dev)"
             echo "install_note=Uninstall the previous dev build first; CI debug signing is ephemeral."
           } > build/build-info.txt
 
@@ -199,7 +199,7 @@ jobs:
             echo "| Godot | ${GODOT_VERSION} Standard |"
             echo "| Version | \`${BUILD_VERSION}\` |"
             echo "| Source | \`${SOURCE_SHA}\` |"
-            echo "| App label | \`Spider Swing Single-Intent Web (dev)\` |"
+            echo "| App label | \`Spider Swing Gameplay Foundation (dev)\` |"
             echo "| Package | \`com.menno420.spiderswing.dev\` (development only) |"
             echo "| Retention | 14 days |"
             echo ""

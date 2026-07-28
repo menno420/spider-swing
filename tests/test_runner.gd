@@ -164,7 +164,9 @@ func _check_android_preset() -> void:
 				not workflow_text.contains(
 					"version/code=%d" % ANDROID_VERSION_CODE) or \
 				not workflow_text.contains(
-					"package/name=\"%s\"" % ANDROID_APP_NAME):
+					"package/name=\"%s\"" % ANDROID_APP_NAME) or \
+				not workflow_text.contains(
+					"display_name=%s" % ANDROID_APP_NAME):
 			_fail("Android debug workflow build assertions drifted")
 			return
 		_ok("Android Debug preset is development-only and uniquely versioned")
