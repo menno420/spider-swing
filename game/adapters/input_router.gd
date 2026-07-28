@@ -9,6 +9,8 @@ class_name InputRouter
 
 signal web_tapped(screen_position: Vector2)
 signal reel_changed(active: bool)
+signal burst_requested
+signal burst_gesture(screen_position: Vector2)
 signal restart_requested
 signal menu_requested
 signal debug_toggle_requested
@@ -28,6 +30,7 @@ var _debug_visible: bool = false
 var _keyboard_reel_active: bool = false
 var _touch_surface: Control
 var _reel_button: Button
+var _burst_button: Button
 var _debug_button: Button
 var _menu_button: Button
 var _debug_controls: Array[Control] = []
@@ -52,17 +55,25 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch:
 		var touch := event as InputEventScreenTouch
 		if touch.pressed:
-			web_tapped.emit(touch.position)
+			if touch.double_tap:
+				burst_gesture.emit(touch.position)
+			else:
+				web_tapped.emit(touch.position)
 		return
 
 	if event is InputEventMouseButton:
 		var mouse := event as InputEventMouseButton
 		if mouse.button_index == MOUSE_BUTTON_LEFT and mouse.pressed:
-			web_tapped.emit(mouse.position)
+			if mouse.double_click:
+				burst_gesture.emit(mouse.position)
+			else:
+				web_tapped.emit(mouse.position)
 		return
 
 	if event.is_action_pressed("web_action"):
 		web_tapped.emit(get_viewport().get_mouse_position())
+	elif event.is_action_pressed("burst_action"):
+		burst_requested.emit()
 	elif event.is_action_pressed("restart_run"):
 		restart_requested.emit()
 	elif event.is_action_pressed("ui_cancel"):
@@ -99,11 +110,18 @@ func install_touch_surface() -> void:
 
 	_reel_button = _make_anchored_button(
 		&"Reel",
-		Vector2.ONE,
-		Rect2(-184.0, -184.0, 148.0, 148.0),
+		Vector2(0.0, 1.0),
+		Rect2(28.0, -218.0, 190.0, 190.0),
 	)
 	_reel_button.button_down.connect(_set_touch_reel.bind(true))
 	_reel_button.button_up.connect(_set_touch_reel.bind(false))
+
+	_burst_button = _make_anchored_button(
+		&"Burst",
+		Vector2.ONE,
+		Rect2(-206.0, -206.0, 178.0, 178.0),
+	)
+	_burst_button.pressed.connect(func() -> void: burst_requested.emit())
 
 	_debug_button = _make_anchored_button(
 		&"Debug",
