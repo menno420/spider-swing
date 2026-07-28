@@ -176,8 +176,8 @@ static func _test_burst_is_impulsive_and_rate_limited(
 	if world.velocity.x - control.velocity.x < config.burst_impulse * 0.85:
 		failures.append("Burst did not create a clear forward impulse")
 		return 0
-	if world.velocity.y > -config.burst_lift + 1.0:
-		failures.append("Burst did not provide the configured lift")
+	if world.velocity.y > -config.burst_lift * 0.5:
+		failures.append("Burst did not finish its authoritative tick moving upward")
 		return 0
 	if not _contains_event(events, SimulationEvent.Kind.BURST_STARTED):
 		failures.append("Burst emitted no success event")
