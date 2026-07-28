@@ -7,6 +7,7 @@ enum Kind {
 	RELEASE,
 	REEL_START,
 	REEL_STOP,
+	BURST,
 }
 
 var kind: int = Kind.RELEASE
@@ -35,6 +36,14 @@ static func release(command_sequence: int, tick: int) -> InputCommand:
 static func reel(active: bool, command_sequence: int, tick: int) -> InputCommand:
 	var command := InputCommand.new()
 	command.kind = Kind.REEL_START if active else Kind.REEL_STOP
+	command.sequence = command_sequence
+	command.captured_tick = tick
+	return command
+
+
+static func burst(command_sequence: int, tick: int) -> InputCommand:
+	var command := InputCommand.new()
+	command.kind = Kind.BURST
 	command.sequence = command_sequence
 	command.captured_tick = tick
 	return command
