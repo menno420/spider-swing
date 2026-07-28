@@ -119,12 +119,8 @@ without a reported regression.
 
 ## In flight
 
-PR #12 carries the Phase 0.7 responsive rope-actions candidate derived from
-Menno's five 1040×480 follow-up recordings. Those recordings showed that input
-generally registered, but the trajectory response was still too subtle under
-downward/lateral momentum and edge-biased thumb taps needed more forgiveness.
-
-**Owner exit gate:** test build `0.2.2-responsive-pull-test` on Android. Confirm
+No implementation work remains in flight after PR #12. The next step is the owner
+device exit gate: test build `0.2.2-responsive-pull-test` on Android. Confirm
 edge taps reliably activate both thumb controls; Reel arrests a downward arc on
 the first tick; Burst follows forward/upward/backward web directions while
 retaining some swing; and flashes/haptics make acceptance clear. Compare all three
@@ -133,6 +129,11 @@ baseline.
 
 ## Recently shipped (newest first)
 
+- **2026-07-28 — Responsive rope-actions candidate.** PR #12 enlarges both thumb
+  targets to symmetric 228×228 regions, gives Reel a guaranteed first-tick radial
+  response, decomposes Burst into anchor-directed and retained tangential motion,
+  adds event-driven flashes/haptics, and passes 42 Godot contracts. Its verified
+  Android artifact is build `0.2.2-responsive-pull-test`.
 - **2026-07-28 — Anchor-pull feel candidate.** PR #11 extends web reach from
   620 to 820 pixels, gives Reel an immediate bounded inward response plus sustained
   pull, and makes Burst an attached-only 440 px/s impulse along the active web

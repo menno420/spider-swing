@@ -1,6 +1,6 @@
 # Phase 0.7 responsive rope-actions session
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 
@@ -35,6 +35,10 @@ measured pass.
 - `.github/workflows/android-debug.yml` and `tests/test_runner.gd` — Android
   identity-drift repair and permanent regression guard in commit
   `cc0bac54e74f49ed4147978bc7a6e702c4c50804`.
+- `.sessions/2026-07-28-responsive-rope-actions.md`,
+  `docs/{current-state.md,CAPABILITIES.md}`, and the retained Substrate telemetry
+  delta — close-out evidence commit
+  `cee2299203583c8bdb4e4208931e8a1965d217c4`.
 
 ## Decisions flagged
 
