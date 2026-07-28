@@ -1,0 +1,1 @@
+- `codex-control-owned-mobile-hud` · **Control-owned mobile HUD** — replace manual Reel/DEBUG hit testing with Godot GUI controls, prevent propagation to web input, add visible build provenance, prove the exact APK, and re-run owner verification · 2026-07-28
