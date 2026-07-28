@@ -74,4 +74,4 @@ Keep rectangle ownership in `LabLayout`, but convert the adapter's physical visi
 size through the inverse stretch basis exactly once. Future HUD controls inherit
 one coordinate contract instead of accumulating device-specific patches.
 
-- **📊 Model:** gpt-5 · high · bug fix
+- **📊 Model:** gpt-5 · high · runtime bugfix
