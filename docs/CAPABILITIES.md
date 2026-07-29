@@ -318,3 +318,20 @@ never edit.
   only from verified `PURCHASED` states and acknowledged/consumed through an
   explicit later integration; the current build must never label local prototype
   upgrades as IAP.
+- 2026-07-29 · capability · `owner-live` · **The guided-opening, spider-garage,
+  and local-creator candidate survives the full Android path** · PR #18
+  `game-quality` run
+  [30422862144](https://github.com/menno420/spider-swing/actions/runs/30422862144)
+  passed 70 contracts at source
+  `e43500546b896972c96ee833e0967094d4edd982`; Android run
+  [30422862138](https://github.com/menno420/spider-swing/actions/runs/30422862138)
+  produced artifact
+  [`8712535636`](https://github.com/menno420/spider-swing/actions/runs/30422862138/artifacts/8712535636).
+  The downloaded 56,839,504-byte ZIP matched GitHub's SHA-256
+  `7b0200d952148090efcd271f7ed1240650657d43de3ca7e26e5abae848cdf89a`;
+  its 57,223,786-byte APK passed archive verification with SHA-256
+  `d9f1f109f58d5c49509a8d89aa5b89b6ff28e7435c17f21a202c040c702df382`
+  and contained `classes.dex`, `AndroidManifest.xml`, and
+  `assets/project.binary`. `build-info.txt` proved version
+  `0.5.0-opening-garage-test`, exact source, dev package, and display name
+  `Spider Swing Opening Garage (dev)`.

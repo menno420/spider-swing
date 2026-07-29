@@ -152,6 +152,14 @@ without a reported regression.
   middle-hazard runway, organic pattern streaming, swept flies, Burst Frenzy,
   idempotent persistent cosmetic milestones, all new debug controls, and exact
   Android build metadata.
+- PR #18 `game-quality` run
+  [30422862144](https://github.com/menno420/spider-swing/actions/runs/30422862144)
+  passes all 70 contracts at source
+  `e43500546b896972c96ee833e0967094d4edd982`. The added contracts prove the
+  guided first-second web remains interruptible, authoritative obstacle
+  scaling, one rescue then normal death, centralized spider profiles and glide,
+  saved bounded creator patterns, fly-funded upgrades, and real Garage/Shop/
+  Course Lab navigation.
 - `substrate-gate` — kit-owned. A born-red session card deliberately holds a PR
   until close-out; it must be green on the completed card before merge.
 - `android-debug` — **green on `main`, APK proven.** Run #1 produced artifact
@@ -221,6 +229,19 @@ without a reported regression.
   `b00007514aaad431dcfaa5b41c8ec9413a1eadba`, package
   `com.menno420.spiderswing.dev`, and display name
   `Spider Swing Dive Reset (dev)`.
+- PR #18 `android-debug` run
+  [30422862138](https://github.com/menno420/spider-swing/actions/runs/30422862138)
+  produced downloadable artifact
+  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30422862138/artifacts/8712535636)
+  ID `8712535636`, 56,839,504 bytes, digest
+  `sha256:7b0200d952148090efcd271f7ed1240650657d43de3ca7e26e5abae848cdf89a`.
+  The downloaded 57,223,786-byte APK passed archive verification and had
+  SHA-256
+  `d9f1f109f58d5c49509a8d89aa5b89b6ff28e7435c17f21a202c040c702df382`.
+  It contains `classes.dex`, `AndroidManifest.xml`, and
+  `assets/project.binary`; its build manifest proves version
+  `0.5.0-opening-garage-test`, exact source, dev package, and display name
+  `Spider Swing Opening Garage (dev)`.
 - **Dependabot** — live. Its first run opened two bumps against the kit-owned
   `substrate-gate.yml`; both were closed because `adopt`/`upgrade` regenerates that
   file. The rule is documented in `.github/dependabot.yml`: kit-owned-only bumps get
