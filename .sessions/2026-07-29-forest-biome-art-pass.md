@@ -1,6 +1,6 @@
 # Phase 0.16 forest biome art pass
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 
