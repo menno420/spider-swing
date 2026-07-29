@@ -16,7 +16,7 @@ The product *is* the swinging. Everything else exists to support it.
 > `com.menno420.spiderswing.dev` are all development identifiers and are all
 > expected to change.
 
-## Current phase: Phase 0.14 fair-corridor routing test
+## Current phase: Phase 0.15 environment-theme comparison
 
 **The first playable traversal test is implemented.** The project opens on a
 player-facing Home screen with Play, Garage, Shop, a six-step Tutorial, Course
@@ -24,7 +24,7 @@ Lab, and readable scrolling Settings. Play begins on a real ceiling web that
 provides a safe first swing before the player must react. The endless laboratory
 keeps forgiving solid-object attachment, momentum-preserving release, naturally
 retained rope shortening, interruptible percentage-based Anchor Burst and Dive
-Pull, a paced organic graybox course, collectible fly routes, and one temporary
+Pull, a paced organic prototype course, collectible fly routes, and one temporary
 Burst boost.
 
 ### What exists
@@ -68,6 +68,10 @@ Burst boost.
 - Slightly reduced floating hazards, with independent DEBUG controls for edge
   obstacle size, floating obstacle size, and gate opening size. Collision and
   presentation always consume the same scaled polygons.
+- Four generated 384×384 environment packs—Ancient Forest, Mossy Ravine,
+  Overgrown Greenhouse, and Reclaimed Attic—plus the original Graybox. Ancient
+  Forest is the default comparison look. DEBUG → LOOK swaps texture, background
+  palette, and edge treatment without changing a course polygon or collision.
 - Base Reel-In is deliberately reduced to 400 px/s and Burst starts at 40% with
   80 px minimum useful travel. Spider-specific fly upgrades can improve Reel,
   Burst share, minimum Burst travel, drive, hitbox, reach, glide, momentum, or
@@ -83,7 +87,7 @@ Burst boost.
   upper web to recharge. Obstacles, high-speed impacts, pull collisions, and a
   second rail contact remain lethal.
 - A code-drawn view with camera follow, 228-pixel thumb targets,
-  action flashes/haptics, pause/frame-step/slow-motion, and an eight-section,
+  action flashes/haptics, pause/frame-step/slow-motion, and a nine-section,
   touch-first DEBUG panel with direct values for Burst/Dive percentages and
   durations, Burst cooldown, Reel shortening speed,
   natural take-up mode/percentage, rail presence/lethality, obstacle sizes,
@@ -91,8 +95,9 @@ Burst boost.
   inward-rail start distance, and tight gaps,
   opening web, rescue, and impact-shell controls, middle-hazard start, boost duration, attach
   catch, aim forgiveness, range, RELEASE/RETARGET behavior,
-  deterministic input recording/replay, and diagnostic export.
-- Thirty-nine deterministic physics tests (75 runtime contracts total),
+  deterministic input recording/replay, visual-theme comparison, and diagnostic
+  export.
+- Thirty-nine deterministic physics tests (76 runtime contracts total),
   including interruptible recovery webs, double-tap fallback, explicit
   release/retarget modes, opening-runway pacing, lower anchor coverage, exact
   pull-distance shares, speed-neutral Reel/take-up shortening, rail policy,
@@ -107,7 +112,8 @@ Burst boost.
 ### What is deliberately not implemented
 
 No authored Phase 1 chunk pack, moving hazards, finalized currency/economy,
-missions, production monetization, or production art. The fly-funded upgrades,
+missions, production monetization, or approved production art. The generated
+environment tiles, fly-funded upgrades,
 temporary boost, one-run rescue, spider profiles, and local Course Lab are
 deliberately small architecture-proving slices—not approved balance or
 production content. There is no Google Play Billing SDK, real-money catalogue,

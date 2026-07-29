@@ -115,7 +115,9 @@ routes, flies, and recovery timing. Later chunks vary:
 Obstacle polygons are lethal on contact and also valid anchors. Course rails are
 attachable structural surfaces, lethal by default, and independently
 configurable as visible or absent and safe or lethal. DEBUG draws the predicted endpoint of the nearest
-available Dive in green or red. The palette is still diagnostic; moving hazards,
+available Dive in green or red. Four generated environment packs now texture the
+same polygons for art-direction comparison. Their material detail, background
+palette, and edge treatment are still prototype presentation; moving hazards,
 production balancing, and final object art remain deferred.
 
 The default floating-hazard scale is 90%, edge-grown obstacles use 94%, and gate
@@ -134,11 +136,18 @@ cosmetic milestones. The current fly costs are comparison values only.
 ## Debug tuning
 
 The touch-first debug panel is split into **Movement**, **Pacing**, **Rope**,
-**Pulls**, **Course**, **Routes**, **Run**, and **Tools**. Every section shows
+**Pulls**, **Course**, **Routes**, **Run**, **Look**, and **Tools**. Every tuning
+section shows
 at most six large setting cards.
 Each card uses a plain name, one-sentence description, direct comparison values,
 and 52-pixel `−` / `+` targets. Presets are named instead of numbered. This
 avoids searching through one long carousel during device playtests.
+
+**Look** uses five larger preview cards rather than numeric tuning: Graybox,
+Ancient Forest, Mossy Ravine, Overgrown Greenhouse, and Reclaimed Attic. The
+selector changes only presentation-owned texture and palette data. Graybox
+remains the exact silhouette check; selecting a look cannot resize, move, add,
+or remove a collision surface.
 
 | Debug value | Meaning | Step / range |
 | --- | --- | --- |

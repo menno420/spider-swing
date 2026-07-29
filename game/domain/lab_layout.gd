@@ -14,6 +14,8 @@ const DEBUG_TOP_MARGIN := 12.0
 const DEBUG_CONTENT_TOP := 202.0
 const DEBUG_CARD_HEIGHT := 146.0
 const DEBUG_CARD_GAP := Vector2(16.0, 12.0)
+const ENVIRONMENT_THEME_COUNT := 5
+const ENVIRONMENT_THEME_CARD_HEIGHT := 196.0
 
 
 static func debug_panel_rect(
@@ -145,3 +147,23 @@ static func utility_rect(
 	viewport_size: Vector2 = REFERENCE_SIZE,
 ) -> Rect2:
 	return parameter_card_rect(index, viewport_size)
+
+
+static func environment_theme_card_rect(
+	index: int,
+	viewport_size: Vector2 = REFERENCE_SIZE,
+) -> Rect2:
+	var panel := debug_panel_rect(viewport_size)
+	var columns := 3
+	var column := index % columns
+	var row := index / columns
+	var gap := 14.0
+	var width := (panel.size.x - 40.0 - gap * 2.0) / 3.0
+	return Rect2(
+		panel.position + Vector2(
+			20.0 + float(column) * (width + gap),
+			DEBUG_CONTENT_TOP + float(row) *
+				(ENVIRONMENT_THEME_CARD_HEIGHT + gap),
+		),
+		Vector2(width, ENVIRONMENT_THEME_CARD_HEIGHT),
+	)

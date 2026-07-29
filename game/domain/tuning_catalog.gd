@@ -12,6 +12,7 @@ const CATEGORY_PULLS := &"pulls"
 const CATEGORY_COURSE := &"course"
 const CATEGORY_ROUTES := &"routes"
 const CATEGORY_RUN := &"run"
+const CATEGORY_VISUALS := &"visuals"
 const CATEGORY_TOOLS := &"tools"
 
 const CATEGORIES := [
@@ -49,6 +50,11 @@ const CATEGORIES := [
 		"id": CATEGORY_RUN,
 		"label": "RUN",
 		"help": "Opening assistance, one-run recovery, and temporary boosts.",
+	},
+	{
+		"id": CATEGORY_VISUALS,
+		"label": "LOOK",
+		"help": "Swap environment art without changing any collision shape.",
 	},
 	{
 		"id": CATEGORY_TOOLS,

@@ -107,6 +107,11 @@ without a reported regression.
 - Settings is a readable vertical scroll surface with larger type and 58–68-pixel
   controls, verified by runtime contracts and designed around the owner's
   recorded 1040×480 viewport.
+- `EnvironmentThemeCatalog` defines Graybox plus four original generated
+  384×384 material packs: Ancient Forest (default), Mossy Ravine, Overgrown
+  Greenhouse, and Reclaimed Attic. `SwingLabView` maps them in world space over
+  the exact snapshot polygons; theme selection cannot change course geometry,
+  collision, targeting, pace, or lethality.
 - No autoload singletons exist, and a test fails if one appears.
 
 **Verification**
@@ -117,8 +122,8 @@ without a reported regression.
   supplied Godot 4.7.1 and passed import, boot, and the complete 74-check
   headless suite at gameplay source
   `bc582e25a2a2fd7d6da18ed2cf127cc568b834ca`.
-- `tests/test_runner.gd` — 74 declared checks: thirty-eight
-  deterministic physics, fifteen GUI-owned mobile HUD, eleven front-end
+- `tests/test_runner.gd` — 76 declared checks: thirty-nine
+  deterministic physics, sixteen GUI-owned mobile HUD, eleven front-end
   navigation/settings/progression, plus bootstrap and exact build-version
   contracts. Physics covers exact 40%/40% pull shares,
   detached targeted Burst, recovery-web interruption, double-tap fallback,
@@ -297,7 +302,8 @@ without a reported regression.
   moderation. The local Shop and Course Lab do not claim those capabilities.
 - No approved physics baseline yet: `balanced_candidate`, `weighty_candidate`,
   and `agile_candidate` require owner real-device playtesting.
-- No production art, analytics, ads, cloud save, or store SDK.
+- No approved production art, analytics, ads, cloud save, or store SDK. The
+  four generated environment packs are explicitly prototype comparison art.
 - No production Android signing, no Google Play publishing, no iOS/macOS signing
   runner.
 - The owner has temporarily made the repository **public** to preserve Actions
@@ -309,13 +315,18 @@ without a reported regression.
 
 ## In flight
 
-Phase 0.14 is implemented and verified in PR #20: the exact maximum-speed ramp
-still spans 5000 m, while generated challenge routes now coordinate rails,
-obstacles, and fly guidance. No rail moves inward before 2000 m by default,
-and later inward passages are rail-only. Phase 1 remains blocked on choosing or
-rejecting a movement baseline after the verified build is tested.
+Phase 0.15 is implemented locally in PR #21: four environment packs and Graybox
+skin the same authoritative course through a large DEBUG → LOOK selector. The
+exact maximum-speed ramp still spans 5000 m, no rail moves inward before 2000 m
+by default, and later inward passages remain rail-only. Phase 1 remains blocked
+on choosing or rejecting a movement baseline after the verified build is tested.
 
 ## Recently shipped (newest first)
+
+- **2026-07-29 — Environment theme packs (PR #21 in progress).** Adds Ancient
+  Forest, Mossy Ravine, Overgrown Greenhouse, and Reclaimed Attic runtime
+  textures, one presentation-owned catalog, world-space polygon UVs, a large
+  LOOK selector, Graybox fallback, and a visual-only geometry regression.
 
 - **2026-07-29 — Fair early corridor routing (PR #20 in progress).** Gives each
   generated challenge one route plan, protects the first 2000 m from inward

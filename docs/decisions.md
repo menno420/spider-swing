@@ -171,3 +171,16 @@
   boundaries toward it. A shared route contract keeps procedural composition
   fair without removing deliberate late narrow passages or their DEBUG tuning.
 - provenance: Menno's Phase 0.14 corridor playtests and direction, PR #20
+
+## [D-0013] Skin one authoritative course with swappable environment themes
+
+- status: decided
+- date: 2026-07-29
+- verdict: Graybox and four generated environment packs may change only
+  presentation-owned textures, palette, parallax color, and edge treatment over
+  the exact course polygons supplied by the application snapshot.
+- why: Early art-direction tests are valuable only if a prettier rail cannot
+  hide a different hitbox or silently change difficulty. World-space UV mapping
+  keeps material stable while scrolling, and a large DEBUG selector keeps the
+  collision silhouette available for immediate comparison.
+- provenance: Menno's Phase 0.15 environment-art direction and PR #21
