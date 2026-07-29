@@ -165,7 +165,10 @@ func _append_boundary_pattern(
 		Vector2(start_x + 720.0, floor_y),
 		Vector2(start_x + CHUNK_WIDTH, floor_y),
 	])
-	if _corridor_contours_enabled:
+	# Keep the first screen geometrically quiet so its authored training web
+	# always starts from the same readable arc. Contours begin with chunk one,
+	# where edge hazards and route choices actually start.
+	if _corridor_contours_enabled and start_x >= CHUNK_WIDTH:
 		var clearance := 60.0 * _corridor_clearance_scale
 		if pattern in [0, 4]:
 			ceiling_profile.set(
