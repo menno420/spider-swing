@@ -24,8 +24,15 @@ const FOREST_OBSTACLE_ART_OVERSCAN := 8.0
 const FOREST_RAIL_JOIN_OVERLAP := 28.0
 const FOREST_RAIL_WORLD_REPEAT := 768.0
 const FOREST_RAIL_SEGMENT_OVERLAP := 38.0
+const MOTION_TELEPORT_THRESHOLD := 240.0
 
 var _snapshot: SimulationSnapshot
+var _previous_spider_position := Vector2.ZERO
+var _current_spider_position := Vector2.ZERO
+var _previous_spider_velocity := Vector2.ZERO
+var _current_spider_velocity := Vector2.ZERO
+var _motion_tick: int = -1
+var _motion_time: float = 0.0
 var _camera_x: float = 0.0
 var _feedback_message: String = "Tap any cyan ceiling surface to attach"
 var _feedback_position: Vector2 = Vector2.ZERO
@@ -47,6 +54,7 @@ var _art_textures: Dictionary = {}
 
 func _ready() -> void:
 	_font = ThemeDB.fallback_font
+	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
 	_load_environment_textures()
 	_load_art_textures()
@@ -66,6 +74,22 @@ func configure_player_options(
 
 
 func present(snapshot: SimulationSnapshot) -> void:
+	if _snapshot == null or snapshot.tick < _motion_tick or \
+			_current_spider_position.distance_to(snapshot.position) > \
+				MOTION_TELEPORT_THRESHOLD:
+		_previous_spider_position = snapshot.position
+		_current_spider_position = snapshot.position
+		_previous_spider_velocity = snapshot.velocity
+		_current_spider_velocity = snapshot.velocity
+	elif snapshot.tick > _motion_tick:
+		_previous_spider_position = _current_spider_position
+		_previous_spider_velocity = _current_spider_velocity
+		_current_spider_position = snapshot.position
+		_current_spider_velocity = snapshot.velocity
+	else:
+		_current_spider_position = snapshot.position
+		_current_spider_velocity = snapshot.velocity
+	_motion_tick = snapshot.tick
 	_snapshot = snapshot
 	queue_redraw()
 
@@ -143,6 +167,8 @@ func _process(delta: float) -> void:
 	_burst_feedback_remaining = maxf(0.0, _burst_feedback_remaining - delta)
 	if _snapshot == null:
 		return
+	if not _reduced_motion:
+		_motion_time += delta
 	var viewport_size := get_viewport_rect().size
 	var look_ahead := maxf(0.0, _snapshot.velocity.x - _snapshot.target_speed) * \
 		_snapshot.camera_look_ahead
@@ -320,7 +346,7 @@ func _draw_course(size: Vector2) -> void:
 			var screen := _world_to_screen(guide)
 			if screen.x < -80.0 or screen.x > size.x + 80.0:
 				continue
-			var distance := guide.distance_to(_snapshot.position)
+			var distance := guide.distance_to(_render_spider_position())
 			var in_range := distance >= 90.0 and \
 				distance <= _snapshot.web_maximum_length
 			var color := GREEN if in_range else YELLOW
@@ -364,7 +390,7 @@ func _draw_course(size: Vector2) -> void:
 
 	if _snapshot.web_guides_visible and _snapshot.dive_preview_available:
 		var preview_color := GREEN if _snapshot.dive_preview_safe else RED
-		var preview_start := _world_to_screen(_snapshot.position)
+		var preview_start := _world_to_screen(_render_spider_position())
 		var preview_end := _world_to_screen(_snapshot.dive_preview_endpoint)
 		var preview_anchor := _world_to_screen(_snapshot.dive_preview_anchor)
 		draw_dashed_line(preview_start, preview_end, preview_color, 3.0, 10.0)
@@ -629,13 +655,14 @@ func _draw_texture_cover(
 func _draw_web() -> void:
 	if not _snapshot.web_attached:
 		return
-	var spider := _world_to_screen(_snapshot.position)
+	var spider := _world_to_screen(_render_spider_position())
 	var anchor := _world_to_screen(_snapshot.anchor)
 	var web_color := _web_color()
 	draw_line(spider, anchor, Color(0.25, 0.72, 0.77, 0.35), 7.0)
 	draw_line(spider, anchor, web_color, 2.5)
 	if _snapshot.reel_active:
-		var pulse := fposmod(float(_snapshot.tick) * 0.08, 1.0)
+		var pulse := 0.5 if _reduced_motion else \
+			fposmod(_motion_time * 2.2, 1.0)
 		draw_circle(spider.lerp(anchor, pulse), 7.0, CYAN)
 
 
@@ -646,7 +673,7 @@ func _draw_action_feedback() -> void:
 			0.0,
 			1.0,
 		)
-		var spider := _world_to_screen(_snapshot.position)
+		var spider := _world_to_screen(_render_spider_position())
 		var anchor := _world_to_screen(_snapshot.anchor)
 		draw_line(spider, anchor, Color(CYAN, reel_alpha * 0.82), 9.0)
 		var reel_progress := 1.0 - reel_alpha
@@ -693,8 +720,10 @@ func _draw_action_feedback() -> void:
 
 
 func _draw_spider() -> void:
-	var center := _world_to_screen(_snapshot.position)
-	var rotation := clampf(_snapshot.velocity.angle() * 0.16, -0.35, 0.35)
+	var render_velocity := _render_spider_velocity()
+	var center := _world_to_screen(_render_spider_position())
+	var rotation := _render_spider_rotation(render_velocity)
+	var pose_scale := _spider_pose_scale(render_velocity)
 	var scale := _snapshot.player_collision_radius / 18.0
 	var accent := SPIDER_ACCENT
 	var body := SPIDER_DARK
@@ -719,23 +748,25 @@ func _draw_spider() -> void:
 		center,
 		rotation,
 		scale,
+		pose_scale,
 	)
 	if not finished_sprite:
 		for side in [-1.0, 1.0]:
 			for index in range(4):
 				var y := -15.0 + float(index) * 10.0
 				var hip := center + (
-					Vector2(side * 10.0, y) * scale).rotated(rotation)
+					_pose_local(Vector2(side * 10.0, y), pose_scale) *
+						scale).rotated(rotation)
 				var knee := center + (
-					Vector2(
+					_pose_local(Vector2(
 						side * (24.0 + index * 2.0),
 						y - 9.0 + index * 5.0,
-					) * scale).rotated(rotation)
+					), pose_scale) * scale).rotated(rotation)
 				var foot := center + (
-					Vector2(
+					_pose_local(Vector2(
 						side * (38.0 + index * 3.0),
 						y + 2.0 + index * 6.0,
-					) * scale).rotated(rotation)
+					), pose_scale) * scale).rotated(rotation)
 				draw_polyline(
 					PackedVector2Array([hip, knee, foot]),
 					body,
@@ -748,15 +779,20 @@ func _draw_spider() -> void:
 					1.5,
 					true,
 				)
-		draw_circle(center + Vector2(-8.0, 0.0).rotated(rotation) * scale,
+		draw_circle(center + _pose_local(
+			Vector2(-8.0, 0.0), pose_scale).rotated(rotation) * scale,
 			17.0 * scale, body)
-		draw_circle(center + Vector2(12.0, -1.0).rotated(rotation) * scale,
+		draw_circle(center + _pose_local(
+			Vector2(12.0, -1.0), pose_scale).rotated(rotation) * scale,
 			14.0 * scale, body)
-		draw_circle(center + Vector2(-9.0, -4.0).rotated(rotation) * scale,
+		draw_circle(center + _pose_local(
+			Vector2(-9.0, -4.0), pose_scale).rotated(rotation) * scale,
 			6.0 * scale, accent)
-		draw_circle(center + Vector2(17.0, -5.0).rotated(rotation) * scale,
+		draw_circle(center + _pose_local(
+			Vector2(17.0, -5.0), pose_scale).rotated(rotation) * scale,
 			3.2 * scale, WEB)
-		draw_circle(center + Vector2(17.0, -5.0).rotated(rotation) * scale,
+		draw_circle(center + _pose_local(
+			Vector2(17.0, -5.0), pose_scale).rotated(rotation) * scale,
 			1.4 * scale, Color("15202b"))
 	if _snapshot.spider_id == SpiderCatalog.BALLOONER and \
 			_snapshot.glide_remaining > 0.0:
@@ -791,13 +827,14 @@ func _draw_spider() -> void:
 		)
 	if _show_debug_tools and _snapshot.collision_outlines_visible:
 		draw_arc(center, _snapshot.player_collision_radius, 0.0, TAU, 40, CYAN, 1.5)
-		draw_line(center, center + _snapshot.velocity * 0.12, YELLOW, 2.0)
+		draw_line(center, center + render_velocity * 0.12, YELLOW, 2.0)
 
 
 func _draw_classic_spider_sprite(
 	center: Vector2,
 	rotation: float,
 	scale: float,
+	pose_scale: Vector2,
 ) -> bool:
 	if _snapshot.spider_id != SpiderCatalog.CLASSIC:
 		return false
@@ -811,7 +848,7 @@ func _draw_classic_spider_sprite(
 		PlayerProgress.STYLE_COMET:
 			tint = Color(0.73, 0.88, 1.0, 1.0)
 	var sprite_size := Vector2(96.0, 46.0) * scale
-	draw_set_transform(center, rotation, Vector2.ONE)
+	draw_set_transform(center, rotation, pose_scale)
 	draw_texture_rect(
 		texture,
 		Rect2(-sprite_size * 0.5, sprite_size),
@@ -1411,6 +1448,69 @@ func _draw_closed_polyline(
 	var closed := polygon.duplicate()
 	closed.append(polygon[0])
 	draw_polyline(closed, color, width, true)
+
+
+func _render_spider_position(fraction_override: float = -1.0) -> Vector2:
+	if _motion_tick < 0:
+		return _current_spider_position
+	return _previous_spider_position.lerp(
+		_current_spider_position,
+		_physics_interpolation_fraction(fraction_override),
+	)
+
+
+func _render_spider_velocity(fraction_override: float = -1.0) -> Vector2:
+	if _motion_tick < 0:
+		return _current_spider_velocity
+	return _previous_spider_velocity.lerp(
+		_current_spider_velocity,
+		_physics_interpolation_fraction(fraction_override),
+	)
+
+
+func _physics_interpolation_fraction(fraction_override: float = -1.0) -> float:
+	if fraction_override >= 0.0:
+		return clampf(fraction_override, 0.0, 1.0)
+	return clampf(Engine.get_physics_interpolation_fraction(), 0.0, 1.0)
+
+
+func _render_spider_rotation(render_velocity: Vector2) -> float:
+	if render_velocity.length_squared() < 1.0:
+		return 0.0
+	return clampf(render_velocity.angle() * 0.16, -0.35, 0.35)
+
+
+func _spider_pose_scale(render_velocity: Vector2) -> Vector2:
+	if _reduced_motion or _snapshot == null:
+		return Vector2.ONE
+	var target_speed := maxf(_snapshot.target_speed, 1.0)
+	var speed_ratio := clampf(
+		(render_velocity.length() - target_speed * 0.75) / target_speed,
+		0.0,
+		1.0,
+	)
+	var horizontal := 1.0 + speed_ratio * 0.01
+	var vertical := 1.0 - speed_ratio * 0.007
+	if _snapshot.pull_active or _burst_feedback_remaining > 0.0:
+		horizontal += 0.025
+		vertical -= 0.018
+	elif _snapshot.reel_active:
+		horizontal -= 0.012
+		vertical += 0.02
+	elif _snapshot.glide_remaining > 0.0:
+		horizontal += 0.018
+		vertical -= 0.01
+	return Vector2(
+		clampf(horizontal, 0.97, 1.045),
+		clampf(vertical, 0.97, 1.035),
+	)
+
+
+func _pose_local(local_position: Vector2, pose_scale: Vector2) -> Vector2:
+	return Vector2(
+		local_position.x * pose_scale.x,
+		local_position.y * pose_scale.y,
+	)
 
 
 func _world_to_screen(world_position: Vector2) -> Vector2:

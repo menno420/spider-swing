@@ -45,7 +45,8 @@
         "docs/ownership.md",
         "docs/runtime_contracts.md",
         "docs/technical/phase-0-swing-laboratory.md",
-        "docs/technical/front-end-flow.md"
+        "docs/technical/front-end-flow.md",
+        "docs/product/deep-progression-direction.md"
       ],
       "source_roots": [
         "game/application/",
@@ -66,7 +67,8 @@
         "FrontEndState and the composition root ensure Home exists before any run; only Play mounts gameplay.",
         "SwingLabSession owns lifecycle, buffered commands, fixed-step order, presets, snapshots, recording, replay, diagnostics, and the CourseStream refresh boundary.",
         "CourseStream supplies bounded deterministic graybox ceiling/obstacle geometry. The production DifficultyDirector and validated authored chunks remain Phase 1.",
-        "Run settlement, Silk, and progression remain Phase 2."
+        "ProgressionService owns idempotent settlement plus the fly-funded seven-track/20-level prototype; all five profiles remain unlocked until owner feel comparison is complete.",
+        "Temporary style modes, production unlock goals, fixed-stat Challenge runs, and any monetization remain behind the ordered product gates in docs/product/deep-progression-direction.md."
       ],
       "verification": [
         "python3 tools/verify.py --require-godot",
@@ -98,7 +100,7 @@
       "gates": [
         "InputRouter consumes six configured actions plus touch events and emits intent without mutating simulation.",
         "Large lower-left Reel and lower-right Burst Buttons consume GUI input; double-tap has a separate attached-anchor Burst gesture path; simultaneous Reel plus aiming is supported.",
-        "SaveRepository persists PlayerSettings atomically; progression, telemetry, and platform adapters remain Phase 2."
+        "SaveRepository persists PlayerSettings and schema-versioned PlayerProgress atomically, including one-time proportional upgrade migration; telemetry and production platform adapters remain later work."
       ],
       "verification": [
         "python3 tools/verify.py --require-godot",
@@ -113,7 +115,8 @@
         "docs/technical/adr/0001-engine-and-runtime.md",
         "docs/game-design/Spider-Swing-GDD-v2.0.md",
         "docs/technical/phase-0-swing-laboratory.md",
-        "docs/technical/front-end-flow.md"
+        "docs/technical/front-end-flow.md",
+        "docs/product/deep-progression-direction.md"
       ],
       "source_roots": [
         "game/presentation/scenes/",
@@ -130,8 +133,9 @@
         "a second front-end navigation root — FrontEndView renders the state owned by FrontEndState"
       ],
       "gates": [
-        "Home, six-step animated Tutorial, scrolling readable Settings, and Menu return are implemented.",
+        "Home, six-step animated Tutorial, scrolling readable Settings, mobile-scrollable seven-track Shop, and Menu return are implemented.",
         "The code-drawn view consumes snapshots/events and shows continuous ceiling surfaces, natural or graybox obstacle art, Reel and attached-Burst state, tuning controls, and off-by-default collision/web-guide diagnostics.",
+        "Custom spider/web rendering interpolates presentation samples only; teleports snap and authoritative simulation/collision remain untouched.",
         "The view and obstacles are test instrumentation, not production art or an approved Phase 1 content pack."
       ],
       "verification": [
@@ -145,7 +149,8 @@
       "binding_docs": [
         "docs/game-design/Spider-Swing-GDD-v2.0.md",
         "docs/technical/adr/0002-simulation-and-event-boundaries.md",
-        "docs/technical/repository-layout.md"
+        "docs/technical/repository-layout.md",
+        "docs/product/deep-progression-direction.md"
       ],
       "source_roots": [
         "game/content/",
@@ -162,8 +167,9 @@
         "an upgrade granting starting Silk per run — a removed exploit (GDD 15.1)"
       ],
       "gates": [
-        "NO AUTHORED CONTENT YET. CourseStream generates a tiny deterministic graybox obstacle vocabulary solely for movement and avoidance playtests.",
-        "Phase 1 adds validated authored chunks and one moving-hazard family with the complete GDD 9.1 envelope.",
+        "CoursePatternCatalog and CourseStream provide a deterministic, distance-banded prototype obstacle vocabulary and one candidate Ancient Forest presentation grammar; this is not an approved production chunk pack.",
+        "Every required route remains bounded by deterministic unupgraded-Garden clearance checks. New difficulty patterns arrive only after the current progression/readability device gate.",
+        "Temporary style pickups, spider unlock enforcement, and Challenge mode remain deliberately deferred.",
         "No Git LFS until real large binary assets justify it."
       ],
       "verification": [

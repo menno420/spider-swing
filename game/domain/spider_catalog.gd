@@ -1,6 +1,6 @@
 extends RefCounted
 class_name SpiderCatalog
-## Data-defined Phase 0 spider candidates and their fly-funded upgrades.
+## Data-defined spider candidates and their fly-funded adventure upgrades.
 ##
 ## Profiles modify the one authoritative SwingConfig. They are intentionally
 ## trade-offs, not separate motors or paid replacements for core skill.
@@ -13,8 +13,15 @@ const SPRINGTAIL := &"springtail"
 const ALL_IDS: Array[StringName] = [
 	CLASSIC, SKITTER, ANCHORITE, BALLOONER, SPRINGTAIL,
 ]
-const MAX_UPGRADE_LEVEL := 5
-const UPGRADE_COSTS := [5, 10, 20, 35, 55]
+const MAX_UPGRADE_LEVEL := 20
+const LEGACY_LEVEL_MULTIPLIER := 4
+const BREAKTHROUGH_INTERVAL := 5
+const UPGRADE_COSTS := [
+	2, 2, 3, 3, 5,
+	3, 4, 4, 5, 7,
+	5, 6, 7, 8, 12,
+	8, 10, 12, 15, 20,
+]
 
 const PROFILES := [
 	{
@@ -32,9 +39,6 @@ const PROFILES := [
 		"glide_duration": 0.0,
 		"glide_gravity_scale": 1.0,
 		"surface_bounce_enabled": false,
-		"upgrades": [
-			&"classic_reel", &"classic_burst", &"classic_burst_floor",
-		],
 	},
 	{
 		"id": SKITTER,
@@ -51,9 +55,6 @@ const PROFILES := [
 		"glide_duration": 0.0,
 		"glide_gravity_scale": 1.0,
 		"surface_bounce_enabled": false,
-		"upgrades": [
-			&"skitter_size", &"skitter_drive", &"skitter_burst_floor",
-		],
 	},
 	{
 		"id": ANCHORITE,
@@ -70,10 +71,6 @@ const PROFILES := [
 		"glide_duration": 0.0,
 		"glide_gravity_scale": 1.0,
 		"surface_bounce_enabled": false,
-		"upgrades": [
-			&"anchorite_reel", &"anchorite_momentum",
-			&"anchorite_burst_floor",
-		],
 	},
 	{
 		"id": BALLOONER,
@@ -90,10 +87,6 @@ const PROFILES := [
 		"glide_duration": 1.20,
 		"glide_gravity_scale": 0.48,
 		"surface_bounce_enabled": false,
-		"upgrades": [
-			&"ballooner_glide", &"ballooner_reach",
-			&"ballooner_burst_floor",
-		],
 	},
 	{
 		"id": SPRINGTAIL,
@@ -110,104 +103,150 @@ const PROFILES := [
 		"glide_duration": 0.0,
 		"glide_gravity_scale": 1.0,
 		"surface_bounce_enabled": true,
-		"upgrades": [
-			&"springtail_shell", &"springtail_bounce", &"springtail_reel",
-		],
 	},
 ]
 
-const UPGRADES := [
+const SCOPE_CORE := &"core"
+const SCOPE_IDENTITY := &"identity"
+
+const REEL_SPEED := &"reel_speed"
+const BURST_REACH := &"burst_reach"
+const BURST_FLOOR := &"burst_floor"
+const REEL_CAPACITY := &"reel_capacity"
+const REEL_RECOVERY := &"reel_recovery"
+const TAKE_UP_RETENTION := &"take_up_retention"
+const BURST_RHYTHM := &"burst_rhythm"
+const COMPACT_STANCE := &"compact_stance"
+const QUICK_FEET := &"quick_feet"
+const HEAVY_MOMENTUM := &"heavy_momentum"
+const PENDULUM_MASS := &"pendulum_mass"
+const GLIDE_DURATION := &"glide_duration"
+const SILK_REACH := &"silk_reach"
+const IMPACT_SHELL := &"impact_shell"
+const ELASTIC_GUARD := &"elastic_guard"
+
+# These five definitions are instantiated for every spider. Keeping the kinds
+# in one table prevents profiles from quietly receiving different core systems.
+const CORE_TRACKS := [
 	{
-		"id": &"classic_reel",
-		"profile": CLASSIC,
+		"suffix": &"reel",
+		"kind": REEL_SPEED,
 		"name": "Silk Winder",
-		"description": "Reel-In shortens the web 8% faster per level.",
+		"description":
+			"Reel-In shortens the web 1.25% faster per tuning step.",
 	},
 	{
-		"id": &"classic_burst",
-		"profile": CLASSIC,
-		"name": "Anchor Instinct",
-		"description": "Anchor Burst crosses 3% more distance per level.",
+		"suffix": &"burst",
+		"kind": BURST_REACH,
+		"name": "Anchor Drive",
+		"description":
+			"Anchor Burst crosses 0.5% more of the starting distance per tuning step.",
 	},
 	{
-		"id": &"classic_burst_floor",
-		"profile": CLASSIC,
+		"suffix": &"burst_floor",
+		"kind": BURST_FLOOR,
 		"name": "Reliable Launch",
-		"description": "Minimum useful Burst travel gains 24 px per level.",
+		"description":
+			"Minimum useful Burst travel gains 5 px per tuning step.",
 	},
 	{
-		"id": &"skitter_size",
-		"profile": SKITTER,
-		"name": "Compact Stance",
-		"description": "Hitbox radius shrinks another 2% per level.",
+		"suffix": &"reel_capacity",
+		"kind": REEL_CAPACITY,
+		"name": "Silk Reserve",
+		"description":
+			"Reel energy capacity gains 1% per tuning step.",
 	},
 	{
-		"id": &"skitter_drive",
-		"profile": SKITTER,
-		"name": "Quick Feet",
-		"description": "Forward recovery gains 4% per level.",
-	},
-	{
-		"id": &"skitter_burst_floor",
-		"profile": SKITTER,
-		"name": "Pounce Thread",
-		"description": "Minimum useful Burst travel gains 20 px per level.",
-	},
-	{
-		"id": &"anchorite_reel",
-		"profile": ANCHORITE,
-		"name": "Heavy Winder",
-		"description": "Reel-In shortens the web 6% faster per level.",
-	},
-	{
-		"id": &"anchorite_momentum",
-		"profile": ANCHORITE,
-		"name": "Momentum Core",
-		"description": "Burst exit speed gains 5% per level.",
-	},
-	{
-		"id": &"anchorite_burst_floor",
-		"profile": ANCHORITE,
-		"name": "Heavy Launch",
-		"description": "Minimum useful Burst travel gains 22 px per level.",
-	},
-	{
-		"id": &"ballooner_glide",
-		"profile": BALLOONER,
-		"name": "Long Silk Sail",
-		"description": "Detached glide lasts 0.18 seconds longer per level.",
-	},
-	{
-		"id": &"ballooner_reach",
-		"profile": BALLOONER,
-		"name": "Featherline",
-		"description": "Maximum web reach gains 3% per level.",
-	},
-	{
-		"id": &"ballooner_burst_floor",
-		"profile": BALLOONER,
-		"name": "Silk Catapult",
-		"description": "Minimum useful Burst travel gains 20 px per level.",
-	},
-	{
-		"id": &"springtail_shell",
-		"profile": SPRINGTAIL,
-		"name": "Impact Carapace",
-		"description": "Maximum survivable rail impact gains 60 px/s per level.",
-	},
-	{
-		"id": &"springtail_bounce",
-		"profile": SPRINGTAIL,
-		"name": "Elastic Guard",
-		"description": "Rail bounce strength gains 4% per level.",
-	},
-	{
-		"id": &"springtail_reel",
-		"profile": SPRINGTAIL,
-		"name": "Recovery Winder",
-		"description": "Reel-In shortens the web 5% faster per level.",
+		"suffix": &"reel_recovery",
+		"kind": REEL_RECOVERY,
+		"name": "Rapid Recovery",
+		"description":
+			"Reel energy regenerates 1% faster and empty lockout shortens slightly per tuning step.",
 	},
 ]
+
+const UNIQUE_TRACKS := {
+	CLASSIC: [
+		{
+			"suffix": &"flow",
+			"kind": TAKE_UP_RETENTION,
+			"name": "Balanced Flow",
+			"description":
+				"Natural silk take-up retains 0.25% more slack per tuning step.",
+		},
+		{
+			"suffix": &"rhythm",
+			"kind": BURST_RHYTHM,
+			"name": "Garden Rhythm",
+			"description":
+				"Anchor Burst recovers 0.4% sooner per tuning step.",
+		},
+	],
+	SKITTER: [
+		{
+			"suffix": &"size",
+			"kind": COMPACT_STANCE,
+			"name": "Compact Stance",
+			"description":
+				"Hitbox radius shrinks 0.4% per tuning step.",
+		},
+		{
+			"suffix": &"drive",
+			"kind": QUICK_FEET,
+			"name": "Quick Feet",
+			"description":
+				"Forward recovery gains 0.83% per tuning step.",
+		},
+	],
+	ANCHORITE: [
+		{
+			"suffix": &"momentum",
+			"kind": HEAVY_MOMENTUM,
+			"name": "Momentum Core",
+			"description":
+				"Burst exit speed gains 1.04% per tuning step.",
+		},
+		{
+			"suffix": &"pendulum",
+			"kind": PENDULUM_MASS,
+			"name": "Pendulum Mass",
+			"description":
+				"Anchor Burst retains 0.3% more tangential motion per tuning step.",
+		},
+	],
+	BALLOONER: [
+		{
+			"suffix": &"glide",
+			"kind": GLIDE_DURATION,
+			"name": "Long Silk Sail",
+			"description":
+				"Detached glide lasts 0.038 seconds longer per tuning step.",
+		},
+		{
+			"suffix": &"reach",
+			"kind": SILK_REACH,
+			"name": "Featherline",
+			"description":
+				"Maximum web reach gains 0.625% per tuning step.",
+		},
+	],
+	SPRINGTAIL: [
+		{
+			"suffix": &"shell",
+			"kind": IMPACT_SHELL,
+			"name": "Impact Carapace",
+			"description":
+				"Maximum survivable rail impact gains 12.5 px/s per tuning step.",
+		},
+		{
+			"suffix": &"bounce",
+			"kind": ELASTIC_GUARD,
+			"name": "Elastic Guard",
+			"description":
+				"Rail bounce retention gains 0.83% per tuning step.",
+		},
+	],
+}
 
 
 static func profile(profile_id: StringName) -> Dictionary:
@@ -218,17 +257,29 @@ static func profile(profile_id: StringName) -> Dictionary:
 
 
 static func upgrade(upgrade_id: StringName) -> Dictionary:
-	for item: Dictionary in UPGRADES:
-		if StringName(item["id"]) == upgrade_id:
-			return item.duplicate(true)
+	for profile_id: StringName in ALL_IDS:
+		for item: Dictionary in upgrades_for(profile_id):
+			if StringName(item["id"]) == upgrade_id:
+				return item
 	return {}
 
 
 static func upgrades_for(profile_id: StringName) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
-	for item: Dictionary in UPGRADES:
-		if StringName(item["profile"]) == profile_id:
-			result.append(item.duplicate(true))
+	if profile_id not in ALL_IDS:
+		return result
+	for template: Dictionary in CORE_TRACKS:
+		result.append(_instantiate_track(profile_id, template, SCOPE_CORE))
+	var unique_tracks: Array = UNIQUE_TRACKS.get(profile_id, [])
+	for template: Dictionary in unique_tracks:
+		result.append(_instantiate_track(profile_id, template, SCOPE_IDENTITY))
+	return result
+
+
+static func all_upgrades() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for profile_id: StringName in ALL_IDS:
+		result.append_array(upgrades_for(profile_id))
 	return result
 
 
@@ -236,6 +287,36 @@ static func cost_for_level(current_level: int) -> int:
 	if current_level < 0 or current_level >= MAX_UPGRADE_LEVEL:
 		return 0
 	return int(UPGRADE_COSTS[current_level])
+
+
+static func breakthrough_count(level: int) -> int:
+	return floori(
+		float(clampi(level, 0, MAX_UPGRADE_LEVEL)) /
+			float(BREAKTHROUGH_INTERVAL),
+	)
+
+
+static func effective_steps(level: int) -> int:
+	var safe_level := clampi(level, 0, MAX_UPGRADE_LEVEL)
+	return safe_level + breakthrough_count(safe_level)
+
+
+static func is_breakthrough_level(level: int) -> bool:
+	return level > 0 and level <= MAX_UPGRADE_LEVEL and \
+		posmod(level, BREAKTHROUGH_INTERVAL) == 0
+
+
+static func next_breakthrough_level(level: int) -> int:
+	var safe_level := clampi(level, 0, MAX_UPGRADE_LEVEL)
+	if safe_level >= MAX_UPGRADE_LEVEL:
+		return MAX_UPGRADE_LEVEL
+	var completed_intervals := floori(
+		float(safe_level) / float(BREAKTHROUGH_INTERVAL),
+	)
+	return mini(
+		MAX_UPGRADE_LEVEL,
+		(completed_intervals + 1) * BREAKTHROUGH_INTERVAL,
+	)
 
 
 static func apply_to_config(
@@ -261,42 +342,68 @@ static func apply_to_config(
 
 	for upgrade_item: Dictionary in upgrades_for(selected):
 		var upgrade_id := StringName(upgrade_item["id"])
-		var level := progress.upgrade_level(upgrade_id)
-		match upgrade_id:
-			&"classic_reel":
-				config.reel_retraction_rate *= 1.0 + 0.08 * float(level)
-			&"classic_burst":
+		var steps := float(effective_steps(
+			progress.upgrade_level(upgrade_id),
+		))
+		match StringName(upgrade_item["kind"]):
+			REEL_SPEED:
+				config.reel_retraction_rate *= 1.0 + 0.0125 * steps
+			BURST_REACH:
 				config.burst_distance_fraction = minf(
-					0.70,
-					config.burst_distance_fraction + 0.03 * float(level),
+					0.60,
+					config.burst_distance_fraction + 0.005 * steps,
 				)
-			&"classic_burst_floor":
-				config.burst_minimum_distance += 24.0 * float(level)
-			&"skitter_size":
-				config.player_collision_radius *= 1.0 - 0.02 * float(level)
-			&"skitter_drive":
+			BURST_FLOOR:
+				config.burst_minimum_distance += 5.0 * steps
+			REEL_CAPACITY:
+				config.reel_energy_capacity *= 1.0 + 0.01 * steps
+			REEL_RECOVERY:
+				config.reel_regeneration_rate *= 1.0 + 0.01 * steps
+				config.reel_empty_lockout *= maxf(0.75, 1.0 - 0.005 * steps)
+			TAKE_UP_RETENTION:
+				config.automatic_take_up_retention = minf(
+					0.94,
+					config.automatic_take_up_retention + 0.0025 * steps,
+				)
+			BURST_RHYTHM:
+				config.burst_cooldown *= maxf(0.82, 1.0 - 0.004 * steps)
+			COMPACT_STANCE:
+				config.player_collision_radius *= maxf(
+					0.88,
+					1.0 - 0.004 * steps,
+				)
+			QUICK_FEET:
 				config.horizontal_drive_acceleration *= \
-					1.0 + 0.04 * float(level)
-			&"skitter_burst_floor":
-				config.burst_minimum_distance += 20.0 * float(level)
-			&"anchorite_reel":
-				config.reel_retraction_rate *= 1.0 + 0.06 * float(level)
-			&"anchorite_momentum":
-				config.burst_exit_speed *= 1.0 + 0.05 * float(level)
-			&"anchorite_burst_floor":
-				config.burst_minimum_distance += 22.0 * float(level)
-			&"ballooner_glide":
-				config.glide_duration += 0.18 * float(level)
-			&"ballooner_reach":
-				config.web_maximum_length *= 1.0 + 0.03 * float(level)
-			&"ballooner_burst_floor":
-				config.burst_minimum_distance += 20.0 * float(level)
-			&"springtail_shell":
-				config.surface_bounce_max_impact_speed += 60.0 * float(level)
-			&"springtail_bounce":
+					1.0 + (1.0 / 120.0) * steps
+			HEAVY_MOMENTUM:
+				config.burst_exit_speed *= 1.0 + 0.0104 * steps
+			PENDULUM_MASS:
+				config.burst_tangential_retention = minf(
+					0.75,
+					config.burst_tangential_retention + 0.003 * steps,
+				)
+			GLIDE_DURATION:
+				config.glide_duration += 0.0375 * steps
+			SILK_REACH:
+				config.web_maximum_length *= 1.0 + 0.00625 * steps
+			IMPACT_SHELL:
+				config.surface_bounce_max_impact_speed += 12.5 * steps
+			ELASTIC_GUARD:
 				config.surface_bounce_retention = minf(
 					0.72,
-					config.surface_bounce_retention + 0.04 * float(level),
+					config.surface_bounce_retention + (1.0 / 120.0) * steps,
 				)
-			&"springtail_reel":
-				config.reel_retraction_rate *= 1.0 + 0.05 * float(level)
+
+
+static func _instantiate_track(
+	profile_id: StringName,
+	template: Dictionary,
+	scope: StringName,
+) -> Dictionary:
+	var item := template.duplicate(true)
+	item["id"] = StringName("%s_%s" % [profile_id, template["suffix"]])
+	item["profile"] = profile_id
+	item["scope"] = scope
+	item["breakthrough_interval"] = BREAKTHROUGH_INTERVAL
+	item.erase("suffix")
+	return item

@@ -14,7 +14,9 @@ static func run() -> Dictionary:
 	passed += _test_settings_codec_round_trip(failures)
 	passed += _test_settings_repository_round_trip(failures)
 	passed += _test_progression_is_idempotent_and_persistent(failures)
+	passed += _test_legacy_upgrade_levels_migrate_proportionally(failures)
 	passed += _test_garage_shop_and_creator_are_real_routes(failures)
+	passed += _test_shop_exposes_seven_mobile_readable_tracks(failures)
 	passed += _test_upgrades_and_creator_edits_use_progression_service(failures)
 	passed += _test_composition_root_mounts_front_end_first(failures)
 	return {"passed": passed, "failures": failures}
@@ -315,6 +317,55 @@ static func _test_garage_shop_and_creator_are_real_routes(
 	return 1
 
 
+static func _test_shop_exposes_seven_mobile_readable_tracks(
+	failures: PackedStringArray,
+) -> int:
+	var state := FrontEndState.new()
+	state.configure(PlayerSettings.defaults(), PlayerProgress.defaults())
+	var view := FrontEndView.new()
+	view.bind_state(state)
+	view.front_end_button(&"Shop").pressed.emit()
+	var scroll := view.find_child(
+		"ShopUpgradeScroll",
+		true,
+		false,
+	) as ScrollContainer
+	if scroll == null or \
+			scroll.vertical_scroll_mode != ScrollContainer.SCROLL_MODE_AUTO or \
+			scroll.horizontal_scroll_mode != ScrollContainer.SCROLL_MODE_DISABLED or \
+			not scroll.follow_focus:
+		failures.append("Shop upgrades are not in a mobile-safe scrolling region")
+		view.free()
+		return 0
+	var core := view.front_end_button(&"UpgradeClassicReel")
+	var identity := view.front_end_button(&"UpgradeClassicFlow")
+	if core == null or identity == null or \
+			core.custom_minimum_size.y < 64.0 or \
+			identity.custom_minimum_size.y < 64.0 or \
+			not core.text.contains("CORE") or \
+			not identity.text.contains("IDENTITY") or \
+			not core.text.contains("LEVEL 0/20"):
+		failures.append("Shop does not clearly present core and identity progression")
+		view.free()
+		return 0
+	var visible_tracks := 0
+	for item: Dictionary in SpiderCatalog.upgrades_for(SpiderCatalog.CLASSIC):
+		var upgrade_id := StringName(item["id"])
+		var row := view.find_child(
+			"UpgradeRow%s" % str(upgrade_id).to_pascal_case(),
+			true,
+			false,
+		) as Control
+		if row != null and row.visible:
+			visible_tracks += 1
+	if visible_tracks != 7:
+		failures.append("Shop does not expose exactly seven selected-spider tracks")
+		view.free()
+		return 0
+	view.free()
+	return 1
+
+
 static func _test_upgrades_and_creator_edits_use_progression_service(
 	failures: PackedStringArray,
 ) -> int:
@@ -326,8 +377,18 @@ static func _test_upgrades_and_creator_edits_use_progression_service(
 	var result := service.purchase_upgrade(progress, track)
 	if not bool(result.get("purchased", false)) or \
 			progress.upgrade_level(track) != 1 or \
-			progress.spendable_flies != 15:
+			progress.spendable_flies != 18 or \
+			bool(result.get("breakthrough", true)):
 		failures.append("fly-funded spider upgrade did not apply atomically")
+		return 0
+	progress.upgrade_levels[str(track)] = 4
+	progress.spendable_flies = 20
+	result = service.purchase_upgrade(progress, track)
+	if not bool(result.get("purchased", false)) or \
+			progress.upgrade_level(track) != 5 or \
+			progress.spendable_flies != 15 or \
+			not bool(result.get("breakthrough", false)):
+		failures.append("level-five purchase did not report its breakthrough")
 		return 0
 	if not service.select_spider_profile(progress, SpiderCatalog.BALLOONER):
 		failures.append("an unlocked comparison spider could not be selected")
@@ -342,6 +403,35 @@ static func _test_upgrades_and_creator_edits_use_progression_service(
 		if piece != &"empty":
 			failures.append("creator clear left an authored obstacle behind")
 			return 0
+	return 1
+
+
+static func _test_legacy_upgrade_levels_migrate_proportionally(
+	failures: PackedStringArray,
+) -> int:
+	var legacy := {
+		"schema_version": 3,
+		"spendable_flies": 41,
+		"upgrade_levels": {
+			"classic_reel": 1,
+			"classic_burst_floor": 5,
+			"skitter_size": 3,
+			"unknown_track": 5,
+		},
+	}
+	var migrated := PlayerProgress.from_dictionary(legacy)
+	if migrated.upgrade_level(&"classic_reel") != 4 or \
+			migrated.upgrade_level(&"classic_burst_floor") != 20 or \
+			migrated.upgrade_level(&"skitter_size") != 12 or \
+			migrated.upgrade_levels.has("unknown_track"):
+		failures.append("legacy five-level progress did not migrate proportionally")
+		return 0
+	var round_trip := PlayerProgress.from_dictionary(migrated.to_dictionary())
+	if round_trip.upgrade_level(&"classic_reel") != 4 or \
+			round_trip.upgrade_level(&"classic_burst_floor") != 20 or \
+			round_trip.upgrade_level(&"skitter_size") != 12:
+		failures.append("current-schema upgrade levels were migrated twice")
+		return 0
 	return 1
 
 

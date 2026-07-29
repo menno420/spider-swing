@@ -45,7 +45,9 @@ Coordinates the run. Owns lifecycle and sequencing; does not own physics truth.
 
 `FrontEndState` owns pre-run navigation, Garage/Shop/Course Lab intent, and
 settings intent. `ProgressionService` is the only mutator for fly-funded
-upgrades, selections, and creator slots.
+upgrades, selections, and creator slots. Upgrade purchases report whether the
+new level is a 5/10/15/20 breakthrough so presentation can acknowledge a real
+milestone without owning progression truth.
 `SwingLabSession` owns the active laboratory command buffer, fixed-step order,
 candidate presets, snapshots, recording, replay, independent diagnostic-overlay
 state, and chunk-boundary refreshes. `CourseStream` owns the seven-chunk

@@ -6,4 +6,7 @@ spider profiles retain their distinct procedural silhouettes until they receive
 equally deliberate art.
 
 The sprite rotates with presentation velocity and scales around the authoritative
-collision radius. DEBUG still shows the exact collision circle.
+collision radius. It is imported with mipmaps because the 384-pixel source is
+normally drawn at roughly one quarter of that size. Presentation interpolates
+fixed-step positions and applies only restrained action-state pose scaling;
+DEBUG still shows the exact collision circle.
