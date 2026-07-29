@@ -1,6 +1,6 @@
 # Phase 0.13 gradual progression and impact survival
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 
