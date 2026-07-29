@@ -1,6 +1,6 @@
 # Remove legacy obstacle backing session
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 
