@@ -144,6 +144,7 @@ func apply_preset(name: StringName) -> void:
 	_config.apply_preset(name)
 	SpiderCatalog.apply_to_config(_config, _progress)
 	_world.config = _config
+	_world.surface_bounce_ready = _config.surface_bounce_enabled
 	_reset_course_stream()
 	_world.set_course_geometry(_course_stream.geometry())
 	event_published.emit(SimulationEvent.make(
@@ -203,12 +204,17 @@ func _after_tuning_change(parameter: StringName) -> void:
 		&"edge_obstacle_size",
 		&"floating_obstacle_size",
 		&"gate_opening_size",
+		&"corridor_contours",
+		&"route_clearance",
+		&"tight_gap_size",
 	]:
 		_reset_course_stream()
 		_world.set_course_geometry(_course_stream.geometry())
 	elif parameter == &"course_rails" and \
 			not _config.course_boundaries_enabled:
 		_world.web.release()
+	elif parameter == &"impact_shell":
+		_world.surface_bounce_ready = _config.surface_bounce_enabled
 
 
 func toggle_recording() -> void:
@@ -259,6 +265,7 @@ func export_diagnostic() -> void:
 		"reel_energy": _world.web.reel_energy,
 		"burst_cooldown": _world.burst_cooldown_remaining,
 		"dive_ready": _world.dive_ready,
+		"surface_bounce_ready": _world.surface_bounce_ready,
 		"pull": {
 			"active": _world.pull_active,
 			"kind": str(_world.pull_kind),
@@ -267,6 +274,7 @@ func export_diagnostic() -> void:
 		},
 			"tuning": {
 			"burst_distance_fraction": _config.burst_distance_fraction,
+			"burst_minimum_distance": _config.burst_minimum_distance,
 			"dive_distance_fraction": _config.dive_distance_fraction,
 			"reel_retraction_rate": _config.reel_retraction_rate,
 			"surface_snap_distance": _config.surface_snap_distance,
@@ -279,9 +287,19 @@ func export_diagnostic() -> void:
 					_config.automatic_take_up_retention,
 				"course_boundaries_enabled": _config.course_boundaries_enabled,
 				"course_boundaries_lethal": _config.course_boundaries_lethal,
+				"corridor_contours_enabled":
+					_config.corridor_contours_enabled,
+				"corridor_clearance_scale":
+					_config.corridor_clearance_scale,
+				"corridor_tight_gap_scale":
+					_config.corridor_tight_gap_scale,
 				"middle_hazard_start_distance":
 					_config.middle_hazard_start_distance,
 				"burst_frenzy_duration": _config.burst_frenzy_duration,
+				"speed_curve_distance": _config.speed_curve_distance,
+				"surface_bounce_enabled": _config.surface_bounce_enabled,
+				"surface_bounce_max_impact_speed":
+					_config.surface_bounce_max_impact_speed,
 			},
 		"stream_chunks": [
 			geometry.first_chunk_index,
@@ -429,6 +447,8 @@ func _make_snapshot() -> SimulationSnapshot:
 	snapshot.burst_cooldown = _world.burst_cooldown_remaining
 	snapshot.burst_cooldown_capacity = _config.burst_cooldown
 	snapshot.dive_ready = _world.dive_ready
+	snapshot.surface_bounce_enabled = _config.surface_bounce_enabled
+	snapshot.surface_bounce_ready = _world.surface_bounce_ready
 	snapshot.rescue_available = _rescue_available
 	snapshot.rescue_shield_remaining = _world.rescue_shield_remaining
 	snapshot.glide_remaining = _world.glide_remaining
@@ -533,6 +553,9 @@ func _reset_course_stream() -> void:
 		_config.floating_obstacle_scale,
 		_config.gate_opening_scale,
 		_creator_pattern,
+		_config.corridor_contours_enabled,
+		_config.corridor_clearance_scale,
+		_config.corridor_tight_gap_scale,
 	)
 
 

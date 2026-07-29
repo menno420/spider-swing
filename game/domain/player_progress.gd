@@ -2,7 +2,7 @@ extends RefCounted
 class_name PlayerProgress
 ## Versioned player progression value object.
 
-const SCHEMA_VERSION := 2
+const SCHEMA_VERSION := 3
 const STYLE_GARDEN := &"garden"
 const STYLE_AMBER := &"amber"
 const STYLE_COMET := &"comet"
@@ -26,6 +26,7 @@ var unlocked_spider_ids: Array[StringName] = [
 	SpiderCatalog.SKITTER,
 	SpiderCatalog.ANCHORITE,
 	SpiderCatalog.BALLOONER,
+	SpiderCatalog.SPRINGTAIL,
 ]
 var selected_spider_id: StringName = SpiderCatalog.CLASSIC
 var upgrade_levels: Dictionary = {}

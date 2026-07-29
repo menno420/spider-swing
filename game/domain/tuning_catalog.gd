@@ -6,9 +6,11 @@ class_name TuningCatalog
 ## human-readable grouping, safe ranges, step size, and touch-friendly choices.
 
 const CATEGORY_MOVEMENT := &"movement"
+const CATEGORY_PACING := &"pacing"
 const CATEGORY_ROPE := &"rope"
 const CATEGORY_PULLS := &"pulls"
 const CATEGORY_COURSE := &"course"
+const CATEGORY_ROUTES := &"routes"
 const CATEGORY_RUN := &"run"
 const CATEGORY_TOOLS := &"tools"
 
@@ -17,6 +19,11 @@ const CATEGORIES := [
 		"id": CATEGORY_MOVEMENT,
 		"label": "MOVEMENT",
 		"help": "Weight, forward momentum, reach, and aiming assistance.",
+	},
+	{
+		"id": CATEGORY_PACING,
+		"label": "PACING",
+		"help": "Starting pace, maximum pace, and how gradually speed grows.",
 	},
 	{
 		"id": CATEGORY_ROPE,
@@ -32,6 +39,11 @@ const CATEGORIES := [
 		"id": CATEGORY_COURSE,
 		"label": "COURSE",
 		"help": "Ceiling/floor rules, obstacle sizes, and the difficulty ramp.",
+	},
+	{
+		"id": CATEGORY_ROUTES,
+		"label": "ROUTES",
+		"help": "How the solid ceiling and floor shape space around challenges.",
 	},
 	{
 		"id": CATEGORY_RUN,
@@ -89,6 +101,39 @@ const PARAMETERS := [
 		"maximum": 320.0,
 		"step": 10.0,
 		"quick": [160.0, 220.0, 280.0, 320.0],
+	},
+	{
+		"id": &"start_speed",
+		"category": CATEGORY_PACING,
+		"label": "Starting speed",
+		"help": "Forward target speed at the beginning of a run.",
+		"format": &"speed",
+		"minimum": 240.0,
+		"maximum": 520.0,
+		"step": 20.0,
+		"quick": [300.0, 360.0, 420.0, 480.0],
+	},
+	{
+		"id": &"maximum_speed",
+		"category": CATEGORY_PACING,
+		"label": "Maximum speed",
+		"help": "Forward target speed once the full learning curve is complete.",
+		"format": &"speed",
+		"minimum": 500.0,
+		"maximum": 1000.0,
+		"step": 20.0,
+		"quick": [640.0, 760.0, 880.0, 1000.0],
+	},
+	{
+		"id": &"full_speed_m",
+		"category": CATEGORY_PACING,
+		"label": "Full speed reached",
+		"help": "Distance where maximum speed is finally reached; default is 5,000 m.",
+		"format": &"meters",
+		"minimum": 20000.0,
+		"maximum": 80000.0,
+		"step": 5000.0,
+		"quick": [30000.0, 50000.0, 65000.0, 80000.0],
 	},
 	{
 		"id": &"reel_rate",
@@ -166,6 +211,17 @@ const PARAMETERS := [
 		"maximum": 0.80,
 		"step": 0.05,
 		"quick": [0.40, 0.50, 0.60, 0.70],
+	},
+	{
+		"id": &"burst_minimum",
+		"category": CATEGORY_PULLS,
+		"label": "Minimum Burst travel",
+		"help": "Minimum useful movement from a valid close-range Anchor Burst.",
+		"format": &"pixels",
+		"minimum": 20.0,
+		"maximum": 260.0,
+		"step": 10.0,
+		"quick": [60.0, 80.0, 120.0, 180.0],
 	},
 	{
 		"id": &"burst_duration",
@@ -278,6 +334,39 @@ const PARAMETERS := [
 		"quick": [1.0, 1.12, 1.24, 1.36],
 	},
 	{
+		"id": &"corridor_contours",
+		"category": CATEGORY_ROUTES,
+		"label": "Shaped ceiling and floor",
+		"help": "Moves the solid rails around obstacles instead of keeping a flat tunnel.",
+		"format": &"toggle",
+		"minimum": 0.0,
+		"maximum": 1.0,
+		"step": 1.0,
+		"quick": [0.0, 1.0],
+	},
+	{
+		"id": &"route_clearance",
+		"category": CATEGORY_ROUTES,
+		"label": "Bypass room",
+		"help": "Extra ceiling or floor space around most obstacle routes.",
+		"format": &"percent",
+		"minimum": 0.50,
+		"maximum": 1.50,
+		"step": 0.10,
+		"quick": [0.70, 1.0, 1.20, 1.50],
+	},
+	{
+		"id": &"tight_gap_size",
+		"category": CATEGORY_ROUTES,
+		"label": "Small-gap opening",
+		"help": "Width of occasional passages where both rails close inward.",
+		"format": &"percent",
+		"minimum": 0.75,
+		"maximum": 1.40,
+		"step": 0.05,
+		"quick": [0.85, 1.0, 1.15, 1.30],
+	},
+	{
 		"id": &"guided_start",
 		"category": CATEGORY_RUN,
 		"label": "Start already swinging",
@@ -309,6 +398,39 @@ const PARAMETERS := [
 		"maximum": 10.0,
 		"step": 0.50,
 		"quick": [2.0, 4.0, 6.0, 8.0],
+	},
+	{
+		"id": &"impact_shell",
+		"category": CATEGORY_RUN,
+		"label": "One-charge rail bounce",
+		"help": "Allows one moderate ceiling/floor hit; upper web contact rearms it.",
+		"format": &"toggle",
+		"minimum": 0.0,
+		"maximum": 1.0,
+		"step": 1.0,
+		"quick": [0.0, 1.0],
+	},
+	{
+		"id": &"safe_impact_speed",
+		"category": CATEGORY_RUN,
+		"label": "Maximum safe impact",
+		"help": "Fastest inward rail hit the charged shell can survive.",
+		"format": &"speed",
+		"minimum": 300.0,
+		"maximum": 1100.0,
+		"step": 40.0,
+		"quick": [520.0, 680.0, 840.0, 1000.0],
+	},
+	{
+		"id": &"bounce_strength",
+		"category": CATEGORY_RUN,
+		"label": "Rail bounce strength",
+		"help": "Share of inward impact speed returned away from the rail.",
+		"format": &"percent",
+		"minimum": 0.20,
+		"maximum": 0.80,
+		"step": 0.05,
+		"quick": [0.30, 0.42, 0.55, 0.70],
 	},
 ]
 

@@ -331,7 +331,7 @@ func _build_garage() -> void:
 		grid.add_child(button)
 		_profile_buttons[spider_id] = button
 	roster.add_child(_setting_description(
-		"All four candidates are open in this Phase 0 build. Each changes the "
+		"All five candidates are open in this comparison build. Each changes the "
 		+ "same tested motor through explicit trade-offs."))
 
 	var detail_card := _panel(PANEL)
@@ -349,7 +349,7 @@ func _build_garage() -> void:
 	_garage_tradeoff.add_theme_color_override("font_color", YELLOW)
 	detail.add_child(_garage_tradeoff)
 	_garage_stats = _label("", 17, CYAN)
-	_garage_stats.custom_minimum_size.y = 48.0
+	_garage_stats.custom_minimum_size.y = 72.0
 	detail.add_child(_garage_stats)
 	var pickers := HBoxContainer.new()
 	pickers.add_theme_constant_override("separation", 12)
@@ -525,9 +525,11 @@ func _render_garage() -> void:
 	_garage_tradeoff.text = "TRADE-OFF · %s" % item["tradeoff"]
 	var preview := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 	SpiderCatalog.apply_to_config(preview, _state.progress)
-	_garage_stats.text = (
-		"HITBOX %.1f px  ·  GRAVITY %.0f  ·  REEL %.0f px/s%s"
-		% [
+	var stats_format := (
+		"HITBOX %.1f px  ·  GRAVITY %.0f  ·  REEL %.0f px/s%s\n"
+		+ "BURST %.0f%%  ·  MINIMUM %.0f px%s"
+	)
+	_garage_stats.text = stats_format % [
 			preview.player_collision_radius,
 			preview.gravity,
 			preview.reel_retraction_rate,
@@ -536,8 +538,14 @@ func _render_garage() -> void:
 				if preview.glide_duration > 0.0
 				else ""
 			),
+			preview.burst_distance_fraction * 100.0,
+			preview.burst_minimum_distance,
+			(
+				"  ·  IMPACT SHELL"
+				if preview.surface_bounce_enabled
+				else ""
+			),
 		]
-	)
 	_garage_style_picker.selected = PlayerProgress.ALL_STYLES.find(
 		_state.progress.selected_spider_style)
 	for index in range(PlayerProgress.ALL_STYLES.size()):

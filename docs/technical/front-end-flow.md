@@ -46,12 +46,13 @@ without changing the navigation contract.
 ### Garage and Shop
 
 Garage profiles are centralized in `SpiderCatalog`. Balanced, small/agile,
-heavy, and gliding spiders are all unlocked in Phase 0 so the owner can compare
-their explicit strengths and costs without progression obscuring the feel test.
+heavy, gliding, and one-charge rail-recovery spiders are all unlocked in Phase
+0 so the owner can compare their explicit strengths and costs without
+progression obscuring the feel test.
 The selected profile resolves into the same `SwingConfig` consumed by
 simulation. Presentation only shows those resolved values.
 
-The Shop has two capped tracks per profile and spends `spendable_flies` through
+The Shop has three five-level tracks per profile and spends `spendable_flies` through
 `ProgressionService`. Purchases persist atomically through `SaveRepository`.
 There are no real-money products or entitlements in this build.
 

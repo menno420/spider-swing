@@ -270,6 +270,8 @@ func present_simulation_event(event: SimulationEvent) -> void:
 			Input.vibrate_handheld(52, 0.8)
 		SimulationEvent.Kind.DIVE_STARTED:
 			Input.vibrate_handheld(38, 0.62)
+		SimulationEvent.Kind.SURFACE_BOUNCED:
+			Input.vibrate_handheld(64, 0.72)
 
 
 func _make_anchored_button(

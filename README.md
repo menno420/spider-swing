@@ -32,17 +32,18 @@ Burst boost.
 - A responsive starting screen with Play, Garage, Shop, Tutorial, Course Lab,
   and Settings; settings persist the swing candidate, control hints, reduced
   motion, and debug-tool visibility.
-- A data-defined Garage with four comparison spiders—balanced, small/agile,
-  heavy, and gliding—plus three web treatments and palette selection. Every
+- A data-defined Garage with five comparison spiders—balanced, small/agile,
+  heavy, gliding, and one-charge rail recovery—plus three web treatments and
+  palette selection. Every
   profile modifies the same authoritative `SwingConfig`, and its trade-off is
   visible before Play.
-- A prototype Shop that spends collected flies on two capped upgrade tracks per
+- A prototype Shop that spends collected flies on three five-level upgrade tracks per
   spider. This is a local balance lab, not an in-app-purchase implementation.
 - A six-slot Course Lab that cycles deterministic EMPTY/LEAF/POD/VINE/GATE
   pieces, saves the pattern locally, and can playtest it immediately.
 - A data-driven six-step animated tutorial plus an in-game Menu return path.
 - A deterministic 60 Hz point-mass spider motor with the owner-tested 1120
-  gravity candidate, forward drive, drag,
+  gravity candidate, a smooth 5000 m default speed-learning curve, forward drive, drag,
   world boundaries, and a capped maximum-length web constraint.
 - A deterministic opening trajectory that uses the ordinary web constraint and
   remains interruptible from the first tick, plus one optional rescue charge per
@@ -54,9 +55,10 @@ Burst boost.
 - Three named tuning candidates: `balanced_candidate`, `weighty_candidate`, and
   `agile_candidate`.
 - A deterministic bounded course stream with a 1000 m learning runway before
-  detached middle hazards, mostly continuous ceiling/floor rails with deliberate
-  gaps, leaf clusters, vine forks, hanging seed pods, broken-pot gates, fly route
-  arcs, and lower anchors before later challenges. Burst crosses 50% of the
+  detached middle hazards, continuous lethal-by-default ceiling/floor rails
+  that reshape into open bypasses and occasional late tight gaps, leaf clusters,
+  vine forks, hanging seed pods, broken-pot gates, fly route arcs, and lower
+  anchors before later challenges. Base Burst crosses 40% of the
   selected web distance; downward taps make a one-shot 40% Dive Pull. Both are
   collision-checked, but only Burst uses a timer. Dive rearms after the next
   successful upper/obstacle web attachment. Either pull can be cancelled
@@ -64,6 +66,10 @@ Burst boost.
 - Slightly reduced floating hazards, with independent DEBUG controls for edge
   obstacle size, floating obstacle size, and gate opening size. Collision and
   presentation always consume the same scaled polygons.
+- Base Reel-In is deliberately reduced to 400 px/s and Burst starts at 40% with
+  80 px minimum useful travel. Spider-specific fly upgrades can improve Reel,
+  Burst share, minimum Burst travel, drive, hitbox, reach, glide, momentum, or
+  Springtail's bounded impact response.
 - Automatic rope take-up retains 85% of natural inward slack by default without
   adding speed. DEBUG can compare it off/on, alter the retained percentage, hide
   the course rails, or make visible rails lethal.
@@ -71,15 +77,19 @@ Burst boost.
   Burst cooldown for a tunable duration. One idempotent run settlement persists
   fly totals and distance milestones; the first two alternate graybox spider
   palettes unlock at 25 flies and 1000 m.
+- Springtail can survive one moderate free-flight rail hit, then must attach an
+  upper web to recharge. Obstacles, high-speed impacts, pull collisions, and a
+  second rail contact remain lethal.
 - A code-drawn view with camera follow, 228-pixel thumb targets,
-  action flashes/haptics, pause/frame-step/slow-motion, and a six-section,
+  action flashes/haptics, pause/frame-step/slow-motion, and an eight-section,
   touch-first DEBUG panel with direct values for Burst/Dive percentages and
   durations, Burst cooldown, Reel shortening speed,
   natural take-up mode/percentage, rail presence/lethality, obstacle sizes,
-  opening web and rescue toggles, middle-hazard start, boost duration, attach
+  pace endpoints and full-speed distance, shaped-route clearance/tight gaps,
+  opening web, rescue, and impact-shell controls, middle-hazard start, boost duration, attach
   catch, aim forgiveness, range, RELEASE/RETARGET behavior,
   deterministic input recording/replay, and diagnostic export.
-- Thirty-four deterministic physics tests (70 runtime contracts total),
+- Thirty-eight deterministic physics tests (74 runtime contracts total),
   including interruptible recovery webs, double-tap fallback, explicit
   release/retarget modes, opening-runway pacing, lower anchor coverage, exact
   pull-distance shares, speed-neutral Reel/take-up shortening, rail policy,

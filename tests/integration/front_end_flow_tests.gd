@@ -82,9 +82,11 @@ static func _test_tutorial_covers_current_mechanics(
 		"fixed rate",
 		"BURST",
 		"double-tap",
-		"half the web distance",
+		"minimum Burst travel",
 		"40% Dive Pull",
-		"warning-colored obstacle",
+		"lethal by default",
+		"Springtail",
+		"upper web",
 		"ends the run",
 		"MENU",
 	]:

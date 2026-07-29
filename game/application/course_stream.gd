@@ -13,6 +13,7 @@ const GENERATE_AHEAD := 4
 const GUIDE_SPACING := 160.0
 const CEILING_THICKNESS := 46.0
 const FLOOR_THICKNESS := 54.0
+const CEILING_Y := 112.0
 const FLOOR_Y := 684.0
 const START_X := 220.0
 
@@ -22,6 +23,9 @@ var _edge_obstacle_scale: float = 0.94
 var _floating_obstacle_scale: float = 0.90
 var _gate_opening_scale: float = 1.12
 var _creator_pattern: Array[StringName] = []
+var _corridor_contours_enabled: bool = true
+var _corridor_clearance_scale: float = 1.0
+var _corridor_tight_gap_scale: float = 1.0
 
 
 func reset(
@@ -30,12 +34,18 @@ func reset(
 	floating_obstacle_scale: float = 0.90,
 	gate_opening_scale: float = 1.12,
 	creator_pattern: Array[StringName] = [],
+	corridor_contours_enabled: bool = true,
+	corridor_clearance_scale: float = 1.0,
+	corridor_tight_gap_scale: float = 1.0,
 ) -> void:
 	_middle_hazard_start_distance = middle_hazard_start_distance
 	_edge_obstacle_scale = edge_obstacle_scale
 	_floating_obstacle_scale = floating_obstacle_scale
 	_gate_opening_scale = gate_opening_scale
 	_creator_pattern = creator_pattern.duplicate()
+	_corridor_contours_enabled = corridor_contours_enabled
+	_corridor_clearance_scale = corridor_clearance_scale
+	_corridor_tight_gap_scale = corridor_tight_gap_scale
 	_geometry = CourseGeometry.new()
 	update_for_position(SimulationWorld.START_POSITION.x)
 
@@ -81,12 +91,19 @@ func _build_range(first: int, last: int) -> CourseGeometry:
 func _append_chunk(result: CourseGeometry, chunk_index: int) -> void:
 	var start_x := float(chunk_index) * CHUNK_WIDTH
 	var pattern := posmod(chunk_index, 8)
-	var ceiling_y := 112.0 + float(posmod(chunk_index * 37, 4)) * 22.0
-	var floor_y := FLOOR_Y - float(posmod(chunk_index * 29, 3)) * 18.0
-	_append_boundary_pattern(result, start_x, ceiling_y, floor_y, pattern)
+	var ceiling_y := CEILING_Y
+	var floor_y := FLOOR_Y
+	var distance_at_chunk := maxf(0.0, start_x - START_X)
+	_append_boundary_pattern(
+		result,
+		start_x,
+		ceiling_y,
+		floor_y,
+		pattern,
+		distance_at_chunk >= _middle_hazard_start_distance,
+	)
 	_append_route_flies(result, start_x, ceiling_y, floor_y, pattern)
 
-	var distance_at_chunk := maxf(0.0, start_x - START_X)
 	if not _creator_pattern.is_empty() and chunk_index >= 1:
 		_append_creator_challenge(
 			result,
@@ -129,29 +146,64 @@ func _append_boundary_pattern(
 	ceiling_y: float,
 	floor_y: float,
 	pattern: int,
+	allow_tight_gap: bool,
 ) -> void:
-	# Each chunk has readable rails, but a deliberate gap on one side creates
-	# occasional freedom to rise or fall outside the usual corridor.
-	match pattern:
-		1, 5:
-			_append_ceiling(result, start_x, 350.0, ceiling_y)
-			_append_ceiling(result, start_x + 550.0, 412.0, ceiling_y + 18.0)
-			_append_floor(result, start_x, CHUNK_WIDTH + 2.0, floor_y)
-		2, 6:
-			_append_ceiling(result, start_x, CHUNK_WIDTH + 2.0, ceiling_y)
-			_append_floor(result, start_x, 410.0, floor_y)
-			_append_floor(result, start_x + 610.0, 352.0, floor_y - 12.0)
-		3:
-			_append_ceiling(result, start_x + 130.0, 832.0, ceiling_y)
-			_append_floor(result, start_x, 520.0, floor_y)
-			_append_floor(result, start_x + 700.0, 262.0, floor_y)
-		7:
-			_append_ceiling(result, start_x, 610.0, ceiling_y)
-			_append_ceiling(result, start_x + 800.0, 162.0, ceiling_y + 26.0)
-			_append_floor(result, start_x + 100.0, 862.0, floor_y)
-		_:
-			_append_ceiling(result, start_x, CHUNK_WIDTH + 2.0, ceiling_y)
-			_append_floor(result, start_x, CHUNK_WIDTH + 2.0, floor_y)
+	# The rails never disappear. Their matching endpoints keep chunk seams
+	# continuous, while local profiles open a readable bypass around most
+	# hazards. Only occasional late patterns narrow both sides into a gap.
+	var ceiling_profile := PackedVector2Array([
+		Vector2(start_x, ceiling_y),
+		Vector2(start_x + 240.0, ceiling_y),
+		Vector2(start_x + 430.0, ceiling_y),
+		Vector2(start_x + 720.0, ceiling_y),
+		Vector2(start_x + CHUNK_WIDTH, ceiling_y),
+	])
+	var floor_profile := PackedVector2Array([
+		Vector2(start_x, floor_y),
+		Vector2(start_x + 240.0, floor_y),
+		Vector2(start_x + 430.0, floor_y),
+		Vector2(start_x + 720.0, floor_y),
+		Vector2(start_x + CHUNK_WIDTH, floor_y),
+	])
+	if _corridor_contours_enabled:
+		var clearance := 60.0 * _corridor_clearance_scale
+		if pattern in [0, 4]:
+			ceiling_profile.set(
+				2, ceiling_profile[2] + Vector2.UP * clearance * 0.72)
+			ceiling_profile.set(
+				3, ceiling_profile[3] + Vector2.UP * clearance)
+		elif pattern in [1, 5]:
+			floor_profile.set(
+				2, floor_profile[2] + Vector2.DOWN * clearance * 0.72)
+			floor_profile.set(
+				3, floor_profile[3] + Vector2.DOWN * clearance)
+		elif pattern in [2, 6]:
+			ceiling_profile.set(
+				2, ceiling_profile[2] + Vector2.UP * clearance * 0.55)
+			ceiling_profile.set(
+				3, ceiling_profile[3] + Vector2.UP * clearance * 0.72)
+			floor_profile.set(
+				2, floor_profile[2] + Vector2.DOWN * clearance * 0.55)
+			floor_profile.set(
+				3, floor_profile[3] + Vector2.DOWN * clearance * 0.72)
+		elif pattern == 3:
+			ceiling_profile.set(
+				2, ceiling_profile[2] + Vector2.UP * clearance * 0.45)
+			floor_profile.set(
+				3, floor_profile[3] + Vector2.DOWN * clearance * 0.45)
+		elif pattern == 7 and allow_tight_gap:
+			var gap := 324.0 * _corridor_tight_gap_scale
+			var centre := 398.0
+			ceiling_profile.set(
+				2, Vector2(ceiling_profile[2].x, centre - gap * 0.5))
+			ceiling_profile.set(
+				3, Vector2(ceiling_profile[3].x, centre - gap * 0.5))
+			floor_profile.set(
+				2, Vector2(floor_profile[2].x, centre + gap * 0.5))
+			floor_profile.set(
+				3, Vector2(floor_profile[3].x, centre + gap * 0.5))
+	_append_ceiling_profile(result, ceiling_profile)
+	_append_floor_profile(result, floor_profile)
 
 
 func _append_opening_edge_detail(
@@ -283,6 +335,42 @@ func _append_floor(
 		Vector2(start_x, top_y + FLOOR_THICKNESS),
 	]))
 	_append_guides(result, start_x, width, top_y)
+
+
+func _append_ceiling_profile(
+	result: CourseGeometry,
+	underside: PackedVector2Array,
+) -> void:
+	var polygon := underside.duplicate()
+	for index in range(underside.size() - 1, -1, -1):
+		polygon.append(underside[index] + Vector2.UP * CEILING_THICKNESS)
+	result.boundary_surfaces.append(polygon)
+	_append_profile_guides(result, underside)
+
+
+func _append_floor_profile(
+	result: CourseGeometry,
+	top: PackedVector2Array,
+) -> void:
+	var polygon := top.duplicate()
+	for index in range(top.size() - 1, -1, -1):
+		polygon.append(top[index] + Vector2.DOWN * FLOOR_THICKNESS)
+	result.boundary_surfaces.append(polygon)
+	_append_profile_guides(result, top)
+
+
+func _append_profile_guides(
+	result: CourseGeometry,
+	profile: PackedVector2Array,
+) -> void:
+	for index in range(profile.size() - 1):
+		var start := profile[index]
+		var finish := profile[index + 1]
+		var segment := finish - start
+		var count := maxi(1, floori(segment.length() / GUIDE_SPACING))
+		for sample in range(count):
+			var progress := (float(sample) + 0.5) / float(count)
+			result.aim_guides.append(start.lerp(finish, progress))
 
 
 func _append_guides(
