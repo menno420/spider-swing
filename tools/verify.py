@@ -58,6 +58,12 @@ TEST_RUNNER = "res://tests/test_runner.gd"
 #: Generous but bounded: a cold import on a CI runner is slow, a hang is a bug.
 IMPORT_TIMEOUT_SECONDS = 600
 RUN_TIMEOUT_SECONDS = 300
+GODOT_FATAL_OUTPUT_MARKERS = (
+    "SCRIPT ERROR:",
+    "Parse Error:",
+    "Compile Error:",
+    "ERROR: Failed to load script",
+)
 
 
 class VerifyError(Exception):
@@ -203,13 +209,24 @@ def run_step(name: str, argv: list[str], timeout: int, cwd: Path) -> bool:
         fail(f"{name} could not start: {exc}")
         return False
 
-    if completed.returncode == 0:
+    combined_output = completed.stdout + "\n" + completed.stderr
+    fatal_markers = [
+        marker for marker in GODOT_FATAL_OUTPUT_MARKERS
+        if marker in combined_output
+    ]
+    if completed.returncode == 0 and not fatal_markers:
         for line in _interesting(completed.stdout):
             print(f"    {line}")
         return True
 
-    fail(f"{name} exited {completed.returncode}")
-    tail = (completed.stdout + "\n" + completed.stderr).strip().splitlines()
+    if completed.returncode == 0:
+        fail(
+            f"{name} printed fatal Godot diagnostics despite exit 0: "
+            f"{', '.join(fatal_markers)}"
+        )
+    else:
+        fail(f"{name} exited {completed.returncode}")
+    tail = combined_output.strip().splitlines()
     for line in tail[-40:]:
         print(f"    {line}", file=sys.stderr)
     return False

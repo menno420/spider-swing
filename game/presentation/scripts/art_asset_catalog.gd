@@ -20,7 +20,7 @@ const ASSETS := {
 	FOREST_HANGING_VINE:
 		"res://assets/runtime/forest-biome/hanging-thorn-vine.png",
 	FOREST_ROOT_GATE:
-		"res://assets/runtime/forest-biome/thorn-root-gate.png",
+		"res://assets/runtime/forest-biome/split-thorn-root-gate.png",
 	CLASSIC_SPIDER:
 		"res://assets/runtime/characters/classic-garden-spider.png",
 	GOLDEN_FLY:

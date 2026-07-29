@@ -187,10 +187,11 @@
 
 ## [D-0014] Compose natural object art over authoritative silhouettes
 
-- status: decided
+- status: superseded
 - date: 2026-07-29
+- superseded-by: D-0015
 - verdict: Finished environment art remains presentation-owned. Ancient Forest
-  may classify existing obstacle polygons into rooted, hanging, or four-piece
+  may classify existing obstacle polygons into rooted, hanging, or grouped
   gate visuals and may decorate the collision-facing rail edge, but the source
   snapshot polygons remain the only collision and target authority. Normal play
   omits graphic outlines; DEBUG restores exact overlays.
@@ -200,3 +201,19 @@
   letting transparent art create an invisible hitbox or letting art changes
   alter route difficulty.
 - provenance: Menno's Phase 0.16 finished-art direction and forest-biome pass
+
+## [D-0015] Make advertised gate routes open in the movement plane
+
+- status: decided
+- date: 2026-07-29
+- verdict: A gate advertised by a horizontal fly trail is two disconnected
+  upper/lower collision arcs. Its Ancient Forest art uses the same two pieces,
+  and each arc is fitted to its own authoritative polygon so the editable
+  clearance remains visually honest.
+- why: A central hole inside a closed 2D ring is not reachable from either side;
+  the player must cross the ring wall before entering it. Menno's Android
+  recording showed the fly trail communicating that impossible route. Route
+  validation now sweeps a Classic-sized clearance circle through the full gate
+  instead of checking only isolated fly points.
+- provenance: Menno's `0.8.0-forest-art-test` device recording and the split-gate
+  regression session

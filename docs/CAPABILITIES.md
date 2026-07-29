@@ -403,3 +403,21 @@ never edit.
   `f045f1ab5b3af460c77b256502c73338fcfbcf8d3d5b0b713acee98228e709e7`.
   `build-info.txt` proves version `0.8.0-forest-art-test`, exact source, dev
   package, and display name `Spider Swing Forest Art (dev)`.
+- 2026-07-29 · capability · `owner-live` · **A fly-advertised split root gate
+  survives deterministic clearance checks and the full Android path** · PR #23
+  `game-quality` run
+  [30463832533](https://github.com/menno420/spider-swing/actions/runs/30463832533)
+  passed all 77 contracts at source
+  `5e11740ccd249b5754114443316fa64207490de5`; the new sweep clears both roots
+  and both rails with a Classic-sized circle at 80%, 112%, and 140% gate
+  openings. Android run
+  [30463832706](https://github.com/menno420/spider-swing/actions/runs/30463832706)
+  produced artifact
+  [`8728752470`](https://github.com/menno420/spider-swing/actions/runs/30463832706/artifacts/8728752470),
+  58,590,815 bytes with digest
+  `sha256:7702d3245b236bb19eccc1a9a3e10a79d613bf0e4b6915c54d3f2a8abd154fd4`.
+  The preceding gameplay-identical artifact was downloaded; its 58,979,706-byte
+  APK passed archive verification with SHA-256
+  `670e78776eb7596a5c81328722ea08be655ed592d637de6df18f236a51ac0527`,
+  and `build-info.txt` proved version `0.8.1-split-gate-test`, exact gameplay
+  source, dev package, and display name `Spider Swing Split Gate (dev)`.

@@ -62,7 +62,7 @@ without a reported regression.
   attachment.
 - Double-tap carries a target in the authoritative command, so Burst works
   atomically even when the first tap has not attached yet. Ceiling pieces,
-  hanging/floor branches, obstacles, and broken-pot gates all resolve through one
+  hanging/floor branches, obstacles, and split root gates all resolve through one
   solid-edge targeting policy.
 - Burst and Dive Pull are interruptible transitions rather than input locks. A
   valid upper-solid tap attaches a recovery web immediately, and a platform
@@ -74,7 +74,7 @@ without a reported regression.
 - The stream keeps a 1000 m learning runway free of detached middle hazards
   and, independently, forbids inward rail movement before 2000 m by default.
   It then combines continuous shaped ceiling/floor rails, leaf clusters, vine
-  forks, hanging seed pods, and broken-pot gates. Rails are lethal by default;
+  forks, hanging seed pods, and split root gates. Rails are lethal by default;
   one explicit route plan coordinates each challenge's rails and fly trail.
   Most patterns open a high, low, or centre bypass; occasional later inward
   passages are rail-only rather than stacked with a floating obstacle. Sparse Burst Frenzy
@@ -114,7 +114,7 @@ without a reported regression.
   collision, targeting, pace, or lethality.
 - `ArtAssetCatalog` adds one cohesive Ancient Forest candidate-production
   grammar over that same geometry: mirrored mossy branch edges, rooted
-  brambles, top-anchored thorn vines, a grouped hollow root gate, a finished
+  brambles, top-anchored thorn vines, a grouped split root gate, a finished
   Classic Garden Spider sprite, and golden forest flies. Obstacle alpha is
   backed by a dark collision shadow; normal play has no graphic rail or hazard
   outline, while DEBUG restores exact collision overlays.
@@ -123,12 +123,12 @@ without a reported regression.
 **Verification**
 
 - `python3 tools/verify.py` — architecture self-test and scan pass locally.
-  PR #22 `game-quality` run
-  [30458975297](https://github.com/menno420/spider-swing/actions/runs/30458975297)
-  supplied Godot 4.7.1 and passed import, boot, and the complete 76-check
-  headless suite at gameplay source
-  `8aaa517823239a3d80db94d14c72eab12ad0219d`.
-- `tests/test_runner.gd` — 76 declared checks: thirty-nine
+  PR #23 `game-quality` run
+  [30463832533](https://github.com/menno420/spider-swing/actions/runs/30463832533)
+  supplied Godot 4.7.1 and passed import, boot, and the complete 77-check
+  headless suite at source
+  `5e11740ccd249b5754114443316fa64207490de5`.
+- `tests/test_runner.gd` — 77 declared checks: forty
   deterministic physics, sixteen GUI-owned mobile HUD, eleven front-end
   navigation/settings/progression, plus bootstrap and exact build-version
   contracts. Physics covers exact 40%/40% pull shares,
@@ -138,7 +138,9 @@ without a reported regression.
   paced bounded streaming, scaled authoritative geometry, guided opening,
   rescue, spider profiles/glide, creator-pattern bounds, a 5000 m pacing curve,
   continuous contoured rails, upgradeable minimum Burst travel, and bounded
-  Springtail impacts. The front-end group
+  Springtail impacts. A route sweep proves a Classic-sized spider clears both
+  roots and both rails across the full split gate at every supported Creator
+  opening. The front-end group
   performs real filesystem settings and progression round-trips plus settlement
   idempotency, profile upgrades, and creator edits. The trajectory
   fixture produces the same final state when driven through simulated 30, 60,
@@ -204,6 +206,13 @@ without a reported regression.
   `402997b6362e46c9002aa6001c7b3f9f28cbb16a`. The new GUI-owned contract
   loads all four 384×384 environment tiles, drives each large LOOK card, and
   proves that theme selection cannot mutate the authoritative course geometry.
+- PR #23 `game-quality` run
+  [30463832533](https://github.com/menno420/spider-swing/actions/runs/30463832533)
+  passes all 77 runtime contracts on Godot 4.7.1 at source
+  `5e11740ccd249b5754114443316fa64207490de5`. The added deterministic contract
+  sweeps the complete fly-advertised route through the split root gate at 80%,
+  112%, and 140% openings. The host verifier also rejects fatal Godot script
+  diagnostics even when the engine process exits 0.
 - `substrate-gate` — kit-owned. A born-red session card deliberately holds a PR
   until close-out; it must be green on the completed card before merge.
 - `android-debug` — **green on `main`, APK proven.** Run #1 produced artifact
@@ -323,6 +332,18 @@ without a reported regression.
   `0.8.0-forest-art-test`, source
   `8aaa517823239a3d80db94d14c72eab12ad0219d`, dev package, and display name
   `Spider Swing Forest Art (dev)`.
+- PR #23 `android-debug` run
+  [30463832706](https://github.com/menno420/spider-swing/actions/runs/30463832706)
+  produced downloadable artifact
+  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30463832706/artifacts/8728752470)
+  ID `8728752470`, 58,590,815 bytes, digest
+  `sha256:7702d3245b236bb19eccc1a9a3e10a79d613bf0e4b6915c54d3f2a8abd154fd4`.
+  The preceding gameplay-identical run `30463570678` was downloaded; its
+  58,979,706-byte APK passed archive verification with SHA-256
+  `670e78776eb7596a5c81328722ea08be655ed592d637de6df18f236a51ac0527`.
+  `build-info.txt` proves version `0.8.1-split-gate-test`, source
+  `60bb5e83fb747f9cb6418218db4db2cd03c3fa26`, dev package, and display name
+  `Spider Swing Split Gate (dev)`.
 - **Dependabot** — live. Its first run opened two bumps against the kit-owned
   `substrate-gate.yml`; both were closed because `adopt`/`upgrade` regenerates that
   file. The rule is documented in `.github/dependabot.yml`: kit-owned-only bumps get
@@ -356,12 +377,12 @@ without a reported regression.
 
 ## In flight
 
-Phase 0.16 is verified in PR #22: Ancient Forest now separates boundary,
-obstacle, character, and collectible art instead of repeating one material
-everywhere, while all 76 contracts and the Android export pass on the exact
-source. The maximum-speed ramp still spans 5000 m, no rail moves inward before
-2000 m by default, and later inward passages remain rail-only. Phase 1 remains
-blocked on owner device review of both feel and art.
+Phase 0.17 is verified in PR #23: the fly-advertised Ancient Forest root gate is
+two disconnected upper/lower arcs with matching art instead of an unreachable
+hole inside a closed ring. All 77 contracts and the Android export pass. The
+maximum-speed ramp still spans 5000 m, no rail moves inward before 2000 m by
+default, and later inward passages remain rail-only. Phase 1 remains blocked on
+owner device review of both feel and art.
 
 ## Recently shipped (newest first)
 

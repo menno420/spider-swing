@@ -328,7 +328,7 @@ func _append_middle_challenge(
 				105.0 * _floating_obstacle_scale,
 				165.0 * _floating_obstacle_scale)
 		3:
-			_append_broken_pot_gate(result, start_x + 690.0, 370.0)
+			_append_split_root_gate(result, start_x + 690.0, 370.0)
 		4:
 			_append_vine_fork(
 				result, start_x + 650.0, floor_y,
@@ -347,7 +347,7 @@ func _append_middle_challenge(
 				result, start_x + 815.0, ceiling_y, true,
 				_floating_obstacle_scale)
 		_:
-			_append_broken_pot_gate(result, start_x + 700.0, 350.0)
+			_append_split_root_gate(result, start_x + 700.0, 350.0)
 
 
 func _append_creator_challenge(
@@ -373,7 +373,7 @@ func _append_creator_challenge(
 				235.0 * _floating_obstacle_scale,
 				195.0 * _floating_obstacle_scale)
 		&"gate":
-			_append_broken_pot_gate(result, start_x + 690.0, 370.0)
+			_append_split_root_gate(result, start_x + 690.0, 370.0)
 		_:
 			pass
 
@@ -540,44 +540,36 @@ func _append_hanging_seed_pod(
 	]))
 
 
-func _append_broken_pot_gate(
+func _append_split_root_gate(
 	result: CourseGeometry,
 	center_x: float,
 	center_y: float,
 ) -> void:
 	var outer_x := 105.0 * _floating_obstacle_scale
 	var outer_y := 126.0 * _floating_obstacle_scale
-	var opening_x := 48.0 * _floating_obstacle_scale * _gate_opening_scale
+	var inner_x := 48.0 * _floating_obstacle_scale
 	var opening_y := 57.0 * _floating_obstacle_scale * _gate_opening_scale
 	var left := center_x - outer_x
 	var right := center_x + outer_x
 	var top := center_y - outer_y
 	var bottom := center_y + outer_y
-	var opening_left := center_x - opening_x
-	var opening_right := center_x + opening_x
+	var inner_left := center_x - inner_x
+	var inner_right := center_x + inner_x
 	var opening_top := center_y - opening_y
 	var opening_bottom := center_y + opening_y
+	# A side-scrolling route cannot enter a closed ring: its left or right wall
+	# must be crossed before the nominal centre hole is reachable. The gate is
+	# therefore authored as two disconnected arcs. The same opening_y value
+	# controls their collision edges and the fly route's real clearance.
 	result.obstacles.append(PackedVector2Array([
 		Vector2(left + 30.0, top),
 		Vector2(right - 24.0, top + 12.0),
-		Vector2(opening_right, opening_top),
-		Vector2(opening_left, opening_top),
+		Vector2(inner_right, opening_top),
+		Vector2(inner_left, opening_top),
 	]))
 	result.obstacles.append(PackedVector2Array([
-		Vector2(left, top + 38.0),
-		Vector2(opening_left, opening_top),
-		Vector2(opening_left, opening_bottom),
-		Vector2(left + 22.0, bottom - 20.0),
-	]))
-	result.obstacles.append(PackedVector2Array([
-		Vector2(opening_right, opening_top),
-		Vector2(right, top + 46.0),
-		Vector2(right - 16.0, bottom - 34.0),
-		Vector2(opening_right, opening_bottom),
-	]))
-	result.obstacles.append(PackedVector2Array([
-		Vector2(opening_left, opening_bottom),
-		Vector2(opening_right, opening_bottom),
+		Vector2(inner_left, opening_bottom),
+		Vector2(inner_right, opening_bottom),
 		Vector2(right - 32.0, bottom),
 		Vector2(left + 38.0, bottom - 10.0),
 	]))
