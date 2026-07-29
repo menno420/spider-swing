@@ -157,3 +157,17 @@
   lethal, keeping the mechanic skillful and explicitly limited.
 - provenance: Menno's Phase 0.13 survivability direction, Godot 4.7 Vector2
   bounce contract, PR #19
+
+## [D-0012] Give each generated challenge one obstacle-aware route
+
+- status: decided
+- date: 2026-07-29
+- verdict: The first 2000 m forbid inward rail movement by default. Each
+  generated challenge has one route intent shared by rail shaping and its fly
+  trail; later inward passages are rail-only and never stack their reduced
+  corridor with a floating obstacle.
+- why: Device recordings showed a deterministic pot gate becoming effectively
+  impassable when an independently selected rail pattern moved both lethal
+  boundaries toward it. A shared route contract keeps procedural composition
+  fair without removing deliberate late narrow passages or their DEBUG tuning.
+- provenance: Menno's Phase 0.14 corridor playtests and direction, PR #20

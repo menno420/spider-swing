@@ -207,6 +207,7 @@ func _after_tuning_change(parameter: StringName) -> void:
 		&"corridor_contours",
 		&"route_clearance",
 		&"tight_gap_size",
+		&"tight_corridor_m",
 	]:
 		_reset_course_stream()
 		_world.set_course_geometry(_course_stream.geometry())
@@ -293,6 +294,8 @@ func export_diagnostic() -> void:
 					_config.corridor_clearance_scale,
 				"corridor_tight_gap_scale":
 					_config.corridor_tight_gap_scale,
+				"tight_corridor_start_distance":
+					_config.tight_corridor_start_distance,
 				"middle_hazard_start_distance":
 					_config.middle_hazard_start_distance,
 				"burst_frenzy_duration": _config.burst_frenzy_duration,
@@ -556,6 +559,7 @@ func _reset_course_stream() -> void:
 		_config.corridor_contours_enabled,
 		_config.corridor_clearance_scale,
 		_config.corridor_tight_gap_scale,
+		_config.tight_corridor_start_distance,
 	)
 
 

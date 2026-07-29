@@ -15,8 +15,11 @@ Coordinates the run. Owns lifecycle and sequencing; does not own physics truth.
   envelope, history, and seed. Never improvises an unvalidated lethal layout; falls
   back to a safe recovery chunk (GDD § 9.2).
 - **Course Stream** — currently derives a bounded deterministic graybox ceiling
-  and obstacle window and can substitute a bounded local creator pattern. Phase
-  1 extends this seam with selected authored chunks and pooling.
+  and obstacle window and can substitute a bounded local creator pattern. One
+  explicit route plan coordinates boundary shaping, obstacle placement, and fly
+  guidance; the first 2000 m forbid inward rails by default, and later inward
+  passages remain rail-only. Phase 1 extends this seam with selected authored
+  chunks and pooling.
 - **Effect State** — applies, refreshes, expires, and reports power-ups. Refresh
   does not stack strength unless explicitly specified (GDD § 11.3).
 - **Score and Settlement** — tracks distance and run stats, creates one idempotent

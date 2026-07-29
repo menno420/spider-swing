@@ -16,7 +16,7 @@ The product *is* the swinging. Everything else exists to support it.
 > `com.menno420.spiderswing.dev` are all development identifiers and are all
 > expected to change.
 
-## Current phase: Phase 0.13 gradual-progression and impact-recovery test
+## Current phase: Phase 0.14 fair-corridor routing test
 
 **The first playable traversal test is implemented.** The project opens on a
 player-facing Home screen with Play, Garage, Shop, a six-step Tutorial, Course
@@ -55,8 +55,10 @@ Burst boost.
 - Three named tuning candidates: `balanced_candidate`, `weighty_candidate`, and
   `agile_candidate`.
 - A deterministic bounded course stream with a 1000 m learning runway before
-  detached middle hazards, continuous lethal-by-default ceiling/floor rails
-  that reshape into open bypasses and occasional late tight gaps, leaf clusters,
+  detached middle hazards and a separate 2000 m default protection period in
+  which the lethal ceiling/floor rails never move inward. One shared route plan
+  shapes the rails and fly trail around each challenge; occasional later tight
+  gaps are rail-only rather than stacked with a floating blocker. Leaf clusters,
   vine forks, hanging seed pods, broken-pot gates, fly route arcs, and lower
   anchors before later challenges. Base Burst crosses 40% of the
   selected web distance; downward taps make a one-shot 40% Dive Pull. Both are
@@ -85,11 +87,12 @@ Burst boost.
   touch-first DEBUG panel with direct values for Burst/Dive percentages and
   durations, Burst cooldown, Reel shortening speed,
   natural take-up mode/percentage, rail presence/lethality, obstacle sizes,
-  pace endpoints and full-speed distance, shaped-route clearance/tight gaps,
+  pace endpoints and full-speed distance, shaped-route clearance, the
+  inward-rail start distance, and tight gaps,
   opening web, rescue, and impact-shell controls, middle-hazard start, boost duration, attach
   catch, aim forgiveness, range, RELEASE/RETARGET behavior,
   deterministic input recording/replay, and diagnostic export.
-- Thirty-eight deterministic physics tests (74 runtime contracts total),
+- Thirty-nine deterministic physics tests (75 runtime contracts total),
   including interruptible recovery webs, double-tap fallback, explicit
   release/retarget modes, opening-runway pacing, lower anchor coverage, exact
   pull-distance shares, speed-neutral Reel/take-up shortening, rail policy,

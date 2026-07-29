@@ -71,11 +71,13 @@ without a reported regression.
 - Accepted Reel, Burst, and Dive Pull actions emit authoritative events.
   Presentation renders short directional flashes and the input adapter supplies
   distinct handheld haptics; unavailable actions do not fake success feedback.
-- The stream keeps a 1000 m learning runway free of detached middle hazards,
-  then combines continuous shaped ceiling/floor rails, leaf clusters, vine
+- The stream keeps a 1000 m learning runway free of detached middle hazards
+  and, independently, forbids inward rail movement before 2000 m by default.
+  It then combines continuous shaped ceiling/floor rails, leaf clusters, vine
   forks, hanging seed pods, and broken-pot gates. Rails are lethal by default;
-  most patterns open a high or low bypass and occasional late patterns close
-  into a smaller gap. Fly arcs mark suggested routes; sparse Burst Frenzy
+  one explicit route plan coordinates each challenge's rails and fly trail.
+  Most patterns open a high, low, or centre bypass; occasional later inward
+  passages are rail-only rather than stacked with a floating obstacle. Sparse Burst Frenzy
   pickups temporarily suppress cooldown. This remains prototype
   instrumentation, not an authored or approved Phase 1 chunk pack.
 - The default authoritative polygon scales are 94% for rail-grown obstacles and
@@ -99,8 +101,8 @@ without a reported regression.
   aim forgiveness, attach catch, Reel shortening speed, automatic take-up and
   retained percentage, Burst cooldown, Burst/Dive percentages and durations,
   rope damping, rail presence/lethality, edge/floating/gate geometry sizes,
-  starting/maximum speed and exact full-speed distance, shaped-route clearance
-  and tight-gap size, guided opening, one-run rescue, Springtail impact
+  starting/maximum speed and exact full-speed distance, shaped-route clearance,
+  the inward-rail start distance and tight-gap size, guided opening, one-run rescue, Springtail impact
   response, the middle-hazard start, and boost duration.
 - Settings is a readable vertical scroll surface with larger type and 58–68-pixel
   controls, verified by runtime contracts and designed around the owner's
@@ -178,6 +180,11 @@ without a reported regression.
   minimum Burst travel, three five-level paths for all five spiders, and
   Springtail's spent/rearmed moderate-impact shell while retaining lethal
   obstacles, hard impacts, and pull collisions.
+- Local Phase 0.14 verification passes all 75 runtime contracts on Godot 4.7.1.
+  The new deterministic contract proves that no generated rail moves inward
+  before 2000 m, route flies clear the authoritative obstacle polygons, and a
+  later inward passage contains no floating blocker. PR #20 CI evidence is
+  recorded during session close-out.
 - `substrate-gate` — kit-owned. A born-red session card deliberately holds a PR
   until close-out; it must be green on the completed card before merge.
 - `android-debug` — **green on `main`, APK proven.** Run #1 produced artifact
@@ -308,6 +315,10 @@ choosing or rejecting a movement baseline after the verified build is tested.
 
 ## Recently shipped (newest first)
 
+- **2026-07-29 — Fair early corridor routing (PR #20 in progress).** Gives each
+  generated challenge one route plan, protects the first 2000 m from inward
+  rail movement by default, and reserves later narrow passages for rail-only
+  challenges. The playtest build is `0.6.1-fair-corridor-test`.
 - **2026-07-29 — Gradual progression and bounded rail recovery (PR #19).**
   Moves maximum speed to an exact smooth 5000 m default ramp, makes shaped
   rails lethal by default, reduces Classic Reel/Burst, adds minimum Burst
