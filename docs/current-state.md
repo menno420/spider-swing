@@ -228,6 +228,12 @@ without a reported regression.
   sweeps three useful steering lanes across the entire rail-grown root passage,
   while the expanded mobile contract proves collision outlines and unattached
   web guides both start hidden and toggle independently.
+- PR #25 `game-quality` run
+  [30474513238](https://github.com/menno420/spider-swing/actions/runs/30474513238)
+  passes all 79 runtime contracts on Godot 4.7.1 at source
+  `e01113d1a8d8f919125fd1630a42dad421589007`. The added presentation contract
+  proves finished Ancient Forest obstacles request no geometry backing and the
+  legacy dark-shadow draw path is absent.
 - `substrate-gate` — kit-owned. A born-red session card deliberately holds a PR
   until close-out; it must be green on the completed card before merge.
 - `android-debug` — **green on `main`, APK proven.** Run #1 produced artifact
@@ -372,6 +378,18 @@ without a reported regression.
   `assets/project.binary`. `build-info.txt` proves version
   `0.8.2-wide-passage-test`, exact source, dev package, and display name
   `Spider Swing Wide Passage (dev)`.
+- PR #25 `android-debug` run
+  [30474512943](https://github.com/menno420/spider-swing/actions/runs/30474512943)
+  produced downloadable artifact
+  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30474512943/artifacts/8733049254)
+  ID `8733049254`, 58,597,102 bytes, digest
+  `sha256:26c3a7b81986bdd2cff2c293c6cf8a4a48d21f318b7ddc79b044c430ea2c2885`.
+  The downloaded ZIP and APK passed archive validation; the APK has SHA-256
+  `991c8e8d33be956ee4908c981f356d8a0653c47c875b17229a1680e92943d311`
+  and contains `classes.dex`, `AndroidManifest.xml`, and
+  `assets/project.binary`. `build-info.txt` proves version
+  `0.8.3-clean-forest-test`, exact source, dev package, and display name
+  `Spider Swing Clean Forest (dev)`.
 - **Dependabot** — live. Its first run opened two bumps against the kit-owned
   `substrate-gate.yml`; both were closed because `adopt`/`upgrade` regenerates that
   file. The rule is documented in `.github/dependabot.yml`: kit-owned-only bumps get
@@ -411,7 +429,8 @@ polygon underneath bramble, vine, and root-gate sprites. Finished obstacle art
 is sprite-only in normal play, with textured geometry retained as a missing-asset
 fallback and exact polygons retained for the opt-in collision overlay.
 Collision outlines and web-target guides still begin off and have independent
-DEBUG → OVERLAYS controls. All 79 local contracts pass. The maximum-speed ramp
+DEBUG → OVERLAYS controls. All 79 local and PR `game-quality` contracts pass,
+and the clean-forest Android artifact is verified. The maximum-speed ramp
 still spans 5000 m, no rail moves inward before 2000 m by default, and later
 inward passages remain rail-only. Phase 1 remains blocked on owner device review
 of both feel and art.
