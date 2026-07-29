@@ -43,8 +43,9 @@ graybox course, collectible fly routes, and one temporary Burst boost.
   detached middle hazards, mostly continuous ceiling/floor rails with deliberate
   gaps, leaf clusters, vine forks, hanging seed pods, broken-pot gates, fly route
   arcs, and lower anchors before later challenges. Burst crosses 50% of the
-  selected web distance; downward taps make a one-shot 40% Dive Pull; both are
-  collision-checked and share a cooldown. Either pull can be cancelled
+  selected web distance; downward taps make a one-shot 40% Dive Pull. Both are
+  collision-checked, but only Burst uses a timer. Dive rearms after the next
+  successful upper/obstacle web attachment. Either pull can be cancelled
   immediately by a recovery-web tap.
 - Automatic rope take-up retains 85% of natural inward slack by default without
   adding speed. DEBUG can compare it off/on, alter the retained percentage, hide
@@ -54,12 +55,13 @@ graybox course, collectible fly routes, and one temporary Burst boost.
   fly totals and distance milestones; the first two alternate graybox spider
   palettes unlock at 25 flies and 1000 m.
 - A code-drawn view with camera follow, 228-pixel thumb targets,
-  action flashes/haptics, pause/frame-step/slow-motion, runtime controls for
-  Burst/Dive percentages and durations, pull cooldown, Reel shortening speed,
+  action flashes/haptics, pause/frame-step/slow-motion, and a five-section,
+  touch-first DEBUG panel with direct values for Burst/Dive percentages and
+  durations, Burst cooldown, Reel shortening speed,
   natural take-up mode/percentage, rail presence/lethality, middle-hazard start,
   boost duration, attach catch, aim forgiveness, range, RELEASE/RETARGET behavior,
   deterministic input recording/replay, and diagnostic export.
-- Twenty-eight deterministic physics tests (59 runtime contracts total),
+- Twenty-nine deterministic physics tests (62 runtime contracts total),
   including interruptible recovery webs, double-tap fallback, explicit
   release/retarget modes, opening-runway pacing, lower anchor coverage, exact
   pull-distance shares, speed-neutral Reel/take-up shortening, rail policy,

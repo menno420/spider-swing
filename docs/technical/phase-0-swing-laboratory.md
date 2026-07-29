@@ -71,9 +71,12 @@ never locks ordinary web control.
 
 A target below the spider becomes Dive Pull instead of a rope. It crosses 40%
 of the starting distance over 0.16 seconds, retains 50% of tangential velocity,
-ends with a 280 px/s radial exit, and never remains attached. Burst and Dive Pull
-share the 1.65-second cooldown. Both paths are sampled against lethal polygon
-geometry so a strong pull used at the wrong time can still cause a collision.
+ends with a 280 px/s radial exit, and never remains attached. Dive Pull has no
+timer. Using it spends one Dive charge; the next successful normal web
+attachment above the spider, including an obstacle attachment, immediately
+rearms it. Time passing and Burst Frenzy do not. Anchor Burst alone uses the
+1.65-second cooldown. Both paths are sampled against lethal polygon geometry so
+a strong pull used at the wrong time can still cause a collision.
 
 Accepted Reel, Burst, and Dive Pull actions emit domain events. Presentation
 turns those into short rope/button flashes and the input adapter supplies
@@ -106,45 +109,50 @@ available Dive in green or red. The palette is still diagnostic; moving hazards,
 production balancing, and final object art remain deferred.
 
 Fly and Burst Frenzy pickups are collected with swept tests, so a fast spider
-cannot tunnel through them. Burst Frenzy suppresses cooldown for four configurable
-seconds. Death creates one idempotent settlement through `ProgressionService`;
+cannot tunnel through them. Burst Frenzy suppresses Anchor Burst cooldown for
+four configurable seconds; it does not grant extra Dive Pull charges. Death
+creates one idempotent settlement through `ProgressionService`;
 `SaveRepository` atomically persists fly totals and the 25-fly/1000-m cosmetic
 milestones. This proves ownership and save flow without inventing the final
 economy or upgrade prices.
 
 ## Debug tuning
 
-The debug panel cycles through all live feel values with `<` and `>` and changes
-the selected value with `-` and `+`.
+The touch-first debug panel is split into **Movement**, **Rope**, **Pulls**,
+**Course**, and **Tools**. Every section shows at most six large setting cards.
+Each card uses a plain name, one-sentence description, direct comparison values,
+and 52-pixel `−` / `+` targets. Presets are named instead of numbered. This
+avoids searching through a 19-item carousel during device playtests.
 
 | Debug value | Meaning | Step / range |
 | --- | --- | --- |
-| `GRAV` | downward acceleration | 40 / 400–1800 |
-| `DRIVE` | acceleration toward the distance-based forward target speed | 25 / 100–1000 |
-| `RANGE` | maximum resolved web distance | 50 / 500–1400 |
-| `TAP` | attached upper-solid tap behavior | `RELEASE` / `RETARGET` |
-| `AIM` | accepted distance from a tap to the nearest solid edge | 10 / 80–320 px |
-| `CATCH` | rope-length reduction on normal attach | 1% / 0–20% |
-| `REEL` | rope shortening speed | 20 / 80–720 px/s |
-| `AUTO` | retain natural inward slack | off / on |
-| `KEEP` | share of natural slack retained | 5% / 0–100% |
-| `BURST` | Burst share of starting anchor distance | 5% / 10–80% |
-| `B TIME` | time taken to cross the Burst share | 0.02 / 0.08–0.40 s |
-| `P CD` | shared Burst/Dive cooldown | 0.10 / 0.30–2.50 s |
-| `DIVE` | Dive Pull share of starting anchor distance | 5% / 5–50% |
-| `D TIME` | time taken to cross the Dive share | 0.02 / 0.08–0.32 s |
-| `DAMP` | rope constraint damping | 0.01 / 0–0.30 |
-| `RAILS` | render/target ceiling and floor rails | off / on |
-| `RAILS SAFE/LETHAL` | rail contact policy | safe / lethal |
-| `MID @` | first detached middle-hazard distance | 100 m / 250–2000 m |
-| `BOOST` | Burst Frenzy duration | 0.5 / 1–10 s |
+| `Gravity` | downward acceleration | 40 / 400–1800 |
+| `Forward drive` | acceleration toward the distance-based forward target speed | 25 / 100–1000 |
+| `Maximum web reach` | maximum resolved web distance | 50 / 500–1400 px |
+| `Tap retargets web` | attached upper-solid tap behavior | off / on |
+| `Aim forgiveness` | accepted distance from a tap to the nearest solid edge | 10 / 80–320 px |
+| `Attach catch-up` | rope-length reduction on normal attach | 1% / 0–20% |
+| `Reel-In speed` | rope shortening speed | 20 / 80–720 px/s |
+| `Keep shortened rope` | retain natural inward slack | off / on |
+| `Shortening retained` | share of natural slack retained | 5% / 0–100% |
+| `Anchor Burst distance` | Burst share of starting anchor distance | 5% / 10–80% |
+| `Anchor Burst time` | time taken to cross the Burst share | 0.02 / 0.08–0.40 s |
+| `Burst cooldown` | time limit for Anchor Burst only | 0.10 / 0.30–2.50 s |
+| `Downward pull distance` | Dive share of starting anchor distance | 5% / 5–60% |
+| `Downward pull time` | time taken to cross the Dive share | 0.02 / 0.08–0.32 s |
+| `Rope damping` | rope constraint damping | 0.01 / 0–0.30 |
+| `Ceiling and floor` | render/target continuous course rails | off / on |
+| `Lethal ceiling and floor` | rail contact policy | off / on |
+| `Floating hazards begin` | first detached middle-hazard distance | 100 m / 250–2000 m |
+| `Burst Frenzy time` | Anchor Burst cooldown suppression | 0.5 / 1–10 s |
 
 `DRIVE` can be subtle while the spider is already at or above its current target
 speed: it accelerates forward only toward that target, while the target itself
 increases with distance. It is not a free velocity multiplier.
 
-Diagnostics include active pull kind, pull cooldown, retained stream chunks,
-record/replay, and JSON export. Runtime changes reset when the app restarts.
+Diagnostics include active pull kind, separate Burst cooldown and Dive-ready
+state, retained stream chunks, record/replay, and JSON export. Runtime changes
+reset when the app restarts.
 
 These controls are also the measurement surface for possible future upgrades.
 Reel rate, Burst share, cooldown, and later glide response can become validated
@@ -162,6 +170,8 @@ separate product decision and are intentionally not inferred from DEBUG values.
 - arbitrary solid-edge attachment, larger aim forgiveness, and extended range;
 - detached targeted Burst, exact 50% traversal, deterministic exit, and cooldown;
 - active-pull interruption plus detached cooldown double-tap recovery;
+- Dive use during Burst cooldown, contact-only Dive rearm, and clear unavailable
+  feedback before rearm;
 - default manual release and optional atomic RETARGET behavior;
 - one-shot downward Dive Pull with exact 40% traversal and no persistent rope;
 - obstacle anchoring, polygon collision, and swept pull collision checks;
@@ -177,7 +187,7 @@ separate product decision and are intentionally not inferred from DEBUG values.
 
 ## Owner device playtest
 
-Install `0.4.0-gameplay-foundation-test` after uninstalling the previous ephemerally
+Install `0.4.1-debug-lab-dive-reset-test` after uninstalling the previous ephemerally
 signed dev app, then check:
 
 1. from `RUN ENDED`, tap once to restart and confirm that the same physical tap
@@ -198,20 +208,22 @@ signed dev app, then check:
    without the previous runaway speed gain;
 9. compare several starting web lengths and confirm Burst always covers roughly
    half the visible rope distance;
-10. use lower rail targets before hazards and compare 35%, 40%, and 45% Dive Pull;
-    confirm each redirects the spider without leaving a rope attached;
-11. deliberately Burst toward a badly timed obstacle and confirm the control
-   remains powerful but unsafe;
-12. use DEBUG to change range, cooldown, Burst %, Dive %, both durations, and Reel
-   speed, then name the closest values;
-13. compare `AUTO` off/on and several `KEEP` percentages; when the spider moves
+10. use a lower rail target twice without attaching above between attempts; the
+    second must say that an upper web is required, not display a timer;
+11. attach a ceiling or upper obstacle, then immediately Dive during an active
+    Burst cooldown; confirm the downward pull works and spends its charge;
+12. deliberately Burst toward a badly timed obstacle and confirm the control
+    remains powerful but unsafe;
+13. use each DEBUG section to change range, Burst cooldown, Burst %, Dive %, both
+    durations, and Reel speed; confirm no setting requires carousel searching;
+14. compare `Keep shortened rope` off/on and several retained percentages; when the spider moves
     toward the anchor, the shorter web should mostly remain short without a speed
     spike;
-14. compare rails off, rails safe, and rails lethal; verify the deliberate gaps
+15. compare rails off, rails safe, and rails lethal; verify the deliberate gaps
     still permit occasional travel above/below the ordinary corridor;
-15. confirm no detached middle hazard appears before roughly 1000 m, then judge
+16. confirm no detached middle hazard appears before roughly 1000 m, then judge
     whether later leaf, vine, seed-pod, and pot patterns remain readable;
-16. follow fly arcs, collect Burst Frenzy, use multiple Bursts before it expires,
-    and confirm the next run retains totals/unlocks.
+17. follow fly arcs, collect Burst Frenzy, use multiple Bursts before it expires,
+    and confirm it does not bypass the upper-web requirement for another Dive.
 
 Phase 1 remains gated on an explicitly approved movement baseline.

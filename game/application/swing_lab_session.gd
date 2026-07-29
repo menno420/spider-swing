@@ -12,7 +12,7 @@ signal settlement_created(settlement: RunSettlement)
 
 const FIXED_DELTA := 1.0 / 60.0
 const COURSE_SEED := 1337
-const TUNING_PARAMETERS := LabLayout.TUNING_PARAMETERS
+static var TUNING_PARAMETERS: Array[StringName] = TuningCatalog.parameter_ids()
 
 var _config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 var _world := SimulationWorld.new()
@@ -27,6 +27,7 @@ var _debug_visible: bool = false
 var _debug_paused: bool = false
 var _slow_motion: bool = false
 var _slow_motion_phase: int = 0
+var _debug_category_index: int = 0
 var _selected_parameter_index: int = 0
 var _recording: bool = false
 var _recorded_commands: Array[Dictionary] = []
@@ -152,13 +153,47 @@ func select_tuning_parameter(direction: int) -> void:
 func adjust_selected_parameter(direction: float) -> void:
 	var parameter: StringName = TUNING_PARAMETERS[_selected_parameter_index]
 	_config.adjust(parameter, direction)
+	_after_tuning_change(parameter)
+	_publish_snapshot()
+
+
+func select_tuning_category(index: int) -> void:
+	_debug_category_index = clampi(
+		index,
+		0,
+		TuningCatalog.category_count() - 1,
+	)
+	_publish_snapshot()
+
+
+func adjust_tuning_parameter(
+	parameter: StringName,
+	direction: float,
+) -> void:
+	if parameter not in TUNING_PARAMETERS:
+		return
+	_selected_parameter_index = TUNING_PARAMETERS.find(parameter)
+	_config.adjust(parameter, direction)
+	_after_tuning_change(parameter)
+	_publish_snapshot()
+
+
+func set_tuning_parameter(parameter: StringName, value: float) -> void:
+	if parameter not in TUNING_PARAMETERS:
+		return
+	_selected_parameter_index = TUNING_PARAMETERS.find(parameter)
+	_config.set_tuning_value(parameter, value)
+	_after_tuning_change(parameter)
+	_publish_snapshot()
+
+
+func _after_tuning_change(parameter: StringName) -> void:
 	if parameter == &"mid_hazard_m":
 		_course_stream.reset(_config.middle_hazard_start_distance)
 		_world.set_course_geometry(_course_stream.geometry())
 	elif parameter == &"course_rails" and \
 			not _config.course_boundaries_enabled:
 		_world.web.release()
-	_publish_snapshot()
 
 
 func toggle_recording() -> void:
@@ -208,6 +243,7 @@ func export_diagnostic() -> void:
 		"rope_length": _world.web.rope_length,
 		"reel_energy": _world.web.reel_energy,
 		"burst_cooldown": _world.burst_cooldown_remaining,
+		"dive_ready": _world.dive_ready,
 		"pull": {
 			"active": _world.pull_active,
 			"kind": str(_world.pull_kind),
@@ -371,6 +407,7 @@ func _make_snapshot() -> SimulationSnapshot:
 	snapshot.reel_lockout = _world.web.reel_lockout_remaining
 	snapshot.burst_cooldown = _world.burst_cooldown_remaining
 	snapshot.burst_cooldown_capacity = _config.burst_cooldown
+	snapshot.dive_ready = _world.dive_ready
 	snapshot.pull_active = _world.pull_active
 	snapshot.pull_kind = _world.pull_kind
 	snapshot.pull_anchor = _world.pull_anchor
@@ -407,6 +444,9 @@ func _make_snapshot() -> SimulationSnapshot:
 	snapshot.slow_motion = _slow_motion
 	snapshot.recording = _recording
 	snapshot.replaying = _replaying
+	snapshot.debug_category_index = _debug_category_index
+	for parameter: StringName in TUNING_PARAMETERS:
+		snapshot.tuning_values[parameter] = _config.value_for(parameter)
 	snapshot.selected_parameter = TUNING_PARAMETERS[_selected_parameter_index]
 	snapshot.selected_parameter_value = _config.value_for(snapshot.selected_parameter)
 	snapshot.seed = COURSE_SEED
@@ -416,7 +456,7 @@ func _make_snapshot() -> SimulationSnapshot:
 
 
 func _populate_dive_preview(snapshot: SimulationSnapshot) -> void:
-	if not _config.course_boundaries_enabled:
+	if not _config.course_boundaries_enabled or not _world.dive_ready:
 		return
 	var best_distance := INF
 	var best_anchor := Vector2.ZERO

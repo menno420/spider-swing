@@ -16,6 +16,8 @@ static func run() -> Dictionary:
 	passed += _test_device_tap_keeps_recovery_web_attached(failures)
 	passed += _test_menu_button_returns_without_world_tap(failures)
 	passed += _test_debug_button_and_panel_controls(failures)
+	passed += _test_debug_controls_are_large_and_direct(failures)
+	passed += _test_debug_catalog_uses_plain_language(failures)
 	passed += _test_debug_controls_can_be_disabled(failures)
 	passed += _test_world_input_waits_for_gui(failures)
 	return {"passed": passed, "failures": failures}
@@ -349,22 +351,107 @@ static func _test_debug_button_and_panel_controls(
 	router.debug_toggle_requested.connect(func() -> void:
 		toggles.append(true))
 	var debug := router.hud_button(&"Debug")
+	var movement_control := router.hud_button(&"gravityMinus")
 	var pause := router.hud_button(&"Utility0")
-	if pause == null or pause.visible:
-		failures.append("debug utility controls are not initially hidden")
+	var tools_tab := router.hud_button(&"Category4")
+	if movement_control == null or pause == null or tools_tab == null or \
+			movement_control.visible or pause.visible:
+		failures.append("debug section controls are not initially hidden")
 		router.free()
 		return 0
 	debug.pressed.emit()
-	if toggles.size() != 1 or not pause.visible:
-		failures.append("DEBUG did not expose its real GUI controls")
+	if toggles.size() != 1 or not movement_control.visible or pause.visible:
+		failures.append("DEBUG did not open on the Movement section")
+		router.free()
+		return 0
+	tools_tab.pressed.emit()
+	if movement_control.visible or not pause.visible:
+		failures.append("DEBUG category selection did not reveal Tools directly")
 		router.free()
 		return 0
 	debug.pressed.emit()
-	if toggles.size() != 2 or pause.visible:
+	if toggles.size() != 2 or movement_control.visible or pause.visible:
 		failures.append("DEBUG did not hide its GUI controls on second press")
 		router.free()
 		return 0
 	router.free()
+	return 1
+
+
+static func _test_debug_controls_are_large_and_direct(
+	failures: PackedStringArray,
+) -> int:
+	var router := _make_router()
+	var adjustments: Array[Dictionary] = []
+	var selections: Array[Dictionary] = []
+	var world_taps: Array[Vector2] = []
+	router.tuning_parameter_adjustment_requested.connect(
+		func(parameter: StringName, direction: float) -> void:
+			adjustments.append({
+				"parameter": parameter,
+				"direction": direction,
+			}))
+	router.tuning_value_requested.connect(
+		func(parameter: StringName, value: float) -> void:
+			selections.append({"parameter": parameter, "value": value}))
+	router.web_tapped.connect(func(position: Vector2) -> void:
+		world_taps.append(position))
+	router.hud_button(&"Debug").pressed.emit()
+
+	var plus := router.hud_button(&"gravityPlus")
+	var quick := router.hud_button(&"gravityQuick1")
+	if plus == null or quick == null:
+		failures.append("Movement settings lack direct adjustment controls")
+		router.free()
+		return 0
+	plus.pressed.emit()
+	quick.pressed.emit()
+	if adjustments != [{"parameter": &"gravity", "direction": 1.0}]:
+		failures.append("large + control did not identify Gravity directly")
+		router.free()
+		return 0
+	if selections != [{"parameter": &"gravity", "value": 1120.0}]:
+		failures.append("one-tap Gravity choice emitted the wrong value")
+		router.free()
+		return 0
+	if not world_taps.is_empty():
+		failures.append("DEBUG tuning controls leaked into world web input")
+		router.free()
+		return 0
+
+	for category_index in range(TuningCatalog.category_count()):
+		if LabLayout.category_rect(category_index).size.y < 48.0:
+			failures.append("DEBUG category target is below 48 px")
+			router.free()
+			return 0
+	for card_index in range(3):
+		if LabLayout.parameter_minus_rect(card_index).size.y < 48.0 or \
+				LabLayout.parameter_plus_rect(card_index).size.y < 48.0:
+			failures.append("DEBUG − / + target is below 48 px")
+			router.free()
+			return 0
+	router.free()
+	return 1
+
+
+static func _test_debug_catalog_uses_plain_language(
+	failures: PackedStringArray,
+) -> int:
+	var drive := TuningCatalog.descriptor(&"drive")
+	var cooldown := TuningCatalog.descriptor(&"pull_cooldown")
+	var dive := TuningCatalog.descriptor(&"dive_pull_pct")
+	if str(drive.get("label", "")) != "Forward drive" or \
+			not str(drive.get("help", "")).contains("forward speed"):
+		failures.append("Drive still lacks a clear name and explanation")
+		return 0
+	if str(cooldown.get("label", "")) != "Burst cooldown" or \
+			not str(cooldown.get("help", "")).contains("does not limit Dive"):
+		failures.append("Burst cooldown is still ambiguous in DEBUG")
+		return 0
+	if str(dive.get("label", "")) != "Downward pull distance" or \
+			not str(dive.get("help", "")).contains("Dive Pull"):
+		failures.append("Dive distance still lacks a clear DEBUG description")
+		return 0
 	return 1
 
 

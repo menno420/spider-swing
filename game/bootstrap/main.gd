@@ -108,6 +108,7 @@ func _mount_swing_lab(settings: PlayerSettings) -> PackedStringArray:
 		return failures
 
 	_session.snapshot_published.connect(_view.present)
+	_session.snapshot_published.connect(_input_router.present_snapshot)
 	_session.event_published.connect(_view.present_event)
 	_session.event_published.connect(_input_router.present_simulation_event)
 	_session.settlement_created.connect(_apply_settlement)
@@ -127,6 +128,12 @@ func _mount_swing_lab(settings: PlayerSettings) -> PackedStringArray:
 		_session.select_tuning_parameter)
 	_input_router.tuning_adjustment_requested.connect(
 		_session.adjust_selected_parameter)
+	_input_router.tuning_category_requested.connect(
+		_session.select_tuning_category)
+	_input_router.tuning_parameter_adjustment_requested.connect(
+		_session.adjust_tuning_parameter)
+	_input_router.tuning_value_requested.connect(
+		_session.set_tuning_parameter)
 	_input_router.recording_requested.connect(_session.toggle_recording)
 	_input_router.replay_requested.connect(_session.replay_recording)
 	_input_router.diagnostic_export_requested.connect(_session.export_diagnostic)

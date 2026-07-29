@@ -1,0 +1,311 @@
+extends RefCounted
+class_name TuningCatalog
+## Single source of truth for every owner-facing Swing Laboratory control.
+##
+## Simulation values remain owned by SwingConfig. This catalog owns only their
+## human-readable grouping, safe ranges, step size, and touch-friendly choices.
+
+const CATEGORY_MOVEMENT := &"movement"
+const CATEGORY_ROPE := &"rope"
+const CATEGORY_PULLS := &"pulls"
+const CATEGORY_COURSE := &"course"
+const CATEGORY_TOOLS := &"tools"
+
+const CATEGORIES := [
+	{
+		"id": CATEGORY_MOVEMENT,
+		"label": "MOVEMENT",
+		"help": "Weight, forward momentum, reach, and aiming assistance.",
+	},
+	{
+		"id": CATEGORY_ROPE,
+		"label": "ROPE",
+		"help": "How attachment, Reel-In, and rope shortening behave.",
+	},
+	{
+		"id": CATEGORY_PULLS,
+		"label": "PULLS",
+		"help": "Anchor Burst and the separate downward Dive Pull.",
+	},
+	{
+		"id": CATEGORY_COURSE,
+		"label": "COURSE",
+		"help": "Ceiling/floor rules, obstacle ramp, and boost duration.",
+	},
+	{
+		"id": CATEGORY_TOOLS,
+		"label": "TOOLS",
+		"help": "Pause, step, record, replay, and export diagnostics.",
+	},
+]
+
+const PARAMETERS := [
+	{
+		"id": &"gravity",
+		"category": CATEGORY_MOVEMENT,
+		"label": "Gravity",
+		"help": "How quickly the spider falls.",
+		"format": &"number",
+		"minimum": 400.0,
+		"maximum": 1800.0,
+		"step": 40.0,
+		"quick": [980.0, 1120.0, 1320.0],
+	},
+	{
+		"id": &"drive",
+		"category": CATEGORY_MOVEMENT,
+		"label": "Forward drive",
+		"help": "How strongly forward speed recovers after slowing down.",
+		"format": &"number",
+		"minimum": 100.0,
+		"maximum": 1000.0,
+		"step": 25.0,
+		"quick": [410.0, 470.0, 570.0],
+	},
+	{
+		"id": &"web_range",
+		"category": CATEGORY_MOVEMENT,
+		"label": "Maximum web reach",
+		"help": "Farthest solid point a tap can attach to.",
+		"format": &"pixels",
+		"minimum": 500.0,
+		"maximum": 1400.0,
+		"step": 50.0,
+		"quick": [800.0, 1000.0, 1200.0, 1400.0],
+	},
+	{
+		"id": &"aim_forgiveness",
+		"category": CATEGORY_MOVEMENT,
+		"label": "Aim forgiveness",
+		"help": "How far a tap may miss a solid surface and still connect.",
+		"format": &"pixels",
+		"minimum": 80.0,
+		"maximum": 320.0,
+		"step": 10.0,
+		"quick": [160.0, 220.0, 280.0, 320.0],
+	},
+	{
+		"id": &"reel_rate",
+		"category": CATEGORY_ROPE,
+		"label": "Reel-In speed",
+		"help": "How quickly holding REEL shortens the rope.",
+		"format": &"speed",
+		"minimum": 80.0,
+		"maximum": 720.0,
+		"step": 20.0,
+		"quick": [400.0, 480.0, 560.0, 640.0],
+	},
+	{
+		"id": &"auto_take_up",
+		"category": CATEGORY_ROPE,
+		"label": "Keep shortened rope",
+		"help": "Retains inward slack as the spider catches up, without boosting.",
+		"format": &"toggle",
+		"minimum": 0.0,
+		"maximum": 1.0,
+		"step": 1.0,
+		"quick": [0.0, 1.0],
+	},
+	{
+		"id": &"take_up_pct",
+		"category": CATEGORY_ROPE,
+		"label": "Shortening retained",
+		"help": "How much naturally gained shorter rope length is kept.",
+		"format": &"percent",
+		"minimum": 0.0,
+		"maximum": 1.0,
+		"step": 0.05,
+		"quick": [0.70, 0.85, 1.0],
+	},
+	{
+		"id": &"attach_catch_pct",
+		"category": CATEGORY_ROPE,
+		"label": "Attach catch-up",
+		"help": "Immediate rope shortening allowed when a web first connects.",
+		"format": &"percent",
+		"minimum": 0.0,
+		"maximum": 0.20,
+		"step": 0.01,
+		"quick": [0.0, 0.08, 0.12, 0.20],
+	},
+	{
+		"id": &"rope_damping",
+		"category": CATEGORY_ROPE,
+		"label": "Rope damping",
+		"help": "How much swinging vibration the rope removes.",
+		"format": &"decimal",
+		"minimum": 0.0,
+		"maximum": 0.30,
+		"step": 0.01,
+		"quick": [0.0, 0.035, 0.08, 0.15],
+	},
+	{
+		"id": &"tap_retarget",
+		"category": CATEGORY_ROPE,
+		"label": "Tap retargets web",
+		"help": "When attached, a new valid tap replaces the current web.",
+		"format": &"toggle",
+		"minimum": 0.0,
+		"maximum": 1.0,
+		"step": 1.0,
+		"quick": [0.0, 1.0],
+	},
+	{
+		"id": &"burst_pull_pct",
+		"category": CATEGORY_PULLS,
+		"label": "Anchor Burst distance",
+		"help": "Share of the distance crossed toward an upper/forward target.",
+		"format": &"percent",
+		"minimum": 0.10,
+		"maximum": 0.80,
+		"step": 0.05,
+		"quick": [0.40, 0.50, 0.60, 0.70],
+	},
+	{
+		"id": &"burst_duration",
+		"category": CATEGORY_PULLS,
+		"label": "Anchor Burst time",
+		"help": "How long the Burst movement takes.",
+		"format": &"seconds",
+		"minimum": 0.08,
+		"maximum": 0.40,
+		"step": 0.02,
+		"quick": [0.12, 0.20, 0.28],
+	},
+	{
+		"id": &"pull_cooldown",
+		"category": CATEGORY_PULLS,
+		"label": "Burst cooldown",
+		"help": "Wait between Anchor Bursts; it does not limit Dive Pull.",
+		"format": &"seconds",
+		"minimum": 0.30,
+		"maximum": 2.50,
+		"step": 0.10,
+		"quick": [0.75, 1.0, 1.65, 2.0],
+	},
+	{
+		"id": &"dive_pull_pct",
+		"category": CATEGORY_PULLS,
+		"label": "Downward pull distance",
+		"help": "Share of the distance crossed by the one-shot Dive Pull.",
+		"format": &"percent",
+		"minimum": 0.05,
+		"maximum": 0.60,
+		"step": 0.05,
+		"quick": [0.30, 0.35, 0.40, 0.50],
+	},
+	{
+		"id": &"dive_duration",
+		"category": CATEGORY_PULLS,
+		"label": "Downward pull time",
+		"help": "How long the one-shot Dive Pull takes.",
+		"format": &"seconds",
+		"minimum": 0.08,
+		"maximum": 0.32,
+		"step": 0.02,
+		"quick": [0.10, 0.16, 0.24],
+	},
+	{
+		"id": &"course_rails",
+		"category": CATEGORY_COURSE,
+		"label": "Ceiling and floor",
+		"help": "Keeps solid upper and lower surfaces in the course.",
+		"format": &"toggle",
+		"minimum": 0.0,
+		"maximum": 1.0,
+		"step": 1.0,
+		"quick": [0.0, 1.0],
+	},
+	{
+		"id": &"lethal_rails",
+		"category": CATEGORY_COURSE,
+		"label": "Lethal ceiling and floor",
+		"help": "Touching either solid boundary ends the run.",
+		"format": &"toggle",
+		"minimum": 0.0,
+		"maximum": 1.0,
+		"step": 1.0,
+		"quick": [0.0, 1.0],
+	},
+	{
+		"id": &"mid_hazard_m",
+		"category": CATEGORY_COURSE,
+		"label": "Floating hazards begin",
+		"help": "Distance before obstacles may enter the middle lane.",
+		"format": &"meters",
+		"minimum": 2500.0,
+		"maximum": 20000.0,
+		"step": 1000.0,
+		"quick": [5000.0, 10000.0, 15000.0, 20000.0],
+	},
+	{
+		"id": &"boost_duration",
+		"category": CATEGORY_COURSE,
+		"label": "Burst Frenzy time",
+		"help": "How long a boost removes Anchor Burst cooldown.",
+		"format": &"seconds",
+		"minimum": 1.0,
+		"maximum": 10.0,
+		"step": 0.50,
+		"quick": [2.0, 4.0, 6.0, 8.0],
+	},
+]
+
+
+static func category_count() -> int:
+	return CATEGORIES.size()
+
+
+static func tools_category_index() -> int:
+	return CATEGORIES.size() - 1
+
+
+static func category(index: int) -> Dictionary:
+	if index < 0 or index >= CATEGORIES.size():
+		return CATEGORIES[0].duplicate(true)
+	return CATEGORIES[index].duplicate(true)
+
+
+static func category_index(category_id: StringName) -> int:
+	for index in range(CATEGORIES.size()):
+		if StringName(CATEGORIES[index]["id"]) == category_id:
+			return index
+	return 0
+
+
+static func parameter_ids() -> Array[StringName]:
+	var ids: Array[StringName] = []
+	for item: Dictionary in PARAMETERS:
+		ids.append(StringName(item["id"]))
+	return ids
+
+
+static func parameters_for_category(category_id: StringName) -> Array[Dictionary]:
+	var matches: Array[Dictionary] = []
+	for item: Dictionary in PARAMETERS:
+		if StringName(item["category"]) == category_id:
+			matches.append(item.duplicate(true))
+	return matches
+
+
+static func descriptor(parameter: StringName) -> Dictionary:
+	for item: Dictionary in PARAMETERS:
+		if StringName(item["id"]) == parameter:
+			return item.duplicate(true)
+	return {}
+
+
+static func clamp_value(parameter: StringName, value: float) -> float:
+	var item := descriptor(parameter)
+	if item.is_empty():
+		return value
+	return clampf(
+		value,
+		float(item["minimum"]),
+		float(item["maximum"]),
+	)
+
+
+static func step_for(parameter: StringName) -> float:
+	var item := descriptor(parameter)
+	return float(item.get("step", 0.0))

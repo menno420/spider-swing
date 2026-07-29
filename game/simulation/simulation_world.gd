@@ -21,6 +21,7 @@ var fly_positions: PackedVector2Array = PackedVector2Array()
 var boost_positions: PackedVector2Array = PackedVector2Array()
 var run_flies: int = 0
 var burst_cooldown_remaining: float = 0.0
+var dive_ready: bool = true
 var pull_active: bool = false
 var pull_kind: StringName = &""
 var pull_anchor: Vector2 = Vector2.ZERO
@@ -49,6 +50,7 @@ func reset(active_config: SwingConfig, geometry: CourseGeometry) -> void:
 	_collected_pickups.clear()
 	set_course_geometry(geometry)
 	burst_cooldown_remaining = 0.0
+	dive_ready = true
 	_burst_cooldown_suppressed = false
 	_cancel_pull()
 	web.reset(config)
@@ -271,7 +273,12 @@ func _consume_web_tap(
 		if _is_downward_target(recovery_anchor):
 			_interrupt_pull(events)
 			return
-		_try_attach(recovery_anchor, events, true)
+		_try_attach(
+			recovery_anchor,
+			events,
+			StringName(nearest["kind"]),
+			true,
+		)
 		return
 
 	if web.attached:
@@ -280,7 +287,13 @@ func _consume_web_tap(
 			return
 		if bool(nearest["found"]) and \
 				config.web_tap_retargets_when_attached:
-			_try_attach(nearest["anchor"], events, false, true)
+			_try_attach(
+				nearest["anchor"],
+				events,
+				StringName(nearest["kind"]),
+				false,
+				true,
+			)
 			return
 		_release_web(events)
 		return
@@ -296,12 +309,17 @@ func _consume_web_tap(
 	if _is_downward_target(selected_anchor):
 		_try_start_dive(selected_anchor, events)
 		return
-	_try_attach(selected_anchor, events)
+	_try_attach(
+		selected_anchor,
+		events,
+		StringName(nearest["kind"]),
+	)
 
 
 func _try_attach(
 	selected_anchor: Vector2,
 	events: Array[SimulationEvent],
+	surface_kind: StringName = &"",
 	recovery: bool = false,
 	retarget: bool = false,
 ) -> void:
@@ -310,14 +328,21 @@ func _try_attach(
 		WebConstraint.AttachResult.ATTACHED:
 			if recovery:
 				_interrupt_pull(events, false)
+			var dive_rearmed := not dive_ready
+			dive_ready = true
+			var message := "Recovery web attached" if recovery else (
+				"Web retargeted" if retarget else "Web attached")
+			if dive_rearmed:
+				message += " · Dive ready"
 			events.append(SimulationEvent.make(
 				SimulationEvent.Kind.ATTACHED,
 				selected_anchor,
-				"Recovery web attached" if recovery else (
-					"Web retargeted" if retarget else "Web attached"),
+				message,
 				{
 					"interrupted_pull": recovery,
 					"retargeted": retarget,
+					"surface_kind": surface_kind,
+					"dive_rearmed": dive_rearmed,
 				},
 			))
 		WebConstraint.AttachResult.OUT_OF_RANGE:
@@ -364,15 +389,6 @@ func _consume_burst(
 			"Pull already active",
 		))
 		return
-	if burst_cooldown_remaining > 0.0:
-		events.append(SimulationEvent.make(
-			SimulationEvent.Kind.BURST_UNAVAILABLE,
-			position,
-			"Pull recharging",
-			{"remaining": burst_cooldown_remaining},
-		))
-		return
-
 	var selected_anchor := Vector2.ZERO
 	if command.has_world_target:
 		var nearest := nearest_solid_point(command.world_target)
@@ -404,6 +420,14 @@ func _consume_burst(
 	if _is_downward_target(selected_anchor):
 		_try_start_dive(selected_anchor, events)
 		return
+	if burst_cooldown_remaining > 0.0:
+		events.append(SimulationEvent.make(
+			SimulationEvent.Kind.BURST_UNAVAILABLE,
+			position,
+			"Anchor Burst recharging",
+			{"remaining": burst_cooldown_remaining},
+		))
+		return
 	if _start_pull(
 		selected_anchor,
 		config.burst_distance_fraction,
@@ -431,12 +455,19 @@ func _try_start_dive(
 	selected_anchor: Vector2,
 	events: Array[SimulationEvent],
 ) -> void:
-	if pull_active or burst_cooldown_remaining > 0.0:
+	if pull_active:
 		events.append(SimulationEvent.make(
-			SimulationEvent.Kind.BURST_UNAVAILABLE,
+			SimulationEvent.Kind.DIVE_UNAVAILABLE,
 			selected_anchor,
-			"Pull recharging",
-			{"remaining": burst_cooldown_remaining},
+			"Pull already active",
+		))
+		return
+	if not dive_ready:
+		events.append(SimulationEvent.make(
+			SimulationEvent.Kind.DIVE_UNAVAILABLE,
+			selected_anchor,
+			"Attach an upper web before another Dive Pull",
+			{"requires_web_contact": true},
 		))
 		return
 	if not _target_within_web_range(selected_anchor):
@@ -454,8 +485,7 @@ func _try_start_dive(
 		config.dive_tangential_retention,
 		&"dive",
 	):
-		burst_cooldown_remaining = (
-			0.0 if _burst_cooldown_suppressed else config.burst_cooldown)
+		dive_ready = false
 		events.append(_pull_started_event(
 			SimulationEvent.Kind.DIVE_STARTED,
 			selected_anchor,
@@ -463,7 +493,7 @@ func _try_start_dive(
 		))
 	else:
 		events.append(SimulationEvent.make(
-			SimulationEvent.Kind.BURST_UNAVAILABLE,
+			SimulationEvent.Kind.DIVE_UNAVAILABLE,
 			selected_anchor,
 			"Target is too close for Dive Pull",
 		))
