@@ -391,6 +391,7 @@ static func _test_diagnostic_overlays_are_opt_in(
 		failures.append("diagnostic overlays are not independent session controls")
 		session.free()
 		return 0
+	session._reset_run()
 	var initial: SimulationSnapshot = session._make_snapshot()
 	if initial.get("collision_outlines_visible") != false or \
 			initial.get("web_guides_visible") != false:

@@ -145,6 +145,10 @@ func _mount_swing_lab(
 	_input_router.restart_requested.connect(_session.request_restart)
 	_input_router.menu_requested.connect(_return_to_menu)
 	_input_router.debug_toggle_requested.connect(_session.toggle_debug)
+	_input_router.collision_outlines_toggle_requested.connect(
+		_session.toggle_collision_outlines)
+	_input_router.web_guides_toggle_requested.connect(
+		_session.toggle_web_guides)
 	_input_router.debug_pause_requested.connect(_session.toggle_debug_pause)
 	_input_router.debug_frame_step_requested.connect(_session.step_debug_frame)
 	_input_router.slow_motion_requested.connect(_session.toggle_slow_motion)

@@ -873,14 +873,20 @@ static func _test_opening_runway_has_no_middle_hazards(
 						metres)
 				return 0
 	var later := stream.update_for_position(12000.0, 10000.0)
-	var found_middle := false
+	var found_lane_intrusion := false
 	for obstacle: PackedVector2Array in later.obstacles:
 		var bounds := SolidGeometry.bounds(obstacle)
-		if bounds.position.y > 210.0 and bounds.end.y < 620.0:
-			found_middle = true
+		var hangs_into_lane := \
+			bounds.position.y <= CourseStream.CEILING_Y + 1.0 and \
+			bounds.end.y >= CourseStream.CEILING_Y + 180.0
+		var grows_into_lane := \
+			bounds.end.y >= CourseStream.FLOOR_Y - 1.0 and \
+			bounds.position.y <= CourseStream.FLOOR_Y - 180.0
+		if hangs_into_lane or grows_into_lane:
+			found_lane_intrusion = true
 			break
-	if not found_middle:
-		failures.append("course never introduces middle hazards after the runway")
+	if not found_lane_intrusion:
+		failures.append("course never introduces rail-grown challenges after the runway")
 		return 0
 	return 1
 
