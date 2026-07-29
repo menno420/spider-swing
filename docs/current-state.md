@@ -180,11 +180,13 @@ without a reported regression.
   minimum Burst travel, three five-level paths for all five spiders, and
   Springtail's spent/rearmed moderate-impact shell while retaining lethal
   obstacles, hard impacts, and pull collisions.
-- Local Phase 0.14 verification passes all 75 runtime contracts on Godot 4.7.1.
-  The new deterministic contract proves that no generated rail moves inward
-  before 2000 m, route flies clear the authoritative obstacle polygons, and a
-  later inward passage contains no floating blocker. PR #20 CI evidence is
-  recorded during session close-out.
+- PR #20 `game-quality` run
+  [30447006504](https://github.com/menno420/spider-swing/actions/runs/30447006504)
+  passes all 75 runtime contracts on Godot 4.7.1 at gameplay source
+  `b700c61eaa1c427005b1e957cb708dc58e56390f`. The new deterministic contract
+  proves that no generated rail moves inward before 2000 m, route flies clear
+  the authoritative obstacle polygons, and a later inward passage contains no
+  floating blocker.
 - `substrate-gate` — kit-owned. A born-red session card deliberately holds a PR
   until close-out; it must be green on the completed card before merge.
 - `android-debug` — **green on `main`, APK proven.** Run #1 produced artifact
@@ -307,11 +309,11 @@ without a reported regression.
 
 ## In flight
 
-Phase 0.13 is implemented and verified in PR #19: the exact maximum-speed ramp
-now spans 5000 m, shaped continuous rails are lethal by default, base
-Reel/Burst are weaker, every spider has three five-level upgrade paths, and
-Springtail has a bounded rechargeable impact shell. Phase 1 remains blocked on
-choosing or rejecting a movement baseline after the verified build is tested.
+Phase 0.14 is implemented and verified in PR #20: the exact maximum-speed ramp
+still spans 5000 m, while generated challenge routes now coordinate rails,
+obstacles, and fly guidance. No rail moves inward before 2000 m by default,
+and later inward passages are rail-only. Phase 1 remains blocked on choosing or
+rejecting a movement baseline after the verified build is tested.
 
 ## Recently shipped (newest first)
 
