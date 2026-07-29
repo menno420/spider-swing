@@ -194,7 +194,7 @@
       "\ud83d\udca1",
       "\ud83d\udcca"
     ],
-    "summary": "> **Status:** `in-progress`"
+    "summary": "> **Status:** `complete`"
   },
   {
     "slug": "debug-lab-dive-reset",
@@ -287,6 +287,19 @@
       "\ud83d\udcca"
     ],
     "summary": "> **Status:** `complete`"
+  },
+  {
+    "slug": "living-forest-depth",
+    "date": "2026-07-29",
+    "tags": [
+      "living",
+      "forest",
+      "depth",
+      "session",
+      "\ud83d\udca1",
+      "\ud83d\udcca"
+    ],
+    "summary": "> **Status:** `in-progress`"
   },
   {
     "slug": "opening-swing-spider-garage",

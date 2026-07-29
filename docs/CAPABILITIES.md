@@ -115,6 +115,24 @@ as venue `any`.)
 kit-owned — they refresh at upgrade between the fence markers; local
 findings go here, below the fence.)
 
+- 2026-07-29 · capability · `owner-live` · **The living Ancient Forest depth
+  slice survives the complete Godot and Android path** · PR #27 `game-quality`
+  run
+  [30485134026](https://github.com/menno420/spider-swing/actions/runs/30485134026)
+  passed all 82 contracts on Godot 4.7.1 at source
+  `06a4c65aeb87b4d47a54423f9cd56ce87dcaaba5`; Android run
+  [30485133800](https://github.com/menno420/spider-swing/actions/runs/30485133800)
+  produced artifact
+  [`8737309320`](https://github.com/menno420/spider-swing/actions/runs/30485133800/artifacts/8737309320),
+  61,305,243 bytes with digest
+  `sha256:298f4733a665863f348af041c67b4c2ba6d4258e9705864fc0ebecba4d4cf33f`.
+  The downloaded ZIP matched that digest and passed archive validation. Its
+  61,704,954-byte APK passed archive validation with SHA-256
+  `90294c3b51a1aebe7b2227ea720573d2b2888443d6bdcf4686b60ab495e45eb8`
+  and contains a valid Android manifest and Godot payload; `build-info.txt`
+  proves version `0.9.0-living-forest-test`, exact source, dev package, and
+  display name `Spider Swing Living Forest (dev)`.
+
 - 2026-07-29 · capability · `owner-live` · **The cohesive Ancient Forest
   composition survives the full Android path** · PR #26 `game-quality` run
   [30476965313](https://github.com/menno420/spider-swing/actions/runs/30476965313)

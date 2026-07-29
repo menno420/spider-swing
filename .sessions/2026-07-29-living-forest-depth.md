@@ -1,6 +1,6 @@
 # Living forest depth session
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 
@@ -52,12 +52,39 @@ at progressively lower contrast.
 
 ## Verification evidence
 
-[[fill: local Godot, strict gate, pull-request CI, and APK evidence]]
+- `python3 tools/verify.py --require-godot`: PASS on Godot
+  `4.7.1.stable.official.a13da4feb`; architecture self-test/scan, clean import,
+  front-end boot, and all 82 declared contracts passed.
+- PR #27 `game-quality` run
+  [30485134026](https://github.com/menno420/spider-swing/actions/runs/30485134026):
+  PASS at source `06a4c65aeb87b4d47a54423f9cd56ce87dcaaba5`.
+- PR #27 `android-debug` run
+  [30485133800](https://github.com/menno420/spider-swing/actions/runs/30485133800):
+  PASS. Artifact
+  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30485133800/artifacts/8737309320)
+  is 61,305,243 bytes with digest
+  `sha256:298f4733a665863f348af041c67b4c2ba6d4258e9705864fc0ebecba4d4cf33f`.
+  The downloaded ZIP and 61,704,954-byte APK both passed archive validation;
+  APK SHA-256 is
+  `90294c3b51a1aebe7b2227ea720573d2b2888443d6bdcf4686b60ab495e45eb8`.
+  `build-info.txt` proves version `0.9.0-living-forest-test`, exact source, dev
+  package, and display name `Spider Swing Living Forest (dev)`.
+- Final `python3 bootstrap.py check --strict`: PASS after the deliberate
+  completed-status flip; the earlier red run was the designed born-red hold.
 
 ## Documentation audit
 
-[[fill: exact records updated and binding documents left unchanged]]
+Updated the root README; runtime/source asset records; application and
+presentation ownership READMEs; testing reference; current-state ledger;
+capability ledger; control heartbeat; development build identity; and this
+session card. The checksum-pinned GDD and all binding ADRs were read as
+constraints and left byte-for-byte unchanged.
 
 ## Remaining owner review
 
-[[fill: real-device visual and feel checks]]
+Install the verified PR #27 APK and confirm that bark is continuous at profile
+changes, every hazard reads as growth from the rail, the realistic depth remains
+subordinate to the spider/web/flies, and the slightly larger/more varied later
+patterns remain fair with the near-max Classic spider. This is a reversible
+development-art and deterministic-pattern decision, not final production-art or
+balance approval.
