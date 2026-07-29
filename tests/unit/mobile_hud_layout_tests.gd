@@ -16,6 +16,7 @@ static func run() -> Dictionary:
 	passed += _test_device_tap_keeps_recovery_web_attached(failures)
 	passed += _test_menu_button_returns_without_world_tap(failures)
 	passed += _test_debug_button_and_panel_controls(failures)
+	passed += _test_diagnostic_overlays_are_opt_in(failures)
 	passed += _test_debug_controls_are_large_and_direct(failures)
 	passed += _test_debug_catalog_uses_plain_language(failures)
 	passed += _test_environment_theme_packs_are_visual_only(failures)
@@ -375,6 +376,71 @@ static func _test_debug_button_and_panel_controls(
 	debug.pressed.emit()
 	if toggles.size() != 2 or movement_control.visible or pause.visible:
 		failures.append("DEBUG did not hide its GUI controls on second press")
+		router.free()
+		return 0
+	router.free()
+	return 1
+
+
+static func _test_diagnostic_overlays_are_opt_in(
+	failures: PackedStringArray,
+) -> int:
+	var session := SwingLabSession.new()
+	if not session.has_method("toggle_collision_outlines") or \
+			not session.has_method("toggle_web_guides"):
+		failures.append("diagnostic overlays are not independent session controls")
+		session.free()
+		return 0
+	var initial: SimulationSnapshot = session._make_snapshot()
+	if initial.get("collision_outlines_visible") != false or \
+			initial.get("web_guides_visible") != false:
+		failures.append("collision outlines or web guides load enabled by default")
+		session.free()
+		return 0
+	session.call("toggle_collision_outlines")
+	session.call("toggle_web_guides")
+	var enabled: SimulationSnapshot = session._make_snapshot()
+	if enabled.get("collision_outlines_visible") != true or \
+			enabled.get("web_guides_visible") != true:
+		failures.append("diagnostic overlay state did not publish in the snapshot")
+		session.free()
+		return 0
+	session.free()
+
+	var router := _make_router()
+	if not router.has_signal("collision_outlines_toggle_requested") or \
+			not router.has_signal("web_guides_toggle_requested"):
+		failures.append("debug input does not expose diagnostic overlay intents")
+		router.free()
+		return 0
+	var outline_requests: Array[bool] = []
+	var guide_requests: Array[bool] = []
+	router.connect(
+		"collision_outlines_toggle_requested",
+		func() -> void: outline_requests.append(true),
+	)
+	router.connect(
+		"web_guides_toggle_requested",
+		func() -> void: guide_requests.append(true),
+	)
+	router.hud_button(&"Debug").pressed.emit()
+	var overlays_tab := router.hud_button(StringName(
+		"Category%d" % TuningCatalog.category_index(&"overlays")))
+	var outlines := router.hud_button(&"CollisionOutlines")
+	var guides := router.hud_button(&"WebGuides")
+	if overlays_tab == null or outlines == null or guides == null:
+		failures.append("DEBUG lacks direct outline and web-guide controls")
+		router.free()
+		return 0
+	overlays_tab.pressed.emit()
+	if not outlines.visible or not guides.visible:
+		failures.append("OVERLAYS section did not reveal both diagnostic controls")
+		router.free()
+		return 0
+	outlines.pressed.emit()
+	guides.pressed.emit()
+	if outline_requests.size() != 1 or guide_requests.size() != 1:
+		failures.append("diagnostic controls did not emit one intent each")
 		router.free()
 		return 0
 	router.free()
