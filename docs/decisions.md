@@ -187,8 +187,9 @@
 
 ## [D-0014] Compose natural object art over authoritative silhouettes
 
-- status: decided; gate grouping superseded by D-0015
+- status: superseded
 - date: 2026-07-29
+- superseded-by: D-0015
 - verdict: Finished environment art remains presentation-owned. Ancient Forest
   may classify existing obstacle polygons into rooted, hanging, or grouped
   gate visuals and may decorate the collision-facing rail edge, but the source
