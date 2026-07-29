@@ -18,10 +18,24 @@ const START_X := 220.0
 
 var _geometry := CourseGeometry.new()
 var _middle_hazard_start_distance: float = 10000.0
+var _edge_obstacle_scale: float = 0.94
+var _floating_obstacle_scale: float = 0.90
+var _gate_opening_scale: float = 1.12
+var _creator_pattern: Array[StringName] = []
 
 
-func reset(middle_hazard_start_distance: float = 10000.0) -> void:
+func reset(
+	middle_hazard_start_distance: float = 10000.0,
+	edge_obstacle_scale: float = 0.94,
+	floating_obstacle_scale: float = 0.90,
+	gate_opening_scale: float = 1.12,
+	creator_pattern: Array[StringName] = [],
+) -> void:
 	_middle_hazard_start_distance = middle_hazard_start_distance
+	_edge_obstacle_scale = edge_obstacle_scale
+	_floating_obstacle_scale = floating_obstacle_scale
+	_gate_opening_scale = gate_opening_scale
+	_creator_pattern = creator_pattern.duplicate()
 	_geometry = CourseGeometry.new()
 	update_for_position(SimulationWorld.START_POSITION.x)
 
@@ -73,7 +87,18 @@ func _append_chunk(result: CourseGeometry, chunk_index: int) -> void:
 	_append_route_flies(result, start_x, ceiling_y, floor_y, pattern)
 
 	var distance_at_chunk := maxf(0.0, start_x - START_X)
-	if distance_at_chunk < _middle_hazard_start_distance:
+	if not _creator_pattern.is_empty() and chunk_index >= 1:
+		_append_creator_challenge(
+			result,
+			start_x,
+			ceiling_y,
+			floor_y,
+			_creator_pattern[posmod(
+				chunk_index - 1,
+				_creator_pattern.size(),
+			)],
+		)
+	elif distance_at_chunk < _middle_hazard_start_distance:
 		_append_opening_edge_detail(
 			result,
 			start_x,
@@ -144,9 +169,11 @@ func _append_opening_edge_detail(
 	if posmod(chunk_index, 3) != 1:
 		return
 	if pattern in [1, 3, 5, 7]:
-		_append_leaf_cluster(result, start_x + 650.0, floor_y, false)
+		_append_leaf_cluster(
+			result, start_x + 650.0, floor_y, false, _edge_obstacle_scale)
 	else:
-		_append_leaf_cluster(result, start_x + 650.0, ceiling_y, true)
+		_append_leaf_cluster(
+			result, start_x + 650.0, ceiling_y, true, _edge_obstacle_scale)
 
 
 func _append_middle_challenge(
@@ -160,26 +187,72 @@ func _append_middle_challenge(
 	# fly trail communicates the intended route without making it mandatory.
 	match pattern:
 		0:
-			_append_vine_fork(result, start_x + 610.0, floor_y, 220.0, 180.0)
+			_append_vine_fork(
+				result, start_x + 610.0, floor_y,
+				220.0 * _floating_obstacle_scale,
+				180.0 * _floating_obstacle_scale)
 		1:
 			_append_hanging_seed_pod(
-				result, start_x + 650.0, ceiling_y, 150.0, 235.0)
+				result, start_x + 650.0, ceiling_y,
+				150.0 * _floating_obstacle_scale,
+				235.0 * _floating_obstacle_scale)
 		2:
-			_append_leaf_cluster(result, start_x + 620.0, floor_y, false)
+			_append_leaf_cluster(
+				result, start_x + 620.0, floor_y, false,
+				_floating_obstacle_scale)
 			_append_hanging_seed_pod(
-				result, start_x + 790.0, ceiling_y, 105.0, 165.0)
+				result, start_x + 790.0, ceiling_y,
+				105.0 * _floating_obstacle_scale,
+				165.0 * _floating_obstacle_scale)
 		3:
 			_append_broken_pot_gate(result, start_x + 690.0, 370.0)
 		4:
-			_append_vine_fork(result, start_x + 650.0, floor_y, 250.0, 215.0)
+			_append_vine_fork(
+				result, start_x + 650.0, floor_y,
+				250.0 * _floating_obstacle_scale,
+				215.0 * _floating_obstacle_scale)
 		5:
 			_append_hanging_seed_pod(
-				result, start_x + 620.0, ceiling_y, 175.0, 260.0)
+				result, start_x + 620.0, ceiling_y,
+				175.0 * _floating_obstacle_scale,
+				260.0 * _floating_obstacle_scale)
 		6:
-			_append_leaf_cluster(result, start_x + 610.0, floor_y, false)
-			_append_leaf_cluster(result, start_x + 815.0, ceiling_y, true)
+			_append_leaf_cluster(
+				result, start_x + 610.0, floor_y, false,
+				_floating_obstacle_scale)
+			_append_leaf_cluster(
+				result, start_x + 815.0, ceiling_y, true,
+				_floating_obstacle_scale)
 		_:
 			_append_broken_pot_gate(result, start_x + 700.0, 350.0)
+
+
+func _append_creator_challenge(
+	result: CourseGeometry,
+	start_x: float,
+	ceiling_y: float,
+	floor_y: float,
+	piece: StringName,
+) -> void:
+	match piece:
+		&"leaf":
+			_append_leaf_cluster(
+				result, start_x + 650.0, floor_y, false,
+				_floating_obstacle_scale)
+		&"pod":
+			_append_hanging_seed_pod(
+				result, start_x + 650.0, ceiling_y,
+				160.0 * _floating_obstacle_scale,
+				235.0 * _floating_obstacle_scale)
+		&"vine":
+			_append_vine_fork(
+				result, start_x + 650.0, floor_y,
+				235.0 * _floating_obstacle_scale,
+				195.0 * _floating_obstacle_scale)
+		&"gate":
+			_append_broken_pot_gate(result, start_x + 690.0, 370.0)
+		_:
+			pass
 
 
 func _append_ceiling(
@@ -247,9 +320,10 @@ func _append_leaf_cluster(
 	center_x: float,
 	edge_y: float,
 	hanging: bool,
+	scale: float = 1.0,
 ) -> void:
 	var direction := 1.0 if hanging else -1.0
-	result.obstacles.append(PackedVector2Array([
+	var polygon := PackedVector2Array([
 		Vector2(center_x - 105.0, edge_y),
 		Vector2(center_x - 78.0, edge_y + direction * 46.0),
 		Vector2(center_x - 120.0, edge_y + direction * 94.0),
@@ -259,7 +333,12 @@ func _append_leaf_cluster(
 		Vector2(center_x + 118.0, edge_y + direction * 102.0),
 		Vector2(center_x + 76.0, edge_y + direction * 42.0),
 		Vector2(center_x + 105.0, edge_y),
-	]))
+	])
+	result.obstacles.append(_scaled_polygon(
+		polygon,
+		Vector2(center_x, edge_y),
+		scale,
+	))
 
 
 func _append_vine_fork(
@@ -305,14 +384,18 @@ func _append_broken_pot_gate(
 	center_x: float,
 	center_y: float,
 ) -> void:
-	var left := center_x - 105.0
-	var right := center_x + 105.0
-	var top := center_y - 126.0
-	var bottom := center_y + 126.0
-	var opening_left := center_x - 48.0
-	var opening_right := center_x + 48.0
-	var opening_top := center_y - 57.0
-	var opening_bottom := center_y + 57.0
+	var outer_x := 105.0 * _floating_obstacle_scale
+	var outer_y := 126.0 * _floating_obstacle_scale
+	var opening_x := 48.0 * _floating_obstacle_scale * _gate_opening_scale
+	var opening_y := 57.0 * _floating_obstacle_scale * _gate_opening_scale
+	var left := center_x - outer_x
+	var right := center_x + outer_x
+	var top := center_y - outer_y
+	var bottom := center_y + outer_y
+	var opening_left := center_x - opening_x
+	var opening_right := center_x + opening_x
+	var opening_top := center_y - opening_y
+	var opening_bottom := center_y + opening_y
 	result.obstacles.append(PackedVector2Array([
 		Vector2(left + 30.0, top),
 		Vector2(right - 24.0, top + 12.0),
@@ -337,3 +420,14 @@ func _append_broken_pot_gate(
 		Vector2(right - 32.0, bottom),
 		Vector2(left + 38.0, bottom - 10.0),
 	]))
+
+
+func _scaled_polygon(
+	polygon: PackedVector2Array,
+	origin: Vector2,
+	scale: float,
+) -> PackedVector2Array:
+	var scaled := PackedVector2Array()
+	for point: Vector2 in polygon:
+		scaled.append(origin + (point - origin) * scale)
+	return scaled

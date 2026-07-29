@@ -9,6 +9,7 @@ const CATEGORY_MOVEMENT := &"movement"
 const CATEGORY_ROPE := &"rope"
 const CATEGORY_PULLS := &"pulls"
 const CATEGORY_COURSE := &"course"
+const CATEGORY_RUN := &"run"
 const CATEGORY_TOOLS := &"tools"
 
 const CATEGORIES := [
@@ -30,7 +31,12 @@ const CATEGORIES := [
 	{
 		"id": CATEGORY_COURSE,
 		"label": "COURSE",
-		"help": "Ceiling/floor rules, obstacle ramp, and boost duration.",
+		"help": "Ceiling/floor rules, obstacle sizes, and the difficulty ramp.",
+	},
+	{
+		"id": CATEGORY_RUN,
+		"label": "RUN",
+		"help": "Opening assistance, one-run recovery, and temporary boosts.",
 	},
 	{
 		"id": CATEGORY_TOOLS,
@@ -239,8 +245,63 @@ const PARAMETERS := [
 		"quick": [5000.0, 10000.0, 15000.0, 20000.0],
 	},
 	{
-		"id": &"boost_duration",
+		"id": &"edge_obstacle_size",
 		"category": CATEGORY_COURSE,
+		"label": "Edge obstacle size",
+		"help": "Size of leaves and shapes growing from ceiling or floor.",
+		"format": &"percent",
+		"minimum": 0.70,
+		"maximum": 1.15,
+		"step": 0.02,
+		"quick": [0.85, 0.94, 1.0, 1.08],
+	},
+	{
+		"id": &"floating_obstacle_size",
+		"category": CATEGORY_COURSE,
+		"label": "Floating obstacle size",
+		"help": "Overall size of detached middle-lane challenges.",
+		"format": &"percent",
+		"minimum": 0.70,
+		"maximum": 1.15,
+		"step": 0.02,
+		"quick": [0.80, 0.90, 1.0, 1.08],
+	},
+	{
+		"id": &"gate_opening_size",
+		"category": CATEGORY_COURSE,
+		"label": "Gate opening size",
+		"help": "Extra clear space through the centre of broken-pot gates.",
+		"format": &"percent",
+		"minimum": 0.80,
+		"maximum": 1.40,
+		"step": 0.04,
+		"quick": [1.0, 1.12, 1.24, 1.36],
+	},
+	{
+		"id": &"guided_start",
+		"category": CATEGORY_RUN,
+		"label": "Start already swinging",
+		"help": "Begins on a normal web; early input can still replace it.",
+		"format": &"toggle",
+		"minimum": 0.0,
+		"maximum": 1.0,
+		"step": 1.0,
+		"quick": [0.0, 1.0],
+	},
+	{
+		"id": &"rescue_life",
+		"category": CATEGORY_RUN,
+		"label": "One rescue per run",
+		"help": "The first lethal mistake triggers a safe silk recovery.",
+		"format": &"toggle",
+		"minimum": 0.0,
+		"maximum": 1.0,
+		"step": 1.0,
+		"quick": [0.0, 1.0],
+	},
+	{
+		"id": &"boost_duration",
+		"category": CATEGORY_RUN,
 		"label": "Burst Frenzy time",
 		"help": "How long a boost removes Anchor Burst cooldown.",
 		"format": &"seconds",

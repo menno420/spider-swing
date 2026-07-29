@@ -6,7 +6,7 @@ class_name SwingConfig
 ## are deliberately not called "baseline": only the owner can approve that
 ## label after real-device playtesting.
 
-const SCHEMA_VERSION := 6
+const SCHEMA_VERSION := 7
 const PRESET_BALANCED := &"balanced_candidate"
 const PRESET_WEIGHTY := &"weighty_candidate"
 const PRESET_AGILE := &"agile_candidate"
@@ -58,8 +58,16 @@ const PRESET_AGILE := &"agile_candidate"
 @export var course_boundaries_enabled: bool = true
 @export var course_boundaries_lethal: bool = false
 @export var middle_hazard_start_distance: float = 10000.0
+@export var edge_obstacle_scale: float = 0.94
+@export var floating_obstacle_scale: float = 0.90
+@export var gate_opening_scale: float = 1.12
+@export var guided_start_enabled: bool = true
+@export var rescue_life_enabled: bool = true
+@export var rescue_shield_duration: float = 0.90
 @export var pickup_collision_radius: float = 32.0
 @export var burst_frenzy_duration: float = 4.0
+@export var detached_gravity_scale: float = 1.0
+@export var glide_duration: float = 0.0
 
 
 static func preset_names() -> PackedStringArray:
@@ -75,6 +83,7 @@ static func from_preset(name: StringName) -> SwingConfig:
 func apply_preset(name: StringName) -> void:
 	preset_name = name
 	web_maximum_length = 1000.0
+	player_collision_radius = 18.0
 	web_tap_retargets_when_attached = false
 	attachment_catch_fraction = 0.08
 	automatic_take_up_enabled = true
@@ -92,8 +101,16 @@ func apply_preset(name: StringName) -> void:
 	course_boundaries_enabled = true
 	course_boundaries_lethal = false
 	middle_hazard_start_distance = 10000.0
+	edge_obstacle_scale = 0.94
+	floating_obstacle_scale = 0.90
+	gate_opening_scale = 1.12
+	guided_start_enabled = true
+	rescue_life_enabled = true
+	rescue_shield_duration = 0.90
 	pickup_collision_radius = 32.0
 	burst_frenzy_duration = 4.0
+	detached_gravity_scale = 1.0
+	glide_duration = 0.0
 	match name:
 		PRESET_WEIGHTY:
 			gravity = 1320.0
@@ -203,6 +220,21 @@ func set_tuning_value(parameter: StringName, value: float) -> float:
 		&"mid_hazard_m":
 			middle_hazard_start_distance = safe_value
 			return middle_hazard_start_distance
+		&"edge_obstacle_size":
+			edge_obstacle_scale = safe_value
+			return edge_obstacle_scale
+		&"floating_obstacle_size":
+			floating_obstacle_scale = safe_value
+			return floating_obstacle_scale
+		&"gate_opening_size":
+			gate_opening_scale = safe_value
+			return gate_opening_scale
+		&"guided_start":
+			guided_start_enabled = safe_value >= 0.5
+			return 1.0 if guided_start_enabled else 0.0
+		&"rescue_life":
+			rescue_life_enabled = safe_value >= 0.5
+			return 1.0 if rescue_life_enabled else 0.0
 		&"boost_duration":
 			burst_frenzy_duration = safe_value
 			return burst_frenzy_duration
@@ -247,6 +279,16 @@ func value_for(parameter: StringName) -> float:
 			return 1.0 if course_boundaries_lethal else 0.0
 		&"mid_hazard_m":
 			return middle_hazard_start_distance
+		&"edge_obstacle_size":
+			return edge_obstacle_scale
+		&"floating_obstacle_size":
+			return floating_obstacle_scale
+		&"gate_opening_size":
+			return gate_opening_scale
+		&"guided_start":
+			return 1.0 if guided_start_enabled else 0.0
+		&"rescue_life":
+			return 1.0 if rescue_life_enabled else 0.0
 		&"boost_duration":
 			return burst_frenzy_duration
 	return 0.0
@@ -284,6 +326,15 @@ func validate() -> PackedStringArray:
 		failures.append("input buffer duration must be positive")
 	if middle_hazard_start_distance < 0.0:
 		failures.append("middle hazard start distance must not be negative")
+	if edge_obstacle_scale < 0.5 or edge_obstacle_scale > 1.3 or \
+			floating_obstacle_scale < 0.5 or floating_obstacle_scale > 1.3 or \
+			gate_opening_scale < 0.75 or gate_opening_scale > 1.5:
+		failures.append("course obstacle scaling is invalid")
+	if rescue_shield_duration <= 0.0:
+		failures.append("rescue shield duration must be positive")
 	if pickup_collision_radius <= 0.0 or burst_frenzy_duration <= 0.0:
 		failures.append("pickup response values are invalid")
+	if detached_gravity_scale <= 0.0 or detached_gravity_scale > 1.0 or \
+			glide_duration < 0.0:
+		failures.append("glide response values are invalid")
 	return failures

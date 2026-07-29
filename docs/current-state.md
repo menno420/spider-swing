@@ -8,7 +8,7 @@
 
 ## Stability baseline
 
-As of 2026-07-28, verified against the live surface. Known-good; do not re-audit
+As of 2026-07-29, verified against the live surface. Known-good; do not re-audit
 without a reported regression.
 
 **Engine and project**
@@ -19,16 +19,17 @@ without a reported regression.
   and exits 0. Verified both locally and in CI.
 - Compatibility renderer, landscape, 1280×720 reference viewport with
   `canvas_items`/`expand` stretch, **60 Hz** fixed tick, 4 max catch-up steps.
-- The app opens on Home before gameplay. `FrontEndState` owns Home, Tutorial, and
-  Settings navigation; the bootstrap composition root alone mounts or unmounts
-  the front end and simulation.
+- The app opens on Home before gameplay. `FrontEndState` owns Home, Garage,
+  Shop, Tutorial, Course Lab, and Settings navigation; the bootstrap composition
+  root alone mounts or unmounts the front end and simulation.
 - The six-step in-engine Tutorial teaches movement, forgiving solid targets,
   release and momentum, speed-neutral rope-shortening Reel, percentage Burst,
   one-shot downward Dive Pull, shaped obstacles/gaps, restart, Menu, and optional
   diagnostics without a prerecorded binary asset.
 - `SaveRepository` exclusively owns versioned local settings and progression
-  writes. Swing options survive relaunch; idempotent run settlements persist fly
-  totals, best distance, and cosmetic milestone unlocks.
+  writes. Swing options survive relaunch; idempotent run settlements persist
+  lifetime/spendable fly totals, best distance, selected profile/cosmetics,
+  profile upgrades, the creator pattern, and cosmetic milestone unlocks.
 - Six input actions are consumed through `InputRouter`: `web_action`, `reel_in`,
   `burst_action`, `pause`, `restart_run`, and `toggle_debug`. Large left-thumb
   Reel, right-thumb Burst, DEBUG, Menu, and debug-panel hit regions are real Godot
@@ -42,6 +43,13 @@ without a reported regression.
   aim-forgiveness band, manual release, an 8% gentle attach catch, three named
   presets, camera/world boundaries, and a bounded deterministic seven-chunk
   geometry window that continues past 10,000 m.
+- A run begins on a real ceiling web through the ordinary constraint and follows
+  a deterministic safe first-second trajectory. It never locks input: any valid
+  early command can replace or release the opening web immediately.
+- One configurable rescue charge recovers the first lethal contact to a
+  collision-checked position with a 0.9-second obstacle shield. The charge is
+  visible in the HUD; the next lethal contact follows the ordinary death and
+  idempotent settlement path.
 - Reel shortens the authoritative rope length (480 px/s in Balanced) and spends
   energy without adding a separate inward acceleration or minimum-speed
   correction. Natural take-up retains 85% of inward slack by default, also
@@ -68,14 +76,27 @@ without a reported regression.
   pickups temporarily suppress cooldown. Visible rails can independently be
   present/absent and safe/lethal. This remains prototype instrumentation, not an
   authored or approved Phase 1 chunk pack.
+- The default authoritative polygon scales are 94% for rail-grown obstacles and
+  90% for detached floating hazards, with 112% gate openings. All three are
+  independently tunable and feed the same polygons to collision and rendering.
+- `SpiderCatalog` defines four comparison profiles over one `SwingConfig`:
+  balanced Garden Spider, smaller/faster Skitter, heavier Anchorite, and
+  bounded-glide Ballooner. Each exposes an explicit trade-off and two capped
+  fly-funded prototype upgrade tracks. All are unlocked during Phase 0 so
+  progression cannot hide a feel candidate.
+- Garage owns profile, palette, and web-treatment selection; Shop spends
+  collected flies through `ProgressionService`; Course Lab saves six
+  EMPTY/LEAF/POD/VINE/GATE slots and substitutes the post-opening course during
+  its playtest. These are local foundations, not production economy or UGC.
 - The touch-first debug panel groups controls into Movement, Rope, Pulls,
-  Course, and Tools. Large cards use plain names, short descriptions, direct
+  Course, Run, and Tools. Large cards use plain names, short descriptions, direct
   comparison values, and `−` / `+` controls for gravity, forward drive,
   500–1400 px range, default RELEASE vs optional atomic RETARGET tap behavior,
   aim forgiveness, attach catch, Reel shortening speed, automatic take-up and
   retained percentage, Burst cooldown, Burst/Dive percentages and durations,
   rope damping, rail
-  presence/lethality, the middle-hazard start, and boost duration.
+  presence/lethality, edge/floating/gate geometry sizes, guided opening, one-run
+  rescue, the middle-hazard start, and boost duration.
 - Settings is a readable vertical scroll surface with larger type and 58–68-pixel
   controls, verified by runtime contracts and designed around the owner's
   recorded 1040×480 viewport.
@@ -86,15 +107,17 @@ without a reported regression.
 - `python3 tools/verify.py` — passes. Six steps: architecture self-test,
   architecture scan, Godot discovery and version, headless import, boot smoke
   test, headless test runner.
-- `tests/test_runner.gd` — 63 checks, all passing locally: twenty-nine
-  deterministic physics, fifteen GUI-owned mobile HUD, nine front-end
+- `tests/test_runner.gd` — 70 checks, all passing locally: thirty-four
+  deterministic physics, fifteen GUI-owned mobile HUD, eleven front-end
   navigation/settings/progression, plus bootstrap and exact build-version
   contracts. Physics covers exact 50%/40% pull shares,
   detached targeted Burst, recovery-web interruption, double-tap fallback,
   release/retarget modes, speed-neutral Reel shortening, solid polygon
   targeting/collision, take-up, rail toggles, swept pickups, tuning controls, and
-  paced bounded streaming. The front-end group performs real filesystem settings
-  and progression round-trips plus settlement idempotency. The trajectory
+  paced bounded streaming, scaled authoritative geometry, guided opening,
+  rescue, spider profiles/glide, and creator-pattern bounds. The front-end group
+  performs real filesystem settings and progression round-trips plus settlement
+  idempotency, profile upgrades, and creator edits. The trajectory
   fixture produces the same final state when driven through simulated 30, 60,
   90, and 120 Hz render loops.
 - `tools/check_architecture.py` — 14 fixtures, all passing, asserting both
@@ -208,8 +231,12 @@ without a reported regression.
 **Deliberately absent** — scope boundary, not gaps:
 
 - No authored Phase 1 chunk pack, moving hazards, finalized currency/economy,
-  purchasable upgrades, missions, or monetization. Flies, one temporary boost,
-  settlement, and two palette unlocks are contained foundation slices.
+  missions, or production monetization. Flies, prototype upgrades, one temporary
+  boost, one-run rescue, profiles, and cosmetics are contained foundation
+  slices.
+- No Play Billing SDK, product catalogue, purchase verification, server-backed
+  entitlement, hourly play-blocking lives, course sharing, discovery, or
+  moderation. The local Shop and Course Lab do not claim those capabilities.
 - No approved physics baseline yet: `balanced_candidate`, `weighty_candidate`,
   and `agile_candidate` require owner real-device playtesting.
 - No production art, analytics, ads, cloud save, or store SDK.
@@ -224,12 +251,18 @@ without a reported regression.
 
 ## In flight
 
-No additional implementation should branch from this candidate before the owner
-tests it on-device. Phase 1 remains blocked on choosing or rejecting a movement
-baseline after the verified build is tested.
+Phase 0.12 packages the guided opening, roomier/tunable hazards, one-run rescue,
+four comparison profiles, Garage/Shop, and local Course Lab in PR #18. Phase 1
+remains blocked on choosing or rejecting a movement baseline after the verified
+build is tested.
 
 ## Recently shipped (newest first)
 
+- **2026-07-29 — Dive reset and touch-first DEBUG (PR #17).** Separates the Dive
+  charge from Burst time, rearms it only through a successful upper/obstacle
+  attachment, and replaces carousel searching with six plain-language,
+  touch-first debug sections. The verified Android build is
+  `0.4.1-debug-lab-dive-reset-test`.
 - **2026-07-28 — Configurable gameplay foundation (PR #16).** Promotes the
   1120-gravity/40%-Dive comparison, adds speed-neutral automatic take-up,
   independently configurable safe/lethal/hidden corridor rails, a 1000 m

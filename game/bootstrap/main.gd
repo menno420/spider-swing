@@ -32,8 +32,15 @@ func _ready() -> void:
 	_progress = _save_repository.load_progress()
 	_front_end_state = FRONT_END_STATE_SCRIPT.new() as FrontEndState
 	_front_end_state.play_requested.connect(_start_game)
+	_front_end_state.creator_play_requested.connect(_start_creator_game)
 	_front_end_state.settings_changed.connect(_save_settings)
-	_front_end_state.configure(_save_repository.load_settings())
+	_front_end_state.spider_profile_requested.connect(_select_spider_profile)
+	_front_end_state.spider_style_requested.connect(_select_spider_style)
+	_front_end_state.web_variant_requested.connect(_select_web_variant)
+	_front_end_state.upgrade_purchase_requested.connect(_purchase_upgrade)
+	_front_end_state.creator_piece_requested.connect(_cycle_creator_piece)
+	_front_end_state.creator_clear_requested.connect(_clear_creator_pattern)
+	_front_end_state.configure(_save_repository.load_settings(), _progress)
 	var failures := _mount_front_end()
 	if is_smoke_test():
 		_report_boot(failures)
@@ -84,7 +91,24 @@ func _start_game(settings: PlayerSettings) -> void:
 	_mount_front_end()
 
 
-func _mount_swing_lab(settings: PlayerSettings) -> PackedStringArray:
+func _start_creator_game(
+	settings: PlayerSettings,
+	pattern: Array[StringName],
+) -> void:
+	_unmount_front_end()
+	var failures := _mount_swing_lab(settings, pattern)
+	if failures.is_empty():
+		return
+	for failure: String in failures:
+		printerr("[spider-swing] creator start failed — %s" % failure)
+	_unmount_swing_lab()
+	_mount_front_end()
+
+
+func _mount_swing_lab(
+	settings: PlayerSettings,
+	creator_pattern: Array[StringName] = [],
+) -> PackedStringArray:
 	var failures := PackedStringArray()
 	if not ResourceLoader.exists(SWING_LAB_SCENE_PATH):
 		failures.append("scene not found: %s" % SWING_LAB_SCENE_PATH)
@@ -113,6 +137,7 @@ func _mount_swing_lab(settings: PlayerSettings) -> PackedStringArray:
 	_session.event_published.connect(_input_router.present_simulation_event)
 	_session.settlement_created.connect(_apply_settlement)
 	_session.configure_progress(_progress)
+	_session.configure_creator_pattern(creator_pattern)
 	_input_router.web_tapped.connect(_on_web_tapped)
 	_input_router.reel_changed.connect(_session.set_reel_active)
 	_input_router.burst_requested.connect(_session.request_burst)
@@ -198,6 +223,7 @@ func _apply_settlement(settlement: RunSettlement) -> void:
 		printerr("[spider-swing] progress write failed; current session continues")
 	if _session != null:
 		_session.configure_progress(_progress)
+	_front_end_state.configure_progress(_progress)
 	var unlocked: PackedStringArray = result.get(
 		"unlocked", PackedStringArray())
 	if not unlocked.is_empty() and _session != null:
@@ -207,6 +233,43 @@ func _apply_settlement(settlement: RunSettlement) -> void:
 			"Unlocked spider: %s" % unlocked[0],
 			{"unlocked": unlocked},
 		))
+
+
+func _select_spider_profile(spider_id: StringName) -> void:
+	if _progression_service.select_spider_profile(_progress, spider_id):
+		_save_progress_and_refresh()
+
+
+func _select_spider_style(style: StringName) -> void:
+	if _progression_service.select_spider_style(_progress, style):
+		_save_progress_and_refresh()
+
+
+func _select_web_variant(web_variant: StringName) -> void:
+	if _progression_service.select_web_variant(_progress, web_variant):
+		_save_progress_and_refresh()
+
+
+func _purchase_upgrade(upgrade_id: StringName) -> void:
+	var result := _progression_service.purchase_upgrade(_progress, upgrade_id)
+	if bool(result.get("purchased", false)):
+		_save_progress_and_refresh()
+
+
+func _cycle_creator_piece(slot: int) -> void:
+	if _progression_service.cycle_creator_piece(_progress, slot):
+		_save_progress_and_refresh()
+
+
+func _clear_creator_pattern() -> void:
+	_progression_service.clear_creator_pattern(_progress)
+	_save_progress_and_refresh()
+
+
+func _save_progress_and_refresh() -> void:
+	if not _save_repository.save_progress(_progress):
+		printerr("[spider-swing] progress write failed; current session continues")
+	_front_end_state.configure_progress(_progress)
 
 
 func _on_web_tapped(screen_position: Vector2) -> void:

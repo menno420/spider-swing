@@ -21,6 +21,8 @@ var _course_chunk_index: int = -1
 var _run := RunStateMachine.new()
 var _effects := EffectState.new()
 var _progress := PlayerProgress.defaults()
+var _creator_pattern: Array[StringName] = []
+var _rescue_available: bool = true
 var _command_buffer: Array[InputCommand] = []
 var _sequence: int = 0
 var _debug_visible: bool = false
@@ -49,6 +51,13 @@ func _ready() -> void:
 
 func configure_progress(progress: PlayerProgress) -> void:
 	_progress = progress.copy()
+	if not is_inside_tree():
+		_config.apply_preset(_config.preset_name)
+		SpiderCatalog.apply_to_config(_config, _progress)
+
+
+func configure_creator_pattern(pattern: Array[StringName]) -> void:
+	_creator_pattern = pattern.duplicate()
 
 
 func _physics_process(_delta: float) -> void:
@@ -133,8 +142,9 @@ func toggle_slow_motion() -> void:
 
 func apply_preset(name: StringName) -> void:
 	_config.apply_preset(name)
+	SpiderCatalog.apply_to_config(_config, _progress)
 	_world.config = _config
-	_course_stream.reset(_config.middle_hazard_start_distance)
+	_reset_course_stream()
 	_world.set_course_geometry(_course_stream.geometry())
 	event_published.emit(SimulationEvent.make(
 		SimulationEvent.Kind.PRESET_CHANGED,
@@ -188,8 +198,13 @@ func set_tuning_parameter(parameter: StringName, value: float) -> void:
 
 
 func _after_tuning_change(parameter: StringName) -> void:
-	if parameter == &"mid_hazard_m":
-		_course_stream.reset(_config.middle_hazard_start_distance)
+	if parameter in [
+		&"mid_hazard_m",
+		&"edge_obstacle_size",
+		&"floating_obstacle_size",
+		&"gate_opening_size",
+	]:
+		_reset_course_stream()
 		_world.set_course_geometry(_course_stream.geometry())
 	elif parameter == &"course_rails" and \
 			not _config.course_boundaries_enabled:
@@ -325,6 +340,10 @@ func _step_once() -> void:
 					_config.burst_frenzy_duration,
 				)
 			if event.kind == SimulationEvent.Kind.DEATH_REQUESTED:
+				if _rescue_available and _config.rescue_life_enabled:
+					_rescue_available = false
+					event_published.emit(_world.rescue_after_death())
+					continue
 				var cause := StringName(event.data.get("cause", &"unknown"))
 				if not _run.request_death(cause, _config.death_confirmation_seconds):
 					continue
@@ -371,8 +390,10 @@ func _reset_run(clear_replay: bool = true) -> void:
 	_run_sequence += 1
 	_settlement_emitted = false
 	_effects.reset()
-	_course_stream.reset(_config.middle_hazard_start_distance)
+	_rescue_available = _config.rescue_life_enabled
+	_reset_course_stream()
 	_world.reset(_config, _course_stream.geometry())
+	var guided := _world.begin_guided_opening()
 	_course_chunk_index = maxi(
 		0, floori(_world.position.x / CourseStream.CHUNK_WIDTH))
 	_command_buffer.clear()
@@ -383,7 +404,7 @@ func _reset_run(clear_replay: bool = true) -> void:
 	event_published.emit(SimulationEvent.make(
 		SimulationEvent.Kind.RUN_RESTARTED,
 		_world.position,
-		"Swing Laboratory ready",
+		"Opening web ready" if guided else "Swing Laboratory ready",
 	))
 	_publish_snapshot()
 
@@ -408,6 +429,10 @@ func _make_snapshot() -> SimulationSnapshot:
 	snapshot.burst_cooldown = _world.burst_cooldown_remaining
 	snapshot.burst_cooldown_capacity = _config.burst_cooldown
 	snapshot.dive_ready = _world.dive_ready
+	snapshot.rescue_available = _rescue_available
+	snapshot.rescue_shield_remaining = _world.rescue_shield_remaining
+	snapshot.glide_remaining = _world.glide_remaining
+	snapshot.glide_capacity = _config.glide_duration
 	snapshot.pull_active = _world.pull_active
 	snapshot.pull_kind = _world.pull_kind
 	snapshot.pull_anchor = _world.pull_anchor
@@ -438,6 +463,9 @@ func _make_snapshot() -> SimulationSnapshot:
 	snapshot.automatic_take_up_retention = \
 		_config.automatic_take_up_retention
 	snapshot.spider_style = _progress.selected_spider_style
+	snapshot.spider_id = _progress.selected_spider_id
+	snapshot.web_variant = _progress.selected_web_variant
+	snapshot.player_collision_radius = _config.player_collision_radius
 	_populate_dive_preview(snapshot)
 	snapshot.debug_visible = _debug_visible
 	snapshot.debug_paused = _debug_paused
@@ -496,6 +524,16 @@ func _emit_settlement(cause: StringName) -> void:
 
 func _publish_snapshot() -> void:
 	snapshot_published.emit(_make_snapshot())
+
+
+func _reset_course_stream() -> void:
+	_course_stream.reset(
+		_config.middle_hazard_start_distance,
+		_config.edge_obstacle_scale,
+		_config.floating_obstacle_scale,
+		_config.gate_opening_scale,
+		_creator_pattern,
+	)
 
 
 func _next_sequence() -> int:

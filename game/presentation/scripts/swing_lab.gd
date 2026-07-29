@@ -102,6 +102,8 @@ func present_event(event: SimulationEvent) -> void:
 			_feedback_color = CYAN
 		SimulationEvent.Kind.BOOST_EXPIRED:
 			_feedback_color = MUTED
+		SimulationEvent.Kind.RESCUE_USED:
+			_feedback_color = GREEN
 		_:
 			_feedback_color = GREEN
 	queue_redraw()
@@ -276,8 +278,9 @@ func _draw_web() -> void:
 		return
 	var spider := _world_to_screen(_snapshot.position)
 	var anchor := _world_to_screen(_snapshot.anchor)
+	var web_color := _web_color()
 	draw_line(spider, anchor, Color(0.25, 0.72, 0.77, 0.35), 7.0)
-	draw_line(spider, anchor, WEB, 2.5)
+	draw_line(spider, anchor, web_color, 2.5)
 	if _snapshot.reel_active:
 		var pulse := fposmod(float(_snapshot.tick) * 0.08, 1.0)
 		draw_circle(spider.lerp(anchor, pulse), 7.0, CYAN)
@@ -339,6 +342,7 @@ func _draw_action_feedback() -> void:
 func _draw_spider() -> void:
 	var center := _world_to_screen(_snapshot.position)
 	var rotation := clampf(_snapshot.velocity.angle() * 0.16, -0.35, 0.35)
+	var scale := _snapshot.player_collision_radius / 18.0
 	var accent := SPIDER_ACCENT
 	var body := SPIDER_DARK
 	match _snapshot.spider_style:
@@ -348,23 +352,63 @@ func _draw_spider() -> void:
 		PlayerProgress.STYLE_COMET:
 			accent = Color("8be9fd")
 			body = Color("3a275f")
+	match _snapshot.spider_id:
+		SpiderCatalog.SKITTER:
+			accent = accent.lightened(0.18)
+		SpiderCatalog.ANCHORITE:
+			body = body.lightened(0.12)
+		SpiderCatalog.BALLOONER:
+			accent = accent.lerp(CYAN, 0.34)
 	for side in [-1.0, 1.0]:
 		for index in range(4):
 			var y := -15.0 + float(index) * 10.0
-			var hip := center + Vector2(side * 10.0, y).rotated(rotation)
-			var knee := center + Vector2(side * (24.0 + index * 2.0),
-				y - 9.0 + index * 5.0).rotated(rotation)
-			var foot := center + Vector2(side * (38.0 + index * 3.0),
-				y + 2.0 + index * 6.0).rotated(rotation)
+			var hip := center + (
+				Vector2(side * 10.0, y) * scale).rotated(rotation)
+			var knee := center + (
+				Vector2(
+					side * (24.0 + index * 2.0),
+					y - 9.0 + index * 5.0,
+				) * scale).rotated(rotation)
+			var foot := center + (
+				Vector2(
+					side * (38.0 + index * 3.0),
+					y + 2.0 + index * 6.0,
+				) * scale).rotated(rotation)
 			draw_polyline(PackedVector2Array([hip, knee, foot]), body, 5.0, true)
 			draw_polyline(PackedVector2Array([hip, knee, foot]), accent, 1.5, true)
-	draw_circle(center + Vector2(-8.0, 0.0).rotated(rotation), 17.0, body)
-	draw_circle(center + Vector2(12.0, -1.0).rotated(rotation), 14.0, body)
-	draw_circle(center + Vector2(-9.0, -4.0).rotated(rotation), 6.0, accent)
-	draw_circle(center + Vector2(17.0, -5.0).rotated(rotation), 3.2, WEB)
-	draw_circle(center + Vector2(17.0, -5.0).rotated(rotation), 1.4, Color("15202b"))
+	draw_circle(center + Vector2(-8.0, 0.0).rotated(rotation) * scale,
+		17.0 * scale, body)
+	draw_circle(center + Vector2(12.0, -1.0).rotated(rotation) * scale,
+		14.0 * scale, body)
+	draw_circle(center + Vector2(-9.0, -4.0).rotated(rotation) * scale,
+		6.0 * scale, accent)
+	draw_circle(center + Vector2(17.0, -5.0).rotated(rotation) * scale,
+		3.2 * scale, WEB)
+	draw_circle(center + Vector2(17.0, -5.0).rotated(rotation) * scale,
+		1.4 * scale, Color("15202b"))
+	if _snapshot.spider_id == SpiderCatalog.BALLOONER and \
+			_snapshot.glide_remaining > 0.0:
+		draw_arc(
+			center + Vector2(0.0, -23.0 * scale),
+			30.0 * scale,
+			PI,
+			TAU,
+			30,
+			Color(_web_color(), 0.72),
+			3.0,
+		)
+	if _snapshot.rescue_shield_remaining > 0.0:
+		draw_arc(
+			center,
+			32.0 * scale,
+			0.0,
+			TAU,
+			48,
+			Color(GREEN, 0.82),
+			5.0,
+		)
 	if _show_debug_tools and _snapshot.debug_visible:
-		draw_arc(center, 18.0, 0.0, TAU, 40, CYAN, 1.5)
+		draw_arc(center, _snapshot.player_collision_radius, 0.0, TAU, 40, CYAN, 1.5)
 		draw_line(center, center + _snapshot.velocity * 0.12, YELLOW, 2.0)
 
 
@@ -392,6 +436,21 @@ func _draw_hud(size: Vector2) -> void:
 			Vector2(size.x - 280.0, 78.0),
 			"BURST FRENZY %.1fs" % _snapshot.burst_frenzy_remaining,
 			18,
+			CYAN,
+		)
+	var life_text := "RESCUE READY" if _snapshot.rescue_available \
+		else "RESCUE SPENT"
+	_draw_text(
+		Vector2(size.x - 280.0, 104.0),
+		life_text,
+		16,
+		GREEN if _snapshot.rescue_available else MUTED,
+	)
+	if _snapshot.glide_capacity > 0.0:
+		_draw_text(
+			Vector2(size.x - 280.0, 128.0),
+			"GLIDE %.1fs" % _snapshot.glide_remaining,
+			16,
 			CYAN,
 		)
 	_draw_button(LabLayout.menu_rect(size), "MENU", false)
@@ -751,3 +810,13 @@ func _draw_closed_polyline(
 
 func _world_to_screen(world_position: Vector2) -> Vector2:
 	return world_position - Vector2(_camera_x, 0.0)
+
+
+func _web_color() -> Color:
+	match _snapshot.web_variant:
+		PlayerProgress.WEB_DEW:
+			return Color("73e0a4")
+		PlayerProgress.WEB_EMBER:
+			return Color("ffd166")
+		_:
+			return WEB

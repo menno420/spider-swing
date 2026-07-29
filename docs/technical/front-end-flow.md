@@ -10,10 +10,13 @@ cannot start or persist a run by itself.
 
 ### Home
 
-The first visible screen presents exactly three primary routes:
+The first visible screen presents these real routes:
 
 - **Play** — creates a new Swing Laboratory session with the saved options;
+- **Garage** — compares spider profiles, palettes, and web treatments;
+- **Shop** — spends laboratory flies on capped profile-specific upgrade tracks;
 - **Tutorial** — opens the six-step animated mechanics guide;
+- **Course Lab** — edits and playtests a six-piece local deterministic pattern;
 - **Settings** — edits real, persisted player options.
 
 The simulation, input router, and gameplay view are not mounted until Play is
@@ -40,6 +43,26 @@ adapts to differing aspect ratios, honors reduced motion, and can be localized
 without re-editing video. A polished cinematic can replace or precede it later
 without changing the navigation contract.
 
+### Garage and Shop
+
+Garage profiles are centralized in `SpiderCatalog`. Balanced, small/agile,
+heavy, and gliding spiders are all unlocked in Phase 0 so the owner can compare
+their explicit strengths and costs without progression obscuring the feel test.
+The selected profile resolves into the same `SwingConfig` consumed by
+simulation. Presentation only shows those resolved values.
+
+The Shop has two capped tracks per profile and spends `spendable_flies` through
+`ProgressionService`. Purchases persist atomically through `SaveRepository`.
+There are no real-money products or entitlements in this build.
+
+### Course Lab
+
+Six saved slots cycle through EMPTY, LEAF, POD, VINE, and GATE. The selected
+pattern replaces the post-opening procedural pattern during a creator
+playtest. This is deliberately a local deterministic foundation: sharing,
+discovery, moderation, validation tooling, and a full spatial editor remain
+future work.
+
 ### Settings
 
 The current options all affect runtime behavior:
@@ -52,7 +75,8 @@ The current options all affect runtime behavior:
 | Debug tools | Shows or removes the laboratory DEBUG control and panel hit regions |
 
 `PlayerSettings` validates and versions these values. `PlayerProgress` separately
-versions fly totals, distance milestones, and unlocked spider palettes.
+versions lifetime/spendable flies, distance milestones, selected spider,
+profile upgrades, palettes, web variants, and the saved creator pattern.
 `SaveRepository` is the exclusive persistent writer and performs a recoverable
 temp → primary rotation for both records.
 Settings survive app restarts; invalid or corrupt values fall back safely.
@@ -62,12 +86,12 @@ controls, and focus-follow behavior. All actions remain reachable on the
 
 ## Ownership
 
-- `FrontEndState` owns navigation, tutorial progress, settings validation, and
-  the Play request.
+- `FrontEndState` owns navigation, tutorial progress, settings validation,
+  Garage/Shop/Course Lab intent, and the Play request.
 - `FrontEndView` renders state and forwards button intent.
 - `TutorialPreview` renders illustration only.
-- `ProgressionService` applies each run settlement once and owns milestone
-  cosmetic unlocks.
+- `ProgressionService` applies each run settlement once and owns fly-funded
+  upgrades, selections, creator edits, and milestone cosmetic unlocks.
 - `SaveRepository` exclusively reads and writes settings and progression files.
 - `main.gd` is the composition root: it mounts one surface at a time and wires
   the transition.
@@ -80,14 +104,16 @@ No global manager or autoload is introduced.
 `python3 tools/verify.py --require-godot` verifies:
 
 - startup mounts Home without creating gameplay;
-- Play, Tutorial, and Settings are real event-consuming Buttons;
+- Play, Garage, Shop, Tutorial, Course Lab, and Settings are real
+  event-consuming Buttons;
 - the tutorial has exactly six steps and covers the live mechanics;
 - Settings owns a vertical scroll surface with readable type and mobile-sized
   picker/action controls;
 - invalid settings are rejected and valid changes emit once;
 - settings and progression encode/decode and actual atomic filesystem
   persistence round-trips;
-- duplicate settlement rejection plus fly/distance cosmetic milestones;
+- duplicate settlement rejection, fly-funded capped upgrades, creator edits,
+  selections, and fly/distance cosmetic milestones;
 - the composition root enters gameplay only through the Play request;
 - Menu emits one return request without leaking into a web action;
 - disabling debug tools removes their touch surface.

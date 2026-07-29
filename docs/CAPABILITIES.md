@@ -301,3 +301,20 @@ never edit.
   `GET /repos/menno420/spider-swing/rulesets` returned an empty list · this
   supersedes the private-plan wall only for current visibility, not as a promise
   that the repository will remain public.
+- 2026-07-29 · capability · `local` · **The opening/garage candidate passes the
+  full Godot 4.7.1 verification surface before publication** ·
+  `python3 tools/verify.py --require-godot` passed architecture fixtures and
+  scan, import, boot, 34 deterministic physics checks, 15 mobile GUI checks,
+  and 11 front-end/progression checks (70 total). This proves authoritative
+  obstacle scaling, the immediately interruptible opening web, one-run rescue,
+  four centralized spider profiles including bounded glide, fly-funded capped
+  upgrades, and saved creator patterns locally; CI and Android export remain to
+  be recorded after the branch is published.
+- 2026-07-29 · wall · `source-inspected` · **Real-money Shop products and
+  hourly lives are not implemented capabilities** · the repository contains no
+  Google Play Billing SDK, product catalogue, purchase verification,
+  acknowledgement, backend entitlement, or test-product configuration. The
+  visible Shop spends local flies only. Production purchases must be granted
+  only from verified `PURCHASED` states and acknowledged/consumed through an
+  explicit later integration; the current build must never label local prototype
+  upgrades as IAP.

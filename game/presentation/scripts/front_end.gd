@@ -16,6 +16,9 @@ var _state: FrontEndState
 var _home: Control
 var _tutorial: Control
 var _settings: Control
+var _garage: Control
+var _shop: Control
+var _creator: Control
 var _tutorial_preview: TutorialPreview
 var _tutorial_kicker: Label
 var _tutorial_title: Label
@@ -27,9 +30,23 @@ var _preset_picker: OptionButton
 var _hints_toggle: CheckButton
 var _motion_toggle: CheckButton
 var _debug_toggle: CheckButton
+var _garage_name: Label
+var _garage_role: Label
+var _garage_description: Label
+var _garage_tradeoff: Label
+var _garage_stats: Label
+var _garage_style_picker: OptionButton
+var _garage_web_picker: OptionButton
+var _profile_buttons: Dictionary = {}
+var _shop_flies: Label
+var _shop_title: Label
+var _shop_description: Label
+var _upgrade_buttons: Dictionary = {}
+var _creator_slot_buttons: Array[Button] = []
 var _buttons: Dictionary = {}
 var _interface_ready: bool = false
 var _syncing_settings: bool = false
+var _syncing_progress: bool = false
 var _elapsed: float = 0.0
 
 
@@ -57,6 +74,9 @@ func ensure_interface() -> void:
 	_build_home()
 	_build_tutorial()
 	_build_settings()
+	_build_garage()
+	_build_shop()
+	_build_creator()
 
 
 func front_end_button(button_name: StringName) -> Button:
@@ -113,24 +133,40 @@ func _build_home() -> void:
 	var card := _panel(PANEL)
 	_place(card, _home, 0.62, 0.14, 0.94, 0.86)
 	var menu := VBoxContainer.new()
-	menu.add_theme_constant_override("separation", 16)
-	_fill_with_margin(menu, card, 30.0)
+	menu.add_theme_constant_override("separation", 10)
+	_fill_with_margin(menu, card, 24.0)
 	menu.add_child(_section_label("READY TO SWING?"))
 	menu.add_child(_paragraph(
 		"Learn the controls, choose your swing feel, then take the laboratory "
 		+ "as far as you can.",
 	))
-	menu.add_spacer(false)
-	var play := _button(&"Play", "PLAY", GREEN, 76.0)
+	var play := _button(&"Play", "PLAY", GREEN, 68.0)
 	play.pressed.connect(_on_play)
 	menu.add_child(play)
-	var tutorial := _button(&"Tutorial", "TUTORIAL", CYAN, 66.0)
+	var routes := GridContainer.new()
+	routes.columns = 2
+	routes.add_theme_constant_override("h_separation", 10)
+	routes.add_theme_constant_override("v_separation", 10)
+	menu.add_child(routes)
+	var garage := _button(&"Garage", "GARAGE", YELLOW, 54.0)
+	garage.pressed.connect(_on_garage)
+	garage.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	routes.add_child(garage)
+	var shop := _button(&"Shop", "SHOP", GREEN, 54.0)
+	shop.pressed.connect(_on_shop)
+	shop.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	routes.add_child(shop)
+	var tutorial := _button(&"Tutorial", "TUTORIAL", CYAN, 54.0)
 	tutorial.pressed.connect(_on_tutorial)
-	menu.add_child(tutorial)
-	var settings := _button(&"Settings", "SETTINGS", ORANGE, 66.0)
+	tutorial.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	routes.add_child(tutorial)
+	var creator := _button(&"Creator", "COURSE LAB", ORANGE, 54.0)
+	creator.pressed.connect(_on_creator)
+	creator.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	routes.add_child(creator)
+	var settings := _button(&"Settings", "SETTINGS", ORANGE, 54.0)
 	settings.pressed.connect(_on_settings)
 	menu.add_child(settings)
-	menu.add_spacer(false)
 	var note := _label("Your choices save automatically.", 14, MUTED)
 	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	menu.add_child(note)
@@ -263,12 +299,181 @@ func _build_settings() -> void:
 	content.add_child(scroll_hint)
 
 
+func _build_garage() -> void:
+	_garage = _full_screen(&"Garage")
+	var back := _button(&"GarageBack", "‹  HOME", CYAN, 50.0)
+	back.pressed.connect(_on_home)
+	_place(back, _garage, 0.025, 0.035, 0.16, 0.11)
+	var heading := _label("SPIDER GARAGE", 34, INK)
+	_place(heading, _garage, 0.20, 0.035, 0.58, 0.12)
+
+	var roster_card := _panel(PANEL)
+	_place(roster_card, _garage, 0.04, 0.15, 0.49, 0.93)
+	var roster := VBoxContainer.new()
+	roster.add_theme_constant_override("separation", 14)
+	_fill_with_margin(roster, roster_card, 24.0)
+	roster.add_child(_section_label("CHOOSE A HANDLING STYLE"))
+	var grid := GridContainer.new()
+	grid.columns = 2
+	grid.add_theme_constant_override("h_separation", 12)
+	grid.add_theme_constant_override("v_separation", 12)
+	roster.add_child(grid)
+	for spider_id: StringName in SpiderCatalog.ALL_IDS:
+		var item := SpiderCatalog.profile(spider_id)
+		var button := _button(
+			StringName("Spider%s" % str(spider_id).capitalize()),
+			str(item["name"]).to_upper(),
+			YELLOW,
+			76.0,
+		)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.pressed.connect(_on_spider_profile.bind(spider_id))
+		grid.add_child(button)
+		_profile_buttons[spider_id] = button
+	roster.add_child(_setting_description(
+		"All four candidates are open in this Phase 0 build. Each changes the "
+		+ "same tested motor through explicit trade-offs."))
+
+	var detail_card := _panel(PANEL)
+	_place(detail_card, _garage, 0.51, 0.15, 0.96, 0.93)
+	var detail := VBoxContainer.new()
+	detail.add_theme_constant_override("separation", 10)
+	_fill_with_margin(detail, detail_card, 24.0)
+	_garage_role = _section_label("")
+	detail.add_child(_garage_role)
+	_garage_name = _label("", 32, INK)
+	detail.add_child(_garage_name)
+	_garage_description = _setting_description("")
+	detail.add_child(_garage_description)
+	_garage_tradeoff = _setting_description("")
+	_garage_tradeoff.add_theme_color_override("font_color", YELLOW)
+	detail.add_child(_garage_tradeoff)
+	_garage_stats = _label("", 17, CYAN)
+	_garage_stats.custom_minimum_size.y = 48.0
+	detail.add_child(_garage_stats)
+	var pickers := HBoxContainer.new()
+	pickers.add_theme_constant_override("separation", 12)
+	detail.add_child(pickers)
+	_garage_style_picker = OptionButton.new()
+	_garage_style_picker.name = "SpiderStylePicker"
+	_garage_style_picker.custom_minimum_size.y = 56.0
+	_garage_style_picker.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	for label: String in ["Garden body", "Amber body", "Comet body"]:
+		_garage_style_picker.add_item(label)
+	_garage_style_picker.item_selected.connect(_on_style_selected)
+	_style_option_button(_garage_style_picker)
+	pickers.add_child(_garage_style_picker)
+	_garage_web_picker = OptionButton.new()
+	_garage_web_picker.name = "WebVariantPicker"
+	_garage_web_picker.custom_minimum_size.y = 56.0
+	_garage_web_picker.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	for label: String in ["Classic silk", "Dew silk", "Ember silk"]:
+		_garage_web_picker.add_item(label)
+	_garage_web_picker.item_selected.connect(_on_web_variant_selected)
+	_style_option_button(_garage_web_picker)
+	pickers.add_child(_garage_web_picker)
+	var play := _button(&"GaragePlay", "PLAY THIS SPIDER", GREEN, 64.0)
+	play.pressed.connect(_on_play)
+	detail.add_child(play)
+
+
+func _build_shop() -> void:
+	_shop = _full_screen(&"Shop")
+	var back := _button(&"ShopBack", "‹  HOME", CYAN, 50.0)
+	back.pressed.connect(_on_home)
+	_place(back, _shop, 0.025, 0.035, 0.16, 0.11)
+	var card := _panel(PANEL)
+	_place(card, _shop, 0.14, 0.08, 0.86, 0.94)
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 14)
+	_fill_with_margin(content, card, 28.0)
+	var header := HBoxContainer.new()
+	content.add_child(header)
+	_shop_title = _label("", 32, INK)
+	_shop_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(_shop_title)
+	_shop_flies = _label("", 22, YELLOW)
+	header.add_child(_shop_flies)
+	content.add_child(_paragraph(
+		"Prototype upgrades use flies collected in play. No store purchase or "
+		+ "real-money entitlement is connected in this build."))
+	var upgrades := VBoxContainer.new()
+	upgrades.add_theme_constant_override("separation", 12)
+	content.add_child(upgrades)
+	for upgrade_item: Dictionary in SpiderCatalog.UPGRADES:
+		var upgrade_id := StringName(upgrade_item["id"])
+		var button := _button(
+			StringName("Upgrade%s" % str(upgrade_id).to_pascal_case()),
+			"",
+			GREEN,
+			78.0,
+		)
+		button.pressed.connect(_on_upgrade.bind(upgrade_id))
+		upgrades.add_child(button)
+		_upgrade_buttons[upgrade_id] = button
+	_shop_description = _setting_description("")
+	_shop_description.custom_minimum_size.y = 56.0
+	content.add_child(_shop_description)
+	var garage := _button(&"ShopGarage", "CHANGE SPIDER", CYAN, 58.0)
+	garage.pressed.connect(_on_garage)
+	content.add_child(garage)
+
+
+func _build_creator() -> void:
+	_creator = _full_screen(&"Creator")
+	var back := _button(&"CreatorBack", "‹  HOME", CYAN, 50.0)
+	back.pressed.connect(_on_home)
+	_place(back, _creator, 0.025, 0.035, 0.16, 0.11)
+	var card := _panel(PANEL)
+	_place(card, _creator, 0.12, 0.08, 0.88, 0.94)
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 14)
+	_fill_with_margin(content, card, 28.0)
+	content.add_child(_section_label("COURSE LAB · CREATOR FOUNDATION"))
+	content.add_child(_paragraph(
+		"Tap each slot to cycle EMPTY → LEAF → POD → VINE → GATE. "
+		+ "PLAYTEST repeats the saved six-piece sequence after the opening swing."))
+	var grid := GridContainer.new()
+	grid.columns = 3
+	grid.add_theme_constant_override("h_separation", 12)
+	grid.add_theme_constant_override("v_separation", 12)
+	content.add_child(grid)
+	for index in range(PlayerProgress.DEFAULT_CREATOR_PATTERN.size()):
+		var button := _button(
+			StringName("CourseSlot%d" % index),
+			"",
+			ORANGE,
+			82.0,
+		)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.pressed.connect(_on_creator_slot.bind(index))
+		grid.add_child(button)
+		_creator_slot_buttons.append(button)
+	var actions := HBoxContainer.new()
+	actions.add_theme_constant_override("separation", 14)
+	content.add_child(actions)
+	var clear := _button(&"CreatorClear", "CLEAR", MUTED, 62.0)
+	clear.pressed.connect(_on_creator_clear)
+	clear.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	actions.add_child(clear)
+	var play := _button(&"CreatorPlay", "PLAYTEST COURSE", GREEN, 62.0)
+	play.pressed.connect(_on_creator_play)
+	play.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	actions.add_child(play)
+	content.add_child(_setting_description(
+		"This is a deterministic local prototype. Sharing, moderation, and an "
+		+ "online level browser remain later work after the swing is approved."))
+
+
 func _render() -> void:
 	if _state == null:
 		return
 	_home.visible = _state.screen == FrontEndState.Screen.HOME
 	_tutorial.visible = _state.screen == FrontEndState.Screen.TUTORIAL
 	_settings.visible = _state.screen == FrontEndState.Screen.SETTINGS
+	_garage.visible = _state.screen == FrontEndState.Screen.GARAGE
+	_shop.visible = _state.screen == FrontEndState.Screen.SHOP
+	_creator.visible = _state.screen == FrontEndState.Screen.CREATOR
 	if _tutorial.visible:
 		var step := _state.current_tutorial_step()
 		_tutorial_kicker.text = str(step.get("kicker", ""))
@@ -296,7 +501,92 @@ func _render() -> void:
 	_motion_toggle.button_pressed = _state.settings.reduced_motion
 	_debug_toggle.button_pressed = _state.settings.show_debug_tools
 	_syncing_settings = false
+	_syncing_progress = true
+	_render_garage()
+	_render_shop()
+	_render_creator()
+	_syncing_progress = false
 	queue_redraw()
+
+
+func _render_garage() -> void:
+	var selected := _state.progress.selected_spider_id
+	var item := SpiderCatalog.profile(selected)
+	for spider_id: StringName in _profile_buttons:
+		var button: Button = _profile_buttons[spider_id]
+		var profile_item := SpiderCatalog.profile(spider_id)
+		button.text = "%s%s" % [
+			"✓ " if spider_id == selected else "",
+			str(profile_item["name"]).to_upper(),
+		]
+	_garage_role.text = str(item["role"])
+	_garage_name.text = str(item["name"])
+	_garage_description.text = str(item["description"])
+	_garage_tradeoff.text = "TRADE-OFF · %s" % item["tradeoff"]
+	var preview := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	SpiderCatalog.apply_to_config(preview, _state.progress)
+	_garage_stats.text = (
+		"HITBOX %.1f px  ·  GRAVITY %.0f  ·  REEL %.0f px/s%s"
+		% [
+			preview.player_collision_radius,
+			preview.gravity,
+			preview.reel_retraction_rate,
+			(
+				"  ·  GLIDE %.2f s" % preview.glide_duration
+				if preview.glide_duration > 0.0
+				else ""
+			),
+		]
+	)
+	_garage_style_picker.selected = PlayerProgress.ALL_STYLES.find(
+		_state.progress.selected_spider_style)
+	for index in range(PlayerProgress.ALL_STYLES.size()):
+		_garage_style_picker.get_popup().set_item_disabled(
+			index,
+			PlayerProgress.ALL_STYLES[index] not in \
+				_state.progress.unlocked_spider_styles,
+		)
+	_garage_web_picker.selected = PlayerProgress.ALL_WEB_VARIANTS.find(
+		_state.progress.selected_web_variant)
+
+
+func _render_shop() -> void:
+	var selected := _state.progress.selected_spider_id
+	var profile_item := SpiderCatalog.profile(selected)
+	_shop_title.text = "%s UPGRADES" % str(profile_item["name"]).to_upper()
+	_shop_flies.text = "%d FLIES AVAILABLE" % _state.progress.spendable_flies
+	for upgrade_id: StringName in _upgrade_buttons:
+		(_upgrade_buttons[upgrade_id] as Button).visible = false
+	var descriptions := PackedStringArray()
+	for upgrade_item: Dictionary in SpiderCatalog.upgrades_for(selected):
+		var upgrade_id := StringName(upgrade_item["id"])
+		var button: Button = _upgrade_buttons[upgrade_id]
+		var level := _state.progress.upgrade_level(upgrade_id)
+		var maximum := level >= SpiderCatalog.MAX_UPGRADE_LEVEL
+		var cost := SpiderCatalog.cost_for_level(level)
+		button.visible = true
+		button.disabled = maximum or _state.progress.spendable_flies < cost
+		button.text = (
+			"%s  ·  LEVEL %d/%d  ·  %s"
+			% [
+				str(upgrade_item["name"]).to_upper(),
+				level,
+				SpiderCatalog.MAX_UPGRADE_LEVEL,
+				"MAXIMUM" if maximum else "%d FLIES" % cost,
+			]
+		)
+		descriptions.append(
+			"%s: %s" % [upgrade_item["name"], upgrade_item["description"]])
+	_shop_description.text = "\n".join(descriptions)
+
+
+func _render_creator() -> void:
+	for index in range(_creator_slot_buttons.size()):
+		var piece := _state.progress.creator_pattern[index]
+		_creator_slot_buttons[index].text = "%02d · %s" % [
+			index + 1,
+			_creator_piece_label(piece),
+		]
 
 
 func _on_play() -> void:
@@ -317,6 +607,68 @@ func _on_tutorial() -> void:
 func _on_settings() -> void:
 	if _state != null:
 		_state.show_settings()
+
+
+func _on_garage() -> void:
+	if _state != null:
+		_state.show_garage()
+
+
+func _on_shop() -> void:
+	if _state != null:
+		_state.show_shop()
+
+
+func _on_creator() -> void:
+	if _state != null:
+		_state.show_creator()
+
+
+func _on_spider_profile(spider_id: StringName) -> void:
+	if _state != null:
+		_state.request_spider_profile(spider_id)
+
+
+func _on_style_selected(index: int) -> void:
+	if _state == null or _syncing_progress:
+		return
+	_state.request_spider_style(
+		PlayerProgress.ALL_STYLES[clampi(
+			index,
+			0,
+			PlayerProgress.ALL_STYLES.size() - 1,
+		)])
+
+
+func _on_web_variant_selected(index: int) -> void:
+	if _state == null or _syncing_progress:
+		return
+	_state.request_web_variant(
+		PlayerProgress.ALL_WEB_VARIANTS[clampi(
+			index,
+			0,
+			PlayerProgress.ALL_WEB_VARIANTS.size() - 1,
+		)])
+
+
+func _on_upgrade(upgrade_id: StringName) -> void:
+	if _state != null:
+		_state.request_upgrade_purchase(upgrade_id)
+
+
+func _on_creator_slot(index: int) -> void:
+	if _state != null:
+		_state.request_creator_piece(index)
+
+
+func _on_creator_clear() -> void:
+	if _state != null:
+		_state.request_creator_clear()
+
+
+func _on_creator_play() -> void:
+	if _state != null:
+		_state.request_creator_play()
 
 
 func _on_tutorial_previous() -> void:
@@ -367,6 +719,20 @@ func _preset_index(preset: StringName) -> int:
 			return 2
 		_:
 			return 0
+
+
+func _creator_piece_label(piece: StringName) -> String:
+	match piece:
+		&"leaf":
+			return "LEAF CLUSTER"
+		&"pod":
+			return "SEED POD"
+		&"vine":
+			return "VINE FORK"
+		&"gate":
+			return "POT GATE"
+		_:
+			return "EMPTY"
 
 
 func _full_screen(node_name: StringName) -> Control:

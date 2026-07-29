@@ -8,6 +8,7 @@ static func apply_forces(
 	distance_pixels: float,
 	delta: float,
 	config: SwingConfig,
+	gravity_scale: float = 1.0,
 ) -> Dictionary:
 	var velocity := current_velocity
 	var target_speed := config.target_speed_at(distance_pixels)
@@ -25,7 +26,7 @@ static func apply_forces(
 			config.horizontal_drive_acceleration * 0.25 * delta,
 		)
 
-	velocity.y += config.gravity * delta
+	velocity.y += config.gravity * gravity_scale * delta
 	var drag_factor := 1.0 / (1.0 + config.air_drag * delta)
 	velocity *= drag_factor
 

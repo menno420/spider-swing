@@ -22,12 +22,17 @@ expected; importing `game/simulation/`, `game/application/`, `game/adapters/`, o
   strengths, minimum response speeds, and Burst tangential retention.
 - `RunSettlement` and its identity, so idempotent settlement is expressible in one
   place (GDD § 15.1, § 20).
+- `SpiderCatalog` profile and upgrade definitions. Profiles are modifiers over
+  one `SwingConfig`; they do not fork the physics implementation.
+- Versioned `PlayerProgress`, including spendable/lifetime flies, selections,
+  capped upgrade levels, and the local creator pattern.
 
 ## What does not
 
 Anything that touches the scene tree, physics bodies, files, or rendering.
 
 `InputCommand`, `CourseGeometry`, `SimulationEvent`, `SimulationSnapshot`,
-`SwingConfig`, and shared layout contracts are live. The shared layout contract
+`SwingConfig`, `SpiderCatalog`, `PlayerProgress`, and shared layout contracts are
+live. The shared layout contract
 owns both drawn and interactive rope-action geometry so tests and adapters cannot
 silently disagree. See ADR 0002.

@@ -73,7 +73,8 @@ static func category_rect(
 ) -> Rect2:
 	var panel := debug_panel_rect(viewport_size)
 	var gap := 14.0
-	var width := (panel.size.x - 40.0 - gap * 4.0) / 5.0
+	var count := float(TuningCatalog.category_count())
+	var width := (panel.size.x - 40.0 - gap * (count - 1.0)) / count
 	return Rect2(
 		panel.position.x + 20.0 + float(index) * (width + gap),
 		140.0,

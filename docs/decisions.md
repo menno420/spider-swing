@@ -102,3 +102,30 @@
   intended requirement: the player must regain a ceiling or obstacle web before
   diving again.
 - provenance: Menno's `0.4.0-gameplay-foundation-test` device playtest and PR #17
+
+## [D-0008] Start on an ordinary web and allow one explicit rescue
+
+- status: decided
+- date: 2026-07-29
+- verdict: Each run starts on a deterministic, immediately interruptible
+  ceiling web and may recover from one lethal contact before normal death.
+- why: The free-fall opening demanded precision before the player could read the
+  course, while a single visible recovery lets longer tests expose later
+  obstacle and movement problems. Both behaviors use authoritative simulation
+  transitions and remain DEBUG toggles so they can be compared or removed.
+- provenance: Menno's Phase 0.12 playtest direction and PR #18
+
+## [D-0009] Prototype identity and courses without claiming production commerce or UGC
+
+- status: decided
+- date: 2026-07-29
+- verdict: Spider profiles, fly-funded upgrade tracks, cosmetics, and a local
+  six-piece Course Lab may prove their seams now; hourly paid lives, gameplay
+  IAP, course sharing, and moderation remain deferred.
+- why: The requested variants and creator loop can be evaluated safely through
+  centralized data and local persistence. Production commerce needs a Play
+  Billing catalogue, purchase verification, acknowledgement, and durable
+  entitlements, while shared courses need validation and moderation; pretending
+  either exists would create unsafe product debt and contradict the current GDD
+  fairness boundary.
+- provenance: Menno's Phase 0.12 direction, GDD v2.0 §§ 14–15 and 18–20, PR #18
