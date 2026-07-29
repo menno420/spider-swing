@@ -299,7 +299,7 @@
       "\ud83d\udca1",
       "\ud83d\udcca"
     ],
-    "summary": "> **Status:** `in-progress`"
+    "summary": "> **Status:** `complete`"
   },
   {
     "slug": "opening-swing-spider-garage",
@@ -316,6 +316,19 @@
       "\ud83d\udcca"
     ],
     "summary": "> **Status:** `complete`"
+  },
+  {
+    "slug": "progression-foundation",
+    "date": "2026-07-29",
+    "tags": [
+      "deep",
+      "progression",
+      "foundation",
+      "session",
+      "\ud83d\udca1",
+      "\ud83d\udcca"
+    ],
+    "summary": "> **Status:** `in-progress`"
   },
   {
     "slug": "remove-legacy-obstacle-backing",

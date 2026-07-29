@@ -137,6 +137,13 @@ without a reported regression.
 - `python3 tools/verify.py --require-godot` — passes locally on Godot
   `4.7.1.stable.official.a13da4feb`: architecture fixtures/scan, clean import,
   front-end boot, and all 86 headless contracts.
+- PR #28 `game-quality` run
+  [30489461720](https://github.com/menno420/spider-swing/actions/runs/30489461720)
+  passes the same 86 contracts at source
+  `c8d093109860d4a0716aa2e3ddd7b6d163c82a70`. Android run
+  [30489461754](https://github.com/menno420/spider-swing/actions/runs/30489461754)
+  produced the verified `spider-swing-android-debug` artifact
+  [8739088355](https://github.com/menno420/spider-swing/actions/runs/30489461754/artifacts/8739088355).
 - The last merged baseline is PR #27. Its final `game-quality` run
   [30485134026](https://github.com/menno420/spider-swing/actions/runs/30485134026)
   passes the complete 82-check suite on Godot 4.7.1 at source
