@@ -32,10 +32,14 @@ endpoints; it does not drive physics (GDD § 17.2).
   looks. It may change texture and palette but never course geometry. Finished
   Ancient Forest obstacle art uses transparent sprite alpha as its normal-game
   silhouette; the exact polygons remain available through the opt-in collision
-  overlay and as a missing-asset fallback. Wall-grown art overlaps behind the
-  continuous branch rail, which is drawn over the join, and texture regions are
-  cropped without changing aspect ratio. The broad passage uses the same
-  rail-grown bramble/vine grammar instead of a stretched circular gate sprite.
+  overlay and as a missing-asset fallback. One world-anchored bark texture spans
+  every ceiling/floor profile, including profile changes and chunk seams.
+  Wall-grown art overlaps a mossy growth socket behind that rail, which is drawn
+  over the join, and texture regions are cropped without changing aspect ratio.
+  The broad passage uses the same rail-grown bramble/vine grammar instead of a
+  stretched circular gate sprite. Three independently scrolling, mirrored
+  forest-depth layers replace the abstract circle/tree backdrop at deliberately
+  lower contrast than the spider, flies, web, and lethal silhouettes.
 
 The composition root mounts either the front end or the laboratory, never two
 competing roots. See ADR 0002 and `docs/technical/front-end-flow.md`.

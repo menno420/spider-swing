@@ -42,6 +42,7 @@ static func run() -> Dictionary:
 	passed += _test_early_routes_are_obstacle_aware_and_late_gaps_are_clear(
 		failures)
 	passed += _test_gate_fly_route_is_traversable(failures)
+	passed += _test_curated_pattern_catalog_is_banded_and_varied(failures)
 	passed += _test_contoured_rails_are_continuous_and_varied(failures)
 	passed += _test_obstacle_collision_is_authoritative(failures)
 	passed += _test_boundary_lethality_is_a_toggle(failures)
@@ -1117,6 +1118,62 @@ static func _test_gate_fly_route_is_traversable(
 								opening_scale * 100.0,
 							])
 						return 0
+	return 1
+
+
+static func _test_curated_pattern_catalog_is_banded_and_varied(
+	failures: PackedStringArray,
+) -> int:
+	var catalog_path := \
+		"res://game/application/course_pattern_catalog.gd"
+	if not ResourceLoader.exists(catalog_path):
+		failures.append("curated course pattern catalog is missing")
+		return 0
+	var stream := CourseStream.new()
+	stream.reset()
+	if not stream.has_method("pattern_id_for_chunk"):
+		failures.append("course stream does not expose deterministic pattern IDs")
+		return 0
+	var unique_patterns := {}
+	var previous := &""
+	var paired_chunks := 0
+	var single_chunks := 0
+	for chunk_index in range(11, 46):
+		var pattern_id := StringName(stream.call(
+			"pattern_id_for_chunk",
+			chunk_index,
+		))
+		if pattern_id.is_empty():
+			failures.append("chunk %d has no curated pattern" % chunk_index)
+			return 0
+		if pattern_id == previous:
+			failures.append(
+				"curated pattern %s repeats in adjacent chunks" % pattern_id)
+			return 0
+		previous = pattern_id
+		unique_patterns[pattern_id] = true
+		var chunk_start := float(chunk_index) * CourseStream.CHUNK_WIDTH
+		var geometry := stream.update_for_position(chunk_start + 1.0)
+		var count := 0
+		for obstacle: PackedVector2Array in geometry.obstacles:
+			var bounds := SolidGeometry.bounds(obstacle)
+			if bounds.get_center().x >= chunk_start and \
+					bounds.get_center().x < \
+						chunk_start + CourseStream.CHUNK_WIDTH:
+				count += 1
+		if count >= 2:
+			paired_chunks += 1
+		elif count == 1:
+			single_chunks += 1
+	if unique_patterns.size() < 10:
+		failures.append(
+			"curated late course exposes only %d pattern IDs" %
+			unique_patterns.size())
+		return 0
+	if paired_chunks < 4 or single_chunks < 4:
+		failures.append(
+			"late course lost the intended mix of single and paired challenges")
+		return 0
 	return 1
 
 

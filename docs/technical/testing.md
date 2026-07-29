@@ -87,11 +87,11 @@ Run directly:
 godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-80 checks, grouped so one subsystem failure never hides the rest:
+82 checks, grouped so one subsystem failure never hides the rest:
 
 - engine, main-scene, input-action, 60 Hz, renderer/viewport, Android preset,
   inward-dependency, and no-autoload bootstrap contracts;
-- forty deterministic physics contracts, including extended arbitrary-point
+- forty-one deterministic physics contracts, including extended arbitrary-point
   solid attachment, larger aim forgiveness, momentum preservation, speed-neutral
   Reel and automatic take-up, exact Burst/Dive distance shares and minimum
   Burst travel, recovery-web interruption,
@@ -99,6 +99,8 @@ godot --headless --path . --script res://tests/test_runner.gd
   polygon anchoring/collision, a 1000 m runway, smooth 5000 m speed ramp, and
   bounded organic streaming with continuous contoured rails, lower rail
   coverage, independent rail lethality, authoritative obstacle scaling, a
+  deterministic distance-banded pattern catalog with repetition protection and
+  both single/paired natural compositions, a
   three-lane Classic-sized steering-envelope sweep through every root-passage
   fly route, the guided opening
   trajectory, one-run rescue, five spider profiles,
@@ -106,14 +108,16 @@ godot --headless --path . --script res://tests/test_runner.gd
   pickups, runtime pull tuning, and
   identical trajectories from
   simulated 30/60/90/120 Hz render loops;
-- nineteen mobile HUD contracts proving large separated Reel and Burst controls,
+- twenty mobile HUD contracts proving large separated Reel and Burst controls,
   DEBUG, and Menu are event-consuming
   Buttons, GUI geometry shares one layout source, accepted actions drive visual
   and haptic feedback, UI actions do not leak into web input, debug tools can be
   removed, collision outlines and web-target guides are independent opt-in
   controls, finished Ancient Forest obstacles never paint the legacy polygon
   backing, wall-grown art overlaps behind continuous rails without stretched
-  gate halves, and world input waits for Godot GUI handling;
+  gate halves, active Ancient Forest art includes a world-anchored rail tile,
+  growth socket, stump, and three depth layers, and world input waits for Godot
+  GUI handling;
 - eleven front-end contracts proving Home starts before gameplay,
   Play/Garage/Shop/Tutorial/Course Lab/Settings route correctly, the six tutorial
   steps cover live mechanics, Settings

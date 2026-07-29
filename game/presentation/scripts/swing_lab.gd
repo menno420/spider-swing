@@ -22,6 +22,8 @@ const FOREST_BRANCH_HEIGHT := 122.0
 const FOREST_BRANCH_BASELINE := 94.0
 const FOREST_OBSTACLE_ART_OVERSCAN := 8.0
 const FOREST_RAIL_JOIN_OVERLAP := 28.0
+const FOREST_RAIL_WORLD_REPEAT := 768.0
+const FOREST_RAIL_SEGMENT_OVERLAP := 38.0
 
 var _snapshot: SimulationSnapshot
 var _camera_x: float = 0.0
@@ -188,38 +190,27 @@ func _draw_parallax(size: Vector2) -> void:
 	)
 	var parallax_x := 0.0 if _reduced_motion else _camera_x
 	if _uses_forest_art():
-		var trunk_offset := fposmod(-parallax_x * 0.06, 330.0)
-		for index in range(-1, 6):
-			var x := trunk_offset + float(index) * 330.0
-			var width := 64.0 + float(posmod(index, 3)) * 18.0
-			draw_rect(
-				Rect2(x - width * 0.5, -30.0, width, size.y + 60.0),
-				Color(0.055, 0.105, 0.07, 0.58),
-			)
-			draw_circle(
-				Vector2(x + 34.0, 120.0 + float(posmod(index, 2)) * 70.0),
-				145.0,
-				environment["far"] as Color,
-			)
-		var foliage_offset := fposmod(-parallax_x * 0.16, 235.0)
-		for index in range(-2, 9):
-			var x := foliage_offset + float(index) * 235.0
-			var y := 88.0 + float(posmod(index, 4)) * 46.0
-			draw_circle(
-				Vector2(x, y),
-				82.0 + float(posmod(index, 3)) * 18.0,
-				Color(environment["near"] as Color, 0.44),
-			)
-		var forest_floor_offset := fposmod(-parallax_x * 0.24, 260.0)
-		for index in range(-2, 8):
-			draw_circle(
-				Vector2(
-					forest_floor_offset + float(index) * 260.0,
-					size.y + 30.0,
-				),
-				165.0,
-				environment["near"] as Color,
-			)
+		_draw_forest_backdrop_layer(
+			ArtAssetCatalog.FOREST_BACKDROP_FAR,
+			size,
+			parallax_x,
+			0.035,
+			Color(0.58, 0.68, 0.58, 0.72),
+		)
+		_draw_forest_backdrop_layer(
+			ArtAssetCatalog.FOREST_BACKDROP_MID,
+			size,
+			parallax_x,
+			0.10,
+			Color(0.62, 0.70, 0.60, 0.36),
+		)
+		_draw_forest_backdrop_layer(
+			ArtAssetCatalog.FOREST_BACKDROP_NEAR,
+			size,
+			parallax_x,
+			0.22,
+			Color(0.52, 0.62, 0.48, 0.24),
+		)
 		return
 	var far_offset := fposmod(-parallax_x * 0.08, 240.0)
 	for index in range(-1, 8):
@@ -249,6 +240,37 @@ func _draw_parallax(size: Vector2) -> void:
 	for x in range(-120, int(size.x) + 120, 120):
 		draw_line(Vector2(float(x) + grid_offset, 0.0),
 			Vector2(float(x) + grid_offset, size.y), grid_color, 1.0)
+
+
+func _draw_forest_backdrop_layer(
+	asset_id: StringName,
+	size: Vector2,
+	parallax_x: float,
+	scroll_scale: float,
+	modulate: Color,
+) -> void:
+	var texture := _art_texture(asset_id)
+	if texture == null:
+		return
+	var tile_width := size.x
+	var offset := fposmod(-parallax_x * scroll_scale, tile_width)
+	var world_tile := floori(parallax_x * scroll_scale / tile_width)
+	for index in range(-1, 2):
+		var tile_index := world_tile + index
+		var x := offset + float(index) * tile_width
+		var mirrored := posmod(tile_index, 2) == 1
+		draw_set_transform(
+			Vector2(x + (tile_width if mirrored else 0.0), 0.0),
+			0.0,
+			Vector2(-1.0 if mirrored else 1.0, 1.0),
+		)
+		draw_texture_rect(
+			texture,
+			Rect2(Vector2.ZERO, size),
+			false,
+			modulate,
+		)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
 func _draw_course(size: Vector2) -> void:
@@ -356,55 +378,62 @@ func _draw_course(size: Vector2) -> void:
 			draw_line(Vector2(kill_x, 0.0), Vector2(kill_x, size.y), RED, 3.0)
 
 
-func _draw_forest_boundary_edge(
+func _draw_continuous_forest_profile(
 	world_polygon: PackedVector2Array,
 	screen_polygon: PackedVector2Array,
 ) -> void:
-	var texture := _art_texture(ArtAssetCatalog.FOREST_BRANCH)
-	if texture == null or screen_polygon.size() < 2:
+	var texture := _art_texture(ArtAssetCatalog.FOREST_RAIL_TILE)
+	if texture == null or screen_polygon.size() < 4:
 		return
-	var bounds := _polygon_bounds(screen_polygon)
-	var is_ceiling := bounds.get_center().y < get_viewport_rect().size.y * 0.5
-	for index in range(screen_polygon.size()):
+	# Boundary polygons store the playable profile first and the outer thickness
+	# in reverse. Drawing the first half with world-anchored source UVs keeps
+	# bark continuous through every contour and chunk seam.
+	var profile_size := floori(float(screen_polygon.size()) * 0.5)
+	var is_ceiling := world_polygon[0].y < CourseStream.CEILING_Y + 100.0
+	for index in range(profile_size - 1):
 		var start := screen_polygon[index]
-		var finish := screen_polygon[(index + 1) % screen_polygon.size()]
+		var finish := screen_polygon[index + 1]
 		var world_start := world_polygon[index]
-		var world_finish := world_polygon[(index + 1) % world_polygon.size()]
-		if absf(finish.x - start.x) < 24.0:
-			continue
-		var midpoint := start.lerp(finish, 0.5)
-		if is_ceiling and midpoint.y < bounds.get_center().y:
-			continue
-		if not is_ceiling and midpoint.y > bounds.get_center().y:
-			continue
+		var world_finish := world_polygon[index + 1]
 		if start.x > finish.x:
-			var swap_screen := start
+			var screen_swap := start
 			start = finish
-			finish = swap_screen
-			var swap_world := world_start
+			finish = screen_swap
+			var world_swap := world_start
 			world_start = world_finish
-			world_finish = swap_world
+			world_finish = world_swap
 		var segment := finish - start
-		var flip_x := -1.0 if posmod(
-			floori(minf(world_start.x, world_finish.x) / 900.0),
-			2,
-		) == 1 else 1.0
+		if segment.length() < 8.0:
+			continue
 		var flip_y := 1.0 if is_ceiling else -1.0
+		var visual_length := segment.length() + \
+			FOREST_RAIL_SEGMENT_OVERLAP * 2.0
+		var source_world_start := minf(world_start.x, world_finish.x) - \
+			FOREST_RAIL_SEGMENT_OVERLAP
+		var source_x := source_world_start / FOREST_RAIL_WORLD_REPEAT * \
+			float(texture.get_width())
+		var source_width := visual_length / FOREST_RAIL_WORLD_REPEAT * \
+			float(texture.get_width())
 		draw_set_transform(
 			start.lerp(finish, 0.5),
 			segment.angle(),
-			Vector2(flip_x, flip_y),
+			Vector2(1.0, flip_y),
 		)
-		var visual_length := segment.length() + 20.0
-		draw_texture_rect(
+		draw_texture_rect_region(
 			texture,
 			Rect2(
 				Vector2(-visual_length * 0.5, -FOREST_BRANCH_BASELINE),
 				Vector2(visual_length, FOREST_BRANCH_HEIGHT),
 			),
+			Rect2(
+				Vector2(source_x, 0.0),
+				Vector2(source_width, float(texture.get_height())),
+			),
+			Color.WHITE,
+			false,
 			false,
 		)
-		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
 func _redraw_forest_boundary_edges(viewport_size: Vector2) -> void:
@@ -417,7 +446,7 @@ func _redraw_forest_boundary_edges(viewport_size: Vector2) -> void:
 		if bounds.end.x < -80.0 or \
 				bounds.position.x > viewport_size.x + 80.0:
 			continue
-		_draw_forest_boundary_edge(boundary, screen_boundary)
+		_draw_continuous_forest_profile(boundary, screen_boundary)
 
 
 func _draw_obstacle(
@@ -439,7 +468,10 @@ func _draw_obstacle(
 		var wide := screen_bounds.size.x > screen_bounds.size.y * 1.15
 		var asset_id := ArtAssetCatalog.FOREST_BRAMBLE
 		var flip_y := false
-		if hanging and not wide:
+		if world_polygon.size() == 6:
+			asset_id = ArtAssetCatalog.FOREST_ROOT_STUMP
+			flip_y = hanging
+		elif hanging and not wide:
 			asset_id = ArtAssetCatalog.FOREST_HANGING_VINE
 		elif hanging:
 			flip_y = true
@@ -468,6 +500,11 @@ func _draw_obstacle(
 				texture,
 				art_bounds,
 				flip_y,
+			)
+			_draw_forest_growth_socket(
+				world_polygon,
+				polygon,
+				hanging,
 			)
 		if _snapshot.collision_outlines_visible:
 			_draw_closed_polyline(
@@ -502,6 +539,41 @@ func _draw_obstacle(
 			Color(OBSTACLE, 0.72),
 			6.0,
 		)
+
+
+func _draw_forest_growth_socket(
+	world_polygon: PackedVector2Array,
+	screen_polygon: PackedVector2Array,
+	hanging: bool,
+) -> void:
+	var texture := _art_texture(ArtAssetCatalog.FOREST_GROWTH_SOCKET)
+	if texture == null:
+		return
+	var world_bounds := _polygon_bounds(world_polygon)
+	var touches_ceiling := \
+		world_bounds.position.y <= CourseStream.CEILING_Y + 2.0
+	var touches_floor := world_bounds.end.y >= CourseStream.FLOOR_Y - 2.0
+	if not touches_ceiling and not touches_floor:
+		return
+	var bounds := _polygon_bounds(screen_polygon)
+	var width := clampf(bounds.size.x * 0.72, 112.0, 218.0)
+	var height := width * float(texture.get_height()) / \
+		float(texture.get_width())
+	var contact_y := bounds.position.y if hanging else bounds.end.y
+	draw_set_transform(
+		Vector2(bounds.get_center().x, contact_y),
+		0.0,
+		Vector2(1.0, -1.0 if hanging else 1.0),
+	)
+	draw_texture_rect(
+		texture,
+		Rect2(
+			Vector2(-width * 0.5, -height + 12.0),
+			Vector2(width, height),
+		),
+		false,
+	)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
 func _draw_fly(screen_position: Vector2, world_position: Vector2) -> void:
@@ -1137,7 +1209,9 @@ func _draw_environment_theme_cards(size: Vector2) -> void:
 			)
 			if StringName(definition["id"]) == \
 					EnvironmentThemeCatalog.ANCIENT_FOREST:
-				var branch := _art_texture(ArtAssetCatalog.FOREST_BRANCH)
+				var branch := _art_texture(
+					ArtAssetCatalog.FOREST_RAIL_TILE,
+				)
 				if branch != null:
 					draw_texture_rect(
 						branch,
