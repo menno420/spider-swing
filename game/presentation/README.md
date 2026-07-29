@@ -29,7 +29,10 @@ endpoints; it does not drive physics (GDD § 17.2).
   overlays. The DEBUG panel and world overlays are independent.
 - `environment_theme_catalog.gd` — one visual-only registry for the Graybox,
   Ancient Forest, Mossy Ravine, Overgrown Greenhouse, and Reclaimed Attic
-  looks. It may change texture and palette but never course geometry.
+  looks. It may change texture and palette but never course geometry. Finished
+  Ancient Forest obstacle art uses transparent sprite alpha as its normal-game
+  silhouette; the exact polygons remain available through the opt-in collision
+  overlay and as a missing-asset fallback.
 
 The composition root mounts either the front end or the laboratory, never two
 competing roots. See ADR 0002 and `docs/technical/front-end-flow.md`.

@@ -73,8 +73,11 @@ Burst boost.
   Overgrown Greenhouse, and Reclaimed Attic—plus the original Graybox. Ancient
   Forest is the default and now adds a cohesive finished-art candidate:
   mossy branch edges, rooted brambles, hanging thorn vines, a broad root passage,
-  the Classic Garden Spider, and golden forest flies. DEBUG → LOOK swaps visual
-  treatment without changing a course polygon or collision. DEBUG → OVERLAYS
+  the Classic Garden Spider, and golden forest flies. Its transparent obstacle
+  sprites replace the prototype polygon backing instead of layering over it;
+  an 8-pixel overscan keeps the visible thorns outside the authoritative bounds.
+  DEBUG → LOOK swaps visual treatment without changing a course polygon or
+  collision. DEBUG → OVERLAYS
   independently enables exact collision outlines or web-target guides; both
   load off.
 - Base Reel-In is deliberately reduced to 400 px/s and Burst starts at 40% with
@@ -102,7 +105,7 @@ Burst boost.
   catch, aim forgiveness, range, RELEASE/RETARGET behavior,
   deterministic input recording/replay, visual-theme comparison, independent
   opt-in overlays, and diagnostic export.
-- Forty deterministic physics tests (78 runtime contracts total),
+- Forty deterministic physics tests (79 runtime contracts total),
   including interruptible recovery webs, double-tap fallback, explicit
   release/retarget modes, opening-runway pacing, lower anchor coverage, exact
   pull-distance shares, speed-neutral Reel/take-up shortening, rail policy,
