@@ -93,7 +93,8 @@ func present_event(event: SimulationEvent) -> void:
 			_feedback_color = RED
 		SimulationEvent.Kind.OUT_OF_RANGE, SimulationEvent.Kind.REEL_UNAVAILABLE, \
 				SimulationEvent.Kind.REEL_EMPTY, \
-				SimulationEvent.Kind.BURST_UNAVAILABLE:
+				SimulationEvent.Kind.BURST_UNAVAILABLE, \
+				SimulationEvent.Kind.DIVE_UNAVAILABLE:
 			_feedback_color = YELLOW
 		SimulationEvent.Kind.FLY_COLLECTED:
 			_feedback_color = YELLOW
@@ -410,7 +411,11 @@ func _draw_hud(size: Vector2) -> void:
 
 	if _show_debug_tools:
 		var debug_rect := LabLayout.debug_toggle_rect(size)
-		_draw_button(debug_rect, "DEBUG", _snapshot.debug_visible)
+		_draw_button(
+			debug_rect,
+			"CLOSE" if _snapshot.debug_visible else "DEBUG",
+			_snapshot.debug_visible,
+		)
 
 	var reel_rect := LabLayout.reel_rect(size)
 	var center := reel_rect.get_center()
@@ -465,75 +470,175 @@ func _draw_hud(size: Vector2) -> void:
 				"Tap anywhere to restart", 22, CYAN)
 
 
-func _draw_debug(_size: Vector2) -> void:
-	var panel := Rect2(18.0, 120.0, 370.0, 510.0)
-	draw_rect(panel, Color(0.02, 0.07, 0.1, 0.9))
+func _draw_debug(size: Vector2) -> void:
+	var panel := LabLayout.debug_panel_rect(size)
+	draw_rect(Rect2(Vector2.ZERO, size), Color(0.01, 0.03, 0.05, 0.56))
+	draw_rect(panel, Color(0.02, 0.07, 0.1, 0.98))
 	draw_rect(panel, CYAN, false, 2.0)
-	var lines := [
-		"build: %s" % ProjectSettings.get_setting(
-			"application/config/version", "unknown"),
-		"tick: %d  seed: %d" % [_snapshot.tick, _snapshot.seed],
-		"state: %s  web: %s" % [
-			_snapshot.run_state,
-			"attached" if _snapshot.web_attached else "detached"],
-		"pos: (%.1f, %.1f)" % [_snapshot.position.x, _snapshot.position.y],
-		"velocity: (%.1f, %.1f)" % [_snapshot.velocity.x, _snapshot.velocity.y],
-		"speed target: %.1f" % _snapshot.target_speed,
-		"rope: %.1f  tension: %.1f" % [
-			_snapshot.rope_length, _snapshot.tension],
-		"Reel: %.1f / %.1f  lockout %.2f" % [
-			_snapshot.reel_energy, _snapshot.reel_capacity, _snapshot.reel_lockout],
-		"Pull CD: %.2f / %.2f  %s" % [
-			_snapshot.burst_cooldown,
-			_snapshot.burst_cooldown_capacity,
-			_snapshot.pull_kind if _snapshot.pull_active else &"ready",
-		],
-		"geometry: %d rails  %d obstacles" % [
-			_snapshot.boundary_surfaces.size(), _snapshot.obstacles.size()],
-		"rails %s/%s · take-up %s %.0f%%" % [
-			"ON" if _snapshot.course_boundaries_enabled else "OFF",
-			"LETHAL" if _snapshot.course_boundaries_lethal else "SAFE",
-			"ON" if _snapshot.automatic_take_up_enabled else "OFF",
-			_snapshot.automatic_take_up_retention * 100.0,
-		],
-		"preset: %s" % _snapshot.preset_name,
-		"recording: %s  replay: %s" % [
-			_snapshot.recording, _snapshot.replaying],
-	]
-	for index in range(lines.size()):
-		_draw_text(Vector2(32.0, 150.0 + float(index) * 30.0),
-			lines[index], 16, WEB)
+	_draw_text(Vector2(94.0, 52.0), "SWING LAB TUNING", 25, WEB)
+	_draw_text(
+		Vector2(94.0, 76.0),
+		"Choose a section, then use one-tap values or the large − / + controls.",
+		15,
+		MUTED,
+	)
 
 	for index in range(SwingConfig.preset_names().size()):
 		var name := SwingConfig.preset_names()[index]
-		_draw_button(LabLayout.preset_rect(index), str(index + 1), name == _snapshot.preset_name)
+		_draw_button(
+			LabLayout.preset_rect(index, size),
+			_preset_label(name),
+			name == _snapshot.preset_name,
+		)
 
-	_draw_button(LabLayout.tuning_previous_rect(), "<", false)
-	_draw_button(LabLayout.tuning_minus_rect(), "-", false)
-	draw_rect(Rect2(136.0, 520.0, 126.0, 42.0), Color(0.06, 0.16, 0.2, 0.9))
+	for index in range(TuningCatalog.category_count()):
+		var category := TuningCatalog.category(index)
+		_draw_button(
+			LabLayout.category_rect(index, size),
+			str(category["label"]),
+			index == _snapshot.debug_category_index,
+		)
+
+	var active_category := TuningCatalog.category(
+		_snapshot.debug_category_index)
 	_draw_text(
-		Vector2(143.0, 547.0),
-		_format_tuning_value(
-			_snapshot.selected_parameter,
-			_snapshot.selected_parameter_value,
-		),
-		13,
-		WEB,
+		Vector2(96.0, LabLayout.DEBUG_CONTENT_TOP - 10.0),
+		str(active_category["help"]),
+		14,
+		MUTED,
 	)
-	_draw_button(LabLayout.tuning_plus_rect(), "+", false)
-	_draw_button(LabLayout.tuning_next_rect(), ">", false)
+	if _snapshot.debug_category_index == TuningCatalog.tools_category_index():
+		_draw_debug_tools(size)
+	else:
+		_draw_tuning_cards(StringName(active_category["id"]), size)
 
-	var labels := ["PAUSE", "STEP", "SLOW", "REC", "REPLAY", "EXPORT"]
+	# The modal is drawn after the HUD, so redraw its close affordance on top.
+	_draw_button(
+		LabLayout.debug_toggle_rect(size),
+		"CLOSE",
+		true,
+	)
+
+
+func _draw_tuning_cards(
+	category_id: StringName,
+	size: Vector2,
+) -> void:
+	var parameters := TuningCatalog.parameters_for_category(category_id)
+	for card_index in range(parameters.size()):
+		var descriptor: Dictionary = parameters[card_index]
+		var parameter := StringName(descriptor["id"])
+		var value := float(_snapshot.tuning_values.get(parameter, 0.0))
+		var card := LabLayout.parameter_card_rect(card_index, size)
+		var selected := parameter == _snapshot.selected_parameter
+		draw_rect(
+			card,
+			Color(0.045, 0.15, 0.18, 0.98) if selected
+				else Color(0.025, 0.105, 0.13, 0.98),
+		)
+		draw_rect(card, CYAN if selected else Color(MUTED, 0.65), false, 2.0)
+		_draw_text(
+			card.position + Vector2(18.0, 29.0),
+			str(descriptor["label"]),
+			19,
+			WEB,
+		)
+		_draw_text(
+			card.position + Vector2(18.0, 56.0),
+			str(descriptor["help"]),
+			14,
+			MUTED,
+		)
+		_draw_text(
+			card.position + Vector2(card.size.x - 154.0, 30.0),
+			_format_tuning_value(parameter, value),
+			18,
+			YELLOW,
+		)
+		_draw_button(
+			LabLayout.parameter_minus_rect(card_index, size), "−", false)
+		_draw_button(
+			LabLayout.parameter_plus_rect(card_index, size), "+", false)
+
+		var quick_values: Array = descriptor["quick"]
+		for quick_index in range(quick_values.size()):
+			var quick_value := float(quick_values[quick_index])
+			_draw_button(
+				LabLayout.parameter_quick_rect(
+					card_index,
+					quick_index,
+					quick_values.size(),
+					size,
+				),
+				_quick_value_label(parameter, quick_value),
+				is_equal_approx(value, quick_value),
+			)
+
+	if category_id == TuningCatalog.CATEGORY_PULLS:
+		var status := "DIVE READY" if _snapshot.dive_ready \
+			else "DIVE NEEDS AN UPPER WEB"
+		var status_color := GREEN if _snapshot.dive_ready else YELLOW
+		var panel := LabLayout.debug_panel_rect(size)
+		_draw_text(
+			Vector2(panel.end.x - 324.0, panel.end.y - 24.0),
+			status,
+			15,
+			status_color,
+		)
+
+
+func _draw_debug_tools(size: Vector2) -> void:
+	var labels := [
+		"Pause simulation",
+		"Advance one physics frame",
+		"Quarter-speed playback",
+		"Record input trace",
+		"Replay last trace",
+		"Export diagnostic file",
+	]
+	var descriptions := [
+		"Freeze the run while keeping this menu responsive.",
+		"Pause and move the simulation forward exactly once.",
+		"Compare movement at 25% speed.",
+		"Capture deterministic commands for later comparison.",
+		"Restart and play the most recent command trace.",
+		"Save positions, tuning, pull state, and command history.",
+	]
 	for index in range(labels.size()):
+		var card := LabLayout.utility_rect(index, size)
 		var active := (
 			(index == 0 and _snapshot.debug_paused)
 			or (index == 2 and _snapshot.slow_motion)
 			or (index == 3 and _snapshot.recording)
 			or (index == 4 and _snapshot.replaying)
 		)
-		_draw_button(LabLayout.utility_rect(index), labels[index], active)
-	_draw_text(Vector2(32.0, 652.0), "Touch EXPORT or press F8 for diagnostic JSON",
-		14, MUTED)
+		draw_rect(
+			card,
+			Color(0.08, 0.35, 0.38, 0.94) if active
+				else Color(0.025, 0.105, 0.13, 0.98),
+		)
+		draw_rect(card, CYAN if active else MUTED, false, 2.0)
+		_draw_text(card.position + Vector2(20.0, 42.0), labels[index], 20, WEB)
+		_draw_text(
+			card.position + Vector2(20.0, 74.0),
+			descriptions[index],
+			14,
+			MUTED,
+		)
+		var state := ""
+		match index:
+			0:
+				state = "PAUSED" if _snapshot.debug_paused else "RUNNING"
+			2:
+				state = "ON" if _snapshot.slow_motion else "OFF"
+			3:
+				state = "RECORDING" if _snapshot.recording else "READY"
+			4:
+				state = "PLAYING" if _snapshot.replaying else "READY"
+			5:
+				state = "TOUCH TO SAVE"
+		if not state.is_empty():
+			_draw_text(card.position + Vector2(20.0, 111.0), state, 14, YELLOW)
 
 
 func _draw_button(rect: Rect2, label: String, active: bool) -> void:
@@ -561,46 +666,55 @@ func _draw_centered_text(
 
 
 func _format_tuning_value(parameter: StringName, value: float) -> String:
-	match parameter:
-		&"attach_catch_pct":
-			return "CATCH %.0f%%" % (value * 100.0)
-		&"burst_pull_pct":
-			return "BURST %.0f%%" % (value * 100.0)
-		&"dive_pull_pct":
-			return "DIVE %.0f%%" % (value * 100.0)
-		&"burst_duration":
-			return "B TIME %.2fs" % value
-		&"pull_cooldown":
-			return "P CD %.1fs" % value
-		&"dive_duration":
-			return "D TIME %.2fs" % value
-		&"aim_forgiveness":
-			return "AIM %.0fpx" % value
-		&"reel_rate":
-			return "REEL %.0f/s" % value
-		&"auto_take_up":
-			return "AUTO %s" % ("ON" if value > 0.5 else "OFF")
-		&"take_up_pct":
-			return "KEEP %.0f%%" % (value * 100.0)
-		&"web_range":
-			return "RANGE %.0f" % value
-		&"tap_retarget":
-			return "TAP %s" % ("RETARGET" if value > 0.5 else "RELEASE")
-		&"rope_damping":
-			return "DAMP %.2f" % value
-		&"course_rails":
-			return "RAILS %s" % ("ON" if value > 0.5 else "OFF")
-		&"lethal_rails":
-			return "RAILS %s" % ("LETHAL" if value > 0.5 else "SAFE")
-		&"mid_hazard_m":
-			return "MID @ %.0fm" % (value / 10.0)
-		&"boost_duration":
-			return "BOOST %.1fs" % value
-		&"gravity":
-			return "GRAV %.0f" % value
-		&"drive":
-			return "DRIVE %.0f" % value
-	return "%s %.2f" % [parameter, value]
+	var descriptor := TuningCatalog.descriptor(parameter)
+	var format := StringName(descriptor.get("format", &"decimal"))
+	match format:
+		&"toggle":
+			return "ON" if value >= 0.5 else "OFF"
+		&"percent":
+			return "%.0f%%" % (value * 100.0)
+		&"seconds":
+			return "%.2f s" % value
+		&"pixels":
+			return "%.0f px" % value
+		&"speed":
+			return "%.0f px/s" % value
+		&"meters":
+			return "%.0f m" % (value / 10.0)
+		&"number":
+			return "%.0f" % value
+	return "%.3f" % value
+
+
+func _quick_value_label(parameter: StringName, value: float) -> String:
+	var descriptor := TuningCatalog.descriptor(parameter)
+	var format := StringName(descriptor.get("format", &"decimal"))
+	match format:
+		&"toggle":
+			return "ON" if value >= 0.5 else "OFF"
+		&"percent":
+			return "%.0f%%" % (value * 100.0)
+		&"seconds":
+			return "%.1fs" % value
+		&"pixels":
+			return "%.0f" % value
+		&"speed":
+			return "%.0f" % value
+		&"meters":
+			return "%.0fm" % (value / 10.0)
+		&"number":
+			return "%.0f" % value
+	return "%.2f" % value
+
+
+func _preset_label(name: StringName) -> String:
+	match name:
+		SwingConfig.PRESET_WEIGHTY:
+			return "WEIGHTY"
+		SwingConfig.PRESET_AGILE:
+			return "AGILE"
+		_:
+			return "BALANCED"
 
 
 func _polygon_to_screen(polygon: PackedVector2Array) -> PackedVector2Array:

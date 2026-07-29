@@ -22,6 +22,7 @@ enum Kind {
 	FLY_COLLECTED,
 	BOOST_COLLECTED,
 	BOOST_EXPIRED,
+	DIVE_UNAVAILABLE,
 }
 
 var kind: int = Kind.ATTACHED

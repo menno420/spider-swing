@@ -24,6 +24,7 @@ static func run() -> Dictionary:
 	passed += _test_pull_can_be_interrupted_by_recovery_web(failures)
 	passed += _test_double_tap_falls_back_to_recovery_web(failures)
 	passed += _test_downward_web_is_a_short_one_shot_pull(failures)
+	passed += _test_dive_rearms_only_after_upper_web_contact(failures)
 	passed += _test_obstacle_is_a_valid_anchor(failures)
 	passed += _test_attached_tap_modes_are_explicit(failures)
 	passed += _test_pull_tuning_controls(failures)
@@ -484,6 +485,75 @@ static func _test_downward_web_is_a_short_one_shot_pull(
 	if world.web.attached or world.pull_active:
 		failures.append("Dive Pull left a persistent rope or pull state")
 		return 0
+	if world.dive_ready or world.burst_cooldown_remaining > 0.0:
+		failures.append("Dive Pull used a timer instead of spending its web charge")
+		return 0
+	return 1
+
+
+static func _test_dive_rearms_only_after_upper_web_contact(
+	failures: PackedStringArray,
+) -> int:
+	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	config.gravity = 0.0001
+	config.horizontal_drive_acceleration = 0.0001
+	config.air_drag = 0.0
+	var geometry := _test_geometry()
+	geometry.surfaces.append(
+		_rectangle_polygon(Rect2(260.0, 570.0, 720.0, 42.0)))
+	var world := SimulationWorld.new()
+	world.reset(config, geometry)
+	world.velocity = Vector2(260.0, -60.0)
+	world.burst_cooldown_remaining = config.burst_cooldown
+	var lower_target := Vector2(560.0, 570.0)
+
+	# A downward double-tap follows Dive rules even while Anchor Burst is
+	# recharging; the two abilities intentionally do not share a timer.
+	world.queue_command(InputCommand.burst_at(lower_target, 1, world.tick))
+	var events := world.step(FIXED_DELTA)
+	if not _contains_event(events, SimulationEvent.Kind.DIVE_STARTED) or \
+			not world.pull_active or world.dive_ready:
+		failures.append("Dive did not start independently of Burst cooldown")
+		return 0
+	var cooldown_after_dive := world.burst_cooldown_remaining
+	var safety := 0
+	while world.pull_active and safety < 60:
+		world.step(FIXED_DELTA)
+		safety += 1
+
+	world.queue_command(InputCommand.burst_at(lower_target, 2, world.tick))
+	events = world.step(FIXED_DELTA)
+	if not _contains_event(events, SimulationEvent.Kind.DIVE_UNAVAILABLE) or \
+			world.pull_active:
+		failures.append("spent Dive did not require an upper web contact")
+		return 0
+	if world.burst_cooldown_remaining >= cooldown_after_dive:
+		failures.append("spent Dive accidentally reset the Burst timer")
+		return 0
+
+	var upper_target := Vector2(720.0, 150.0)
+	world.queue_command(InputCommand.attach(upper_target, 3, world.tick))
+	events = world.step(FIXED_DELTA)
+	if not world.web.attached or not world.dive_ready or \
+			not _contains_event(events, SimulationEvent.Kind.ATTACHED):
+		failures.append("successful upper web contact did not rearm Dive")
+		return 0
+	var reported_rearm := false
+	for event: SimulationEvent in events:
+		if event.kind == SimulationEvent.Kind.ATTACHED and \
+				bool(event.data.get("dive_rearmed", false)):
+			reported_rearm = true
+			break
+	if not reported_rearm:
+		failures.append("upper web rearm was not exposed to feedback")
+		return 0
+
+	world.queue_command(InputCommand.burst_at(lower_target, 4, world.tick))
+	events = world.step(FIXED_DELTA)
+	if not _contains_event(events, SimulationEvent.Kind.DIVE_STARTED) or \
+			world.dive_ready or world.web.attached:
+		failures.append("rearmed Dive did not become immediately usable")
+		return 0
 	return 1
 
 
@@ -795,12 +865,16 @@ static func _test_burst_frenzy_suppresses_only_cooldown(
 	config.air_drag = 0.0
 	var world := SimulationWorld.new()
 	world.reset(config, _test_geometry())
+	world.dive_ready = false
 	world.set_burst_cooldown_suppressed(true)
 	world.queue_command(InputCommand.burst_at(Vector2(640.0, 150.0), 1, 0))
 	var events := world.step(FIXED_DELTA)
 	if not _contains_event(events, SimulationEvent.Kind.BURST_STARTED) or \
 			world.burst_cooldown_remaining > 0.0:
 		failures.append("Burst Frenzy did not suppress Burst cooldown")
+		return 0
+	if world.dive_ready:
+		failures.append("Burst Frenzy incorrectly rearmed the separate Dive charge")
 		return 0
 	var effects := EffectState.new()
 	effects.activate(EffectState.BURST_FRENZY, 0.05)

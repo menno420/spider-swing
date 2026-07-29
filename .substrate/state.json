@@ -51,14 +51,14 @@
   "quiet_sessions": 0,
   "reflection_buffer": {
     "active_count": 1,
-    "last_mined": "2026-07-28"
+    "last_mined": "2026-07-29"
   },
   "review_log": [],
   "session_anchor": {
-    "branch": "claude/bootstrap-spider-swing",
-    "epoch": 1785226384.762257,
-    "head": "14cfc9a25b2962e044c2d7af627c5e406171ff05",
-    "ts": "2026-07-28T08:13:04+00:00"
+    "branch": "claude/debug-lab-dive-reset",
+    "epoch": 1785294796.973232,
+    "head": "577df2b6206ef42ad226ee327d4aa32a2a5d1e3c",
+    "ts": "2026-07-29T03:13:16+00:00"
   },
   "session_count": 0,
   "slot_values": {

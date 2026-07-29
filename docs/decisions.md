@@ -88,3 +88,17 @@
   A speed-neutral ratchet improves predictability, and separating geometry from
   lethality lets the owner compare corridor feel without duplicating courses.
 - provenance: Menno's Phase 0.10 playtests and PR #16
+
+## [D-0007] Rearm Dive by successful upper web contact
+
+- status: decided
+- date: 2026-07-29
+- verdict: Anchor Burst keeps its time-based cooldown. Dive Pull has one
+  independent charge that is spent on use and rearmed only when a normal web
+  successfully attaches above the spider, including to an obstacle.
+- why: Device playtesting showed that a downward correction is part of the
+  attach–dive–recover traversal rhythm, not another timed power move. Sharing
+  Burst cooldown made the correction unavailable when it mattered and hid the
+  intended requirement: the player must regain a ceiling or obstacle web before
+  diving again.
+- provenance: Menno's `0.4.0-gameplay-foundation-test` device playtest and PR #17

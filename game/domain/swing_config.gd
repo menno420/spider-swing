@@ -137,79 +137,74 @@ func target_speed_at(distance_pixels: float) -> float:
 
 
 func adjust(parameter: StringName, direction: float) -> float:
+	var descriptor := TuningCatalog.descriptor(parameter)
+	if descriptor.is_empty():
+		return 0.0
+	return set_tuning_value(
+		parameter,
+		value_for(parameter) + float(descriptor["step"]) * direction,
+	)
+
+
+func set_tuning_value(parameter: StringName, value: float) -> float:
+	var safe_value := TuningCatalog.clamp_value(parameter, value)
 	match parameter:
 		&"gravity":
-			gravity = clampf(gravity + 40.0 * direction, 400.0, 1800.0)
+			gravity = safe_value
 			return gravity
 		&"drive":
-			horizontal_drive_acceleration = clampf(
-				horizontal_drive_acceleration + 25.0 * direction, 100.0, 1000.0)
+			horizontal_drive_acceleration = safe_value
 			return horizontal_drive_acceleration
 		&"web_range":
-			web_maximum_length = clampf(
-				web_maximum_length + 50.0 * direction, 500.0, 1400.0)
+			web_maximum_length = safe_value
 			return web_maximum_length
 		&"tap_retarget":
-			web_tap_retargets_when_attached = direction > 0.0
+			web_tap_retargets_when_attached = safe_value >= 0.5
 			return 1.0 if web_tap_retargets_when_attached else 0.0
 		&"reel_rate":
-			reel_retraction_rate = clampf(
-				reel_retraction_rate + 20.0 * direction, 80.0, 720.0)
+			reel_retraction_rate = safe_value
 			return reel_retraction_rate
 		&"auto_take_up":
-			automatic_take_up_enabled = direction > 0.0
+			automatic_take_up_enabled = safe_value >= 0.5
 			return 1.0 if automatic_take_up_enabled else 0.0
 		&"take_up_pct":
-			automatic_take_up_retention = clampf(
-				automatic_take_up_retention + 0.05 * direction, 0.0, 1.0)
+			automatic_take_up_retention = safe_value
 			return automatic_take_up_retention
 		&"aim_forgiveness":
-			surface_snap_distance = clampf(
-				surface_snap_distance + 10.0 * direction, 80.0, 320.0)
+			surface_snap_distance = safe_value
 			return surface_snap_distance
 		&"attach_catch_pct":
-			attachment_catch_fraction = clampf(
-				attachment_catch_fraction + 0.01 * direction, 0.0, 0.20)
+			attachment_catch_fraction = safe_value
 			return attachment_catch_fraction
 		&"burst_pull_pct":
-			burst_distance_fraction = clampf(
-				burst_distance_fraction + 0.05 * direction, 0.10, 0.80)
+			burst_distance_fraction = safe_value
 			return burst_distance_fraction
 		&"burst_duration":
-			burst_pull_duration = clampf(
-				burst_pull_duration + 0.02 * direction, 0.08, 0.40)
+			burst_pull_duration = safe_value
 			return burst_pull_duration
 		&"pull_cooldown":
-			burst_cooldown = clampf(
-				burst_cooldown + 0.10 * direction, 0.30, 2.50)
+			burst_cooldown = safe_value
 			return burst_cooldown
 		&"dive_pull_pct":
-			dive_distance_fraction = clampf(
-				dive_distance_fraction + 0.05 * direction, 0.05, 0.50)
+			dive_distance_fraction = safe_value
 			return dive_distance_fraction
 		&"dive_duration":
-			dive_pull_duration = clampf(
-				dive_pull_duration + 0.02 * direction, 0.08, 0.32)
+			dive_pull_duration = safe_value
 			return dive_pull_duration
 		&"rope_damping":
-			rope_damping = clampf(rope_damping + 0.01 * direction, 0.0, 0.3)
+			rope_damping = safe_value
 			return rope_damping
 		&"course_rails":
-			course_boundaries_enabled = direction > 0.0
+			course_boundaries_enabled = safe_value >= 0.5
 			return 1.0 if course_boundaries_enabled else 0.0
 		&"lethal_rails":
-			course_boundaries_lethal = direction > 0.0
+			course_boundaries_lethal = safe_value >= 0.5
 			return 1.0 if course_boundaries_lethal else 0.0
 		&"mid_hazard_m":
-			middle_hazard_start_distance = clampf(
-				middle_hazard_start_distance + 1000.0 * direction,
-				2500.0,
-				20000.0,
-			)
+			middle_hazard_start_distance = safe_value
 			return middle_hazard_start_distance
 		&"boost_duration":
-			burst_frenzy_duration = clampf(
-				burst_frenzy_duration + 0.5 * direction, 1.0, 10.0)
+			burst_frenzy_duration = safe_value
 			return burst_frenzy_duration
 	return 0.0
 

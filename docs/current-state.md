@@ -48,7 +48,9 @@ without a reported regression.
   without adding velocity. Anchor Burst crosses 50% of the resolved starting
   distance over 0.20 seconds. A lower target becomes a one-shot 40% Dive Pull over 0.16 seconds
   and never leaves a rope. Both paths retain bounded tangential carry, use fixed
-  exit speeds, share a cooldown, and sweep against lethal polygon geometry.
+  exit speeds, and sweep against lethal polygon geometry. Burst uses the timed
+  cooldown; Dive instead rearms only after a successful upper/obstacle web
+  attachment.
 - Double-tap carries a target in the authoritative command, so Burst works
   atomically even when the first tap has not attached yet. Ceiling pieces,
   hanging/floor branches, obstacles, and broken-pot gates all resolve through one
@@ -56,7 +58,7 @@ without a reported regression.
 - Burst and Dive Pull are interruptible transitions rather than input locks. A
   valid upper-solid tap attaches a recovery web immediately, and a platform
   double-tap made while pulling—or while detached during cooldown—falls back to
-  that web intent. Cooldown still gates another power action.
+  that web intent. Burst cooldown never gates normal webs or a ready Dive Pull.
 - Accepted Reel, Burst, and Dive Pull actions emit authoritative events.
   Presentation renders short directional flashes and the input adapter supplies
   distinct handheld haptics; unavailable actions do not fake success feedback.
@@ -66,10 +68,13 @@ without a reported regression.
   pickups temporarily suppress cooldown. Visible rails can independently be
   present/absent and safe/lethal. This remains prototype instrumentation, not an
   authored or approved Phase 1 chunk pack.
-- The debug panel exposes gravity, drive, 500–1400 px range, default RELEASE vs
-  optional atomic RETARGET tap behavior, aim forgiveness, attach catch, Reel
-  shortening speed, automatic take-up and retained percentage, shared pull
-  cooldown, Burst/Dive percentages and durations, rope damping, rail
+- The touch-first debug panel groups controls into Movement, Rope, Pulls,
+  Course, and Tools. Large cards use plain names, short descriptions, direct
+  comparison values, and `−` / `+` controls for gravity, forward drive,
+  500–1400 px range, default RELEASE vs optional atomic RETARGET tap behavior,
+  aim forgiveness, attach catch, Reel shortening speed, automatic take-up and
+  retained percentage, Burst cooldown, Burst/Dive percentages and durations,
+  rope damping, rail
   presence/lethality, the middle-hazard start, and boost duration.
 - Settings is a readable vertical scroll surface with larger type and 58–68-pixel
   controls, verified by runtime contracts and designed around the owner's
@@ -81,8 +86,8 @@ without a reported regression.
 - `python3 tools/verify.py` — passes. Six steps: architecture self-test,
   architecture scan, Godot discovery and version, headless import, boot smoke
   test, headless test runner.
-- `tests/test_runner.gd` — 59 checks, all passing locally: twenty-eight
-  deterministic physics, twelve GUI-owned mobile HUD, nine front-end
+- `tests/test_runner.gd` — 63 checks, all passing locally: twenty-nine
+  deterministic physics, fifteen GUI-owned mobile HUD, nine front-end
   navigation/settings/progression, plus bootstrap and exact build-version
   contracts. Physics covers exact 50%/40% pull shares,
   detached targeted Burst, recovery-web interruption, double-tap fallback,
@@ -180,6 +185,19 @@ without a reported regression.
   `9050ea46d9894f6bb8198a6ee5a454e04e39f62a`, package
   `com.menno420.spiderswing.dev`, and display name
   `Spider Swing Gameplay Foundation (dev)`.
+- PR #17 `android-debug` run
+  [30420061815](https://github.com/menno420/spider-swing/actions/runs/30420061815)
+  produced downloadable artifact
+  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30420061815/artifacts/8711576758)
+  ID `8711576758`, 56,800,048 bytes, digest
+  `sha256:57f77723586babbe408bb6b86f987bb3e8caa622b01f9130fd943b91c58b4dcd`.
+  The downloaded 57,182,655-byte APK passed archive verification and had
+  SHA-256
+  `2b9438829f631d3486a668b28915aa8ff9d618639d287a8f87166b9771f20db6`.
+  Its build manifest proves version `0.4.1-debug-lab-dive-reset-test`, source
+  `b00007514aaad431dcfaa5b41c8ec9413a1eadba`, package
+  `com.menno420.spiderswing.dev`, and display name
+  `Spider Swing Dive Reset (dev)`.
 - **Dependabot** — live. Its first run opened two bumps against the kit-owned
   `substrate-gate.yml`; both were closed because `adopt`/`upgrade` regenerates that
   file. The rule is documented in `.github/dependabot.yml`: kit-owned-only bumps get
