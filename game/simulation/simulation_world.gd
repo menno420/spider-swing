@@ -22,6 +22,8 @@ var boost_positions: PackedVector2Array = PackedVector2Array()
 var run_flies: int = 0
 var burst_cooldown_remaining: float = 0.0
 var dive_ready: bool = true
+var rescue_shield_remaining: float = 0.0
+var glide_remaining: float = 0.0
 var pull_active: bool = false
 var pull_kind: StringName = &""
 var pull_anchor: Vector2 = Vector2.ZERO
@@ -54,6 +56,8 @@ func reset(active_config: SwingConfig, geometry: CourseGeometry) -> void:
 	_burst_cooldown_suppressed = false
 	_cancel_pull()
 	web.reset(config)
+	rescue_shield_remaining = 0.0
+	glide_remaining = config.glide_duration
 	_commands.clear()
 
 
@@ -90,6 +94,7 @@ func queue_command(command: InputCommand) -> void:
 
 func step(delta: float) -> Array[SimulationEvent]:
 	var events: Array[SimulationEvent] = []
+	rescue_shield_remaining = maxf(0.0, rescue_shield_remaining - delta)
 	if _burst_cooldown_suppressed:
 		burst_cooldown_remaining = 0.0
 	else:
@@ -106,8 +111,12 @@ func step(delta: float) -> Array[SimulationEvent]:
 		hit_obstacle = _advance_pull(delta, events)
 	else:
 		var previous_position := position
+		var gravity_scale := 1.0
+		if not web.attached and glide_remaining > 0.0:
+			gravity_scale = config.detached_gravity_scale
+			glide_remaining = maxf(0.0, glide_remaining - delta)
 		var motor_result := SpiderMotor.apply_forces(
-			velocity, distance_pixels, delta, config)
+			velocity, distance_pixels, delta, config, gravity_scale)
 		velocity = motor_result["velocity"]
 		target_speed = float(motor_result["target_speed"])
 
@@ -206,6 +215,8 @@ func _collides_with_obstacle(center: Vector2) -> bool:
 
 
 func _first_obstacle_contact(start: Vector2, finish: Vector2) -> Dictionary:
+	if rescue_shield_remaining > 0.0:
+		return {"found": false, "position": finish}
 	var motion := finish - start
 	var maximum_step := maxf(config.player_collision_radius * 0.5, 4.0)
 	var samples := maxi(1, ceili(motion.length() / maximum_step))
@@ -330,6 +341,7 @@ func _try_attach(
 				_interrupt_pull(events, false)
 			var dive_rearmed := not dive_ready
 			dive_ready = true
+			glide_remaining = config.glide_duration
 			var message := "Recovery web attached" if recovery else (
 				"Web retargeted" if retarget else "Web attached")
 			if dive_rearmed:
@@ -703,3 +715,56 @@ func _obstacle_death_event() -> SimulationEvent:
 		"Hit a laboratory obstacle",
 		{"cause": &"obstacle"},
 	)
+
+
+func rescue_after_death() -> SimulationEvent:
+	web.release()
+	_cancel_pull()
+	burst_cooldown_remaining = 0.0
+	dive_ready = true
+	glide_remaining = config.glide_duration
+	var rescue_position := _find_rescue_position()
+	position = rescue_position
+	velocity = Vector2(maxf(300.0, target_speed * 0.88), -110.0)
+	rescue_shield_remaining = config.rescue_shield_duration
+	return SimulationEvent.make(
+		SimulationEvent.Kind.RESCUE_USED,
+		position,
+		"Rescue silk caught you · life spent",
+		{
+			"shield_seconds": rescue_shield_remaining,
+			"rescue_x": position.x,
+			"rescue_y": position.y,
+		},
+	)
+
+
+func _find_rescue_position() -> Vector2:
+	var base_x := maxf(START_POSITION.x, position.x - 150.0)
+	var candidates := [
+		Vector2(base_x, 390.0),
+		Vector2(base_x - 90.0, 330.0),
+		Vector2(base_x + 90.0, 330.0),
+		Vector2(base_x - 90.0, 470.0),
+		Vector2(base_x + 90.0, 470.0),
+		Vector2(maxf(START_POSITION.x, base_x - 180.0), 390.0),
+	]
+	for candidate: Vector2 in candidates:
+		if not _collides_with_obstacle(candidate):
+			return candidate
+	return START_POSITION
+
+
+func begin_guided_opening() -> bool:
+	if not config.guided_start_enabled or \
+			not config.course_boundaries_enabled:
+		return false
+	var target := Vector2(500.0, 112.0)
+	var nearest := nearest_solid_point(target)
+	if not bool(nearest["found"]) or StringName(nearest["kind"]) != &"boundary":
+		return false
+	if web.try_attach(position, nearest["anchor"], config) == \
+			WebConstraint.AttachResult.ATTACHED:
+		velocity = Vector2(config.starting_target_speed, -40.0)
+		return true
+	return false

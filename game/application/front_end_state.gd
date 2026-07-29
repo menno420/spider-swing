@@ -7,21 +7,32 @@ class_name FrontEndState
 
 signal changed
 signal play_requested(settings: PlayerSettings)
+signal creator_play_requested(settings: PlayerSettings, pattern: Array[StringName])
 signal settings_changed(settings: PlayerSettings)
+signal spider_profile_requested(spider_id: StringName)
+signal spider_style_requested(style: StringName)
+signal web_variant_requested(web_variant: StringName)
+signal upgrade_purchase_requested(upgrade_id: StringName)
+signal creator_piece_requested(slot: int)
+signal creator_clear_requested
 
 enum Screen {
 	HOME,
 	TUTORIAL,
 	SETTINGS,
+	GARAGE,
+	SHOP,
+	CREATOR,
 }
 
 const TUTORIAL_STEPS := [
 	{
 		"title": "KEEP MOVING",
 		"kicker": "01 · THE RUN",
-		"body": "The spider moves forward automatically. Your job is to shape "
-			+ "that speed into a safe path and travel as far as possible.",
-		"tip": "Watch the space ahead, not only the spider.",
+		"body": "The spider starts on a training web and moves forward "
+			+ "automatically. You have about a second to read the first arc, "
+			+ "but may take control immediately. Shape that speed into a safe path.",
+		"tip": "Let the opening swing carry you, then watch the space ahead.",
 	},
 	{
 		"title": "TAP THE CEILING",
@@ -62,9 +73,9 @@ const TUTORIAL_STEPS := [
 		"title": "SURVIVE & RECOVER",
 		"kicker": "06 · STAY ALIVE",
 		"body": "Collect flies along suggested routes and watch for Burst Frenzy. "
-			+ "Hitting a warning-colored obstacle, falling below the course, or "
-			+ "being left behind ends the run. Laboratory rails can also be "
-			+ "tested as lethal in DEBUG. Tap after death to restart, or use MENU.",
+			+ "A warning-colored obstacle or lethal rail can spend your one "
+			+ "visible RESCUE; the next lethal mistake ends the run. Laboratory "
+			+ "rails can be compared in DEBUG. Tap after death to restart, or use MENU.",
 		"tip": "Ceilings and floors are mostly continuous but have deliberate gaps.",
 	},
 ]
@@ -72,10 +83,19 @@ const TUTORIAL_STEPS := [
 var screen: int = Screen.HOME
 var tutorial_index: int = 0
 var settings: PlayerSettings = PlayerSettings.defaults()
+var progress: PlayerProgress = PlayerProgress.defaults()
 
 
-func configure(initial_settings: PlayerSettings) -> void:
+func configure(
+	initial_settings: PlayerSettings,
+	initial_progress: PlayerProgress = null,
+) -> void:
 	settings = initial_settings.copy()
+	progress = (
+		initial_progress.copy()
+		if initial_progress != null
+		else PlayerProgress.defaults()
+	)
 	screen = Screen.HOME
 	tutorial_index = 0
 	changed.emit()
@@ -97,6 +117,26 @@ func show_settings() -> void:
 	changed.emit()
 
 
+func show_garage() -> void:
+	screen = Screen.GARAGE
+	changed.emit()
+
+
+func show_shop() -> void:
+	screen = Screen.SHOP
+	changed.emit()
+
+
+func show_creator() -> void:
+	screen = Screen.CREATOR
+	changed.emit()
+
+
+func configure_progress(updated_progress: PlayerProgress) -> void:
+	progress = updated_progress.copy()
+	changed.emit()
+
+
 func next_tutorial_step() -> void:
 	if tutorial_index >= TUTORIAL_STEPS.size() - 1:
 		request_play()
@@ -112,6 +152,42 @@ func previous_tutorial_step() -> void:
 
 func request_play() -> void:
 	play_requested.emit(settings.copy())
+
+
+func request_creator_play() -> void:
+	creator_play_requested.emit(
+		settings.copy(),
+		progress.creator_pattern.duplicate(),
+	)
+
+
+func request_spider_profile(spider_id: StringName) -> void:
+	if spider_id in SpiderCatalog.ALL_IDS:
+		spider_profile_requested.emit(spider_id)
+
+
+func request_spider_style(style: StringName) -> void:
+	if style in PlayerProgress.ALL_STYLES:
+		spider_style_requested.emit(style)
+
+
+func request_web_variant(web_variant: StringName) -> void:
+	if web_variant in PlayerProgress.ALL_WEB_VARIANTS:
+		web_variant_requested.emit(web_variant)
+
+
+func request_upgrade_purchase(upgrade_id: StringName) -> void:
+	if not SpiderCatalog.upgrade(upgrade_id).is_empty():
+		upgrade_purchase_requested.emit(upgrade_id)
+
+
+func request_creator_piece(slot: int) -> void:
+	if slot >= 0 and slot < progress.creator_pattern.size():
+		creator_piece_requested.emit(slot)
+
+
+func request_creator_clear() -> void:
+	creator_clear_requested.emit()
 
 
 func set_swing_preset(preset: StringName) -> void:

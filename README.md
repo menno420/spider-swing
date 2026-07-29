@@ -16,23 +16,37 @@ The product *is* the swinging. Everything else exists to support it.
 > `com.menno420.spiderswing.dev` are all development identifiers and are all
 > expected to change.
 
-## Current phase: Phase 0.10 configurable gameplay-foundation test
+## Current phase: Phase 0.12 opening-swing and spider-garage test
 
 **The first playable traversal test is implemented.** The project opens on a
-player-facing Home screen with Play, a six-step Tutorial, and readable scrolling
-Settings. Play enters an endless laboratory with forgiving solid-object
-attachment, momentum-preserving release, naturally retained rope shortening,
-interruptible percentage-based Anchor Burst and Dive Pull, a paced organic
-graybox course, collectible fly routes, and one temporary Burst boost.
+player-facing Home screen with Play, Garage, Shop, a six-step Tutorial, Course
+Lab, and readable scrolling Settings. Play begins on a real ceiling web that
+provides a safe first swing before the player must react. The endless laboratory
+keeps forgiving solid-object attachment, momentum-preserving release, naturally
+retained rope shortening, interruptible percentage-based Anchor Burst and Dive
+Pull, a paced organic graybox course, collectible fly routes, and one temporary
+Burst boost.
 
 ### What exists
 
-- A responsive starting screen with Play, Tutorial, and Settings; settings persist
-  the swing candidate, control hints, reduced motion, and debug-tool visibility.
+- A responsive starting screen with Play, Garage, Shop, Tutorial, Course Lab,
+  and Settings; settings persist the swing candidate, control hints, reduced
+  motion, and debug-tool visibility.
+- A data-defined Garage with four comparison spiders—balanced, small/agile,
+  heavy, and gliding—plus three web treatments and palette selection. Every
+  profile modifies the same authoritative `SwingConfig`, and its trade-off is
+  visible before Play.
+- A prototype Shop that spends collected flies on two capped upgrade tracks per
+  spider. This is a local balance lab, not an in-app-purchase implementation.
+- A six-slot Course Lab that cycles deterministic EMPTY/LEAF/POD/VINE/GATE
+  pieces, saves the pattern locally, and can playtest it immediately.
 - A data-driven six-step animated tutorial plus an in-game Menu return path.
 - A deterministic 60 Hz point-mass spider motor with the owner-tested 1120
   gravity candidate, forward drive, drag,
   world boundaries, and a capped maximum-length web constraint.
+- A deterministic opening trajectory that uses the ordinary web constraint and
+  remains interruptible from the first tick, plus one optional rescue charge per
+  run with a short collision shield and clear HUD state.
 - Polygonal ceilings and obstacles with optional aim guides, a 1000-pixel shared
   web range, a 220-pixel aim-forgiveness band, manual release, Reel-In
   drain/regeneration/lockout, and multi-touch input that keeps UI touches out of
@@ -47,6 +61,9 @@ graybox course, collectible fly routes, and one temporary Burst boost.
   collision-checked, but only Burst uses a timer. Dive rearms after the next
   successful upper/obstacle web attachment. Either pull can be cancelled
   immediately by a recovery-web tap.
+- Slightly reduced floating hazards, with independent DEBUG controls for edge
+  obstacle size, floating obstacle size, and gate opening size. Collision and
+  presentation always consume the same scaled polygons.
 - Automatic rope take-up retains 85% of natural inward slack by default without
   adding speed. DEBUG can compare it off/on, alter the retained percentage, hide
   the course rails, or make visible rails lethal.
@@ -55,18 +72,21 @@ graybox course, collectible fly routes, and one temporary Burst boost.
   fly totals and distance milestones; the first two alternate graybox spider
   palettes unlock at 25 flies and 1000 m.
 - A code-drawn view with camera follow, 228-pixel thumb targets,
-  action flashes/haptics, pause/frame-step/slow-motion, and a five-section,
+  action flashes/haptics, pause/frame-step/slow-motion, and a six-section,
   touch-first DEBUG panel with direct values for Burst/Dive percentages and
   durations, Burst cooldown, Reel shortening speed,
-  natural take-up mode/percentage, rail presence/lethality, middle-hazard start,
-  boost duration, attach catch, aim forgiveness, range, RELEASE/RETARGET behavior,
+  natural take-up mode/percentage, rail presence/lethality, obstacle sizes,
+  opening web and rescue toggles, middle-hazard start, boost duration, attach
+  catch, aim forgiveness, range, RELEASE/RETARGET behavior,
   deterministic input recording/replay, and diagnostic export.
-- Twenty-nine deterministic physics tests (63 runtime contracts total),
+- Thirty-four deterministic physics tests (70 runtime contracts total),
   including interruptible recovery webs, double-tap fallback, explicit
   release/retarget modes, opening-runway pacing, lower anchor coverage, exact
   pull-distance shares, speed-neutral Reel/take-up shortening, rail policy,
   swept pickups, idempotent progression, polygon anchors/collisions, and
-  identical results from simulated 30/60/90/120 Hz render loops. Adapter tests
+  creator-pattern bounds, the guided opening trajectory, spider profiles/glide,
+  rescue consumption, and identical results from simulated 30/60/90/120 Hz
+  render loops. Adapter tests
   prove that raw Android touch owns world intent while its emulated mouse copy
   is ignored, so one physical tap cannot attach and immediately release.
 - The existing headless, architecture, CI, and Android debug build substrate.
@@ -74,11 +94,12 @@ graybox course, collectible fly routes, and one temporary Burst boost.
 ### What is deliberately not implemented
 
 No authored Phase 1 chunk pack, moving hazards, finalized currency/economy,
-missions, purchasable upgrades, monetization, or production art. The fly,
-temporary boost, settlement, and alternate-color unlocks are deliberately small
-architecture-proving slices—not approved balance or production content. Debug
-values remain prototypes for possible future upgrades; no price or economy has
-been invented.
+missions, production monetization, or production art. The fly-funded upgrades,
+temporary boost, one-run rescue, spider profiles, and local Course Lab are
+deliberately small architecture-proving slices—not approved balance or
+production content. There is no Google Play Billing SDK, real-money catalogue,
+purchase verification, server entitlement, hourly life timer, course sharing,
+or moderation. Those require explicit later product and infrastructure work.
 
 Phase 0 is tracked in [issue #2](../../issues/2). The implementation is ready for
 device playtesting, but none of its three presets is an approved baseline yet.

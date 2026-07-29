@@ -10,6 +10,11 @@ bursting, diving, and avoiding readable hazards feels good on a real phone. The
 current silhouettes and course loop are test instrumentation, not approved
 Phase 1 content.
 
+Each run now begins on a normal ceiling web with a deterministic safe
+trajectory. The player may override it immediately, but no input is required for
+roughly the first second. One optional rescue charge can recover the first lethal
+mistake; the HUD always says whether it is ready or spent.
+
 ## Play controls
 
 | Action | Android touch | Desktop |
@@ -108,18 +113,24 @@ absent, and safe or lethal. DEBUG draws the predicted endpoint of the nearest
 available Dive in green or red. The palette is still diagnostic; moving hazards,
 production balancing, and final object art remain deferred.
 
+The default floating-hazard scale is 90%, edge-grown obstacles use 94%, and gate
+openings use 112%. These are independent DEBUG values. `CourseStream` scales the
+authoritative polygons before either simulation or presentation receives them,
+so a smaller drawing can never retain an invisible old collision shape.
+
 Fly and Burst Frenzy pickups are collected with swept tests, so a fast spider
 cannot tunnel through them. Burst Frenzy suppresses Anchor Burst cooldown for
 four configurable seconds; it does not grant extra Dive Pull charges. Death
 creates one idempotent settlement through `ProgressionService`;
-`SaveRepository` atomically persists fly totals and the 25-fly/1000-m cosmetic
-milestones. This proves ownership and save flow without inventing the final
-economy or upgrade prices.
+`SaveRepository` atomically persists lifetime and spendable fly totals,
+profile-specific upgrade levels, selections, the local creator pattern, and
+cosmetic milestones. The current fly costs are comparison values only.
 
 ## Debug tuning
 
 The touch-first debug panel is split into **Movement**, **Rope**, **Pulls**,
-**Course**, and **Tools**. Every section shows at most six large setting cards.
+**Course**, **Run**, and **Tools**. Every section shows at most six large setting
+cards.
 Each card uses a plain name, one-sentence description, direct comparison values,
 and 52-pixel `−` / `+` targets. Presets are named instead of numbered. This
 avoids searching through a 19-item carousel during device playtests.
@@ -144,6 +155,11 @@ avoids searching through a 19-item carousel during device playtests.
 | `Ceiling and floor` | render/target continuous course rails | off / on |
 | `Lethal ceiling and floor` | rail contact policy | off / on |
 | `Floating hazards begin` | first detached middle-hazard distance | 100 m / 250–2000 m |
+| `Edge obstacle size` | scale rail-grown leaves, vines, and pods | 2% / 70–115% |
+| `Floating obstacle size` | scale detached middle hazards | 2% / 70–115% |
+| `Gate opening size` | widen or tighten broken-pot passages | 4% / 80–140% |
+| `Opening training web` | start on the ordinary guided ceiling web | off / on |
+| `One rescue per run` | recover the first lethal mistake | off / on |
 | `Burst Frenzy time` | Anchor Burst cooldown suppression | 0.5 / 1–10 s |
 
 `DRIVE` can be subtle while the spider is already at or above its current target
@@ -155,10 +171,11 @@ state, retained stream chunks, record/replay, and JSON export. Runtime changes
 reset when the app restarts.
 
 These controls are also the measurement surface for possible future upgrades.
-Reel rate, Burst share, cooldown, and later glide response can become validated
-modifiers over one base `SwingConfig`; they must not create parallel physics
-implementations. Costs, caps, record eligibility, and the final economy remain a
-separate product decision and are intentionally not inferred from DEBUG values.
+The Garage already proves that validated profile and fly-funded upgrade
+modifiers can resolve over one base `SwingConfig`; it does not create parallel
+physics implementations. Current costs and caps are test data. Record
+eligibility, the final economy, and any real-money entitlement remain separate
+product decisions.
 
 ## Verification contract
 
@@ -176,7 +193,13 @@ separate product decision and are intentionally not inferred from DEBUG values.
 - one-shot downward Dive Pull with exact 40% traversal and no persistent rope;
 - obstacle anchoring, polygon collision, and swept pull collision checks;
 - a 1000 m middle-hazard runway, deterministic organic geometry after it,
-  lower-anchor coverage, and a bounded seven-chunk window;
+  lower-anchor coverage, independently scaled obstacle polygons, creator-pattern
+  bounds, and a bounded seven-chunk window;
+- a one-second safe guided opening that remains interruptible from its first
+  tick;
+- one authoritative rescue followed by normal death on the next lethal contact;
+- four catalogued spider profiles, profile-specific capped upgrades, and a real
+  bounded glide state using the same central configuration;
 - independently safe/lethal course rails, swept pickups that do not respawn,
   idempotent persistent progression, and milestone cosmetic unlocks;
 - nonlethal upper and lethal lower/left/obstacle boundaries;
@@ -187,43 +210,57 @@ separate product decision and are intentionally not inferred from DEBUG values.
 
 ## Owner device playtest
 
-Install `0.4.1-debug-lab-dive-reset-test` after uninstalling the previous ephemerally
+Install `0.5.0-opening-garage-test` after uninstalling the previous ephemerally
 signed dev app, then check:
 
-1. from `RUN ENDED`, tap once to restart and confirm that the same physical tap
+1. start a run without touching the screen for one second; the ordinary opening
+   web should produce a safe useful first swing instead of a free fall;
+2. interrupt the opening immediately with a valid tap and confirm there is no
+   input lock or discarded intent;
+3. from `RUN ENDED`, tap once to restart and confirm that the same physical tap
    does not also attach a web;
-2. Burst, then tap one valid upper solid once; the recovery web must remain
+4. Burst, then tap one valid upper solid once; the recovery web must remain
    visibly attached and must not immediately report `Momentum preserved`;
-3. repeat the same recovery with fast single taps and double-taps during the
+5. repeat the same recovery with fast single taps and double-taps during the
    pull and cooldown; each physical press must produce one resulting action;
-4. tap naturally on the forward/right side and confirm the 1000-pixel baseline
+6. tap naturally on the forward/right side and confirm the 1000-pixel baseline
    reaches useful ceiling and obstacle edges;
-5. Burst, then immediately tap an upper solid several times at different points
+7. Burst, then immediately tap an upper solid several times at different points
    in the pull; every valid tap should create a visible recovery web;
-6. repeat with fast double-taps during the pull and cooldown; none should report
+8. repeat with fast double-taps during the pull and cooldown; none should report
    `Pull already active` while the spider remains detached;
-7. use DEBUG `TAP RELEASE`, then `TAP RETARGET`, and decide whether deliberate
+9. use DEBUG `TAP RELEASE`, then `TAP RETARGET`, and decide whether deliberate
    two-tap release/attach or atomic one-tap replacement feels more natural;
-8. hold Reel during a downward arc and judge whether height becomes manageable
+10. hold Reel during a downward arc and judge whether height becomes manageable
    without the previous runaway speed gain;
-9. compare several starting web lengths and confirm Burst always covers roughly
+11. compare several starting web lengths and confirm Burst always covers roughly
    half the visible rope distance;
-10. use a lower rail target twice without attaching above between attempts; the
+12. use a lower rail target twice without attaching above between attempts; the
     second must say that an upper web is required, not display a timer;
-11. attach a ceiling or upper obstacle, then immediately Dive during an active
+13. attach a ceiling or upper obstacle, then immediately Dive during an active
     Burst cooldown; confirm the downward pull works and spends its charge;
-12. deliberately Burst toward a badly timed obstacle and confirm the control
+14. deliberately Burst toward a badly timed obstacle and confirm the control
     remains powerful but unsafe;
-13. use each DEBUG section to change range, Burst cooldown, Burst %, Dive %, both
+15. use each DEBUG section to change range, Burst cooldown, Burst %, Dive %, both
     durations, and Reel speed; confirm no setting requires carousel searching;
-14. compare `Keep shortened rope` off/on and several retained percentages; when the spider moves
+16. compare `Keep shortened rope` off/on and several retained percentages; when the spider moves
     toward the anchor, the shorter web should mostly remain short without a speed
     spike;
-15. compare rails off, rails safe, and rails lethal; verify the deliberate gaps
+17. compare rails off, rails safe, and rails lethal; verify the deliberate gaps
     still permit occasional travel above/below the ordinary corridor;
-16. confirm no detached middle hazard appears before roughly 1000 m, then judge
+18. confirm no detached middle hazard appears before roughly 1000 m, then judge
     whether later leaf, vine, seed-pod, and pot patterns remain readable;
-17. follow fly arcs, collect Burst Frenzy, use multiple Bursts before it expires,
+19. compare floating obstacle sizes around 85%, 90%, and 95%, then vary gate
+    opening size; collision edges must remain aligned with the silhouettes;
+20. deliberately hit a lethal obstacle once and verify `RESCUE READY` becomes
+    `RESCUE SPENT`; the next lethal hit must end the run;
+21. compare all four Garage profiles, especially Skitter's smaller collision
+    radius, Anchorite's weight, and Ballooner's visible bounded glide;
+22. spend laboratory flies on one Shop track and confirm the shown resolved
+    value changes and survives restart;
+23. create a six-piece Course Lab pattern, playtest it after the opening, return
+    Home, and confirm the saved pattern remains;
+24. follow fly arcs, collect Burst Frenzy, use multiple Bursts before it expires,
     and confirm it does not bypass the upper-web requirement for another Dive.
 
 Phase 1 remains gated on an explicitly approved movement baseline.

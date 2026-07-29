@@ -301,3 +301,37 @@ never edit.
   `GET /repos/menno420/spider-swing/rulesets` returned an empty list · this
   supersedes the private-plan wall only for current visibility, not as a promise
   that the repository will remain public.
+- 2026-07-29 · capability · `local` · **The opening/garage candidate passes the
+  full Godot 4.7.1 verification surface before publication** ·
+  `python3 tools/verify.py --require-godot` passed architecture fixtures and
+  scan, import, boot, 34 deterministic physics checks, 15 mobile GUI checks,
+  and 11 front-end/progression checks (70 total). This proves authoritative
+  obstacle scaling, the immediately interruptible opening web, one-run rescue,
+  four centralized spider profiles including bounded glide, fly-funded capped
+  upgrades, and saved creator patterns locally; CI and Android export remain to
+  be recorded after the branch is published.
+- 2026-07-29 · wall · `source-inspected` · **Real-money Shop products and
+  hourly lives are not implemented capabilities** · the repository contains no
+  Google Play Billing SDK, product catalogue, purchase verification,
+  acknowledgement, backend entitlement, or test-product configuration. The
+  visible Shop spends local flies only. Production purchases must be granted
+  only from verified `PURCHASED` states and acknowledged/consumed through an
+  explicit later integration; the current build must never label local prototype
+  upgrades as IAP.
+- 2026-07-29 · capability · `owner-live` · **The guided-opening, spider-garage,
+  and local-creator candidate survives the full Android path** · PR #18
+  `game-quality` run
+  [30422862144](https://github.com/menno420/spider-swing/actions/runs/30422862144)
+  passed 70 contracts at source
+  `e43500546b896972c96ee833e0967094d4edd982`; Android run
+  [30422862138](https://github.com/menno420/spider-swing/actions/runs/30422862138)
+  produced artifact
+  [`8712535636`](https://github.com/menno420/spider-swing/actions/runs/30422862138/artifacts/8712535636).
+  The downloaded 56,839,504-byte ZIP matched GitHub's SHA-256
+  `7b0200d952148090efcd271f7ed1240650657d43de3ca7e26e5abae848cdf89a`;
+  its 57,223,786-byte APK passed archive verification with SHA-256
+  `d9f1f109f58d5c49509a8d89aa5b89b6ff28e7435c17f21a202c040c702df382`
+  and contained `classes.dex`, `AndroidManifest.xml`, and
+  `assets/project.binary`. `build-info.txt` proved version
+  `0.5.0-opening-garage-test`, exact source, dev package, and display name
+  `Spider Swing Opening Garage (dev)`.

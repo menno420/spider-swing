@@ -354,7 +354,8 @@ static func _test_debug_button_and_panel_controls(
 	var debug := router.hud_button(&"Debug")
 	var movement_control := router.hud_button(&"gravityMinus")
 	var pause := router.hud_button(&"Utility0")
-	var tools_tab := router.hud_button(&"Category4")
+	var tools_tab := router.hud_button(StringName(
+		"Category%d" % TuningCatalog.tools_category_index()))
 	if movement_control == null or pause == null or tools_tab == null or \
 			movement_control.visible or pause.visible:
 		failures.append("debug section controls are not initially hidden")
@@ -463,7 +464,8 @@ static func _test_debug_panel_expands_for_wide_phone(
 	var router := InputRouter.new()
 	router.install_touch_surface(wide_size)
 	var blocker := router.hud_button(&"DebugPanelBlocker")
-	var last_tab := router.hud_button(&"Category4")
+	var last_tab := router.hud_button(StringName(
+		"Category%d" % TuningCatalog.tools_category_index()))
 	var first_plus := router.hud_button(&"gravityPlus")
 	var panel := LabLayout.debug_panel_rect(wide_size)
 	if blocker == null or last_tab == null or first_plus == null:
@@ -475,8 +477,11 @@ static func _test_debug_panel_expands_for_wide_phone(
 		failures.append("DEBUG panel did not expand across a wide phone viewport")
 		router.free()
 		return 0
-	if _resolved_rect(last_tab, wide_size) != \
-			LabLayout.category_rect(4, wide_size) or \
+	if not _resolved_rect(last_tab, wide_size).is_equal_approx(
+			LabLayout.category_rect(
+				TuningCatalog.tools_category_index(),
+				wide_size,
+			)) or \
 			_resolved_rect(first_plus, wide_size) != \
 			LabLayout.parameter_plus_rect(0, wide_size):
 		failures.append("wide DEBUG visuals and native hit targets drifted")

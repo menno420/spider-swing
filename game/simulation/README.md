@@ -7,7 +7,8 @@ The authoritative simulation. Advances at a fixed 60 Hz independent of render ra
 
 ## What belongs here
 
-- **Spider Motor** — gravity, forward drive, velocity limits, body configuration.
+- **Spider Motor** — gravity, forward drive, velocity limits, body configuration,
+  and a bounded profile-driven glide gravity scale.
   The forward drive moves horizontal velocity *toward* a target pace; it must not
   overwrite velocity every step (GDD § 4.2).
 - **Web Constraint** — the maximum-length rope with a small tunable elastic
@@ -38,6 +39,9 @@ events → update presentation.
 - Never references `application`, `adapters`, or `presentation`.
 - Must not add unbounded energy through repeated attach/release (GDD § 6.3).
 
-`SimulationWorld`, `SpiderMotor`, and `WebConstraint` implement the Phase 0.7
-responsive rope-actions candidate. Accepted actions emit events containing their
-authoritative before/after motion for presentation and diagnostics. See ADR 0002.
+`SimulationWorld`, `SpiderMotor`, and `WebConstraint` implement the current
+Phase 0 candidate. The guided opening uses the ordinary authoritative
+constraint, and the one-run rescue is an explicit simulation transition with
+collision shielding rather than a presentation teleport. Accepted actions emit
+events containing their authoritative before/after motion for presentation and
+diagnostics. See ADR 0002.

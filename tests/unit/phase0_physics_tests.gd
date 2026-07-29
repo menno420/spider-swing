@@ -30,6 +30,11 @@ static func run() -> Dictionary:
 	passed += _test_pull_tuning_controls(failures)
 	passed += _test_course_stream_is_endless_and_bounded(failures)
 	passed += _test_opening_runway_has_no_middle_hazards(failures)
+	passed += _test_obstacle_scales_change_authoritative_polygons(failures)
+	passed += _test_guided_opening_swings_safely_without_input_lock(failures)
+	passed += _test_one_rescue_is_consumed_before_death(failures)
+	passed += _test_spider_profiles_and_glide_share_one_config(failures)
+	passed += _test_creator_pattern_drives_deterministic_chunks(failures)
 	passed += _test_course_stream_places_lower_anchor_windows(failures)
 	passed += _test_obstacle_collision_is_authoritative(failures)
 	passed += _test_boundary_lethality_is_a_toggle(failures)
@@ -424,6 +429,7 @@ static func _test_double_tap_falls_back_to_recovery_web(
 		return 0
 	session._command_buffer.clear()
 	session._world.pull_active = false
+	session._world.web.release()
 	session._world.burst_cooldown_remaining = 1.0
 	session.request_burst_from_gesture(Vector2(720.0, 150.0))
 	if session._command_buffer.size() != 1 or \
@@ -789,6 +795,146 @@ static func _test_course_stream_places_lower_anchor_windows(
 				"chunk %d has no authored lower anchor before its hazards" %
 				chunk_index)
 			return 0
+	return 1
+
+
+static func _test_obstacle_scales_change_authoritative_polygons(
+	failures: PackedStringArray,
+) -> int:
+	var full := CourseStream.new()
+	full.reset(0.0, 1.0, 1.0, 1.0, [&"pod"])
+	var full_geometry := full.update_for_position(1300.0)
+	var smaller := CourseStream.new()
+	smaller.reset(0.0, 0.94, 0.90, 1.12, [&"pod"])
+	var smaller_geometry := smaller.update_for_position(1300.0)
+	if full_geometry.obstacles.is_empty() or smaller_geometry.obstacles.is_empty():
+		failures.append("obstacle scaling fixture produced no creator pod")
+		return 0
+	var full_bounds := SolidGeometry.bounds(full_geometry.obstacles[0])
+	var smaller_bounds := SolidGeometry.bounds(smaller_geometry.obstacles[0])
+	if smaller_bounds.size.x >= full_bounds.size.x or \
+			smaller_bounds.size.y >= full_bounds.size.y:
+		failures.append("smaller floating setting did not shrink collision polygons")
+		return 0
+	if absf(smaller_bounds.size.x / full_bounds.size.x - 0.90) > 0.01 or \
+			absf(smaller_bounds.size.y / full_bounds.size.y - 0.90) > 0.01:
+		failures.append("floating obstacle size is not applied predictably")
+		return 0
+	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	if not is_equal_approx(config.floating_obstacle_scale, 0.90) or \
+			not is_equal_approx(config.gate_opening_scale, 1.12):
+		failures.append("roomier obstacle defaults drifted from the comparison build")
+		return 0
+	return 1
+
+
+static func _test_guided_opening_swings_safely_without_input_lock(
+	failures: PackedStringArray,
+) -> int:
+	var session := SwingLabSession.new()
+	session._reset_run()
+	if not session._world.web.attached or \
+			session._world.web.anchor.distance_to(Vector2(500.0, 112.0)) > 0.1:
+		failures.append("run did not begin on the deterministic opening web")
+		session.free()
+		return 0
+	for _index in range(60):
+		session._step_once()
+	if session._run.state != RunStateMachine.State.ACTIVE or \
+			session._world.distance_pixels < 350.0:
+		failures.append("guided opening failed to provide one safe second of travel")
+		session.free()
+		return 0
+	session.request_web_tap(Vector2(-200.0, 360.0))
+	session._step_once()
+	if session._world.web.attached:
+		failures.append("guided opening locked out an early release input")
+		session.free()
+		return 0
+	session.free()
+	return 1
+
+
+static func _test_one_rescue_is_consumed_before_death(
+	failures: PackedStringArray,
+) -> int:
+	var session := SwingLabSession.new()
+	session._reset_run()
+	session._world.web.release()
+	session._world.position.y = session._config.lower_world_boundary + 5.0
+	session._step_once()
+	if session._run.state != RunStateMachine.State.ACTIVE or \
+			session._rescue_available or \
+			session._world.rescue_shield_remaining <= 0.0:
+		failures.append("first lethal mistake did not consume one safe rescue")
+		session.free()
+		return 0
+	session._world.rescue_shield_remaining = 0.0
+	session._world.position.y = session._config.lower_world_boundary + 5.0
+	session._step_once()
+	if session._run.state != RunStateMachine.State.DYING:
+		failures.append("second lethal mistake did not continue into normal death")
+		session.free()
+		return 0
+	session.free()
+	return 1
+
+
+static func _test_spider_profiles_and_glide_share_one_config(
+	failures: PackedStringArray,
+) -> int:
+	var progress := PlayerProgress.defaults()
+	progress.selected_spider_id = SpiderCatalog.SKITTER
+	var agile := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	SpiderCatalog.apply_to_config(agile, progress)
+	progress.selected_spider_id = SpiderCatalog.ANCHORITE
+	var heavy := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	SpiderCatalog.apply_to_config(heavy, progress)
+	progress.selected_spider_id = SpiderCatalog.BALLOONER
+	var glider := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	SpiderCatalog.apply_to_config(glider, progress)
+	if agile.player_collision_radius >= 18.0 or \
+			agile.horizontal_drive_acceleration <= 470.0:
+		failures.append("Skitter lost its smaller, more agile profile")
+		return 0
+	if heavy.player_collision_radius <= 18.0 or heavy.gravity <= 1120.0 or \
+			heavy.reel_retraction_rate <= 480.0:
+		failures.append("Anchorite lost its heavy Reel-In trade-off")
+		return 0
+	if glider.glide_duration <= 1.0 or glider.detached_gravity_scale >= 0.60:
+		failures.append("Ballooner does not resolve to a real detached glide")
+		return 0
+	var world := SimulationWorld.new()
+	world.reset(glider, _test_geometry())
+	var velocity_before := world.velocity.y
+	world.step(FIXED_DELTA)
+	var gliding_gravity_delta := world.velocity.y - velocity_before
+	if gliding_gravity_delta >= glider.gravity * FIXED_DELTA * 0.70:
+		failures.append("Ballooner glide did not reduce detached gravity")
+		return 0
+	return 1
+
+
+static func _test_creator_pattern_drives_deterministic_chunks(
+	failures: PackedStringArray,
+) -> int:
+	var first := CourseStream.new()
+	var pattern: Array[StringName] = [
+		&"leaf", &"empty", &"pod", &"vine", &"gate", &"empty",
+	]
+	first.reset(10000.0, 0.94, 0.90, 1.12, pattern)
+	var geometry_a := first.update_for_position(1300.0)
+	var second := CourseStream.new()
+	second.reset(10000.0, 0.94, 0.90, 1.12, pattern)
+	var geometry_b := second.update_for_position(1300.0)
+	if geometry_a.obstacles.is_empty() or \
+			geometry_a.obstacles != geometry_b.obstacles:
+		failures.append("saved creator pattern is not deterministic or playable")
+		return 0
+	if geometry_a.first_chunk_index != geometry_b.first_chunk_index or \
+			geometry_a.last_chunk_index != geometry_b.last_chunk_index:
+		failures.append("creator playtest changed bounded stream ownership")
+		return 0
 	return 1
 
 

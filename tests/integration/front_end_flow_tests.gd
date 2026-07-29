@@ -14,6 +14,8 @@ static func run() -> Dictionary:
 	passed += _test_settings_codec_round_trip(failures)
 	passed += _test_settings_repository_round_trip(failures)
 	passed += _test_progression_is_idempotent_and_persistent(failures)
+	passed += _test_garage_shop_and_creator_are_real_routes(failures)
+	passed += _test_upgrades_and_creator_edits_use_progression_service(failures)
 	passed += _test_composition_root_mounts_front_end_first(failures)
 	return {"passed": passed, "failures": failures}
 
@@ -39,7 +41,9 @@ static func _test_primary_routes_are_real_buttons(
 	state.configure(PlayerSettings.defaults())
 	var view := FrontEndView.new()
 	view.bind_state(state)
-	for button_name: StringName in [&"Play", &"Tutorial", &"Settings"]:
+	for button_name: StringName in [
+		&"Play", &"Garage", &"Shop", &"Tutorial", &"Creator", &"Settings",
+	]:
 		var button := view.front_end_button(button_name)
 		if button == null or button.mouse_filter != Control.MOUSE_FILTER_STOP:
 			failures.append("%s is not an event-consuming Button" % button_name)
@@ -241,6 +245,7 @@ static func _test_progression_is_idempotent_and_persistent(
 		failures.append("progression did not apply one settlement exactly once")
 		return 0
 	if progress.total_flies != 25 or \
+			progress.spendable_flies != 25 or \
 			PlayerProgress.STYLE_AMBER not in progress.unlocked_spider_styles or \
 			PlayerProgress.STYLE_COMET not in progress.unlocked_spider_styles:
 		failures.append("fly and distance milestones did not unlock cosmetics")
@@ -273,6 +278,68 @@ static func _test_progression_is_idempotent_and_persistent(
 	if restored.to_dictionary() != progress.to_dictionary():
 		failures.append("SaveRepository did not restore progression")
 		return 0
+	return 1
+
+
+static func _test_garage_shop_and_creator_are_real_routes(
+	failures: PackedStringArray,
+) -> int:
+	var state := FrontEndState.new()
+	state.configure(PlayerSettings.defaults(), PlayerProgress.defaults())
+	var view := FrontEndView.new()
+	view.bind_state(state)
+	view.front_end_button(&"Garage").pressed.emit()
+	if state.screen != FrontEndState.Screen.GARAGE or \
+			view.front_end_button(&"GaragePlay") == null:
+		failures.append("Garage is not a functional Home route")
+		view.free()
+		return 0
+	view.front_end_button(&"GarageBack").pressed.emit()
+	view.front_end_button(&"Shop").pressed.emit()
+	if state.screen != FrontEndState.Screen.SHOP or \
+			view.front_end_button(&"ShopGarage") == null:
+		failures.append("Shop is not a functional Home route")
+		view.free()
+		return 0
+	view.front_end_button(&"ShopBack").pressed.emit()
+	view.front_end_button(&"Creator").pressed.emit()
+	if state.screen != FrontEndState.Screen.CREATOR or \
+			view.front_end_button(&"CreatorPlay") == null or \
+			view.front_end_button(&"CourseSlot0") == null:
+		failures.append("Course Lab is not a functional editable Home route")
+		view.free()
+		return 0
+	view.free()
+	return 1
+
+
+static func _test_upgrades_and_creator_edits_use_progression_service(
+	failures: PackedStringArray,
+) -> int:
+	var progress := PlayerProgress.defaults()
+	progress.spendable_flies = 20
+	progress.selected_spider_id = SpiderCatalog.SKITTER
+	var service := ProgressionService.new()
+	var track := &"skitter_size"
+	var result := service.purchase_upgrade(progress, track)
+	if not bool(result.get("purchased", false)) or \
+			progress.upgrade_level(track) != 1 or \
+			progress.spendable_flies != 15:
+		failures.append("fly-funded spider upgrade did not apply atomically")
+		return 0
+	if not service.select_spider_profile(progress, SpiderCatalog.BALLOONER):
+		failures.append("an unlocked comparison spider could not be selected")
+		return 0
+	var before := progress.creator_pattern[0]
+	if not service.cycle_creator_piece(progress, 0) or \
+			progress.creator_pattern[0] == before:
+		failures.append("creator slot did not cycle through the progression seam")
+		return 0
+	service.clear_creator_pattern(progress)
+	for piece: StringName in progress.creator_pattern:
+		if piece != &"empty":
+			failures.append("creator clear left an authored obstacle behind")
+			return 0
 	return 1
 
 

@@ -17,7 +17,9 @@ func apply_settlement(
 	progress.applied_settlement_ids.append(settlement.settlement_id)
 	while progress.applied_settlement_ids.size() > SETTLEMENT_HISTORY_LIMIT:
 		progress.applied_settlement_ids.remove_at(0)
-	progress.total_flies += maxi(0, settlement.flies_collected)
+	var collected := maxi(0, settlement.flies_collected)
+	progress.total_flies += collected
+	progress.spendable_flies += collected
 	progress.best_distance_pixels = maxf(
 		progress.best_distance_pixels,
 		settlement.distance_pixels,
@@ -31,10 +33,74 @@ func apply_settlement(
 
 
 func select_spider(progress: PlayerProgress, style: StringName) -> bool:
+	return select_spider_style(progress, style)
+
+
+func select_spider_style(progress: PlayerProgress, style: StringName) -> bool:
 	if style not in progress.unlocked_spider_styles:
 		return false
 	progress.selected_spider_style = style
 	return true
+
+
+func select_spider_profile(
+	progress: PlayerProgress,
+	spider_id: StringName,
+) -> bool:
+	if spider_id not in progress.unlocked_spider_ids or \
+			spider_id not in SpiderCatalog.ALL_IDS:
+		return false
+	progress.selected_spider_id = spider_id
+	return true
+
+
+func select_web_variant(
+	progress: PlayerProgress,
+	web_variant: StringName,
+) -> bool:
+	if web_variant not in progress.unlocked_web_variants:
+		return false
+	progress.selected_web_variant = web_variant
+	return true
+
+
+func purchase_upgrade(
+	progress: PlayerProgress,
+	upgrade_id: StringName,
+) -> Dictionary:
+	var item := SpiderCatalog.upgrade(upgrade_id)
+	if item.is_empty() or StringName(item["profile"]) != \
+			progress.selected_spider_id:
+		return {"purchased": false, "reason": "wrong_spider"}
+	var level := progress.upgrade_level(upgrade_id)
+	if level >= SpiderCatalog.MAX_UPGRADE_LEVEL:
+		return {"purchased": false, "reason": "maximum"}
+	var cost := SpiderCatalog.cost_for_level(level)
+	if progress.spendable_flies < cost:
+		return {"purchased": false, "reason": "flies", "cost": cost}
+	progress.spendable_flies -= cost
+	progress.upgrade_levels[str(upgrade_id)] = level + 1
+	return {
+		"purchased": true,
+		"level": level + 1,
+		"cost": cost,
+	}
+
+
+func cycle_creator_piece(progress: PlayerProgress, slot: int) -> bool:
+	if slot < 0 or slot >= progress.creator_pattern.size():
+		return false
+	var current := progress.creator_pattern[slot]
+	var index := PlayerProgress.CREATOR_PIECES.find(current)
+	progress.creator_pattern[slot] = PlayerProgress.CREATOR_PIECES[
+		posmod(index + 1, PlayerProgress.CREATOR_PIECES.size())
+	]
+	return true
+
+
+func clear_creator_pattern(progress: PlayerProgress) -> void:
+	for index in range(progress.creator_pattern.size()):
+		progress.creator_pattern[index] = &"empty"
 
 
 func _unlock(
