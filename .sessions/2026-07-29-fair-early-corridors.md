@@ -1,6 +1,6 @@
 # Phase 0.14 fair early corridors
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 
