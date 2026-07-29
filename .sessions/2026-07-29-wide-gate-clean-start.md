@@ -1,6 +1,6 @@
 # Wide gate and clean-start diagnostics session
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 
