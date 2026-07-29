@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dsufdlbrabgnl"
-path="res://.godot/imported/thorn-root-gate.png-a087fa91a74bd8b9ebe687ca0959d633.ctex"
+uid="uid://cnxq4b7jnkx0s"
+path="res://.godot/imported/split-thorn-root-gate.png-a26ce49a4399a47f6cb5bf3b99aef3a6.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/runtime/forest-biome/thorn-root-gate.png"
-dest_files=["res://.godot/imported/thorn-root-gate.png-a087fa91a74bd8b9ebe687ca0959d633.ctex"]
+source_file="res://assets/runtime/forest-biome/split-thorn-root-gate.png"
+dest_files=["res://.godot/imported/split-thorn-root-gate.png-a26ce49a4399a47f6cb5bf3b99aef3a6.ctex"]
 
 [params]
 

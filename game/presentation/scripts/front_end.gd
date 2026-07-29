@@ -738,7 +738,7 @@ func _creator_piece_label(piece: StringName) -> String:
 		&"vine":
 			return "VINE FORK"
 		&"gate":
-			return "POT GATE"
+			return "SPLIT ROOT GATE"
 		_:
 			return "EMPTY"
 

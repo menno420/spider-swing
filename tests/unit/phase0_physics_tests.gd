@@ -1049,37 +1049,49 @@ static func _test_early_routes_are_obstacle_aware_and_late_gaps_are_clear(
 static func _test_gate_fly_route_is_traversable(
 	failures: PackedStringArray,
 ) -> int:
-	var stream := CourseStream.new()
-	var pattern: Array[StringName] = [&"gate"]
-	stream.reset(10000.0, 0.94, 0.90, 1.12, pattern)
-	var geometry := stream.update_for_position(1300.0)
 	var gate_center := Vector2(CourseStream.CHUNK_WIDTH + 690.0, 370.0)
 	var classic := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 	var route_radius := classic.player_collision_radius + 8.0
-	var found_gate_piece := false
-	for sample_index in range(61):
-		var sample_x := lerpf(
-			gate_center.x - 150.0,
-			gate_center.x + 150.0,
-			float(sample_index) / 60.0,
-		)
-		var route_sample := Vector2(sample_x, gate_center.y)
-		for obstacle: PackedVector2Array in geometry.obstacles:
-			var obstacle_bounds := SolidGeometry.bounds(obstacle)
-			if absf(obstacle_bounds.get_center().x - gate_center.x) > 130.0:
-				continue
-			found_gate_piece = true
-			if SolidGeometry.circle_intersects_polygon(
-				route_sample,
-				route_radius,
-				obstacle,
-			):
-				failures.append(
-					"gate fly route is not traversable by a Classic-sized spider")
-				return 0
-	if not found_gate_piece:
-		failures.append("gate route fixture produced no gate collision pieces")
-		return 0
+	for opening_scale in [0.80, 1.12, 1.40]:
+		var stream := CourseStream.new()
+		var pattern: Array[StringName] = [&"gate"]
+		stream.reset(10000.0, 0.94, 0.90, opening_scale, pattern)
+		var geometry := stream.update_for_position(1300.0)
+		var found_gate_piece := false
+		for sample_index in range(61):
+			var sample_x := lerpf(
+				gate_center.x - 150.0,
+				gate_center.x + 150.0,
+				float(sample_index) / 60.0,
+			)
+			var route_sample := Vector2(sample_x, gate_center.y)
+			for boundary: PackedVector2Array in geometry.boundary_surfaces:
+				if SolidGeometry.circle_intersects_polygon(
+					route_sample,
+					route_radius,
+					boundary,
+				):
+					failures.append(
+						"gate fly route meets a course boundary at %.0f%%" %
+						(opening_scale * 100.0))
+					return 0
+			for obstacle: PackedVector2Array in geometry.obstacles:
+				var obstacle_bounds := SolidGeometry.bounds(obstacle)
+				if absf(obstacle_bounds.get_center().x - gate_center.x) > 130.0:
+					continue
+				found_gate_piece = true
+				if SolidGeometry.circle_intersects_polygon(
+					route_sample,
+					route_radius,
+					obstacle,
+				):
+					failures.append(
+						"gate fly route blocks a Classic-sized spider at %.0f%%" %
+						(opening_scale * 100.0))
+					return 0
+		if not found_gate_piece:
+			failures.append("gate route fixture produced no gate collision pieces")
+			return 0
 	return 1
 
 

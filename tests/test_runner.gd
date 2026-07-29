@@ -4,9 +4,10 @@ extends SceneTree
 const MAIN_SCENE_PATH := "res://game/bootstrap/main.tscn"
 const EXPORT_PRESETS_PATH := "res://export_presets.cfg"
 const ANDROID_WORKFLOW_PATH := "res://.github/workflows/android-debug.yml"
-const BUILD_VERSION := "0.8.0-forest-art-test"
-const ANDROID_VERSION_CODE := 16
-const ANDROID_APP_NAME := "Spider Swing Forest Art (dev)"
+const BUILD_VERSION := "0.8.1-split-gate-test"
+const ANDROID_VERSION_CODE := 17
+const ANDROID_APP_NAME := "Spider Swing Split Gate (dev)"
+const EXPECTED_CHECK_COUNT := 77
 const REQUIRED_INPUT_ACTIONS := [
 	"web_action", "reel_in", "burst_action", "pause", "restart_run",
 	"toggle_debug"]
@@ -29,6 +30,13 @@ func _initialize() -> void:
 	_check_mobile_hud_layout()
 	_check_front_end_flow()
 	print("")
+	if _failures.is_empty() and _passed != EXPECTED_CHECK_COUNT:
+		_fail(
+			"runner executed %d checks but the declared suite requires %d" % [
+				_passed,
+				EXPECTED_CHECK_COUNT,
+			],
+		)
 	if _failures.is_empty():
 		print("[test_runner] PASS — %d check(s) passed" % _passed)
 		quit(0)

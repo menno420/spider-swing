@@ -62,7 +62,7 @@ without a reported regression.
   attachment.
 - Double-tap carries a target in the authoritative command, so Burst works
   atomically even when the first tap has not attached yet. Ceiling pieces,
-  hanging/floor branches, obstacles, and broken-pot gates all resolve through one
+  hanging/floor branches, obstacles, and split root gates all resolve through one
   solid-edge targeting policy.
 - Burst and Dive Pull are interruptible transitions rather than input locks. A
   valid upper-solid tap attaches a recovery web immediately, and a platform
@@ -74,7 +74,7 @@ without a reported regression.
 - The stream keeps a 1000 m learning runway free of detached middle hazards
   and, independently, forbids inward rail movement before 2000 m by default.
   It then combines continuous shaped ceiling/floor rails, leaf clusters, vine
-  forks, hanging seed pods, and broken-pot gates. Rails are lethal by default;
+  forks, hanging seed pods, and split root gates. Rails are lethal by default;
   one explicit route plan coordinates each challenge's rails and fly trail.
   Most patterns open a high, low, or centre bypass; occasional later inward
   passages are rail-only rather than stacked with a floating obstacle. Sparse Burst Frenzy
@@ -114,7 +114,7 @@ without a reported regression.
   collision, targeting, pace, or lethality.
 - `ArtAssetCatalog` adds one cohesive Ancient Forest candidate-production
   grammar over that same geometry: mirrored mossy branch edges, rooted
-  brambles, top-anchored thorn vines, a grouped hollow root gate, a finished
+  brambles, top-anchored thorn vines, a grouped split root gate, a finished
   Classic Garden Spider sprite, and golden forest flies. Obstacle alpha is
   backed by a dark collision shadow; normal play has no graphic rail or hazard
   outline, while DEBUG restores exact collision overlays.

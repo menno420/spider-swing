@@ -332,7 +332,7 @@ const PARAMETERS := [
 		"id": &"gate_opening_size",
 		"category": CATEGORY_COURSE,
 		"label": "Gate opening size",
-		"help": "Extra clear space through the centre of broken-pot gates.",
+		"help": "Extra clear space between the upper and lower root-gate arcs.",
 		"format": &"percent",
 		"minimum": 0.80,
 		"maximum": 1.40,

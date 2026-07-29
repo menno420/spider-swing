@@ -106,7 +106,7 @@ routes, flies, and recovery timing. Later chunks vary:
   after the protected distance, occasionally form a rail-only smaller gap;
 - floor-grown leaf clusters and vine forks;
 - ceiling-hanging seed pods and leaf clusters;
-- broken-pot gates with a traversable opening;
+- split upper/lower root gates with a horizontally traversable opening;
 - lower rail targets placed before the pattern's key hazard;
 - five-fly trails placed from the same route plan that shapes the rails and
   selected obstacle;
@@ -180,7 +180,7 @@ normal play and reveals its exact collision outlines only through DEBUG.
 | `Floating hazards begin` | first detached middle-hazard distance | 100 m / 250–2000 m |
 | `Edge obstacle size` | scale rail-grown leaves, vines, and pods | 2% / 70–115% |
 | `Floating obstacle size` | scale detached middle hazards | 2% / 70–115% |
-| `Gate opening size` | widen or tighten broken-pot passages | 4% / 80–140% |
+| `Gate opening size` | widen or tighten split root-gate passages | 4% / 80–140% |
 | `Shaped ceiling and floor` | contour continuous rails around challenges | off / on |
 | `Bypass room` | extra room on most high/low routes | 10% / 50–150% |
 | `Small-gap opening` | height of later rail-only inward passages | 5% / 75–140% |
@@ -226,8 +226,9 @@ product decisions.
 - a 1000 m middle-hazard runway plus a 2000 m no-inward-rail period,
   deterministic organic geometry after it, one shared route plan for rails,
   fly guidance, and obstacles, rail-only late tight routes, lower-anchor
-  coverage, independently scaled obstacle polygons, creator-pattern bounds,
-  and a bounded seven-chunk window;
+  coverage, independently scaled obstacle polygons, creator-pattern bounds, a
+  Classic-sized sweep through split root-gate routes, and a bounded seven-chunk
+  window;
 - a one-second safe guided opening that remains interruptible from its first
   tick;
 - one authoritative rescue followed by normal death on the next lethal contact;

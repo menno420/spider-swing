@@ -21,6 +21,8 @@ const ENVIRONMENT_TEXTURE_WORLD_SIZE := 420.0
 const FOREST_BRANCH_HEIGHT := 122.0
 const FOREST_BRANCH_BASELINE := 94.0
 const FOREST_OBSTACLE_SHADOW := Color(0.055, 0.035, 0.018, 0.92)
+const FOREST_GATE_UPPER_SOURCE := Rect2(6.0, 3.0, 377.0, 186.0)
+const FOREST_GATE_LOWER_SOURCE := Rect2(2.0, 357.0, 373.0, 153.0)
 
 var _snapshot: SimulationSnapshot
 var _camera_x: float = 0.0
@@ -309,7 +311,7 @@ func _draw_course(size: Vector2) -> void:
 	while obstacle_index < _snapshot.obstacles.size():
 		if _uses_forest_art() and _is_forest_gate_group(obstacle_index):
 			_draw_forest_gate(obstacle_index, size)
-			obstacle_index += 4
+			obstacle_index += 2
 			continue
 		var obstacle: PackedVector2Array = _snapshot.obstacles[obstacle_index]
 		var screen_obstacle := _polygon_to_screen(obstacle)
@@ -469,7 +471,7 @@ func _draw_obstacle(
 func _draw_forest_gate(first_index: int, viewport_size: Vector2) -> void:
 	var union_bounds := Rect2()
 	var screen_polygons: Array[PackedVector2Array] = []
-	for offset in range(4):
+	for offset in range(2):
 		var polygon := _polygon_to_screen(
 			_snapshot.obstacles[first_index + offset],
 		)
@@ -483,7 +485,16 @@ func _draw_forest_gate(first_index: int, viewport_size: Vector2) -> void:
 		draw_colored_polygon(polygon, FOREST_OBSTACLE_SHADOW)
 	var texture := _art_texture(ArtAssetCatalog.FOREST_ROOT_GATE)
 	if texture != null:
-		_draw_texture_fitted(texture, union_bounds.grow(5.0))
+		draw_texture_rect_region(
+			texture,
+			_polygon_bounds(screen_polygons[0]),
+			FOREST_GATE_UPPER_SOURCE,
+		)
+		draw_texture_rect_region(
+			texture,
+			_polygon_bounds(screen_polygons[1]),
+			FOREST_GATE_LOWER_SOURCE,
+		)
 	if _snapshot.debug_visible:
 		var color := _environment_theme()["lethal_edge"] as Color
 		for polygon: PackedVector2Array in screen_polygons:
@@ -491,22 +502,22 @@ func _draw_forest_gate(first_index: int, viewport_size: Vector2) -> void:
 
 
 func _is_forest_gate_group(first_index: int) -> bool:
-	if first_index + 3 >= _snapshot.obstacles.size():
+	if first_index + 1 >= _snapshot.obstacles.size():
 		return false
-	var union_bounds := Rect2()
-	var horizontal_pieces := 0
-	for offset in range(4):
-		var polygon: PackedVector2Array = _snapshot.obstacles[
-			first_index + offset
-		]
-		if polygon.size() != 4:
-			return false
-		var bounds := _polygon_bounds(polygon)
-		union_bounds = bounds if offset == 0 else union_bounds.merge(bounds)
-		if bounds.size.x >= bounds.size.y:
-			horizontal_pieces += 1
-	return horizontal_pieces == 2 and \
-		union_bounds.size.x >= 140.0 and union_bounds.size.x <= 300.0 and \
+	var upper: PackedVector2Array = _snapshot.obstacles[first_index]
+	var lower: PackedVector2Array = _snapshot.obstacles[first_index + 1]
+	if upper.size() != 4 or lower.size() != 4:
+		return false
+	var upper_bounds := _polygon_bounds(upper)
+	var lower_bounds := _polygon_bounds(lower)
+	var union_bounds := upper_bounds.merge(lower_bounds)
+	return upper_bounds.size.x > upper_bounds.size.y and \
+		lower_bounds.size.x > lower_bounds.size.y and \
+		upper_bounds.get_center().y < lower_bounds.get_center().y and \
+		absf(
+			upper_bounds.get_center().x - lower_bounds.get_center().x,
+		) <= 8.0 and \
+		union_bounds.size.x >= 110.0 and union_bounds.size.x <= 240.0 and \
 		union_bounds.size.y >= 170.0 and union_bounds.size.y <= 330.0
 
 

@@ -31,6 +31,12 @@ summary; any failure exits nonzero.
 | 4. Headless import | `godot --headless --import` — the project imports with no script parse errors. |
 | 5. Headless run | The boot smoke test, then `tests/test_runner.gd`. |
 
+Godot can occasionally return exit code `0` while printing a GDScript parse or
+compile failure. `tools/verify.py` therefore treats the engine's fatal script
+diagnostics as failures independently of its process code. The test runner also
+asserts its exact declared total, so a runtime error cannot silently turn two
+unexecuted checks into a smaller green suite.
+
 It **never downloads anything**. A missing Godot is reported with instructions,
 not silently fetched — a verification tool that installs its own dependencies can
 pass on a machine that could not actually build.
@@ -81,24 +87,25 @@ Run directly:
 godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-74 checks, grouped so one subsystem failure never hides the rest:
+77 checks, grouped so one subsystem failure never hides the rest:
 
 - engine, main-scene, input-action, 60 Hz, renderer/viewport, Android preset,
   inward-dependency, and no-autoload bootstrap contracts;
-- thirty-eight deterministic physics contracts, including extended arbitrary-point
+- forty deterministic physics contracts, including extended arbitrary-point
   solid attachment, larger aim forgiveness, momentum preservation, speed-neutral
   Reel and automatic take-up, exact Burst/Dive distance shares and minimum
   Burst travel, recovery-web interruption,
   detached cooldown double-tap fallback, explicit release/retarget behavior,
   polygon anchoring/collision, a 1000 m runway, smooth 5000 m speed ramp, and
   bounded organic streaming with continuous contoured rails, lower rail
-  coverage, independent rail lethality, authoritative obstacle
-  scaling, the guided opening trajectory, one-run rescue, five spider profiles,
+  coverage, independent rail lethality, authoritative obstacle scaling, a
+  Classic-sized sweep through every split-gate fly route, the guided opening
+  trajectory, one-run rescue, five spider profiles,
   bounded glide and impact-shell recovery, creator-pattern bounds, swept
   pickups, runtime pull tuning, and
   identical trajectories from
   simulated 30/60/90/120 Hz render loops;
-- fifteen mobile HUD contracts proving large separated Reel and Burst controls,
+- sixteen mobile HUD contracts proving large separated Reel and Burst controls,
   DEBUG, and Menu are event-consuming
   Buttons, GUI geometry shares one layout source, accepted actions drive visual
   and haptic feedback, UI actions do not leak into web input, debug tools can be

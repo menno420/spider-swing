@@ -63,18 +63,24 @@ seed-pod tip. It has no detached pieces or false central route.
 - runtime SHA-256:
   `7bcbff4e2f8501d1f364f681252d8673bc4ac032f3afc3906e75acddce979d14`
 
-## Hollow thorn-root gate
+## Split thorn-root gate
 
-Generation specification: one continuous oval hoop woven from four thick root
-and thorn masses around a clearly safe center opening. Thorns point mainly
-outward, and the generated opening closely matches the existing four-piece gate
-collision ratio.
+Generation specification: preserve the Ancient Forest gate's bark, moss,
+outward thorns, palette, and lighting, but replace its closed ring topology with
+exactly two disconnected upper/lower arcs. Both sides remain completely open,
+and the empty horizontal passage occupies roughly 45% of the full sprite
+height. No branch, vine, thorn, shadow, or debris bridges the route.
+
+The built-in image editor produced the source on a flat `#ff00ff` key. The
+standard soft-matte/despill helper removed that key, then the result was
+alpha-trimmed, padded by eight pixels, and reduced to the runtime size. The
+superseded closed-ring runtime asset remains recoverable from PR #22.
 
 - source SHA-256:
-  `7b34ec1656e11644f277d69f175413bcc73cd2f0387b3096ac932b067b22d5dc`
-- runtime: `assets/runtime/forest-biome/thorn-root-gate.png`
+  `61838a6ae54fe7f7fa8083f66bff6e9a6f1272296dd760413028aa6d5a664a4b`
+- runtime: `assets/runtime/forest-biome/split-thorn-root-gate.png`
 - runtime SHA-256:
-  `7f9a5bc56c9d5623c216f0cfe906565d6913faf9427da8c2b0c9d8f498d2e8e6`
+  `dda9625bd3f8a61ab5bc9f69fabe26b8a1c05ce58d78224fd8281f4bbe6cc800`
 
 ## Classic Garden Spider
 

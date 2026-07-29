@@ -59,7 +59,7 @@ Burst boost.
   which the lethal ceiling/floor rails never move inward. One shared route plan
   shapes the rails and fly trail around each challenge; occasional later tight
   gaps are rail-only rather than stacked with a floating blocker. Leaf clusters,
-  vine forks, hanging seed pods, broken-pot gates, fly route arcs, and lower
+  vine forks, hanging seed pods, split root gates, fly route arcs, and lower
   anchors before later challenges. Base Burst crosses 40% of the
   selected web distance; downward taps make a one-shot 40% Dive Pull. Both are
   collision-checked, but only Burst uses a timer. Dive rearms after the next
@@ -71,7 +71,7 @@ Burst boost.
 - Four generated 384×384 environment packs—Ancient Forest, Mossy Ravine,
   Overgrown Greenhouse, and Reclaimed Attic—plus the original Graybox. Ancient
   Forest is the default and now adds a cohesive finished-art candidate:
-  mossy branch edges, rooted brambles, hanging thorn vines, a hollow root gate,
+  mossy branch edges, rooted brambles, hanging thorn vines, a split root gate,
   the Classic Garden Spider, and golden forest flies. DEBUG → LOOK swaps visual
   treatment without changing a course polygon or collision, and shows exact
   collision outlines only when diagnostics are visible.
@@ -100,12 +100,13 @@ Burst boost.
   catch, aim forgiveness, range, RELEASE/RETARGET behavior,
   deterministic input recording/replay, visual-theme comparison, and diagnostic
   export.
-- Thirty-nine deterministic physics tests (76 runtime contracts total),
+- Forty deterministic physics tests (77 runtime contracts total),
   including interruptible recovery webs, double-tap fallback, explicit
   release/retarget modes, opening-runway pacing, lower anchor coverage, exact
   pull-distance shares, speed-neutral Reel/take-up shortening, rail policy,
   swept pickups, idempotent progression, polygon anchors/collisions, and
-  creator-pattern bounds, the guided opening trajectory, spider profiles/glide,
+  creator-pattern bounds, a Classic-sized sweep through every split-gate route,
+  the guided opening trajectory, spider profiles/glide,
   rescue consumption, and identical results from simulated 30/60/90/120 Hz
   render loops. Adapter tests
   prove that raw Android touch owns world intent while its emulated mouse copy
