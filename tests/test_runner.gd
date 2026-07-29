@@ -7,7 +7,7 @@ const ANDROID_WORKFLOW_PATH := "res://.github/workflows/android-debug.yml"
 const BUILD_VERSION := "0.8.3-clean-forest-test"
 const ANDROID_VERSION_CODE := 19
 const ANDROID_APP_NAME := "Spider Swing Clean Forest (dev)"
-const EXPECTED_CHECK_COUNT := 79
+const EXPECTED_CHECK_COUNT := 80
 const REQUIRED_INPUT_ACTIONS := [
 	"web_action", "reel_in", "burst_action", "pause", "restart_run",
 	"toggle_debug"]
