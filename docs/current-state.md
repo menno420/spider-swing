@@ -123,11 +123,11 @@ without a reported regression.
 **Verification**
 
 - `python3 tools/verify.py` — architecture self-test and scan pass locally.
-  PR #21 `game-quality` run
-  [30451065223](https://github.com/menno420/spider-swing/actions/runs/30451065223)
+  PR #22 `game-quality` run
+  [30458975297](https://github.com/menno420/spider-swing/actions/runs/30458975297)
   supplied Godot 4.7.1 and passed import, boot, and the complete 76-check
   headless suite at gameplay source
-  `402997b6362e46c9002aa6001c7b3f9f28cbb16a`.
+  `8aaa517823239a3d80db94d14c72eab12ad0219d`.
 - `tests/test_runner.gd` — 76 declared checks: thirty-nine
   deterministic physics, sixteen GUI-owned mobile HUD, eleven front-end
   navigation/settings/progression, plus bootstrap and exact build-version
@@ -309,6 +309,20 @@ without a reported regression.
   `assets/project.binary`; its build manifest proves version
   `0.7.0-environment-themes-test`, exact source, dev package, and display name
   `Spider Swing Environment Themes (dev)`.
+- PR #22 `android-debug` run
+  [30458979638](https://github.com/menno420/spider-swing/actions/runs/30458979638)
+  produced downloadable artifact
+  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30458979638/artifacts/8726773191)
+  ID `8726773191`, 58,679,746 bytes, digest
+  `sha256:c3e0c2c94cacec5f0315c87ba7320decf55a39a61fdb166a5eba2288aebf1870`.
+  The downloaded artifact ZIP passed archive verification with the same
+  SHA-256. Its 59,065,710-byte APK passed archive verification with SHA-256
+  `f045f1ab5b3af460c77b256502c73338fcfbcf8d3d5b0b713acee98228e709e7`
+  and contains `classes.dex`, `AndroidManifest.xml`, and
+  `assets/project.binary`; `build-info.txt` proves version
+  `0.8.0-forest-art-test`, source
+  `8aaa517823239a3d80db94d14c72eab12ad0219d`, dev package, and display name
+  `Spider Swing Forest Art (dev)`.
 - **Dependabot** — live. Its first run opened two bumps against the kit-owned
   `substrate-gate.yml`; both were closed because `adopt`/`upgrade` regenerates that
   file. The rule is documented in `.github/dependabot.yml`: kit-owned-only bumps get
@@ -342,12 +356,12 @@ without a reported regression.
 
 ## In flight
 
-Phase 0.16 is implementing the first cohesive finished-art candidate on top of
-the verified Phase 0.15 presentation seam. Ancient Forest now separates
-boundary, obstacle, character, and collectible art instead of repeating one
-material everywhere. The exact maximum-speed ramp still spans 5000 m, no rail
-moves inward before 2000 m by default, and later inward passages remain
-rail-only. Phase 1 remains blocked on owner device review of both feel and art.
+Phase 0.16 is verified in PR #22: Ancient Forest now separates boundary,
+obstacle, character, and collectible art instead of repeating one material
+everywhere, while all 76 contracts and the Android export pass on the exact
+source. The maximum-speed ramp still spans 5000 m, no rail moves inward before
+2000 m by default, and later inward passages remain rail-only. Phase 1 remains
+blocked on owner device review of both feel and art.
 
 ## Recently shipped (newest first)
 

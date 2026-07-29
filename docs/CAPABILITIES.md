@@ -388,3 +388,18 @@ never edit.
   checks, and 11 front-end checks—76 total—with build identity
   `0.8.0-forest-art-test`. Android artifact and owner-device visual evidence
   remain pending until this session's PR runs.
+- 2026-07-29 · capability · `owner-live` · **The finished Ancient Forest slice
+  survives the full Android path** · PR #22 `game-quality` run
+  [30458975297](https://github.com/menno420/spider-swing/actions/runs/30458975297)
+  passed all 76 contracts at source
+  `8aaa517823239a3d80db94d14c72eab12ad0219d`; Android run
+  [30458979638](https://github.com/menno420/spider-swing/actions/runs/30458979638)
+  produced artifact
+  [`8726773191`](https://github.com/menno420/spider-swing/actions/runs/30458979638/artifacts/8726773191),
+  58,679,746 bytes with digest
+  `sha256:c3e0c2c94cacec5f0315c87ba7320decf55a39a61fdb166a5eba2288aebf1870`.
+  The downloaded ZIP passed archive verification with the same SHA-256; its
+  59,065,710-byte APK passed archive verification with SHA-256
+  `f045f1ab5b3af460c77b256502c73338fcfbcf8d3d5b0b713acee98228e709e7`.
+  `build-info.txt` proves version `0.8.0-forest-art-test`, exact source, dev
+  package, and display name `Spider Swing Forest Art (dev)`.
