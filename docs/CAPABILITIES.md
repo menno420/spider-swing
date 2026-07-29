@@ -380,3 +380,11 @@ never edit.
   `assets/project.binary`. `build-info.txt` proves version
   `0.7.0-environment-themes-test`, the exact source, dev package, and display
   name `Spider Swing Environment Themes (dev)`.
+- 2026-07-29 · capability · `local` · **Candidate-production forest art loads
+  through the full Godot gate without changing simulation geometry** · Six
+  alpha runtime textures totaling about 1.3 MiB import with lossless 2D texture
+  compression. `python3 tools/verify.py --require-godot` passed architecture,
+  Godot 4.7.1 import, boot, 39 deterministic physics checks, 16 mobile GUI
+  checks, and 11 front-end checks—76 total—with build identity
+  `0.8.0-forest-art-test`. Android artifact and owner-device visual evidence
+  remain pending until this session's PR runs.

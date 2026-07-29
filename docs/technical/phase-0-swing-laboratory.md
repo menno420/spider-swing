@@ -116,9 +116,13 @@ Obstacle polygons are lethal on contact and also valid anchors. Course rails are
 attachable structural surfaces, lethal by default, and independently
 configurable as visible or absent and safe or lethal. DEBUG draws the predicted endpoint of the nearest
 available Dive in green or red. Four generated environment packs now texture the
-same polygons for art-direction comparison. Their material detail, background
-palette, and edge treatment are still prototype presentation; moving hazards,
-production balancing, and final object art remain deferred.
+same polygons for art-direction comparison. Ancient Forest additionally composes
+finished candidate branch, bramble, hanging-vine, root-gate, Classic spider, and
+fly sprites over those exact silhouettes. Its normal play view removes graphic
+collision outlines; DEBUG restores the exact polygon and spider-radius overlays.
+The other three material packs remain prototype comparisons. Moving hazards,
+production balancing, and final art for the other spider profiles remain
+deferred.
 
 The default floating-hazard scale is 90%, edge-grown obstacles use 94%, and gate
 openings use 112%. These are independent DEBUG values. `CourseStream` scales the
@@ -145,9 +149,10 @@ avoids searching through one long carousel during device playtests.
 
 **Look** uses five larger preview cards rather than numeric tuning: Graybox,
 Ancient Forest, Mossy Ravine, Overgrown Greenhouse, and Reclaimed Attic. The
-selector changes only presentation-owned texture and palette data. Graybox
-remains the exact silhouette check; selecting a look cannot resize, move, add,
-or remove a collision surface.
+selector changes only presentation-owned texture, object art, and palette data.
+Graybox remains the exact silhouette check; selecting a look cannot resize,
+move, add, or remove a collision surface. Ancient Forest uses natural art in
+normal play and reveals its exact collision outlines only through DEBUG.
 
 | Debug value | Meaning | Step / range |
 | --- | --- | --- |
@@ -236,6 +241,8 @@ product decisions.
 - one gameplay intent for each Android touchscreen press even though the
   Control-based HUD keeps Godot touch-to-mouse emulation enabled;
 - fixed-rate trajectory equivalence at simulated 30/60/90/120 Hz render rates.
+- all six finished-art runtime textures load through one presentation-owned
+  catalog without changing authoritative course geometry.
 
 ## Owner device playtest
 

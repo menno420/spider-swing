@@ -18,6 +18,9 @@ const OBSTACLE_DARK := Color("632e34")
 const REEL_FEEDBACK_DURATION := 0.22
 const BURST_FEEDBACK_DURATION := 0.3
 const ENVIRONMENT_TEXTURE_WORLD_SIZE := 420.0
+const FOREST_BRANCH_HEIGHT := 122.0
+const FOREST_BRANCH_BASELINE := 94.0
+const FOREST_OBSTACLE_SHADOW := Color(0.055, 0.035, 0.018, 0.92)
 
 var _snapshot: SimulationSnapshot
 var _camera_x: float = 0.0
@@ -36,12 +39,14 @@ var _burst_feedback_anchor: Vector2 = Vector2.ZERO
 var _burst_feedback_direction: Vector2 = Vector2.ZERO
 var _environment_theme_index: int = EnvironmentThemeCatalog.default_index()
 var _environment_textures: Dictionary = {}
+var _art_textures: Dictionary = {}
 
 
 func _ready() -> void:
 	_font = ThemeDB.fallback_font
 	texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
 	_load_environment_textures()
+	_load_art_textures()
 	set_process(true)
 	queue_redraw()
 
@@ -181,6 +186,40 @@ func _draw_parallax(size: Vector2) -> void:
 		environment["background_deep"] as Color,
 	)
 	var parallax_x := 0.0 if _reduced_motion else _camera_x
+	if _uses_forest_art():
+		var trunk_offset := fposmod(-parallax_x * 0.06, 330.0)
+		for index in range(-1, 6):
+			var x := trunk_offset + float(index) * 330.0
+			var width := 64.0 + float(posmod(index, 3)) * 18.0
+			draw_rect(
+				Rect2(x - width * 0.5, -30.0, width, size.y + 60.0),
+				Color(0.055, 0.105, 0.07, 0.58),
+			)
+			draw_circle(
+				Vector2(x + 34.0, 120.0 + float(posmod(index, 2)) * 70.0),
+				145.0,
+				environment["far"] as Color,
+			)
+		var foliage_offset := fposmod(-parallax_x * 0.16, 235.0)
+		for index in range(-2, 9):
+			var x := foliage_offset + float(index) * 235.0
+			var y := 88.0 + float(posmod(index, 4)) * 46.0
+			draw_circle(
+				Vector2(x, y),
+				82.0 + float(posmod(index, 3)) * 18.0,
+				Color(environment["near"] as Color, 0.44),
+			)
+		var forest_floor_offset := fposmod(-parallax_x * 0.24, 260.0)
+		for index in range(-2, 8):
+			draw_circle(
+				Vector2(
+					forest_floor_offset + float(index) * 260.0,
+					size.y + 30.0,
+				),
+				165.0,
+				environment["near"] as Color,
+			)
+		return
 	var far_offset := fposmod(-parallax_x * 0.08, 240.0)
 	for index in range(-1, 8):
 		var x := far_offset + float(index) * 240.0
@@ -245,7 +284,14 @@ func _draw_course(size: Vector2) -> void:
 			environment["material_tint"] as Color,
 			fill,
 		)
-		_draw_closed_polyline(screen_boundary, outline, 4.0)
+		if _uses_forest_art():
+			_draw_forest_boundary_edge(boundary, screen_boundary)
+		if not _uses_forest_art() or _snapshot.debug_visible:
+			_draw_closed_polyline(
+				screen_boundary,
+				outline,
+				2.0 if _snapshot.debug_visible else 4.0,
+			)
 
 	for guide: Vector2 in _snapshot.anchors:
 		var screen := _world_to_screen(guide)
@@ -259,22 +305,27 @@ func _draw_course(size: Vector2) -> void:
 		draw_arc(screen, 11.0, 0.0, TAU, 24, Color(color, 0.72), 2.0)
 		draw_circle(screen, 3.0, WEB)
 
-	for obstacle: PackedVector2Array in _snapshot.obstacles:
+	var obstacle_index := 0
+	while obstacle_index < _snapshot.obstacles.size():
+		if _uses_forest_art() and _is_forest_gate_group(obstacle_index):
+			_draw_forest_gate(obstacle_index, size)
+			obstacle_index += 4
+			continue
+		var obstacle: PackedVector2Array = _snapshot.obstacles[obstacle_index]
 		var screen_obstacle := _polygon_to_screen(obstacle)
 		var obstacle_bounds := _polygon_bounds(screen_obstacle)
 		if obstacle_bounds.end.x < -80.0 or \
 				obstacle_bounds.position.x > size.x + 80.0:
+			obstacle_index += 1
 			continue
 		_draw_obstacle(obstacle, screen_obstacle)
+		obstacle_index += 1
 
 	for fly: Vector2 in _snapshot.fly_positions:
 		var fly_screen := _world_to_screen(fly)
 		if fly_screen.x < -40.0 or fly_screen.x > size.x + 40.0:
 			continue
-		draw_circle(fly_screen, 6.0, YELLOW)
-		draw_circle(fly_screen + Vector2(-7.0, -5.0), 5.0, Color(WEB, 0.74))
-		draw_circle(fly_screen + Vector2(7.0, -5.0), 5.0, Color(WEB, 0.74))
-		draw_arc(fly_screen, 11.0, 0.0, TAU, 20, Color(YELLOW, 0.48), 2.0)
+		_draw_fly(fly_screen, fly)
 
 	for boost: Vector2 in _snapshot.boost_positions:
 		var boost_screen := _world_to_screen(boost)
@@ -303,11 +354,91 @@ func _draw_course(size: Vector2) -> void:
 		draw_line(Vector2(kill_x, 0.0), Vector2(kill_x, size.y), RED, 3.0)
 
 
+func _draw_forest_boundary_edge(
+	world_polygon: PackedVector2Array,
+	screen_polygon: PackedVector2Array,
+) -> void:
+	var texture := _art_texture(ArtAssetCatalog.FOREST_BRANCH)
+	if texture == null or screen_polygon.size() < 2:
+		return
+	var bounds := _polygon_bounds(screen_polygon)
+	var is_ceiling := bounds.get_center().y < get_viewport_rect().size.y * 0.5
+	for index in range(screen_polygon.size()):
+		var start := screen_polygon[index]
+		var finish := screen_polygon[(index + 1) % screen_polygon.size()]
+		var world_start := world_polygon[index]
+		var world_finish := world_polygon[(index + 1) % world_polygon.size()]
+		if absf(finish.x - start.x) < 24.0:
+			continue
+		var midpoint := start.lerp(finish, 0.5)
+		if is_ceiling and midpoint.y < bounds.get_center().y:
+			continue
+		if not is_ceiling and midpoint.y > bounds.get_center().y:
+			continue
+		if start.x > finish.x:
+			var swap_screen := start
+			start = finish
+			finish = swap_screen
+			var swap_world := world_start
+			world_start = world_finish
+			world_finish = swap_world
+		var segment := finish - start
+		var flip_x := -1.0 if posmod(
+			floori(minf(world_start.x, world_finish.x) / 900.0),
+			2,
+		) == 1 else 1.0
+		var flip_y := 1.0 if is_ceiling else -1.0
+		draw_set_transform(
+			start.lerp(finish, 0.5),
+			segment.angle(),
+			Vector2(flip_x, flip_y),
+		)
+		var visual_length := segment.length() + 20.0
+		draw_texture_rect(
+			texture,
+			Rect2(
+				Vector2(-visual_length * 0.5, -FOREST_BRANCH_BASELINE),
+				Vector2(visual_length, FOREST_BRANCH_HEIGHT),
+			),
+			false,
+		)
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+
 func _draw_obstacle(
 	world_polygon: PackedVector2Array,
 	polygon: PackedVector2Array,
 ) -> void:
 	var environment := _environment_theme()
+	if _uses_forest_art():
+		draw_colored_polygon(polygon, FOREST_OBSTACLE_SHADOW)
+		var world_bounds := _polygon_bounds(world_polygon)
+		var screen_bounds := _polygon_bounds(polygon)
+		var top_points := 0
+		var bottom_points := 0
+		for point: Vector2 in world_polygon:
+			if absf(point.y - world_bounds.position.y) <= 3.0:
+				top_points += 1
+			if absf(point.y - world_bounds.end.y) <= 3.0:
+				bottom_points += 1
+		var hanging := top_points >= bottom_points
+		var wide := screen_bounds.size.x > screen_bounds.size.y * 1.15
+		var asset_id := ArtAssetCatalog.FOREST_BRAMBLE
+		var flip_y := false
+		if hanging and not wide:
+			asset_id = ArtAssetCatalog.FOREST_HANGING_VINE
+		elif hanging:
+			flip_y = true
+		var texture := _art_texture(asset_id)
+		if texture != null:
+			_draw_texture_fitted(texture, screen_bounds.grow(3.0), flip_y)
+		if _snapshot.debug_visible:
+			_draw_closed_polyline(
+				polygon,
+				environment["lethal_edge"] as Color,
+				2.0,
+			)
+		return
 	_draw_environment_polygon(
 		world_polygon,
 		polygon,
@@ -333,6 +464,85 @@ func _draw_obstacle(
 			Color(OBSTACLE, 0.72),
 			6.0,
 		)
+
+
+func _draw_forest_gate(first_index: int, viewport_size: Vector2) -> void:
+	var union_bounds := Rect2()
+	var screen_polygons: Array[PackedVector2Array] = []
+	for offset in range(4):
+		var polygon := _polygon_to_screen(
+			_snapshot.obstacles[first_index + offset],
+		)
+		screen_polygons.append(polygon)
+		var bounds := _polygon_bounds(polygon)
+		union_bounds = bounds if offset == 0 else union_bounds.merge(bounds)
+	if union_bounds.end.x < -90.0 or \
+			union_bounds.position.x > viewport_size.x + 90.0:
+		return
+	for polygon: PackedVector2Array in screen_polygons:
+		draw_colored_polygon(polygon, FOREST_OBSTACLE_SHADOW)
+	var texture := _art_texture(ArtAssetCatalog.FOREST_ROOT_GATE)
+	if texture != null:
+		_draw_texture_fitted(texture, union_bounds.grow(5.0))
+	if _snapshot.debug_visible:
+		var color := _environment_theme()["lethal_edge"] as Color
+		for polygon: PackedVector2Array in screen_polygons:
+			_draw_closed_polyline(polygon, color, 2.0)
+
+
+func _is_forest_gate_group(first_index: int) -> bool:
+	if first_index + 3 >= _snapshot.obstacles.size():
+		return false
+	var union_bounds := Rect2()
+	var horizontal_pieces := 0
+	for offset in range(4):
+		var polygon: PackedVector2Array = _snapshot.obstacles[
+			first_index + offset
+		]
+		if polygon.size() != 4:
+			return false
+		var bounds := _polygon_bounds(polygon)
+		union_bounds = bounds if offset == 0 else union_bounds.merge(bounds)
+		if bounds.size.x >= bounds.size.y:
+			horizontal_pieces += 1
+	return horizontal_pieces == 2 and \
+		union_bounds.size.x >= 140.0 and union_bounds.size.x <= 300.0 and \
+		union_bounds.size.y >= 170.0 and union_bounds.size.y <= 330.0
+
+
+func _draw_fly(screen_position: Vector2, world_position: Vector2) -> void:
+	var texture := _art_texture(ArtAssetCatalog.GOLDEN_FLY)
+	if texture == null:
+		draw_circle(screen_position, 6.0, YELLOW)
+		draw_circle(screen_position + Vector2(-7.0, -5.0), 5.0, Color(WEB, 0.74))
+		draw_circle(screen_position + Vector2(7.0, -5.0), 5.0, Color(WEB, 0.74))
+		draw_arc(screen_position, 11.0, 0.0, TAU, 20, Color(YELLOW, 0.48), 2.0)
+		return
+	var flutter := sin(
+		float(_snapshot.tick) * 0.22 + world_position.x * 0.013,
+	)
+	var sprite_size := Vector2(34.0, 23.0) * (1.0 + flutter * 0.025)
+	draw_circle(screen_position, 14.0, Color(YELLOW, 0.13))
+	draw_texture_rect(
+		texture,
+		Rect2(screen_position - sprite_size * 0.5, sprite_size),
+		false,
+	)
+
+
+func _draw_texture_fitted(
+	texture: Texture2D,
+	bounds: Rect2,
+	flip_y: bool = false,
+) -> void:
+	var scale_y := -1.0 if flip_y else 1.0
+	draw_set_transform(bounds.get_center(), 0.0, Vector2(1.0, scale_y))
+	draw_texture_rect(
+		texture,
+		Rect2(-bounds.size * 0.5, bounds.size),
+		false,
+	)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
 func _draw_web() -> void:
@@ -424,33 +634,49 @@ func _draw_spider() -> void:
 		SpiderCatalog.SPRINGTAIL:
 			body = body.lerp(Color("435b67"), 0.42)
 			accent = accent.lerp(GREEN, 0.45)
-	for side in [-1.0, 1.0]:
-		for index in range(4):
-			var y := -15.0 + float(index) * 10.0
-			var hip := center + (
-				Vector2(side * 10.0, y) * scale).rotated(rotation)
-			var knee := center + (
-				Vector2(
-					side * (24.0 + index * 2.0),
-					y - 9.0 + index * 5.0,
-				) * scale).rotated(rotation)
-			var foot := center + (
-				Vector2(
-					side * (38.0 + index * 3.0),
-					y + 2.0 + index * 6.0,
-				) * scale).rotated(rotation)
-			draw_polyline(PackedVector2Array([hip, knee, foot]), body, 5.0, true)
-			draw_polyline(PackedVector2Array([hip, knee, foot]), accent, 1.5, true)
-	draw_circle(center + Vector2(-8.0, 0.0).rotated(rotation) * scale,
-		17.0 * scale, body)
-	draw_circle(center + Vector2(12.0, -1.0).rotated(rotation) * scale,
-		14.0 * scale, body)
-	draw_circle(center + Vector2(-9.0, -4.0).rotated(rotation) * scale,
-		6.0 * scale, accent)
-	draw_circle(center + Vector2(17.0, -5.0).rotated(rotation) * scale,
-		3.2 * scale, WEB)
-	draw_circle(center + Vector2(17.0, -5.0).rotated(rotation) * scale,
-		1.4 * scale, Color("15202b"))
+	var finished_sprite := _draw_classic_spider_sprite(
+		center,
+		rotation,
+		scale,
+	)
+	if not finished_sprite:
+		for side in [-1.0, 1.0]:
+			for index in range(4):
+				var y := -15.0 + float(index) * 10.0
+				var hip := center + (
+					Vector2(side * 10.0, y) * scale).rotated(rotation)
+				var knee := center + (
+					Vector2(
+						side * (24.0 + index * 2.0),
+						y - 9.0 + index * 5.0,
+					) * scale).rotated(rotation)
+				var foot := center + (
+					Vector2(
+						side * (38.0 + index * 3.0),
+						y + 2.0 + index * 6.0,
+					) * scale).rotated(rotation)
+				draw_polyline(
+					PackedVector2Array([hip, knee, foot]),
+					body,
+					5.0,
+					true,
+				)
+				draw_polyline(
+					PackedVector2Array([hip, knee, foot]),
+					accent,
+					1.5,
+					true,
+				)
+		draw_circle(center + Vector2(-8.0, 0.0).rotated(rotation) * scale,
+			17.0 * scale, body)
+		draw_circle(center + Vector2(12.0, -1.0).rotated(rotation) * scale,
+			14.0 * scale, body)
+		draw_circle(center + Vector2(-9.0, -4.0).rotated(rotation) * scale,
+			6.0 * scale, accent)
+		draw_circle(center + Vector2(17.0, -5.0).rotated(rotation) * scale,
+			3.2 * scale, WEB)
+		draw_circle(center + Vector2(17.0, -5.0).rotated(rotation) * scale,
+			1.4 * scale, Color("15202b"))
 	if _snapshot.spider_id == SpiderCatalog.BALLOONER and \
 			_snapshot.glide_remaining > 0.0:
 		draw_arc(
@@ -485,6 +711,34 @@ func _draw_spider() -> void:
 	if _show_debug_tools and _snapshot.debug_visible:
 		draw_arc(center, _snapshot.player_collision_radius, 0.0, TAU, 40, CYAN, 1.5)
 		draw_line(center, center + _snapshot.velocity * 0.12, YELLOW, 2.0)
+
+
+func _draw_classic_spider_sprite(
+	center: Vector2,
+	rotation: float,
+	scale: float,
+) -> bool:
+	if _snapshot.spider_id != SpiderCatalog.CLASSIC:
+		return false
+	var texture := _art_texture(ArtAssetCatalog.CLASSIC_SPIDER)
+	if texture == null:
+		return false
+	var tint := Color.WHITE
+	match _snapshot.spider_style:
+		PlayerProgress.STYLE_AMBER:
+			tint = Color(1.0, 0.90, 0.72, 1.0)
+		PlayerProgress.STYLE_COMET:
+			tint = Color(0.73, 0.88, 1.0, 1.0)
+	var sprite_size := Vector2(96.0, 46.0) * scale
+	draw_set_transform(center, rotation, Vector2.ONE)
+	draw_texture_rect(
+		texture,
+		Rect2(-sprite_size * 0.5, sprite_size),
+		false,
+		tint,
+	)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	return true
 
 
 func _draw_feedback() -> void:
@@ -836,6 +1090,18 @@ func _draw_environment_theme_cards(size: Vector2) -> void:
 				true,
 				definition["material_tint"] as Color,
 			)
+			if StringName(definition["id"]) == \
+					EnvironmentThemeCatalog.ANCIENT_FOREST:
+				var branch := _art_texture(ArtAssetCatalog.FOREST_BRANCH)
+				if branch != null:
+					draw_texture_rect(
+						branch,
+						Rect2(
+							preview.position + Vector2(0.0, 54.0),
+							Vector2(preview.size.x, 44.0),
+						),
+						false,
+					)
 		draw_rect(
 			card,
 			definition["accent"] as Color if selected else Color(MUTED, 0.65),
@@ -977,6 +1243,26 @@ func _load_environment_textures() -> void:
 		var texture := load(path) as Texture2D
 		if texture != null:
 			_environment_textures[index] = texture
+
+
+func _load_art_textures() -> void:
+	_art_textures.clear()
+	for asset_id: StringName in ArtAssetCatalog.ASSETS:
+		var path := ArtAssetCatalog.texture_path(asset_id)
+		if path.is_empty() or not ResourceLoader.exists(path):
+			continue
+		var texture := load(path) as Texture2D
+		if texture != null:
+			_art_textures[asset_id] = texture
+
+
+func _art_texture(asset_id: StringName) -> Texture2D:
+	return _art_textures.get(asset_id) as Texture2D
+
+
+func _uses_forest_art() -> bool:
+	return StringName(_environment_theme()["id"]) == \
+		EnvironmentThemeCatalog.ANCIENT_FOREST
 
 
 func _environment_theme() -> Dictionary:

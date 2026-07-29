@@ -112,6 +112,12 @@ without a reported regression.
   Greenhouse, and Reclaimed Attic. `SwingLabView` maps them in world space over
   the exact snapshot polygons; theme selection cannot change course geometry,
   collision, targeting, pace, or lethality.
+- `ArtAssetCatalog` adds one cohesive Ancient Forest candidate-production
+  grammar over that same geometry: mirrored mossy branch edges, rooted
+  brambles, top-anchored thorn vines, a grouped hollow root gate, a finished
+  Classic Garden Spider sprite, and golden forest flies. Obstacle alpha is
+  backed by a dark collision shadow; normal play has no graphic rail or hazard
+  outline, while DEBUG restores exact collision overlays.
 - No autoload singletons exist, and a test fails if one appears.
 
 **Verification**
@@ -321,8 +327,10 @@ without a reported regression.
   moderation. The local Shop and Course Lab do not claim those capabilities.
 - No approved physics baseline yet: `balanced_candidate`, `weighty_candidate`,
   and `agile_candidate` require owner real-device playtesting.
-- No approved production art, analytics, ads, cloud save, or store SDK. The
-  four generated environment packs are explicitly prototype comparison art.
+- No approved production art direction, analytics, ads, cloud save, or store
+  SDK. Ancient Forest has one candidate-production visual slice for owner
+  evaluation; the other generated environment packs remain prototype
+  comparison art.
 - No production Android signing, no Google Play publishing, no iOS/macOS signing
   runner.
 - The owner has temporarily made the repository **public** to preserve Actions
@@ -334,11 +342,12 @@ without a reported regression.
 
 ## In flight
 
-Phase 0.15 is verified in PR #21: four environment packs and Graybox skin the
-same authoritative course through a large DEBUG → LOOK selector. The
-exact maximum-speed ramp still spans 5000 m, no rail moves inward before 2000 m
-by default, and later inward passages remain rail-only. Phase 1 remains blocked
-on choosing or rejecting a movement baseline after the verified build is tested.
+Phase 0.16 is implementing the first cohesive finished-art candidate on top of
+the verified Phase 0.15 presentation seam. Ancient Forest now separates
+boundary, obstacle, character, and collectible art instead of repeating one
+material everywhere. The exact maximum-speed ramp still spans 5000 m, no rail
+moves inward before 2000 m by default, and later inward passages remain
+rail-only. Phase 1 remains blocked on owner device review of both feel and art.
 
 ## Recently shipped (newest first)
 

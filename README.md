@@ -70,8 +70,11 @@ Burst boost.
   presentation always consume the same scaled polygons.
 - Four generated 384×384 environment packs—Ancient Forest, Mossy Ravine,
   Overgrown Greenhouse, and Reclaimed Attic—plus the original Graybox. Ancient
-  Forest is the default comparison look. DEBUG → LOOK swaps texture, background
-  palette, and edge treatment without changing a course polygon or collision.
+  Forest is the default and now adds a cohesive finished-art candidate:
+  mossy branch edges, rooted brambles, hanging thorn vines, a hollow root gate,
+  the Classic Garden Spider, and golden forest flies. DEBUG → LOOK swaps visual
+  treatment without changing a course polygon or collision, and shows exact
+  collision outlines only when diagnostics are visible.
 - Base Reel-In is deliberately reduced to 400 px/s and Burst starts at 40% with
   80 px minimum useful travel. Spider-specific fly upgrades can improve Reel,
   Burst share, minimum Burst travel, drive, hitbox, reach, glide, momentum, or
@@ -86,7 +89,7 @@ Burst boost.
 - Springtail can survive one moderate free-flight rail hit, then must attach an
   upper web to recharge. Obstacles, high-speed impacts, pull collisions, and a
   second rail contact remain lethal.
-- A code-drawn view with camera follow, 228-pixel thumb targets,
+- A presentation view with camera follow, 228-pixel thumb targets,
   action flashes/haptics, pause/frame-step/slow-motion, and a nine-section,
   touch-first DEBUG panel with direct values for Burst/Dive percentages and
   durations, Burst cooldown, Reel shortening speed,
