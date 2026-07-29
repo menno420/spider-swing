@@ -292,6 +292,20 @@
     "summary": "> **Status:** `complete`"
   },
   {
+    "slug": "remove-legacy-obstacle-backing",
+    "date": "2026-07-29",
+    "tags": [
+      "remove",
+      "legacy",
+      "obstacle",
+      "backing",
+      "session",
+      "\ud83d\udca1",
+      "\ud83d\udcca"
+    ],
+    "summary": "> **Status:** `in-progress`"
+  },
+  {
     "slug": "wide-gate-clean-start",
     "date": "2026-07-29",
     "tags": [
@@ -303,6 +317,6 @@
       "\ud83d\udca1",
       "\ud83d\udcca"
     ],
-    "summary": "> **Status:** `in-progress`"
+    "summary": "> **Status:** `complete`"
   }
 ]

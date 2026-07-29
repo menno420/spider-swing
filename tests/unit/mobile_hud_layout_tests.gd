@@ -20,6 +20,7 @@ static func run() -> Dictionary:
 	passed += _test_debug_controls_are_large_and_direct(failures)
 	passed += _test_debug_catalog_uses_plain_language(failures)
 	passed += _test_environment_theme_packs_are_visual_only(failures)
+	passed += _test_finished_forest_has_no_legacy_obstacle_backing(failures)
 	passed += _test_debug_panel_expands_for_wide_phone(failures)
 	passed += _test_debug_controls_can_be_disabled(failures)
 	passed += _test_world_input_waits_for_gui(failures)
@@ -608,6 +609,31 @@ static func _test_environment_theme_packs_are_visual_only(
 			before.obstacles != after.obstacles or \
 			before.aim_guides != after.aim_guides:
 		failures.append("visual theme selection mutated course geometry")
+		return 0
+	return 1
+
+
+static func _test_finished_forest_has_no_legacy_obstacle_backing(
+	failures: PackedStringArray,
+) -> int:
+	var forest_index := EnvironmentThemeCatalog.index_for(
+		EnvironmentThemeCatalog.ANCIENT_FOREST,
+	)
+	var forest := EnvironmentThemeCatalog.theme(forest_index)
+	if bool(forest.get("draw_obstacle_geometry_backing", true)):
+		failures.append(
+			"finished forest still requests the legacy obstacle backing fill")
+		return 0
+	var renderer := FileAccess.open(
+		"res://game/presentation/scripts/swing_lab.gd",
+		FileAccess.READ,
+	)
+	if renderer == null:
+		failures.append("finished forest renderer source cannot be inspected")
+		return 0
+	if renderer.get_as_text().contains("FOREST_OBSTACLE_SHADOW"):
+		failures.append(
+			"finished forest still draws the old polygon silhouette behind art")
 		return 0
 	return 1
 

@@ -27,8 +27,8 @@ failure never hides the rest.
 
 ## What exists now
 
-78 runtime contracts: ten bootstrap/build checks plus forty deterministic
-physics, seventeen mobile HUD, and eleven front-end checks. The physics group proves continuous
+79 runtime contracts: ten bootstrap/build checks plus forty deterministic
+physics, eighteen mobile HUD, and eleven front-end checks. The physics group proves continuous
 solid targeting, larger aim forgiveness, momentum-preserving release,
 speed-neutral Reel and automatic take-up, exact percentage Burst/Dive Pull travel,
 recovery-web interruption, detached cooldown double-tap fallback, explicit
@@ -38,7 +38,8 @@ three-lane steering-envelope sweep through every rail-grown root passage, and
 equivalent trajectories through
 simulated 30/60/90/120 Hz render loops. The HUD group proves the 228×228 thumb
 targets, event consumption, shared geometry, gesture separation, success
-feedback, independent off-by-default collision/web-guide diagnostics, and one
+feedback, independent off-by-default collision/web-guide diagnostics, a
+sprite-only finished forest obstacle policy, and one
 authoritative world intent for a touchscreen event plus Godot's emulated mouse
 copy. The front-end group includes actual filesystem
 round-trips for settings and progression plus idempotent settlement application.
