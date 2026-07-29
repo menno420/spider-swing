@@ -20,7 +20,7 @@ const BURST_FEEDBACK_DURATION := 0.3
 const ENVIRONMENT_TEXTURE_WORLD_SIZE := 420.0
 const FOREST_BRANCH_HEIGHT := 122.0
 const FOREST_BRANCH_BASELINE := 94.0
-const FOREST_OBSTACLE_SHADOW := Color(0.055, 0.035, 0.018, 0.92)
+const FOREST_OBSTACLE_ART_OVERSCAN := 8.0
 const FOREST_GATE_UPPER_SOURCE := Rect2(6.0, 3.0, 377.0, 186.0)
 const FOREST_GATE_LOWER_SOURCE := Rect2(2.0, 357.0, 373.0, 153.0)
 
@@ -417,7 +417,6 @@ func _draw_obstacle(
 ) -> void:
 	var environment := _environment_theme()
 	if _uses_forest_art():
-		draw_colored_polygon(polygon, FOREST_OBSTACLE_SHADOW)
 		var world_bounds := _polygon_bounds(world_polygon)
 		var screen_bounds := _polygon_bounds(polygon)
 		var top_points := 0
@@ -436,8 +435,23 @@ func _draw_obstacle(
 		elif hanging:
 			flip_y = true
 		var texture := _art_texture(asset_id)
+		var draw_backing := bool(environment.get(
+			"draw_obstacle_geometry_backing",
+			true,
+		)) or texture == null
+		if draw_backing:
+			_draw_environment_polygon(
+				world_polygon,
+				polygon,
+				environment["obstacle_tint"] as Color,
+				OBSTACLE_DARK,
+			)
 		if texture != null:
-			_draw_texture_fitted(texture, screen_bounds.grow(3.0), flip_y)
+			_draw_texture_fitted(
+				texture,
+				screen_bounds.grow(FOREST_OBSTACLE_ART_OVERSCAN),
+				flip_y,
+			)
 		if _snapshot.collision_outlines_visible:
 			_draw_closed_polyline(
 				polygon,
@@ -475,29 +489,46 @@ func _draw_obstacle(
 
 func _draw_forest_gate(first_index: int, viewport_size: Vector2) -> void:
 	var union_bounds := Rect2()
+	var world_polygons: Array[PackedVector2Array] = []
 	var screen_polygons: Array[PackedVector2Array] = []
 	for offset in range(2):
-		var polygon := _polygon_to_screen(
-			_snapshot.obstacles[first_index + offset],
-		)
+		var world_polygon: PackedVector2Array = \
+			_snapshot.obstacles[first_index + offset]
+		var polygon := _polygon_to_screen(world_polygon)
+		world_polygons.append(world_polygon)
 		screen_polygons.append(polygon)
 		var bounds := _polygon_bounds(polygon)
 		union_bounds = bounds if offset == 0 else union_bounds.merge(bounds)
 	if union_bounds.end.x < -90.0 or \
 			union_bounds.position.x > viewport_size.x + 90.0:
 		return
-	for polygon: PackedVector2Array in screen_polygons:
-		draw_colored_polygon(polygon, FOREST_OBSTACLE_SHADOW)
 	var texture := _art_texture(ArtAssetCatalog.FOREST_ROOT_GATE)
+	var environment := _environment_theme()
+	var draw_backing := bool(environment.get(
+		"draw_obstacle_geometry_backing",
+		true,
+	)) or texture == null
+	if draw_backing:
+		for offset in range(2):
+			_draw_environment_polygon(
+				world_polygons[offset],
+				screen_polygons[offset],
+				environment["obstacle_tint"] as Color,
+				OBSTACLE_DARK,
+			)
 	if texture != null:
 		draw_texture_rect_region(
 			texture,
-			_polygon_bounds(screen_polygons[0]),
+			_polygon_bounds(screen_polygons[0]).grow(
+				FOREST_OBSTACLE_ART_OVERSCAN,
+			),
 			FOREST_GATE_UPPER_SOURCE,
 		)
 		draw_texture_rect_region(
 			texture,
-			_polygon_bounds(screen_polygons[1]),
+			_polygon_bounds(screen_polygons[1]).grow(
+				FOREST_OBSTACLE_ART_OVERSCAN,
+			),
 			FOREST_GATE_LOWER_SOURCE,
 		)
 	if _snapshot.collision_outlines_visible:

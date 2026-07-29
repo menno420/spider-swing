@@ -2,8 +2,10 @@ extends RefCounted
 class_name ArtAssetCatalog
 ## Presentation-owned runtime art paths.
 ##
-## These assets decorate authoritative simulation silhouettes. They do not own
-## collision geometry, pickup radius, spider radius, or obstacle classification.
+## These assets present authoritative simulation silhouettes. Finished obstacle
+## art is drawn on transparent alpha without the prototype geometry fill behind
+## it. The assets still do not own collision geometry, pickup radius, spider
+## radius, or obstacle classification.
 
 const FOREST_BRANCH := &"forest_branch"
 const FOREST_BRAMBLE := &"forest_bramble"

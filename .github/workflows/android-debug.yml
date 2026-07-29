@@ -41,7 +41,7 @@ env:
   GODOT_VERSION: 4.7.1
   APK_PATH: build/spider-swing-debug.apk
   ARTIFACT_NAME: spider-swing-android-debug
-  BUILD_VERSION: 0.8.2-wide-passage-test
+  BUILD_VERSION: 0.8.3-clean-forest-test
   SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
 jobs:
@@ -101,8 +101,8 @@ jobs:
           set -euo pipefail
           grep -F "config/version=\"${BUILD_VERSION}\"" project.godot
           grep -F "version/name=\"${BUILD_VERSION}\"" export_presets.cfg
-          grep -F 'version/code=18' export_presets.cfg
-          grep -F 'package/name="Spider Swing Wide Passage (dev)"' export_presets.cfg
+          grep -F 'version/code=19' export_presets.cfg
+          grep -F 'package/name="Spider Swing Clean Forest (dev)"' export_presets.cfg
           echo "build identity: ${BUILD_VERSION} @ ${SOURCE_SHA}"
 
       - name: Generate an ephemeral debug keystore
@@ -135,7 +135,7 @@ jobs:
             echo "source_sha=${SOURCE_SHA}"
             echo "workflow_run=${GITHUB_RUN_ID}"
             echo "package=com.menno420.spiderswing.dev"
-            echo "display_name=Spider Swing Wide Passage (dev)"
+            echo "display_name=Spider Swing Clean Forest (dev)"
             echo "install_note=Uninstall the previous dev build first; CI debug signing is ephemeral."
           } > build/build-info.txt
 
