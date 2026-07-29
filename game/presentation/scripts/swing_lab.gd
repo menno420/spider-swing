@@ -104,6 +104,8 @@ func present_event(event: SimulationEvent) -> void:
 			_feedback_color = MUTED
 		SimulationEvent.Kind.RESCUE_USED:
 			_feedback_color = GREEN
+		SimulationEvent.Kind.SURFACE_BOUNCED:
+			_feedback_color = CYAN
 		_:
 			_feedback_color = GREEN
 	queue_redraw()
@@ -359,6 +361,9 @@ func _draw_spider() -> void:
 			body = body.lightened(0.12)
 		SpiderCatalog.BALLOONER:
 			accent = accent.lerp(CYAN, 0.34)
+		SpiderCatalog.SPRINGTAIL:
+			body = body.lerp(Color("435b67"), 0.42)
+			accent = accent.lerp(GREEN, 0.45)
 	for side in [-1.0, 1.0]:
 		for index in range(4):
 			var y := -15.0 + float(index) * 10.0
@@ -407,6 +412,16 @@ func _draw_spider() -> void:
 			Color(GREEN, 0.82),
 			5.0,
 		)
+	if _snapshot.surface_bounce_enabled:
+		draw_arc(
+			center,
+			27.0 * scale,
+			-PI * 0.92,
+			PI * 0.92,
+			42,
+			GREEN if _snapshot.surface_bounce_ready else Color(MUTED, 0.42),
+			4.0,
+		)
 	if _show_debug_tools and _snapshot.debug_visible:
 		draw_arc(center, _snapshot.player_collision_radius, 0.0, TAU, 40, CYAN, 1.5)
 		draw_line(center, center + _snapshot.velocity * 0.12, YELLOW, 2.0)
@@ -452,6 +467,13 @@ func _draw_hud(size: Vector2) -> void:
 			"GLIDE %.1fs" % _snapshot.glide_remaining,
 			16,
 			CYAN,
+		)
+	if _snapshot.surface_bounce_enabled:
+		_draw_text(
+			Vector2(size.x - 280.0, 152.0),
+			"SHELL READY" if _snapshot.surface_bounce_ready else "SHELL SPENT",
+			16,
+			GREEN if _snapshot.surface_bounce_ready else MUTED,
 		)
 	_draw_button(LabLayout.menu_rect(size), "MENU", false)
 	if _show_control_hints:
@@ -643,6 +665,18 @@ func _draw_tuning_cards(
 			status,
 			15,
 			status_color,
+		)
+	elif category_id == TuningCatalog.CATEGORY_RUN and \
+			_snapshot.surface_bounce_enabled:
+		var shell_status := "IMPACT SHELL READY" \
+			if _snapshot.surface_bounce_ready \
+			else "IMPACT SHELL NEEDS AN UPPER WEB"
+		var panel := LabLayout.debug_panel_rect(size)
+		_draw_text(
+			Vector2(panel.end.x - 390.0, panel.end.y - 24.0),
+			shell_status,
+			15,
+			GREEN if _snapshot.surface_bounce_ready else YELLOW,
 		)
 
 

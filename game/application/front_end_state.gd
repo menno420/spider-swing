@@ -63,7 +63,9 @@ const TUTORIAL_STEPS := [
 		"title": "PULL TO THE TARGET",
 		"kicker": "05 · ANCHOR BURST",
 		"body": "Tap BURST while attached, or double-tap any solid target, to "
-			+ "cross half the web distance in a quick controlled pull. Tapping "
+			+ "cross 40% of the web distance in a quick controlled pull. Every "
+			+ "spider also has a useful minimum Burst travel that upgrades can "
+			+ "improve. Tapping "
 			+ "a solid below performs a shorter 40% Dive Pull and never stays "
 			+ "attached. During either pull, tap an upper solid to recover with "
 			+ "a normal web immediately.",
@@ -73,10 +75,13 @@ const TUTORIAL_STEPS := [
 		"title": "SURVIVE & RECOVER",
 		"kicker": "06 · STAY ALIVE",
 		"body": "Collect flies along suggested routes and watch for Burst Frenzy. "
-			+ "A warning-colored obstacle or lethal rail can spend your one "
-			+ "visible RESCUE; the next lethal mistake ends the run. Laboratory "
-			+ "rails can be compared in DEBUG. Tap after death to restart, or use MENU.",
-		"tip": "Ceilings and floors are mostly continuous but have deliberate gaps.",
+			+ "The solid ceiling and floor are lethal by default, but reshape "
+			+ "around most obstacles to create high, low, and occasional tight "
+			+ "routes. A lethal mistake can spend your one visible RESCUE. "
+			+ "Springtail also has one moderate rail bounce that an upper web "
+			+ "recharges. A hard impact or obstacle still ends the run. Tap after "
+			+ "death to restart, or use MENU.",
+		"tip": "Follow the changing corridor and save recovery mechanics for real mistakes.",
 	},
 ]
 

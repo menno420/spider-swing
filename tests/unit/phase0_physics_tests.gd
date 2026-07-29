@@ -11,6 +11,8 @@ static func run() -> Dictionary:
 	var passed := 0
 
 	passed += _test_presets(failures)
+	passed += _test_gradual_speed_curve_reaches_full_pace_at_five_kilometres(
+		failures)
 	passed += _test_release_preserves_velocity(failures)
 	passed += _test_reel_shortens_without_teleport(failures)
 	passed += _test_reel_does_not_add_speed(failures)
@@ -21,6 +23,7 @@ static func run() -> Dictionary:
 	passed += _test_aim_forgiveness_extends_beyond_old_band(failures)
 	passed += _test_extended_web_reach(failures)
 	passed += _test_burst_crosses_configured_fraction(failures)
+	passed += _test_minimum_burst_travel_is_real_and_upgradeable(failures)
 	passed += _test_pull_can_be_interrupted_by_recovery_web(failures)
 	passed += _test_double_tap_falls_back_to_recovery_web(failures)
 	passed += _test_downward_web_is_a_short_one_shot_pull(failures)
@@ -36,8 +39,10 @@ static func run() -> Dictionary:
 	passed += _test_spider_profiles_and_glide_share_one_config(failures)
 	passed += _test_creator_pattern_drives_deterministic_chunks(failures)
 	passed += _test_course_stream_places_lower_anchor_windows(failures)
+	passed += _test_contoured_rails_are_continuous_and_varied(failures)
 	passed += _test_obstacle_collision_is_authoritative(failures)
 	passed += _test_boundary_lethality_is_a_toggle(failures)
+	passed += _test_springtail_impact_shell_is_bounded(failures)
 	passed += _test_collectibles_are_swept_and_not_respawned(failures)
 	passed += _test_burst_frenzy_suppresses_only_cooldown(failures)
 	passed += _test_attach_release_does_not_inject_energy(failures)
@@ -57,9 +62,40 @@ static func _test_presets(failures: PackedStringArray) -> int:
 			return 0
 	var balanced := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 	if not is_equal_approx(balanced.gravity, 1120.0) or \
-			not is_equal_approx(balanced.dive_distance_fraction, 0.40):
-		failures.append("balanced candidate lost the owner-tested 1120/40% values")
+			not is_equal_approx(balanced.dive_distance_fraction, 0.40) or \
+			not is_equal_approx(balanced.reel_retraction_rate, 400.0) or \
+			not is_equal_approx(balanced.burst_distance_fraction, 0.40) or \
+			not is_equal_approx(balanced.burst_minimum_distance, 80.0) or \
+			not is_equal_approx(balanced.speed_curve_distance, 50000.0) or \
+			not balanced.course_boundaries_lethal:
+		failures.append(
+			"balanced candidate lost its weaker base, 5 km ramp, or lethal rails")
 		return 0
+	return 1
+
+
+static func _test_gradual_speed_curve_reaches_full_pace_at_five_kilometres(
+	failures: PackedStringArray,
+) -> int:
+	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	var speeds := [
+		config.target_speed_at(0.0),
+		config.target_speed_at(10000.0),
+		config.target_speed_at(30000.0),
+		config.target_speed_at(50000.0),
+		config.target_speed_at(80000.0),
+	]
+	if not is_equal_approx(float(speeds[0]), config.starting_target_speed) or \
+			float(speeds[1]) >= 440.0 or \
+			float(speeds[2]) >= config.maximum_target_speed or \
+			not is_equal_approx(float(speeds[3]), config.maximum_target_speed) or \
+			not is_equal_approx(float(speeds[4]), config.maximum_target_speed):
+		failures.append("target speed no longer grows gradually to full pace at 5,000 m")
+		return 0
+	for index in range(speeds.size() - 1):
+		if float(speeds[index]) > float(speeds[index + 1]):
+			failures.append("target speed curve is not monotonic")
+			return 0
 	return 1
 
 
@@ -376,6 +412,48 @@ static func _test_burst_crosses_configured_fraction(
 	return 1
 
 
+static func _test_minimum_burst_travel_is_real_and_upgradeable(
+	failures: PackedStringArray,
+) -> int:
+	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	var world := SimulationWorld.new()
+	world.reset(config, _test_geometry())
+	var close_anchor := world.position + Vector2(120.0, 0.0)
+	if not world._start_pull(
+		close_anchor,
+		config.burst_distance_fraction,
+		config.burst_pull_duration,
+		config.burst_exit_speed,
+		config.burst_tangential_retention,
+		&"burst",
+		config.burst_minimum_distance,
+	):
+		failures.append("valid close-range Burst did not start")
+		return 0
+	if absf(world.pull_distance_total - config.burst_minimum_distance) > 0.001:
+		failures.append("close-range Burst ignored its minimum useful travel")
+		return 0
+
+	var progress := PlayerProgress.defaults()
+	progress.upgrade_levels["classic_burst_floor"] = \
+		SpiderCatalog.MAX_UPGRADE_LEVEL
+	var upgraded := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	SpiderCatalog.apply_to_config(upgraded, progress)
+	if upgraded.burst_minimum_distance <= config.burst_minimum_distance or \
+			not is_equal_approx(upgraded.burst_minimum_distance, 200.0):
+		failures.append("Reliable Launch did not raise minimum Burst travel by level")
+		return 0
+	if SpiderCatalog.MAX_UPGRADE_LEVEL != 5 or \
+			SpiderCatalog.cost_for_level(4) != 55:
+		failures.append("meaningful five-level upgrade progression is missing")
+		return 0
+	for spider_id: StringName in SpiderCatalog.ALL_IDS:
+		if SpiderCatalog.upgrades_for(spider_id).size() != 3:
+			failures.append("%s does not expose three upgrade paths" % spider_id)
+			return 0
+	return 1
+
+
 static func _test_pull_can_be_interrupted_by_recovery_web(
 	failures: PackedStringArray,
 ) -> int:
@@ -646,7 +724,10 @@ static func _test_pull_tuning_controls(failures: PackedStringArray) -> int:
 	var reel_before := config.reel_retraction_rate
 	var range_before := config.web_maximum_length
 	var cooldown_before := config.burst_cooldown
+	var burst_minimum_before := config.burst_minimum_distance
+	var full_speed_before := config.speed_curve_distance
 	config.adjust(&"burst_pull_pct", 1.0)
+	config.adjust(&"burst_minimum", 1.0)
 	config.adjust(&"dive_pull_pct", -1.0)
 	config.adjust(&"reel_rate", 1.0)
 	config.adjust(&"web_range", 1.0)
@@ -656,8 +737,15 @@ static func _test_pull_tuning_controls(failures: PackedStringArray) -> int:
 	config.adjust(&"take_up_pct", -1.0)
 	config.adjust(&"course_rails", -1.0)
 	config.adjust(&"lethal_rails", 1.0)
+	config.adjust(&"route_clearance", 1.0)
+	config.adjust(&"full_speed_m", 1.0)
+	config.adjust(&"impact_shell", 1.0)
 	if absf(config.burst_distance_fraction - (burst_before + 0.05)) > 0.001:
 		failures.append("debug Burst percentage adjustment is not 5%")
+		return 0
+	if absf(config.burst_minimum_distance - (burst_minimum_before + 10.0)) > \
+			0.001:
+		failures.append("debug minimum Burst adjustment is not 10 px")
 		return 0
 	if absf(config.dive_distance_fraction - (dive_before - 0.05)) > 0.001:
 		failures.append("debug Dive percentage adjustment is not 5%")
@@ -671,15 +759,20 @@ static func _test_pull_tuning_controls(failures: PackedStringArray) -> int:
 	if absf(config.burst_cooldown - (cooldown_before - 0.10)) > 0.001:
 		failures.append("debug pull cooldown adjustment is not 0.10 seconds")
 		return 0
+	if absf(config.speed_curve_distance - (full_speed_before + 5000.0)) > 0.001:
+		failures.append("debug full-speed distance adjustment is not 500 m")
+		return 0
 	if not config.web_tap_retargets_when_attached:
 		failures.append("debug tap mode did not enable RETARGET")
 		return 0
 	if config.automatic_take_up_enabled or config.course_boundaries_enabled or \
-			not config.course_boundaries_lethal:
-		failures.append("debug toggles did not update take-up and rail policies")
+			not config.course_boundaries_lethal or \
+			not config.surface_bounce_enabled:
+		failures.append("debug toggles did not update take-up, rail, and shell policies")
 		return 0
 	for parameter: StringName in [
 		&"burst_pull_pct",
+		&"burst_minimum",
 		&"dive_pull_pct",
 		&"burst_duration",
 		&"pull_cooldown",
@@ -694,6 +787,15 @@ static func _test_pull_tuning_controls(failures: PackedStringArray) -> int:
 		&"course_rails",
 		&"lethal_rails",
 		&"mid_hazard_m",
+		&"start_speed",
+		&"maximum_speed",
+		&"full_speed_m",
+		&"corridor_contours",
+		&"route_clearance",
+		&"tight_gap_size",
+		&"impact_shell",
+		&"safe_impact_speed",
+		&"bounce_strength",
 		&"boost_duration",
 	]:
 		if parameter not in SwingLabSession.TUNING_PARAMETERS:
@@ -798,6 +900,55 @@ static func _test_course_stream_places_lower_anchor_windows(
 	return 1
 
 
+static func _test_contoured_rails_are_continuous_and_varied(
+	failures: PackedStringArray,
+) -> int:
+	var stream := CourseStream.new()
+	stream.reset()
+	var geometry := stream.update_for_position(15000.0)
+	var found_open_route := false
+	var found_tight_route := false
+	for chunk_index in range(
+		geometry.first_chunk_index,
+		geometry.last_chunk_index + 1,
+	):
+		var chunk_start := float(chunk_index) * CourseStream.CHUNK_WIDTH
+		var chunk_surfaces: Array[PackedVector2Array] = []
+		for boundary: PackedVector2Array in geometry.boundary_surfaces:
+			var bounds := SolidGeometry.bounds(boundary)
+			if absf(bounds.position.x - chunk_start) <= 0.01:
+				chunk_surfaces.append(boundary)
+		if chunk_surfaces.size() != 2:
+			failures.append(
+				"chunk %d does not own one continuous ceiling and floor" %
+					chunk_index)
+			return 0
+		for boundary: PackedVector2Array in chunk_surfaces:
+			var bounds := SolidGeometry.bounds(boundary)
+			if bounds.size.x < CourseStream.CHUNK_WIDTH - 0.01:
+				failures.append("a shaped rail leaves a horizontal hole")
+				return 0
+			if boundary.size() < 10 or \
+					not is_equal_approx(boundary[0].x, chunk_start) or \
+					not is_equal_approx(
+						boundary[4].x,
+						chunk_start + CourseStream.CHUNK_WIDTH,
+					):
+				failures.append("a shaped rail does not join both chunk seams")
+				return 0
+			for point_index in range(5):
+				var y := boundary[point_index].y
+				if y < CourseStream.CEILING_Y - 20.0 or \
+						y > CourseStream.FLOOR_Y + 20.0:
+					found_open_route = true
+				if y > 200.0 and y < 590.0:
+					found_tight_route = true
+	if not found_open_route or not found_tight_route:
+		failures.append("corridor stream lacks both open bypasses and late tight gaps")
+		return 0
+	return 1
+
+
 static func _test_obstacle_scales_change_authoritative_polygons(
 	failures: PackedStringArray,
 ) -> int:
@@ -893,16 +1044,24 @@ static func _test_spider_profiles_and_glide_share_one_config(
 	progress.selected_spider_id = SpiderCatalog.BALLOONER
 	var glider := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 	SpiderCatalog.apply_to_config(glider, progress)
+	progress.selected_spider_id = SpiderCatalog.SPRINGTAIL
+	var springtail := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	SpiderCatalog.apply_to_config(springtail, progress)
 	if agile.player_collision_radius >= 18.0 or \
 			agile.horizontal_drive_acceleration <= 470.0:
 		failures.append("Skitter lost its smaller, more agile profile")
 		return 0
 	if heavy.player_collision_radius <= 18.0 or heavy.gravity <= 1120.0 or \
-			heavy.reel_retraction_rate <= 480.0:
+			heavy.reel_retraction_rate <= 400.0:
 		failures.append("Anchorite lost its heavy Reel-In trade-off")
 		return 0
 	if glider.glide_duration <= 1.0 or glider.detached_gravity_scale >= 0.60:
 		failures.append("Ballooner does not resolve to a real detached glide")
+		return 0
+	if SpiderCatalog.ALL_IDS.size() != 5 or \
+			not springtail.surface_bounce_enabled or \
+			springtail.horizontal_drive_acceleration >= 470.0:
+		failures.append("Springtail lost its bounded recovery trade-off")
 		return 0
 	var world := SimulationWorld.new()
 	world.reset(glider, _test_geometry())
@@ -970,6 +1129,105 @@ static func _test_boundary_lethality_is_a_toggle(
 	if not _contains_event(
 		lethal.step(FIXED_DELTA), SimulationEvent.Kind.DEATH_REQUESTED):
 		failures.append("lethal course rails did not kill the spider")
+		return 0
+	return 1
+
+
+static func _test_springtail_impact_shell_is_bounded(
+	failures: PackedStringArray,
+) -> int:
+	var progress := PlayerProgress.defaults()
+	progress.selected_spider_id = SpiderCatalog.SPRINGTAIL
+	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	SpiderCatalog.apply_to_config(config, progress)
+	config.gravity = 0.0001
+	config.horizontal_drive_acceleration = 0.0001
+	config.air_drag = 0.0
+	config.course_boundaries_enabled = true
+	config.course_boundaries_lethal = true
+	var geometry := _test_geometry()
+	geometry.boundary_surfaces.append(
+		_rectangle_polygon(Rect2(0.0, 640.0, 900.0, 60.0)))
+
+	var spent := SimulationWorld.new()
+	spent.reset(config, geometry)
+	spent.position = Vector2(360.0, 620.0)
+	spent.velocity = Vector2(120.0, 600.0)
+	var events := spent.step(FIXED_DELTA)
+	if not _contains_event(events, SimulationEvent.Kind.SURFACE_BOUNCED) or \
+			_contains_event(events, SimulationEvent.Kind.DEATH_REQUESTED) or \
+			spent.surface_bounce_ready or spent.velocity.y >= 0.0:
+		failures.append("charged Springtail did not survive one moderate rail hit")
+		return 0
+	spent.position = Vector2(360.0, 620.0)
+	spent.velocity = Vector2(120.0, 600.0)
+	events = spent.step(FIXED_DELTA)
+	if not _contains_event(events, SimulationEvent.Kind.DEATH_REQUESTED):
+		failures.append("spent impact shell survived a second rail hit")
+		return 0
+
+	var rearmed := SimulationWorld.new()
+	rearmed.reset(config, geometry)
+	rearmed.position = Vector2(360.0, 620.0)
+	rearmed.velocity = Vector2(120.0, 600.0)
+	rearmed.step(FIXED_DELTA)
+	rearmed.queue_command(InputCommand.attach(Vector2(480.0, 150.0), 1, 1))
+	events = rearmed.step(FIXED_DELTA)
+	if not rearmed.web.attached or not rearmed.surface_bounce_ready:
+		failures.append("upper web contact did not recharge the impact shell")
+		return 0
+	var reported_rearm := false
+	for event: SimulationEvent in events:
+		if event.kind == SimulationEvent.Kind.ATTACHED and \
+				bool(event.data.get("surface_bounce_rearmed", false)):
+			reported_rearm = true
+	if not reported_rearm:
+		failures.append("impact shell recharge was not exposed to presentation")
+		return 0
+
+	var hard_hit := SimulationWorld.new()
+	hard_hit.reset(config, geometry)
+	hard_hit.position = Vector2(360.0, 620.0)
+	hard_hit.velocity = Vector2(120.0, 900.0)
+	events = hard_hit.step(FIXED_DELTA)
+	if not _contains_event(events, SimulationEvent.Kind.DEATH_REQUESTED) or \
+			_contains_event(events, SimulationEvent.Kind.SURFACE_BOUNCED):
+		failures.append("impact shell incorrectly survived an excessive rail hit")
+		return 0
+
+	var obstacle_geometry := _test_geometry()
+	obstacle_geometry.obstacles.append(
+		_rectangle_polygon(Rect2(330.0, 350.0, 100.0, 100.0)))
+	var obstacle_hit := SimulationWorld.new()
+	obstacle_hit.reset(config, obstacle_geometry)
+	obstacle_hit.position = Vector2(360.0, 390.0)
+	obstacle_hit.velocity = Vector2.ZERO
+	events = obstacle_hit.step(FIXED_DELTA)
+	if not _contains_event(events, SimulationEvent.Kind.DEATH_REQUESTED) or \
+			_contains_event(events, SimulationEvent.Kind.SURFACE_BOUNCED):
+		failures.append("impact shell incorrectly protected obstacle contact")
+		return 0
+
+	var pull_hit := SimulationWorld.new()
+	pull_hit.reset(config, geometry)
+	if not pull_hit._start_pull(
+		Vector2(220.0, 684.0),
+		0.95,
+		0.20,
+		0.0,
+		0.0,
+		&"dive",
+	):
+		failures.append("impact shell pull-collision fixture did not start")
+		return 0
+	var pull_died := false
+	for _index in range(20):
+		events = pull_hit.step(FIXED_DELTA)
+		if _contains_event(events, SimulationEvent.Kind.DEATH_REQUESTED):
+			pull_died = true
+			break
+	if not pull_died:
+		failures.append("impact shell incorrectly protected a pull into a rail")
 		return 0
 	return 1
 

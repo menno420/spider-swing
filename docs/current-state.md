@@ -50,11 +50,12 @@ without a reported regression.
   collision-checked position with a 0.9-second obstacle shield. The charge is
   visible in the HUD; the next lethal contact follows the ordinary death and
   idempotent settlement path.
-- Reel shortens the authoritative rope length (480 px/s in Balanced) and spends
+- Reel shortens the authoritative rope length (400 px/s in Balanced) and spends
   energy without adding a separate inward acceleration or minimum-speed
   correction. Natural take-up retains 85% of inward slack by default, also
-  without adding velocity. Anchor Burst crosses 50% of the resolved starting
-  distance over 0.20 seconds. A lower target becomes a one-shot 40% Dive Pull over 0.16 seconds
+  without adding velocity. Anchor Burst crosses 40% of the resolved starting
+  distance with 80 px minimum travel over 0.20 seconds. A lower target becomes
+  a one-shot 40% Dive Pull over 0.16 seconds
   and never leaves a rope. Both paths retain bounded tangential carry, use fixed
   exit speeds, and sweep against lethal polygon geometry. Burst uses the timed
   cooldown; Dive instead rearms only after a successful upper/obstacle web
@@ -71,32 +72,36 @@ without a reported regression.
   Presentation renders short directional flashes and the input adapter supplies
   distinct handheld haptics; unavailable actions do not fake success feedback.
 - The stream keeps a 1000 m learning runway free of detached middle hazards,
-  then combines ceiling/floor gaps, leaf clusters, vine forks, hanging seed pods,
-  and broken-pot gates. Fly arcs mark suggested routes; sparse Burst Frenzy
-  pickups temporarily suppress cooldown. Visible rails can independently be
-  present/absent and safe/lethal. This remains prototype instrumentation, not an
-  authored or approved Phase 1 chunk pack.
+  then combines continuous shaped ceiling/floor rails, leaf clusters, vine
+  forks, hanging seed pods, and broken-pot gates. Rails are lethal by default;
+  most patterns open a high or low bypass and occasional late patterns close
+  into a smaller gap. Fly arcs mark suggested routes; sparse Burst Frenzy
+  pickups temporarily suppress cooldown. This remains prototype
+  instrumentation, not an authored or approved Phase 1 chunk pack.
 - The default authoritative polygon scales are 94% for rail-grown obstacles and
   90% for detached floating hazards, with 112% gate openings. All three are
   independently tunable and feed the same polygons to collision and rendering.
-- `SpiderCatalog` defines four comparison profiles over one `SwingConfig`:
+- `SpiderCatalog` defines five comparison profiles over one `SwingConfig`:
   balanced Garden Spider, smaller/faster Skitter, heavier Anchorite, and
-  bounded-glide Ballooner. Each exposes an explicit trade-off and two capped
-  fly-funded prototype upgrade tracks. All are unlocked during Phase 0 so
-  progression cannot hide a feel candidate.
+  bounded-glide Ballooner, plus Springtail's one-charge moderate rail bounce.
+  Each exposes an explicit trade-off and three five-level fly-funded prototype
+  upgrade tracks. All are unlocked during Phase 0 so progression cannot hide a
+  feel candidate.
 - Garage owns profile, palette, and web-treatment selection; Shop spends
   collected flies through `ProgressionService`; Course Lab saves six
   EMPTY/LEAF/POD/VINE/GATE slots and substitutes the post-opening course during
   its playtest. These are local foundations, not production economy or UGC.
-- The touch-first debug panel groups controls into Movement, Rope, Pulls,
-  Course, Run, and Tools. Large cards use plain names, short descriptions, direct
+- The touch-first debug panel groups controls into Movement, Pacing, Rope,
+  Pulls, Course, Routes, Run, and Tools. Large cards use plain names, short
+  descriptions, direct
   comparison values, and `−` / `+` controls for gravity, forward drive,
   500–1400 px range, default RELEASE vs optional atomic RETARGET tap behavior,
   aim forgiveness, attach catch, Reel shortening speed, automatic take-up and
   retained percentage, Burst cooldown, Burst/Dive percentages and durations,
-  rope damping, rail
-  presence/lethality, edge/floating/gate geometry sizes, guided opening, one-run
-  rescue, the middle-hazard start, and boost duration.
+  rope damping, rail presence/lethality, edge/floating/gate geometry sizes,
+  starting/maximum speed and exact full-speed distance, shaped-route clearance
+  and tight-gap size, guided opening, one-run rescue, Springtail impact
+  response, the middle-hazard start, and boost duration.
 - Settings is a readable vertical scroll surface with larger type and 58–68-pixel
   controls, verified by runtime contracts and designed around the owner's
   recorded 1040×480 viewport.
@@ -104,18 +109,23 @@ without a reported regression.
 
 **Verification**
 
-- `python3 tools/verify.py` — passes. Six steps: architecture self-test,
-  architecture scan, Godot discovery and version, headless import, boot smoke
-  test, headless test runner.
-- `tests/test_runner.gd` — 70 checks, all passing locally: thirty-four
+- `python3 tools/verify.py` — architecture self-test and scan pass locally.
+  PR #19 `game-quality` run
+  [30444418170](https://github.com/menno420/spider-swing/actions/runs/30444418170)
+  supplied Godot 4.7.1 and passed import, boot, and the complete 74-check
+  headless suite at gameplay source
+  `bc582e25a2a2fd7d6da18ed2cf127cc568b834ca`.
+- `tests/test_runner.gd` — 74 declared checks: thirty-eight
   deterministic physics, fifteen GUI-owned mobile HUD, eleven front-end
   navigation/settings/progression, plus bootstrap and exact build-version
-  contracts. Physics covers exact 50%/40% pull shares,
+  contracts. Physics covers exact 40%/40% pull shares,
   detached targeted Burst, recovery-web interruption, double-tap fallback,
   release/retarget modes, speed-neutral Reel shortening, solid polygon
   targeting/collision, take-up, rail toggles, swept pickups, tuning controls, and
   paced bounded streaming, scaled authoritative geometry, guided opening,
-  rescue, spider profiles/glide, and creator-pattern bounds. The front-end group
+  rescue, spider profiles/glide, creator-pattern bounds, a 5000 m pacing curve,
+  continuous contoured rails, upgradeable minimum Burst travel, and bounded
+  Springtail impacts. The front-end group
   performs real filesystem settings and progression round-trips plus settlement
   idempotency, profile upgrades, and creator edits. The trajectory
   fixture produces the same final state when driven through simulated 30, 60,
@@ -160,6 +170,14 @@ without a reported regression.
   scaling, one rescue then normal death, centralized spider profiles and glide,
   saved bounded creator patterns, fly-funded upgrades, and real Garage/Shop/
   Course Lab navigation.
+- PR #19 `game-quality` run
+  [30444418170](https://github.com/menno420/spider-swing/actions/runs/30444418170)
+  passes all 74 contracts at gameplay source
+  `bc582e25a2a2fd7d6da18ed2cf127cc568b834ca`. The added contracts prove the
+  exact 5000 m pace curve, continuous open/tight rail profiles, upgradable
+  minimum Burst travel, three five-level paths for all five spiders, and
+  Springtail's spent/rearmed moderate-impact shell while retaining lethal
+  obstacles, hard impacts, and pull collisions.
 - `substrate-gate` — kit-owned. A born-red session card deliberately holds a PR
   until close-out; it must be green on the completed card before merge.
 - `android-debug` — **green on `main`, APK proven.** Run #1 produced artifact
@@ -242,6 +260,16 @@ without a reported regression.
   `assets/project.binary`; its build manifest proves version
   `0.5.0-opening-garage-test`, exact source, dev package, and display name
   `Spider Swing Opening Garage (dev)`.
+- PR #19 `android-debug` run
+  [30444418230](https://github.com/menno420/spider-swing/actions/runs/30444418230)
+  produced downloadable artifact
+  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30444418230/artifacts/8720817780)
+  ID `8720817780`, 56,859,911 bytes, digest
+  `sha256:ba83d0a7c1f6cd64706da933f3d6e08af10459fcf6d1f28c231228a3842863ef`.
+  The workflow proved the APK is a valid archive with a manifest, package
+  `com.menno420.spiderswing.dev`, version code `13`, and version
+  `0.6.0-gradual-progression-test`; the connected download endpoint returned
+  the complete ZIP file successfully.
 - **Dependabot** — live. Its first run opened two bumps against the kit-owned
   `substrate-gate.yml`; both were closed because `adopt`/`upgrade` regenerates that
   file. The rule is documented in `.github/dependabot.yml`: kit-owned-only bumps get
@@ -272,13 +300,20 @@ without a reported regression.
 
 ## In flight
 
-Phase 0.12 packages the guided opening, roomier/tunable hazards, one-run rescue,
-four comparison profiles, Garage/Shop, and local Course Lab in PR #18. Phase 1
-remains blocked on choosing or rejecting a movement baseline after the verified
-build is tested.
+Phase 0.13 is implemented and verified in PR #19: the exact maximum-speed ramp
+now spans 5000 m, shaped continuous rails are lethal by default, base
+Reel/Burst are weaker, every spider has three five-level upgrade paths, and
+Springtail has a bounded rechargeable impact shell. Phase 1 remains blocked on
+choosing or rejecting a movement baseline after the verified build is tested.
 
 ## Recently shipped (newest first)
 
+- **2026-07-29 — Gradual progression and bounded rail recovery (PR #19).**
+  Moves maximum speed to an exact smooth 5000 m default ramp, makes shaped
+  rails lethal by default, reduces Classic Reel/Burst, adds minimum Burst
+  travel and three five-level paths per spider, and introduces Springtail's
+  one-charge moderate rail bounce. The verified Android build is
+  `0.6.0-gradual-progression-test`.
 - **2026-07-29 — Dive reset and touch-first DEBUG (PR #17).** Separates the Dive
   charge from Burst time, rearms it only through a successful upper/obstacle
   attachment, and replaces carousel searching with six plain-language,

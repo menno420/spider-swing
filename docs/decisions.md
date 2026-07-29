@@ -129,3 +129,31 @@
   either exists would create unsafe product debt and contradict the current GDD
   fairness boundary.
 - provenance: Menno's Phase 0.12 direction, GDD v2.0 §§ 14–15 and 18–20, PR #18
+
+## [D-0010] Teach pace over five kilometres inside continuous lethal rails
+
+- status: decided
+- date: 2026-07-29
+- verdict: Forward target speed follows a smooth bounded curve that reaches its
+  configured maximum at 5000 m by default; continuous ceiling/floor rails are
+  lethal by default and reshape into open bypasses plus occasional late gaps.
+- why: Device playtesting showed that the former exponential ramp reached high
+  speed before players could learn the control vocabulary. A long exact ramp
+  makes difficulty readable, while shaped continuous rails preserve the
+  corridor goal and create intentional high, low, and tight routes without
+  relying on missing world geometry.
+- provenance: Menno's Phase 0.13 pacing and corridor direction, PR #19
+
+## [D-0011] Bound rail-impact survival to a rechargeable spider identity
+
+- status: decided
+- date: 2026-07-29
+- verdict: Springtail alone may convert one moderate free-flight rail impact
+  into a controlled bounce; the charge is spent immediately and rearms only
+  after successful upper web contact.
+- why: Occasional recoverable contact can support a distinct progression goal,
+  but generic invulnerability would erase obstacle reading. High-speed hits,
+  obstacles, pull collisions, and a second rail contact before rearm remain
+  lethal, keeping the mechanic skillful and explicitly limited.
+- provenance: Menno's Phase 0.13 survivability direction, Godot 4.7 Vector2
+  bounce contract, PR #19

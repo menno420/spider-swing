@@ -200,6 +200,22 @@
     "summary": "> **Status:** `complete`"
   },
   {
+    "slug": "gradual-progression-impact",
+    "date": "2026-07-29",
+    "tags": [
+      "phase",
+      "0",
+      "13",
+      "gradual",
+      "progression",
+      "impact",
+      "survival",
+      "\ud83d\udca1",
+      "\ud83d\udcca"
+    ],
+    "summary": "> **Status:** `complete`"
+  },
+  {
     "slug": "opening-swing-spider-garage",
     "date": "2026-07-29",
     "tags": [
@@ -213,6 +229,6 @@
       "\ud83d\udca1",
       "\ud83d\udcca"
     ],
-    "summary": "> **Status:** `in-progress`"
+    "summary": "> **Status:** `complete`"
   }
 ]

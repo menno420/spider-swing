@@ -24,6 +24,7 @@ enum Kind {
 	BOOST_EXPIRED,
 	DIVE_UNAVAILABLE,
 	RESCUE_USED,
+	SURFACE_BOUNCED,
 }
 
 var kind: int = Kind.ATTACHED

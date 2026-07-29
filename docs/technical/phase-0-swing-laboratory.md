@@ -47,7 +47,7 @@ velocity. That `RELEASE` behavior remains the default. DEBUG can switch to
 `RETARGET`, where tapping another valid upper solid atomically replaces the web;
 an empty-world tap still releases.
 
-Reel immediately shortens the authoritative rope length at 480 px/s in the
+Reel immediately shortens the authoritative rope length at 400 px/s in the
 Balanced candidate while energy is available. The constraint removes outward
 motion and applies capped position correction as the rope tightens; Reel does not
 also add a radial acceleration or minimum inward speed. That keeps its job
@@ -61,7 +61,8 @@ Anchor Burst is a short deterministic traversal:
 
 - `BURST` uses the attached anchor;
 - double-tap resolves the tapped solid atomically, even while detached;
-- the spider crosses 50% of the starting anchor distance over 0.20 seconds;
+- the spider crosses 40% of the starting anchor distance, with 80 px minimum
+  useful travel, over 0.20 seconds;
 - 62% of tangential velocity is retained and the pull ends with a fixed
   420 px/s radial exit;
 - the rope releases when the pull starts.
@@ -99,7 +100,8 @@ middle-lane hazards. Sparse silhouettes may grow from an existing rail, but the
 player first learns the corridor, ceiling web, lower Dive routes, flies, and
 recovery timing. Later chunks vary:
 
-- ceiling and floor height plus deliberate gaps on either side;
+- continuous ceiling and floor contours that open high/low bypasses or
+  occasionally close into a smaller late gap;
 - floor-grown leaf clusters and vine forks;
 - ceiling-hanging seed pods and leaf clusters;
 - broken-pot gates with a traversable opening;
@@ -108,8 +110,8 @@ recovery timing. Later chunks vary:
 - sparse Burst Frenzy pickups.
 
 Obstacle polygons are lethal on contact and also valid anchors. Course rails are
-attachable structural surfaces and are independently configurable as visible or
-absent, and safe or lethal. DEBUG draws the predicted endpoint of the nearest
+attachable structural surfaces, lethal by default, and independently
+configurable as visible or absent and safe or lethal. DEBUG draws the predicted endpoint of the nearest
 available Dive in green or red. The palette is still diagnostic; moving hazards,
 production balancing, and final object art remain deferred.
 
@@ -128,17 +130,20 @@ cosmetic milestones. The current fly costs are comparison values only.
 
 ## Debug tuning
 
-The touch-first debug panel is split into **Movement**, **Rope**, **Pulls**,
-**Course**, **Run**, and **Tools**. Every section shows at most six large setting
-cards.
+The touch-first debug panel is split into **Movement**, **Pacing**, **Rope**,
+**Pulls**, **Course**, **Routes**, **Run**, and **Tools**. Every section shows
+at most six large setting cards.
 Each card uses a plain name, one-sentence description, direct comparison values,
 and 52-pixel `−` / `+` targets. Presets are named instead of numbered. This
-avoids searching through a 19-item carousel during device playtests.
+avoids searching through one long carousel during device playtests.
 
 | Debug value | Meaning | Step / range |
 | --- | --- | --- |
 | `Gravity` | downward acceleration | 40 / 400–1800 |
 | `Forward drive` | acceleration toward the distance-based forward target speed | 25 / 100–1000 |
+| `Starting speed` | forward target at run start | 20 / 240–520 px/s |
+| `Maximum speed` | final forward target | 20 / 500–1000 px/s |
+| `Full speed reached` | exact end of the smooth pace ramp | 500 m / 2000–8000 m |
 | `Maximum web reach` | maximum resolved web distance | 50 / 500–1400 px |
 | `Tap retargets web` | attached upper-solid tap behavior | off / on |
 | `Aim forgiveness` | accepted distance from a tap to the nearest solid edge | 10 / 80–320 px |
@@ -147,6 +152,7 @@ avoids searching through a 19-item carousel during device playtests.
 | `Keep shortened rope` | retain natural inward slack | off / on |
 | `Shortening retained` | share of natural slack retained | 5% / 0–100% |
 | `Anchor Burst distance` | Burst share of starting anchor distance | 5% / 10–80% |
+| `Minimum Burst travel` | useful travel floor for a valid close Burst | 10 / 20–260 px |
 | `Anchor Burst time` | time taken to cross the Burst share | 0.02 / 0.08–0.40 s |
 | `Burst cooldown` | time limit for Anchor Burst only | 0.10 / 0.30–2.50 s |
 | `Downward pull distance` | Dive share of starting anchor distance | 5% / 5–60% |
@@ -158,9 +164,15 @@ avoids searching through a 19-item carousel during device playtests.
 | `Edge obstacle size` | scale rail-grown leaves, vines, and pods | 2% / 70–115% |
 | `Floating obstacle size` | scale detached middle hazards | 2% / 70–115% |
 | `Gate opening size` | widen or tighten broken-pot passages | 4% / 80–140% |
+| `Shaped ceiling and floor` | contour continuous rails around challenges | off / on |
+| `Bypass room` | extra room on most high/low routes | 10% / 50–150% |
+| `Small-gap opening` | occasional late tight-route size | 5% / 75–140% |
 | `Opening training web` | start on the ordinary guided ceiling web | off / on |
 | `One rescue per run` | recover the first lethal mistake | off / on |
 | `Burst Frenzy time` | Anchor Burst cooldown suppression | 0.5 / 1–10 s |
+| `One-charge rail bounce` | enable bounded moderate rail recovery | off / on |
+| `Maximum safe impact` | fastest charged rail impact that survives | 40 / 300–1100 px/s |
+| `Rail bounce strength` | inward speed returned away from the rail | 5% / 20–80% |
 
 `DRIVE` can be subtle while the spider is already at or above its current target
 speed: it accelerates forward only toward that target, while the target itself
@@ -185,7 +197,8 @@ product decisions.
 - release-time momentum preservation and speed-neutral Reel shortening;
 - speed-neutral configurable automatic slack take-up;
 - arbitrary solid-edge attachment, larger aim forgiveness, and extended range;
-- detached targeted Burst, exact 50% traversal, deterministic exit, and cooldown;
+- detached targeted Burst, exact configured traversal with an upgradeable
+  minimum useful distance, deterministic exit, and cooldown;
 - active-pull interruption plus detached cooldown double-tap recovery;
 - Dive use during Burst cooldown, contact-only Dive rearm, and clear unavailable
   feedback before rearm;
@@ -193,13 +206,15 @@ product decisions.
 - one-shot downward Dive Pull with exact 40% traversal and no persistent rope;
 - obstacle anchoring, polygon collision, and swept pull collision checks;
 - a 1000 m middle-hazard runway, deterministic organic geometry after it,
+  continuous shaped lethal-by-default rails with open and tight routes,
   lower-anchor coverage, independently scaled obstacle polygons, creator-pattern
   bounds, and a bounded seven-chunk window;
 - a one-second safe guided opening that remains interruptible from its first
   tick;
 - one authoritative rescue followed by normal death on the next lethal contact;
-- four catalogued spider profiles, profile-specific capped upgrades, and a real
-  bounded glide state using the same central configuration;
+- five catalogued spider profiles, three five-level upgrade paths each, a real
+  bounded glide state, and Springtail's one-charge moderate rail bounce using
+  the same central configuration;
 - independently safe/lethal course rails, swept pickups that do not respawn,
   idempotent persistent progression, and milestone cosmetic unlocks;
 - nonlethal upper and lethal lower/left/obstacle boundaries;
@@ -210,7 +225,7 @@ product decisions.
 
 ## Owner device playtest
 
-Install `0.5.0-opening-garage-test` after uninstalling the previous ephemerally
+Install `0.6.0-gradual-progression-test` after uninstalling the previous ephemerally
 signed dev app, then check:
 
 1. start a run without touching the screen for one second; the ordinary opening
@@ -233,8 +248,8 @@ signed dev app, then check:
    two-tap release/attach or atomic one-tap replacement feels more natural;
 10. hold Reel during a downward arc and judge whether height becomes manageable
    without the previous runaway speed gain;
-11. compare several starting web lengths and confirm Burst always covers roughly
-   half the visible rope distance;
+11. compare several starting web lengths and confirm base Burst covers roughly
+    40% while a close valid target still provides its visible minimum travel;
 12. use a lower rail target twice without attaching above between attempts; the
     second must say that an upper web is required, not display a timer;
 13. attach a ceiling or upper obstacle, then immediately Dive during an active
@@ -246,21 +261,29 @@ signed dev app, then check:
 16. compare `Keep shortened rope` off/on and several retained percentages; when the spider moves
     toward the anchor, the shorter web should mostly remain short without a speed
     spike;
-17. compare rails off, rails safe, and rails lethal; verify the deliberate gaps
-    still permit occasional travel above/below the ordinary corridor;
+17. compare rails off, rails safe, and rails lethal; verify continuous shaped
+    rails open usable high/low bypasses and only occasionally close into a small
+    gap;
 18. confirm no detached middle hazard appears before roughly 1000 m, then judge
     whether later leaf, vine, seed-pod, and pot patterns remain readable;
 19. compare floating obstacle sizes around 85%, 90%, and 95%, then vary gate
     opening size; collision edges must remain aligned with the silhouettes;
 20. deliberately hit a lethal obstacle once and verify `RESCUE READY` becomes
     `RESCUE SPENT`; the next lethal hit must end the run;
-21. compare all four Garage profiles, especially Skitter's smaller collision
-    radius, Anchorite's weight, and Ballooner's visible bounded glide;
+21. compare all five Garage profiles, especially Skitter's smaller collision
+    radius, Anchorite's weight, Ballooner's visible bounded glide, and
+    Springtail's charged moderate rail bounce;
 22. spend laboratory flies on one Shop track and confirm the shown resolved
     value changes and survives restart;
 23. create a six-piece Course Lab pattern, playtest it after the opening, return
     Home, and confirm the saved pattern remains;
 24. follow fly arcs, collect Burst Frenzy, use multiple Bursts before it expires,
     and confirm it does not bypass the upper-web requirement for another Dive.
+25. compare full-speed distances around 3000/5000/6500 m and confirm the default
+    no longer feels near maximum during the opening kilometre;
+26. spend Springtail's shell on a moderate rail hit, confirm a second hit kills,
+    then attach an upper web and verify the shell becomes ready again;
+27. verify Springtail still dies to obstacles, an excessive rail impact, or
+    contact caused by a Burst/Dive pull.
 
 Phase 1 remains gated on an explicitly approved movement baseline.

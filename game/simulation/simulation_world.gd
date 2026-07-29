@@ -22,6 +22,7 @@ var boost_positions: PackedVector2Array = PackedVector2Array()
 var run_flies: int = 0
 var burst_cooldown_remaining: float = 0.0
 var dive_ready: bool = true
+var surface_bounce_ready: bool = false
 var rescue_shield_remaining: float = 0.0
 var glide_remaining: float = 0.0
 var pull_active: bool = false
@@ -53,6 +54,7 @@ func reset(active_config: SwingConfig, geometry: CourseGeometry) -> void:
 	set_course_geometry(geometry)
 	burst_cooldown_remaining = 0.0
 	dive_ready = true
+	surface_bounce_ready = config.surface_bounce_enabled
 	_burst_cooldown_suppressed = false
 	_cancel_pull()
 	web.reset(config)
@@ -132,9 +134,15 @@ func step(delta: float) -> Array[SimulationEvent]:
 		velocity = constraint_result["velocity"]
 		var contact := _first_obstacle_contact(previous_position, position)
 		if bool(contact["found"]):
-			position = contact["position"]
-			hit_obstacle = true
-			events.append(_obstacle_death_event())
+			if StringName(contact["kind"]) == &"boundary" and \
+					_try_surface_bounce(contact, events):
+				position = contact["surface_point"] + \
+					Vector2(contact["normal"]) * \
+					(config.player_collision_radius + 1.0)
+			else:
+				position = contact["position"]
+				hit_obstacle = true
+				events.append(_collision_death_event(contact))
 
 	furthest_x = maxf(furthest_x, position.x)
 	distance_pixels = maxf(0.0, furthest_x - START_POSITION.x)
@@ -196,22 +204,57 @@ func nearest_solid_point(target: Vector2) -> Dictionary:
 
 
 func _collides_with_obstacle(center: Vector2) -> bool:
+	return bool(_collision_at(center)["found"])
+
+
+func _collision_at(center: Vector2) -> Dictionary:
 	for obstacle: PackedVector2Array in obstacles:
-		if SolidGeometry.circle_intersects_polygon(
+		if not SolidGeometry.circle_intersects_polygon(
 			center,
 			config.player_collision_radius,
 			obstacle,
 		):
-			return true
+			continue
+		return _collision_details(center, obstacle, &"obstacle")
 	if config.course_boundaries_enabled and config.course_boundaries_lethal:
 		for boundary: PackedVector2Array in boundary_surfaces:
-			if SolidGeometry.circle_intersects_polygon(
+			if not SolidGeometry.circle_intersects_polygon(
 				center,
 				config.player_collision_radius,
 				boundary,
 			):
-				return true
-	return false
+				continue
+			return _collision_details(center, boundary, &"boundary")
+	return {
+		"found": false,
+		"position": center,
+		"surface_point": center,
+		"normal": Vector2.ZERO,
+		"kind": &"",
+	}
+
+
+func _collision_details(
+	center: Vector2,
+	polygon: PackedVector2Array,
+	kind: StringName,
+) -> Dictionary:
+	var nearest := SolidGeometry.closest_point_on_polygon(center, polygon)
+	var surface_point: Vector2 = nearest["point"]
+	var normal := center - surface_point
+	if normal.length_squared() <= 0.000001:
+		normal = -velocity.normalized()
+	else:
+		normal = normal.normalized()
+	if normal.dot(velocity) > 0.0:
+		normal = -normal
+	return {
+		"found": true,
+		"position": center,
+		"surface_point": surface_point,
+		"normal": normal,
+		"kind": kind,
+	}
 
 
 func _first_obstacle_contact(start: Vector2, finish: Vector2) -> Dictionary:
@@ -222,9 +265,55 @@ func _first_obstacle_contact(start: Vector2, finish: Vector2) -> Dictionary:
 	var samples := maxi(1, ceili(motion.length() / maximum_step))
 	for sample in range(1, samples + 1):
 		var candidate := start.lerp(finish, float(sample) / float(samples))
-		if _collides_with_obstacle(candidate):
-			return {"found": true, "position": candidate}
-	return {"found": false, "position": finish}
+		var collision := _collision_at(candidate)
+		if bool(collision["found"]):
+			collision["position"] = candidate
+			return collision
+	return {
+		"found": false,
+		"position": finish,
+		"surface_point": finish,
+		"normal": Vector2.ZERO,
+		"kind": &"",
+	}
+
+
+func _try_surface_bounce(
+	contact: Dictionary,
+	events: Array[SimulationEvent],
+) -> bool:
+	if not config.surface_bounce_enabled or not surface_bounce_ready:
+		return false
+	var normal := Vector2(contact["normal"])
+	if normal.length_squared() <= 0.000001:
+		return false
+	var impact_speed := maxf(0.0, -velocity.dot(normal))
+	if impact_speed > config.surface_bounce_max_impact_speed:
+		return false
+	var reflected := velocity.bounce(normal)
+	var returned_speed := maxf(
+		impact_speed * config.surface_bounce_retention,
+		config.surface_bounce_minimum_speed,
+	)
+	var tangent := reflected - normal * reflected.dot(normal)
+	velocity = (
+		tangent * config.surface_bounce_tangent_retention
+		+ normal * returned_speed
+	)
+	surface_bounce_ready = false
+	web.release()
+	events.append(SimulationEvent.make(
+		SimulationEvent.Kind.SURFACE_BOUNCED,
+		contact["surface_point"],
+		"Impact shell spent · attach an upper web to recharge",
+		{
+			"impact_speed": impact_speed,
+			"bounce_speed": returned_speed,
+			"normal_x": normal.x,
+			"normal_y": normal.y,
+		},
+	))
+	return true
 
 
 func _consume(
@@ -340,12 +429,18 @@ func _try_attach(
 			if recovery:
 				_interrupt_pull(events, false)
 			var dive_rearmed := not dive_ready
+			var bounce_rearmed := (
+				config.surface_bounce_enabled and not surface_bounce_ready
+			)
 			dive_ready = true
+			surface_bounce_ready = config.surface_bounce_enabled
 			glide_remaining = config.glide_duration
 			var message := "Recovery web attached" if recovery else (
 				"Web retargeted" if retarget else "Web attached")
 			if dive_rearmed:
 				message += " · Dive ready"
+			if bounce_rearmed:
+				message += " · shell recharged"
 			events.append(SimulationEvent.make(
 				SimulationEvent.Kind.ATTACHED,
 				selected_anchor,
@@ -355,6 +450,7 @@ func _try_attach(
 					"retargeted": retarget,
 					"surface_kind": surface_kind,
 					"dive_rearmed": dive_rearmed,
+					"surface_bounce_rearmed": bounce_rearmed,
 				},
 			))
 		WebConstraint.AttachResult.OUT_OF_RANGE:
@@ -447,6 +543,7 @@ func _consume_burst(
 		config.burst_exit_speed,
 		config.burst_tangential_retention,
 		&"burst",
+		config.burst_minimum_distance,
 	):
 		burst_cooldown_remaining = (
 			0.0 if _burst_cooldown_suppressed else config.burst_cooldown)
@@ -518,6 +615,7 @@ func _start_pull(
 	exit_speed: float,
 	tangential_retention: float,
 	mode: StringName,
+	minimum_distance: float = 0.0,
 ) -> bool:
 	var to_anchor := selected_anchor - position
 	var anchor_distance := to_anchor.length()
@@ -526,7 +624,7 @@ func _start_pull(
 		anchor_distance - config.player_collision_radius - PULL_CLEARANCE,
 	)
 	var requested_travel := minf(
-		anchor_distance * distance_fraction,
+		maxf(anchor_distance * distance_fraction, minimum_distance),
 		maximum_travel,
 	)
 	if requested_travel < 4.0 or duration <= 0.0:
@@ -564,7 +662,7 @@ func _advance_pull(
 		position = contact["position"]
 		velocity = Vector2.ZERO
 		_cancel_pull()
-		events.append(_obstacle_death_event())
+		events.append(_collision_death_event(contact))
 		return true
 
 	position = proposed
@@ -623,7 +721,7 @@ func _pull_started_event(
 		config.dive_distance_fraction
 		if pull_kind == &"dive"
 		else config.burst_distance_fraction
-	))
+	), 0.0 if pull_kind == &"dive" else config.burst_minimum_distance)
 	return SimulationEvent.make(
 		event_kind,
 		selected_anchor,
@@ -643,7 +741,11 @@ func _pull_started_event(
 	)
 
 
-func preview_pull(selected_anchor: Vector2, distance_fraction: float) -> Dictionary:
+func preview_pull(
+	selected_anchor: Vector2,
+	distance_fraction: float,
+	minimum_distance: float = 0.0,
+) -> Dictionary:
 	var to_anchor := selected_anchor - position
 	var anchor_distance := to_anchor.length()
 	if anchor_distance <= 0.001:
@@ -653,7 +755,7 @@ func preview_pull(selected_anchor: Vector2, distance_fraction: float) -> Diction
 		anchor_distance - config.player_collision_radius - PULL_CLEARANCE,
 	)
 	var requested_travel := minf(
-		anchor_distance * distance_fraction,
+		maxf(anchor_distance * distance_fraction, minimum_distance),
 		maximum_travel,
 	)
 	var endpoint := position + to_anchor / anchor_distance * requested_travel
@@ -708,12 +810,15 @@ func _pickup_key(kind: StringName, pickup_position: Vector2) -> String:
 	]
 
 
-func _obstacle_death_event() -> SimulationEvent:
+func _collision_death_event(contact: Dictionary) -> SimulationEvent:
+	var cause := StringName(contact.get("kind", &"obstacle"))
 	return SimulationEvent.make(
 		SimulationEvent.Kind.DEATH_REQUESTED,
 		position,
-		"Hit a laboratory obstacle",
-		{"cause": &"obstacle"},
+		"Hit the solid ceiling or floor"
+			if cause == &"boundary"
+			else "Hit a laboratory obstacle",
+		{"cause": cause},
 	)
 
 
@@ -722,6 +827,7 @@ func rescue_after_death() -> SimulationEvent:
 	_cancel_pull()
 	burst_cooldown_remaining = 0.0
 	dive_ready = true
+	surface_bounce_ready = config.surface_bounce_enabled
 	glide_remaining = config.glide_duration
 	var rescue_position := _find_rescue_position()
 	position = rescue_position

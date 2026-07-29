@@ -81,18 +81,21 @@ Run directly:
 godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-70 checks, grouped so one subsystem failure never hides the rest:
+74 checks, grouped so one subsystem failure never hides the rest:
 
 - engine, main-scene, input-action, 60 Hz, renderer/viewport, Android preset,
   inward-dependency, and no-autoload bootstrap contracts;
-- thirty-four deterministic physics contracts, including extended arbitrary-point
+- thirty-eight deterministic physics contracts, including extended arbitrary-point
   solid attachment, larger aim forgiveness, momentum preservation, speed-neutral
-  Reel and automatic take-up, exact Burst/Dive distance shares, recovery-web interruption,
+  Reel and automatic take-up, exact Burst/Dive distance shares and minimum
+  Burst travel, recovery-web interruption,
   detached cooldown double-tap fallback, explicit release/retarget behavior,
-  polygon anchoring/collision, a 1000 m runway and bounded organic streaming with
-  lower rail coverage, independent rail lethality, authoritative obstacle
-  scaling, the guided opening trajectory, one-run rescue, spider profiles and
-  glide, creator-pattern bounds, swept pickups, runtime pull tuning, and
+  polygon anchoring/collision, a 1000 m runway, smooth 5000 m speed ramp, and
+  bounded organic streaming with continuous contoured rails, lower rail
+  coverage, independent rail lethality, authoritative obstacle
+  scaling, the guided opening trajectory, one-run rescue, five spider profiles,
+  bounded glide and impact-shell recovery, creator-pattern bounds, swept
+  pickups, runtime pull tuning, and
   identical trajectories from
   simulated 30/60/90/120 Hz render loops;
 - fifteen mobile HUD contracts proving large separated Reel and Burst controls,

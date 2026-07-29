@@ -179,7 +179,7 @@ func _draw_burst(area: Rect2) -> void:
 		)
 	_draw_spider(spider)
 	_draw_centered(
-		"40% DIVE" if diving else "50% BURST",
+		"40% DIVE" if diving else "40% + MIN BURST",
 		Vector2(area.size.x * 0.48, area.size.y * 0.30),
 		16,
 		YELLOW,

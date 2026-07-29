@@ -177,6 +177,20 @@ never edit.
 
 **Godot / Android specifics worth not rediscovering**
 
+- 2026-07-29 · capability · `owner-live` · **The gradual-progression and bounded
+  rail-recovery candidate survives the full Godot and Android path** · PR #19
+  `game-quality` run
+  [30444418170](https://github.com/menno420/spider-swing/actions/runs/30444418170)
+  passed 74 contracts at gameplay source
+  `bc582e25a2a2fd7d6da18ed2cf127cc568b834ca`; Android run
+  [30444418230](https://github.com/menno420/spider-swing/actions/runs/30444418230)
+  produced artifact
+  [`8720817780`](https://github.com/menno420/spider-swing/actions/runs/30444418230/artifacts/8720817780),
+  56,859,911 bytes with digest
+  `sha256:ba83d0a7c1f6cd64706da933f3d6e08af10459fcf6d1f28c231228a3842863ef`.
+  Workflow inspection proved package `com.menno420.spiderswing.dev`, version
+  code `13`, and version `0.6.0-gradual-progression-test`; the connected
+  artifact-download endpoint returned the ZIP successfully.
 - 2026-07-29 · capability · `owner-live` · **The responsive tuning-lab and
   contact-rearmed Dive build survives the full Android export path** · PR #17
   `game-quality` run
