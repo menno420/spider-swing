@@ -1,6 +1,6 @@
 # Deep progression foundation session
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 

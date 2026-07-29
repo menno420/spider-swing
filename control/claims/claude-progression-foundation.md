@@ -1,1 +1,0 @@
-- `claude/progression-foundation` · **progression architecture and stable spider presentation** · game/domain, game/application, game/presentation, tests, docs · 2026-07-29
