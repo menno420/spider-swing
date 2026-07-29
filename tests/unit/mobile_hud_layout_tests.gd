@@ -478,6 +478,20 @@ static func _test_environment_theme_packs_are_visual_only(
 		if texture == null or texture.get_size() != Vector2(384.0, 384.0):
 			failures.append("environment texture is not a 384 px runtime tile")
 			return 0
+	var art_paths := ArtAssetCatalog.texture_paths()
+	if art_paths.size() != 6:
+		failures.append("finished forest slice does not expose six art assets")
+		return 0
+	for path: String in art_paths:
+		if not ResourceLoader.exists(path):
+			failures.append("finished runtime art is missing: %s" % path)
+			return 0
+		var art_texture := load(path) as Texture2D
+		if art_texture == null or \
+				art_texture.get_width() < 128 or \
+				art_texture.get_height() < 100:
+			failures.append("finished runtime art is invalid or undersized: %s" % path)
+			return 0
 
 	var router := _make_router()
 	var requests: Array[int] = []

@@ -184,3 +184,19 @@
   keeps material stable while scrolling, and a large DEBUG selector keeps the
   collision silhouette available for immediate comparison.
 - provenance: Menno's Phase 0.15 environment-art direction and PR #21
+
+## [D-0014] Compose natural object art over authoritative silhouettes
+
+- status: decided
+- date: 2026-07-29
+- verdict: Finished environment art remains presentation-owned. Ancient Forest
+  may classify existing obstacle polygons into rooted, hanging, or four-piece
+  gate visuals and may decorate the collision-facing rail edge, but the source
+  snapshot polygons remain the only collision and target authority. Normal play
+  omits graphic outlines; DEBUG restores exact overlays.
+- why: Repeating one material across walls and obstacles was coherent but
+  monotonous and did not explain why hazards existed in the environment.
+  Separate natural assets provide origin, scale, and lethality cues without
+  letting transparent art create an invisible hitbox or letting art changes
+  alter route difficulty.
+- provenance: Menno's Phase 0.16 finished-art direction and forest-biome pass

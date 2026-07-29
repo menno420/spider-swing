@@ -31,7 +31,7 @@ const THEMES := [
 	{
 		"id": ANCIENT_FOREST,
 		"label": "ANCIENT FOREST",
-		"description": "Roots, bark, moss, and forest soil.",
+		"description": "Finished branches, roots, thorns, and forest life.",
 		"texture_path":
 			"res://assets/runtime/environment-themes/ancient-forest.webp",
 		"background": Color("14251d"),

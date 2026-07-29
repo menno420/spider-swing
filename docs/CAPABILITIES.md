@@ -380,3 +380,26 @@ never edit.
   `assets/project.binary`. `build-info.txt` proves version
   `0.7.0-environment-themes-test`, the exact source, dev package, and display
   name `Spider Swing Environment Themes (dev)`.
+- 2026-07-29 · capability · `local` · **Candidate-production forest art loads
+  through the full Godot gate without changing simulation geometry** · Six
+  alpha runtime textures totaling about 1.3 MiB import with lossless 2D texture
+  compression. `python3 tools/verify.py --require-godot` passed architecture,
+  Godot 4.7.1 import, boot, 39 deterministic physics checks, 16 mobile GUI
+  checks, and 11 front-end checks—76 total—with build identity
+  `0.8.0-forest-art-test`. Android artifact and owner-device visual evidence
+  remain pending until this session's PR runs.
+- 2026-07-29 · capability · `owner-live` · **The finished Ancient Forest slice
+  survives the full Android path** · PR #22 `game-quality` run
+  [30458975297](https://github.com/menno420/spider-swing/actions/runs/30458975297)
+  passed all 76 contracts at source
+  `8aaa517823239a3d80db94d14c72eab12ad0219d`; Android run
+  [30458979638](https://github.com/menno420/spider-swing/actions/runs/30458979638)
+  produced artifact
+  [`8726773191`](https://github.com/menno420/spider-swing/actions/runs/30458979638/artifacts/8726773191),
+  58,679,746 bytes with digest
+  `sha256:c3e0c2c94cacec5f0315c87ba7320decf55a39a61fdb166a5eba2288aebf1870`.
+  The downloaded ZIP passed archive verification with the same SHA-256; its
+  59,065,710-byte APK passed archive verification with SHA-256
+  `f045f1ab5b3af460c77b256502c73338fcfbcf8d3d5b0b713acee98228e709e7`.
+  `build-info.txt` proves version `0.8.0-forest-art-test`, exact source, dev
+  package, and display name `Spider Swing Forest Art (dev)`.
