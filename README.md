@@ -16,7 +16,7 @@ The product *is* the swinging. Everything else exists to support it.
 > `com.menno420.spiderswing.dev` are all development identifiers and are all
 > expected to change.
 
-## Current phase: Phase 0.12 opening-swing and spider-garage test
+## Current phase: Phase 0.13 gradual-progression and impact-recovery test
 
 **The first playable traversal test is implemented.** The project opens on a
 player-facing Home screen with Play, Garage, Shop, a six-step Tutorial, Course

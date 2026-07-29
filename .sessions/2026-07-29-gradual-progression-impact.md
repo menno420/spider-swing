@@ -49,5 +49,41 @@ skill-dependent, and impossible to spam.
 
 ## Verification evidence
 
-`[[fill: implementation, local checks, PR/CI/APK evidence, docs audit, and
-flagged reversible decisions before completion]]`
+- **Implementation:** `SwingConfig` now uses an exact smooth 5000 m default
+  speed ramp, lethal shaped rails, 400 px/s base Reel, 40% base Burst, and
+  80 px minimum Burst travel. `CourseStream` keeps a quiet opening screen,
+  continuous seams, obstacle-correlated bypasses, and late tight gaps. All
+  values remain editable through eight plain-language DEBUG sections.
+- **Progression:** all five centralized profiles expose three five-level
+  laboratory tracks. Springtail alone gets one moderate free-flight rail
+  bounce; it spends immediately, rearms only after a normal upper web, and
+  never protects against obstacles, hard impacts, pulls, or a second hit.
+- **Local checks:** `git diff --check`, the 14-fixture architecture self-test,
+  and the full architecture scan pass. `python3 tools/verify.py` passes every
+  available host check; engine steps report an honest skip because this
+  workspace does not contain Godot.
+- **Godot proof:** PR #19
+  [`game-quality` run 30444418170](https://github.com/menno420/spider-swing/actions/runs/30444418170)
+  passes import, boot, 38 deterministic physics checks, 15 mobile GUI
+  contracts, 11 front-end contracts, and 10 bootstrap/build checks—74 total—on
+  Godot 4.7.1 at gameplay source
+  `bc582e25a2a2fd7d6da18ed2cf127cc568b834ca`.
+- **Android proof:** PR #19
+  [`android-debug` run 30444418230](https://github.com/menno420/spider-swing/actions/runs/30444418230)
+  passes and produces downloadable artifact
+  [`spider-swing-android-debug` ID 8720817780](https://github.com/menno420/spider-swing/actions/runs/30444418230/artifacts/8720817780),
+  56,859,911 bytes, digest
+  `sha256:ba83d0a7c1f6cd64706da933f3d6e08af10459fcf6d1f28c231228a3842863ef`.
+  The workflow proves package `com.menno420.spiderswing.dev`, version code
+  `13`, and version `0.6.0-gradual-progression-test`; the connected download
+  endpoint returned the ZIP successfully.
+- **Docs audit:** README, current state, capability ledger, decision ledger,
+  testing/playtest guide, simulation/application/presentation boundaries, and
+  heartbeat match the implemented source. The checksum-pinned GDD is unchanged.
+- **Reversible decisions flagged:** 5000 m is a comparison default rather than
+  a fixed balance promise; Springtail recovery is a single rearmable traversal
+  charge rather than generic health; the first screen remains flat so the
+  deterministic training web stays readable; all three remain centralized and
+  DEBUG-adjustable.
+- **PR:** [#19](https://github.com/menno420/spider-swing/pull/19) was opened
+  ready while the session card's designed hold was active.

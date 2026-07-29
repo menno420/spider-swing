@@ -110,8 +110,11 @@ without a reported regression.
 **Verification**
 
 - `python3 tools/verify.py` — architecture self-test and scan pass locally.
-  Godot 4.7.1 is unavailable in this workspace, so import, smoke, and runtime
-  proof are pending PR CI.
+  PR #19 `game-quality` run
+  [30444418170](https://github.com/menno420/spider-swing/actions/runs/30444418170)
+  supplied Godot 4.7.1 and passed import, boot, and the complete 74-check
+  headless suite at gameplay source
+  `bc582e25a2a2fd7d6da18ed2cf127cc568b834ca`.
 - `tests/test_runner.gd` — 74 declared checks: thirty-eight
   deterministic physics, fifteen GUI-owned mobile HUD, eleven front-end
   navigation/settings/progression, plus bootstrap and exact build-version
@@ -167,6 +170,14 @@ without a reported regression.
   scaling, one rescue then normal death, centralized spider profiles and glide,
   saved bounded creator patterns, fly-funded upgrades, and real Garage/Shop/
   Course Lab navigation.
+- PR #19 `game-quality` run
+  [30444418170](https://github.com/menno420/spider-swing/actions/runs/30444418170)
+  passes all 74 contracts at gameplay source
+  `bc582e25a2a2fd7d6da18ed2cf127cc568b834ca`. The added contracts prove the
+  exact 5000 m pace curve, continuous open/tight rail profiles, upgradable
+  minimum Burst travel, three five-level paths for all five spiders, and
+  Springtail's spent/rearmed moderate-impact shell while retaining lethal
+  obstacles, hard impacts, and pull collisions.
 - `substrate-gate` — kit-owned. A born-red session card deliberately holds a PR
   until close-out; it must be green on the completed card before merge.
 - `android-debug` — **green on `main`, APK proven.** Run #1 produced artifact
@@ -249,6 +260,16 @@ without a reported regression.
   `assets/project.binary`; its build manifest proves version
   `0.5.0-opening-garage-test`, exact source, dev package, and display name
   `Spider Swing Opening Garage (dev)`.
+- PR #19 `android-debug` run
+  [30444418230](https://github.com/menno420/spider-swing/actions/runs/30444418230)
+  produced downloadable artifact
+  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30444418230/artifacts/8720817780)
+  ID `8720817780`, 56,859,911 bytes, digest
+  `sha256:ba83d0a7c1f6cd64706da933f3d6e08af10459fcf6d1f28c231228a3842863ef`.
+  The workflow proved the APK is a valid archive with a manifest, package
+  `com.menno420.spiderswing.dev`, version code `13`, and version
+  `0.6.0-gradual-progression-test`; the connected download endpoint returned
+  the complete ZIP file successfully.
 - **Dependabot** — live. Its first run opened two bumps against the kit-owned
   `substrate-gate.yml`; both were closed because `adopt`/`upgrade` regenerates that
   file. The rule is documented in `.github/dependabot.yml`: kit-owned-only bumps get
@@ -279,14 +300,20 @@ without a reported regression.
 
 ## In flight
 
-Phase 0.13 slows the exact maximum-speed ramp to 5000 m, makes shaped continuous
-rails lethal by default, weakens the base Reel/Burst, expands every spider to
-three five-level upgrade paths, and adds Springtail's bounded rechargeable
-impact shell in PR #19. Phase 1 remains blocked on choosing or rejecting a
-movement baseline after the verified build is tested.
+Phase 0.13 is implemented and verified in PR #19: the exact maximum-speed ramp
+now spans 5000 m, shaped continuous rails are lethal by default, base
+Reel/Burst are weaker, every spider has three five-level upgrade paths, and
+Springtail has a bounded rechargeable impact shell. Phase 1 remains blocked on
+choosing or rejecting a movement baseline after the verified build is tested.
 
 ## Recently shipped (newest first)
 
+- **2026-07-29 — Gradual progression and bounded rail recovery (PR #19).**
+  Moves maximum speed to an exact smooth 5000 m default ramp, makes shaped
+  rails lethal by default, reduces Classic Reel/Burst, adds minimum Burst
+  travel and three five-level paths per spider, and introduces Springtail's
+  one-charge moderate rail bounce. The verified Android build is
+  `0.6.0-gradual-progression-test`.
 - **2026-07-29 — Dive reset and touch-first DEBUG (PR #17).** Separates the Dive
   charge from Burst time, rearms it only through a successful upper/obstacle
   attachment, and replaces carousel searching with six plain-language,
