@@ -5,9 +5,6 @@ class_name SwingLabView
 ## It consumes snapshots/events and emits no authoritative writes. The visual
 ## web follows physics endpoints; it never drives the constraint.
 
-const BACKGROUND := Color("102531")
-const BACKGROUND_DEEP := Color("08141d")
-const GRID := Color(0.25, 0.55, 0.58, 0.14)
 const SPIDER_DARK := Color("17202b")
 const SPIDER_ACCENT := Color("f28c45")
 const WEB := Color("d9fbff")
@@ -20,6 +17,7 @@ const OBSTACLE := Color("f06449")
 const OBSTACLE_DARK := Color("632e34")
 const REEL_FEEDBACK_DURATION := 0.22
 const BURST_FEEDBACK_DURATION := 0.3
+const ENVIRONMENT_TEXTURE_WORLD_SIZE := 420.0
 
 var _snapshot: SimulationSnapshot
 var _camera_x: float = 0.0
@@ -36,10 +34,14 @@ var _burst_feedback_remaining: float = 0.0
 var _burst_feedback_origin: Vector2 = Vector2.ZERO
 var _burst_feedback_anchor: Vector2 = Vector2.ZERO
 var _burst_feedback_direction: Vector2 = Vector2.ZERO
+var _environment_theme_index: int = EnvironmentThemeCatalog.default_index()
+var _environment_textures: Dictionary = {}
 
 
 func _ready() -> void:
 	_font = ThemeDB.fallback_font
+	texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+	_load_environment_textures()
 	set_process(true)
 	queue_redraw()
 
@@ -58,6 +60,19 @@ func configure_player_options(
 func present(snapshot: SimulationSnapshot) -> void:
 	_snapshot = snapshot
 	queue_redraw()
+
+
+func select_environment_theme(index: int) -> void:
+	_environment_theme_index = clampi(
+		index,
+		0,
+		EnvironmentThemeCatalog.count() - 1,
+	)
+	queue_redraw()
+
+
+func environment_theme_index() -> int:
+	return _environment_theme_index
 
 
 func present_event(event: SimulationEvent) -> void:
@@ -140,7 +155,11 @@ func _draw() -> void:
 	var size := get_viewport_rect().size
 	if size.x <= 0.0 or size.y <= 0.0:
 		size = LabLayout.REFERENCE_SIZE
-	draw_rect(Rect2(Vector2.ZERO, size), BACKGROUND)
+	var environment := _environment_theme()
+	draw_rect(
+		Rect2(Vector2.ZERO, size),
+		environment["background"] as Color,
+	)
 	_draw_parallax(size)
 	_draw_course(size)
 	if _snapshot == null:
@@ -156,24 +175,40 @@ func _draw() -> void:
 
 
 func _draw_parallax(size: Vector2) -> void:
-	draw_rect(Rect2(0.0, size.y * 0.72, size.x, size.y * 0.28), BACKGROUND_DEEP)
+	var environment := _environment_theme()
+	draw_rect(
+		Rect2(0.0, size.y * 0.72, size.x, size.y * 0.28),
+		environment["background_deep"] as Color,
+	)
 	var parallax_x := 0.0 if _reduced_motion else _camera_x
 	var far_offset := fposmod(-parallax_x * 0.08, 240.0)
 	for index in range(-1, 8):
 		var x := far_offset + float(index) * 240.0
-		draw_circle(Vector2(x, 135.0 + float(index % 3) * 54.0), 105.0,
-			Color(0.13, 0.34, 0.32, 0.55))
+		draw_circle(
+			Vector2(x, 135.0 + float(index % 3) * 54.0),
+			105.0,
+			environment["far"] as Color,
+		)
 	var near_offset := fposmod(-parallax_x * 0.22, 310.0)
 	for index in range(-1, 6):
 		var x := near_offset + float(index) * 310.0
-		draw_circle(Vector2(x, size.y + 25.0), 155.0,
-			Color(0.08, 0.28, 0.25, 0.9))
+		draw_circle(
+			Vector2(x, size.y + 25.0),
+			155.0,
+			environment["near"] as Color,
+		)
+	var grid_color := Color(environment["accent"] as Color, 0.11)
 	for y in range(90, int(size.y), 90):
-		draw_line(Vector2(0.0, float(y)), Vector2(size.x, float(y)), GRID, 1.0)
+		draw_line(
+			Vector2(0.0, float(y)),
+			Vector2(size.x, float(y)),
+			grid_color,
+			1.0,
+		)
 	var grid_offset := fposmod(-parallax_x, 120.0)
 	for x in range(-120, int(size.x) + 120, 120):
 		draw_line(Vector2(float(x) + grid_offset, 0.0),
-			Vector2(float(x) + grid_offset, size.y), GRID, 1.0)
+			Vector2(float(x) + grid_offset, size.y), grid_color, 1.0)
 
 
 func _draw_course(size: Vector2) -> void:
@@ -195,11 +230,21 @@ func _draw_course(size: Vector2) -> void:
 		if boundary_bounds.end.x < -80.0 or \
 				boundary_bounds.position.x > size.x + 80.0:
 			continue
-		var outline := YELLOW if _snapshot.course_boundaries_lethal else GREEN
+		var environment := _environment_theme()
+		var outline: Color = (
+			environment["lethal_edge"] as Color
+			if _snapshot.course_boundaries_lethal
+			else environment["safe_edge"] as Color
+		)
 		var fill := Color(0.20, 0.16, 0.09, 0.96) \
 			if _snapshot.course_boundaries_lethal \
 			else Color(0.07, 0.25, 0.22, 0.96)
-		draw_colored_polygon(screen_boundary, fill)
+		_draw_environment_polygon(
+			boundary,
+			screen_boundary,
+			environment["material_tint"] as Color,
+			fill,
+		)
 		_draw_closed_polyline(screen_boundary, outline, 4.0)
 
 	for guide: Vector2 in _snapshot.anchors:
@@ -220,7 +265,7 @@ func _draw_course(size: Vector2) -> void:
 		if obstacle_bounds.end.x < -80.0 or \
 				obstacle_bounds.position.x > size.x + 80.0:
 			continue
-		_draw_obstacle(screen_obstacle)
+		_draw_obstacle(obstacle, screen_obstacle)
 
 	for fly: Vector2 in _snapshot.fly_positions:
 		var fly_screen := _world_to_screen(fly)
@@ -258,9 +303,24 @@ func _draw_course(size: Vector2) -> void:
 		draw_line(Vector2(kill_x, 0.0), Vector2(kill_x, size.y), RED, 3.0)
 
 
-func _draw_obstacle(polygon: PackedVector2Array) -> void:
-	draw_colored_polygon(polygon, OBSTACLE_DARK)
-	_draw_closed_polyline(polygon, YELLOW, 4.0)
+func _draw_obstacle(
+	world_polygon: PackedVector2Array,
+	polygon: PackedVector2Array,
+) -> void:
+	var environment := _environment_theme()
+	_draw_environment_polygon(
+		world_polygon,
+		polygon,
+		environment["obstacle_tint"] as Color,
+		OBSTACLE_DARK,
+	)
+	_draw_closed_polyline(
+		polygon,
+		environment["lethal_edge"] as Color,
+		4.0,
+	)
+	if _environment_theme_index != 0:
+		return
 	var center := Vector2.ZERO
 	for point: Vector2 in polygon:
 		center += point
@@ -588,7 +648,9 @@ func _draw_debug(size: Vector2) -> void:
 		14,
 		MUTED,
 	)
-	if _snapshot.debug_category_index == TuningCatalog.tools_category_index():
+	if StringName(active_category["id"]) == TuningCatalog.CATEGORY_VISUALS:
+		_draw_environment_theme_cards(size)
+	elif _snapshot.debug_category_index == TuningCatalog.tools_category_index():
 		_draw_debug_tools(size)
 	else:
 		_draw_tuning_cards(StringName(active_category["id"]), size)
@@ -734,6 +796,73 @@ func _draw_debug_tools(size: Vector2) -> void:
 			_draw_text(card.position + Vector2(20.0, 111.0), state, 14, YELLOW)
 
 
+func _draw_environment_theme_cards(size: Vector2) -> void:
+	for index in range(EnvironmentThemeCatalog.count()):
+		var definition := EnvironmentThemeCatalog.theme(index)
+		var card := LabLayout.environment_theme_card_rect(index, size)
+		var selected := index == _environment_theme_index
+		draw_rect(
+			card,
+			Color(0.045, 0.15, 0.18, 0.98) if selected
+				else Color(0.025, 0.105, 0.13, 0.98),
+		)
+		var preview := Rect2(
+			card.position + Vector2(8.0, 8.0),
+			Vector2(card.size.x - 16.0, 102.0),
+		)
+		var texture := _environment_textures.get(index) as Texture2D
+		if texture == null:
+			draw_rect(preview, Color("102531"))
+			draw_rect(
+				Rect2(
+					preview.position,
+					Vector2(preview.size.x, preview.size.y * 0.45),
+				),
+				Color(0.20, 0.16, 0.09, 0.96),
+			)
+			draw_line(
+				preview.position + Vector2(0.0, preview.size.y * 0.45),
+				preview.position + Vector2(
+					preview.size.x,
+					preview.size.y * 0.45,
+				),
+				YELLOW,
+				4.0,
+			)
+		else:
+			draw_texture_rect(
+				texture,
+				preview,
+				true,
+				definition["material_tint"] as Color,
+			)
+		draw_rect(
+			card,
+			definition["accent"] as Color if selected else Color(MUTED, 0.65),
+			false,
+			3.0 if selected else 2.0,
+		)
+		_draw_text(
+			card.position + Vector2(14.0, 136.0),
+			str(definition["label"]),
+			18,
+			WEB,
+		)
+		_draw_text(
+			card.position + Vector2(14.0, 164.0),
+			str(definition["description"]),
+			13,
+			MUTED,
+		)
+		if selected:
+			_draw_text(
+				card.end - Vector2(88.0, 16.0),
+				"ACTIVE",
+				13,
+				definition["lethal_edge"] as Color,
+			)
+
+
 func _draw_button(rect: Rect2, label: String, active: bool) -> void:
 	draw_rect(rect, Color(0.08, 0.35, 0.38, 0.94) if active
 		else Color(0.04, 0.14, 0.18, 0.88))
@@ -815,6 +944,43 @@ func _polygon_to_screen(polygon: PackedVector2Array) -> PackedVector2Array:
 	for point: Vector2 in polygon:
 		converted.append(_world_to_screen(point))
 	return converted
+
+
+func _draw_environment_polygon(
+	world_polygon: PackedVector2Array,
+	screen_polygon: PackedVector2Array,
+	tint: Color,
+	graybox_fill: Color,
+) -> void:
+	var texture := _environment_textures.get(
+		_environment_theme_index,
+	) as Texture2D
+	if texture == null:
+		draw_colored_polygon(screen_polygon, graybox_fill)
+		return
+	var uvs := PackedVector2Array()
+	for point: Vector2 in world_polygon:
+		# Repeated CanvasItem UVs use 0–1 texture space. Mapping them from world
+		# coordinates keeps the material fixed while the camera scrolls and
+		# makes adjacent course polygons share the same visual surface.
+		uvs.append(point / ENVIRONMENT_TEXTURE_WORLD_SIZE)
+	draw_colored_polygon(screen_polygon, tint, uvs, texture)
+
+
+func _load_environment_textures() -> void:
+	_environment_textures.clear()
+	for index in range(EnvironmentThemeCatalog.count()):
+		var definition := EnvironmentThemeCatalog.theme(index)
+		var path := str(definition["texture_path"])
+		if path.is_empty() or not ResourceLoader.exists(path):
+			continue
+		var texture := load(path) as Texture2D
+		if texture != null:
+			_environment_textures[index] = texture
+
+
+func _environment_theme() -> Dictionary:
+	return EnvironmentThemeCatalog.theme(_environment_theme_index)
 
 
 func _polygon_bounds(polygon: PackedVector2Array) -> Rect2:

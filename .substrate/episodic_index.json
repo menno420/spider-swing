@@ -200,6 +200,21 @@
     "summary": "> **Status:** `complete`"
   },
   {
+    "slug": "environment-theme-packs",
+    "date": "2026-07-29",
+    "tags": [
+      "phase",
+      "0",
+      "15",
+      "environment",
+      "theme",
+      "packs",
+      "\ud83d\udca1",
+      "\ud83d\udcca"
+    ],
+    "summary": "> **Status:** `complete`"
+  },
+  {
     "slug": "fair-early-corridors",
     "date": "2026-07-29",
     "tags": [
@@ -212,7 +227,7 @@
       "\ud83d\udca1",
       "\ud83d\udcca"
     ],
-    "summary": "> **Status:** `in-progress`"
+    "summary": "> **Status:** `complete`"
   },
   {
     "slug": "gradual-progression-impact",

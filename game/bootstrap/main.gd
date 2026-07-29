@@ -159,6 +159,8 @@ func _mount_swing_lab(
 		_session.adjust_tuning_parameter)
 	_input_router.tuning_value_requested.connect(
 		_session.set_tuning_parameter)
+	_input_router.environment_theme_requested.connect(
+		_view.select_environment_theme)
 	_input_router.recording_requested.connect(_session.toggle_recording)
 	_input_router.replay_requested.connect(_session.replay_recording)
 	_input_router.diagnostic_export_requested.connect(_session.export_diagnostic)

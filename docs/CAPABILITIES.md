@@ -363,3 +363,20 @@ never edit.
   `ab4727e70deee2bd041e1c6038968e67d998587ee76002a9c4d7e061b4774098`;
   `build-info.txt` proves version `0.6.1-fair-corridor-test`, the exact source,
   dev package, and display name `Spider Swing Fair Corridors (dev)`.
+- 2026-07-29 · capability · `owner-live` · **Four presentation-only
+  environment packs survive the full Android path** · PR #21 `game-quality`
+  run
+  [30451065223](https://github.com/menno420/spider-swing/actions/runs/30451065223)
+  passed 76 contracts at source
+  `402997b6362e46c9002aa6001c7b3f9f28cbb16a`; Android run
+  [30451065009](https://github.com/menno420/spider-swing/actions/runs/30451065009)
+  produced artifact
+  [`8723522456`](https://github.com/menno420/spider-swing/actions/runs/30451065009/artifacts/8723522456),
+  57,651,810 bytes with digest
+  `sha256:d74b40e6a2ff92cbb7457bbf982c6212e087506e78c13ba8b19ac13990744926`.
+  The downloaded 58,035,981-byte APK passed archive verification with SHA-256
+  `0e8689f112068f2ae4b0d763472d40c0bc284613b424f6113e43421f652131bf`
+  and contains `classes.dex`, `AndroidManifest.xml`, and
+  `assets/project.binary`. `build-info.txt` proves version
+  `0.7.0-environment-themes-test`, the exact source, dev package, and display
+  name `Spider Swing Environment Themes (dev)`.

@@ -18,6 +18,7 @@ static func run() -> Dictionary:
 	passed += _test_debug_button_and_panel_controls(failures)
 	passed += _test_debug_controls_are_large_and_direct(failures)
 	passed += _test_debug_catalog_uses_plain_language(failures)
+	passed += _test_environment_theme_packs_are_visual_only(failures)
 	passed += _test_debug_panel_expands_for_wide_phone(failures)
 	passed += _test_debug_controls_can_be_disabled(failures)
 	passed += _test_world_input_waits_for_gui(failures)
@@ -453,6 +454,79 @@ static func _test_debug_catalog_uses_plain_language(
 	if str(dive.get("label", "")) != "Downward pull distance" or \
 			not str(dive.get("help", "")).contains("Dive Pull"):
 		failures.append("Dive distance still lacks a clear DEBUG description")
+		return 0
+	return 1
+
+
+static func _test_environment_theme_packs_are_visual_only(
+	failures: PackedStringArray,
+) -> int:
+	if EnvironmentThemeCatalog.count() != LabLayout.ENVIRONMENT_THEME_COUNT or \
+			EnvironmentThemeCatalog.count() != 5:
+		failures.append(
+			"environment theme catalog and touch layout disagree on five looks")
+		return 0
+	var texture_paths := EnvironmentThemeCatalog.texture_paths()
+	if texture_paths.size() != 4:
+		failures.append("environment selector does not expose four texture packs")
+		return 0
+	for path: String in texture_paths:
+		if not ResourceLoader.exists(path):
+			failures.append("environment texture is missing: %s" % path)
+			return 0
+		var texture := load(path) as Texture2D
+		if texture == null or texture.get_size() != Vector2(384.0, 384.0):
+			failures.append("environment texture is not a 384 px runtime tile")
+			return 0
+
+	var router := _make_router()
+	var requests: Array[int] = []
+	router.environment_theme_requested.connect(func(index: int) -> void:
+		requests.append(index))
+	router.hud_button(&"Debug").pressed.emit()
+	var look_tab := router.hud_button(StringName(
+		"Category%d" % TuningCatalog.category_index(
+			TuningCatalog.CATEGORY_VISUALS)))
+	var attic := router.hud_button(&"EnvironmentTheme4")
+	if look_tab == null or attic == null:
+		failures.append("LOOK section is not backed by direct Godot Buttons")
+		router.free()
+		return 0
+	look_tab.pressed.emit()
+	if not attic.visible or \
+			LabLayout.environment_theme_card_rect(4).size.x < 300.0 or \
+			LabLayout.environment_theme_card_rect(4).size.y < 180.0:
+		failures.append("environment choices are not large, direct touch cards")
+		router.free()
+		return 0
+	attic.pressed.emit()
+	if requests != [4]:
+		failures.append("environment card did not emit its exact visual index")
+		router.free()
+		return 0
+	router.free()
+
+	var stream := CourseStream.new()
+	stream.reset()
+	var before: CourseGeometry = stream.geometry().duplicate_geometry()
+	var view := SwingLabView.new()
+	if view.environment_theme_index() != \
+			EnvironmentThemeCatalog.default_index():
+		failures.append("generated Ancient Forest pack is not the default look")
+		view.free()
+		return 0
+	for index in range(EnvironmentThemeCatalog.count()):
+		view.select_environment_theme(index)
+		if view.environment_theme_index() != index:
+			failures.append("environment view rejected a valid theme index")
+			view.free()
+			return 0
+	var after: CourseGeometry = stream.geometry()
+	view.free()
+	if before.boundary_surfaces != after.boundary_surfaces or \
+			before.obstacles != after.obstacles or \
+			before.aim_guides != after.aim_guides:
+		failures.append("visual theme selection mutated course geometry")
 		return 0
 	return 1
 

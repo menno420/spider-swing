@@ -26,6 +26,9 @@ endpoints; it does not drive physics (GDD § 17.2).
 - `swing_lab.tscn` + `swing_lab.gd` — Phase 0 camera, anchors, spider, web,
   HUD, Reel energy, opening/rescue/profile feedback,
   authoritative-event-driven action flashes, and diagnostic overlays.
+- `environment_theme_catalog.gd` — one visual-only registry for the Graybox,
+  Ancient Forest, Mossy Ravine, Overgrown Greenhouse, and Reclaimed Attic
+  looks. It may change texture and palette but never course geometry.
 
 The composition root mounts either the front end or the laboratory, never two
 competing roots. See ADR 0002 and `docs/technical/front-end-flow.md`.

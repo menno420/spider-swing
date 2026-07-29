@@ -26,6 +26,7 @@ signal tuning_parameter_adjustment_requested(
 	direction: float,
 )
 signal tuning_value_requested(parameter: StringName, value: float)
+signal environment_theme_requested(index: int)
 signal recording_requested
 signal replay_requested
 signal diagnostic_export_requested
@@ -226,6 +227,19 @@ func install_touch_surface(
 					_emit_tuning_value.bind(parameter, value))
 				_register_category_control(category_controls, quick)
 
+	var visual_category_index := TuningCatalog.category_index(
+		TuningCatalog.CATEGORY_VISUALS)
+	var visual_controls: Array = _debug_category_controls[
+		visual_category_index]
+	for theme_index in range(LabLayout.ENVIRONMENT_THEME_COUNT):
+		var theme_button := _make_fixed_button(
+			StringName("EnvironmentTheme%d" % theme_index),
+			LabLayout.environment_theme_card_rect(theme_index, layout_size),
+		)
+		theme_button.pressed.connect(
+			_emit_environment_theme.bind(theme_index))
+		_register_category_control(visual_controls, theme_button)
+
 	for index in range(6):
 		var utility := _make_fixed_button(
 			StringName("Utility%d" % index),
@@ -381,6 +395,14 @@ func _emit_parameter_adjustment(
 
 func _emit_tuning_value(parameter: StringName, value: float) -> void:
 	tuning_value_requested.emit(parameter, value)
+
+
+func _emit_environment_theme(index: int) -> void:
+	environment_theme_requested.emit(clampi(
+		index,
+		0,
+		LabLayout.ENVIRONMENT_THEME_COUNT - 1,
+	))
 
 
 func _register_category_control(

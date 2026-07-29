@@ -107,18 +107,23 @@ without a reported regression.
 - Settings is a readable vertical scroll surface with larger type and 58–68-pixel
   controls, verified by runtime contracts and designed around the owner's
   recorded 1040×480 viewport.
+- `EnvironmentThemeCatalog` defines Graybox plus four original generated
+  384×384 material packs: Ancient Forest (default), Mossy Ravine, Overgrown
+  Greenhouse, and Reclaimed Attic. `SwingLabView` maps them in world space over
+  the exact snapshot polygons; theme selection cannot change course geometry,
+  collision, targeting, pace, or lethality.
 - No autoload singletons exist, and a test fails if one appears.
 
 **Verification**
 
 - `python3 tools/verify.py` — architecture self-test and scan pass locally.
-  PR #19 `game-quality` run
-  [30444418170](https://github.com/menno420/spider-swing/actions/runs/30444418170)
-  supplied Godot 4.7.1 and passed import, boot, and the complete 74-check
+  PR #21 `game-quality` run
+  [30451065223](https://github.com/menno420/spider-swing/actions/runs/30451065223)
+  supplied Godot 4.7.1 and passed import, boot, and the complete 76-check
   headless suite at gameplay source
-  `bc582e25a2a2fd7d6da18ed2cf127cc568b834ca`.
-- `tests/test_runner.gd` — 74 declared checks: thirty-eight
-  deterministic physics, fifteen GUI-owned mobile HUD, eleven front-end
+  `402997b6362e46c9002aa6001c7b3f9f28cbb16a`.
+- `tests/test_runner.gd` — 76 declared checks: thirty-nine
+  deterministic physics, sixteen GUI-owned mobile HUD, eleven front-end
   navigation/settings/progression, plus bootstrap and exact build-version
   contracts. Physics covers exact 40%/40% pull shares,
   detached targeted Burst, recovery-web interruption, double-tap fallback,
@@ -187,6 +192,12 @@ without a reported regression.
   proves that no generated rail moves inward before 2000 m, route flies clear
   the authoritative obstacle polygons, and a later inward passage contains no
   floating blocker.
+- PR #21 `game-quality` run
+  [30451065223](https://github.com/menno420/spider-swing/actions/runs/30451065223)
+  passes all 76 runtime contracts on Godot 4.7.1 at gameplay source
+  `402997b6362e46c9002aa6001c7b3f9f28cbb16a`. The new GUI-owned contract
+  loads all four 384×384 environment tiles, drives each large LOOK card, and
+  proves that theme selection cannot mutate the authoritative course geometry.
 - `substrate-gate` — kit-owned. A born-red session card deliberately holds a PR
   until close-out; it must be green on the completed card before merge.
 - `android-debug` — **green on `main`, APK proven.** Run #1 produced artifact
@@ -279,6 +290,19 @@ without a reported regression.
   `com.menno420.spiderswing.dev`, version code `13`, and version
   `0.6.0-gradual-progression-test`; the connected download endpoint returned
   the complete ZIP file successfully.
+- PR #21 `android-debug` run
+  [30451065009](https://github.com/menno420/spider-swing/actions/runs/30451065009)
+  produced downloadable artifact
+  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30451065009/artifacts/8723522456)
+  ID `8723522456`, 57,651,810 bytes, digest
+  `sha256:d74b40e6a2ff92cbb7457bbf982c6212e087506e78c13ba8b19ac13990744926`.
+  The downloaded 58,035,981-byte APK passed archive verification and had
+  SHA-256
+  `0e8689f112068f2ae4b0d763472d40c0bc284613b424f6113e43421f652131bf`.
+  It contains `classes.dex`, `AndroidManifest.xml`, and
+  `assets/project.binary`; its build manifest proves version
+  `0.7.0-environment-themes-test`, exact source, dev package, and display name
+  `Spider Swing Environment Themes (dev)`.
 - **Dependabot** — live. Its first run opened two bumps against the kit-owned
   `substrate-gate.yml`; both were closed because `adopt`/`upgrade` regenerates that
   file. The rule is documented in `.github/dependabot.yml`: kit-owned-only bumps get
@@ -297,7 +321,8 @@ without a reported regression.
   moderation. The local Shop and Course Lab do not claim those capabilities.
 - No approved physics baseline yet: `balanced_candidate`, `weighty_candidate`,
   and `agile_candidate` require owner real-device playtesting.
-- No production art, analytics, ads, cloud save, or store SDK.
+- No approved production art, analytics, ads, cloud save, or store SDK. The
+  four generated environment packs are explicitly prototype comparison art.
 - No production Android signing, no Google Play publishing, no iOS/macOS signing
   runner.
 - The owner has temporarily made the repository **public** to preserve Actions
@@ -309,15 +334,20 @@ without a reported regression.
 
 ## In flight
 
-Phase 0.14 is implemented and verified in PR #20: the exact maximum-speed ramp
-still spans 5000 m, while generated challenge routes now coordinate rails,
-obstacles, and fly guidance. No rail moves inward before 2000 m by default,
-and later inward passages are rail-only. Phase 1 remains blocked on choosing or
-rejecting a movement baseline after the verified build is tested.
+Phase 0.15 is verified in PR #21: four environment packs and Graybox skin the
+same authoritative course through a large DEBUG → LOOK selector. The
+exact maximum-speed ramp still spans 5000 m, no rail moves inward before 2000 m
+by default, and later inward passages remain rail-only. Phase 1 remains blocked
+on choosing or rejecting a movement baseline after the verified build is tested.
 
 ## Recently shipped (newest first)
 
-- **2026-07-29 — Fair early corridor routing (PR #20 in progress).** Gives each
+- **2026-07-29 — Environment theme packs (PR #21).** Adds Ancient
+  Forest, Mossy Ravine, Overgrown Greenhouse, and Reclaimed Attic runtime
+  textures, one presentation-owned catalog, world-space polygon UVs, a large
+  LOOK selector, Graybox fallback, and a visual-only geometry regression.
+
+- **2026-07-29 — Fair early corridor routing (PR #20).** Gives each
   generated challenge one route plan, protects the first 2000 m from inward
   rail movement by default, and reserves later narrow passages for rail-only
   challenges. The playtest build is `0.6.1-fair-corridor-test`.
