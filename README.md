@@ -16,7 +16,7 @@ The product *is* the swinging. Everything else exists to support it.
 > `com.menno420.spiderswing.dev` are all development identifiers and are all
 > expected to change.
 
-## Current phase: Phase 0.21 living Ancient Forest depth
+## Current phase: Phase 0.22 deep progression foundation
 
 **The first playable traversal test is implemented.** The project opens on a
 player-facing Home screen with Play, Garage, Shop, a six-step Tutorial, Course
@@ -37,8 +37,11 @@ Burst boost.
   palette selection. Every
   profile modifies the same authoritative `SwingConfig`, and its trade-off is
   visible before Play.
-- A prototype Shop that spends collected flies on three five-level upgrade tracks per
-  spider. This is a local balance lab, not an in-app-purchase implementation.
+- A mobile-scrollable prototype Shop with the same five core tracks and two
+  identity tracks for every spider. Each track has 20 small levels and a
+  visible breakthrough at levels 5, 10, 15, and 20. Previous five-level saves
+  migrate proportionally. This is a local fly-funded balance lab, not an
+  in-app-purchase implementation.
 - A six-slot Course Lab that cycles deterministic EMPTY/LEAF/POD/VINE/GATE
   pieces, saves the pattern locally, and can playtest it immediately.
 - A data-driven six-step animated tutorial plus an in-game Menu return path.
@@ -84,14 +87,19 @@ Burst boost.
   The broad passage uses the same natural upper/lower growth instead of
   stretched circular halves. Background layers scroll at restrained independent
   rates and stay lower contrast than gameplay.
+  Custom presentation interpolation now blends the spider and attached web
+  between authoritative 60 Hz snapshots. Mipmapped minification keeps the
+  high-resolution spider and fly art readable at their small gameplay size,
+  while restrained Reel, pull, glide, and speed poses add motion without
+  changing collision or simulation.
   DEBUG → LOOK swaps visual treatment without changing a course polygon or
   collision. DEBUG → OVERLAYS
   independently enables exact collision outlines or web-target guides; both
   load off.
-- Base Reel-In is deliberately reduced to 400 px/s and Burst starts at 40% with
-  80 px minimum useful travel. Spider-specific fly upgrades can improve Reel,
-  Burst share, minimum Burst travel, drive, hitbox, reach, glide, momentum, or
-  Springtail's bounded impact response.
+- Base Reel-In remains 400 px/s and Burst remains 40% with 80 px minimum useful
+  travel. Shared fly upgrades can improve Reel rate, Burst share, minimum Burst
+  travel, Reel capacity, and Reel recovery; two identity tracks per spider
+  reinforce its existing trade-off. Level-zero handling is unchanged.
 - Automatic rope take-up retains 85% of natural inward slack by default without
   adding speed. DEBUG can compare it off/on, alter the retained percentage, hide
   the course rails, or make visible rails lethal.
@@ -113,16 +121,17 @@ Burst boost.
   catch, aim forgiveness, range, RELEASE/RETARGET behavior,
   deterministic input recording/replay, visual-theme comparison, independent
   opt-in overlays, and diagnostic export.
-- Forty-one deterministic physics tests (82 runtime contracts total),
+- Forty-two deterministic physics tests (86 runtime contracts total),
   including interruptible recovery webs, double-tap fallback, explicit
   release/retarget modes, opening-runway pacing, lower anchor coverage, exact
   pull-distance shares, speed-neutral Reel/take-up shortening, rail policy,
   swept pickups, idempotent progression, polygon anchors/collisions, and
   creator-pattern bounds, a three-lane Classic-sized steering-envelope sweep
   through every root passage,
-  the guided opening trajectory, spider profiles/glide,
-  rescue consumption, and identical results from simulated 30/60/90/120 Hz
-  render loops. Adapter tests
+  the guided opening trajectory, seven-track spider progression and
+  breakthroughs, level-zero preservation, spider profiles/glide,
+  rescue consumption, presentation interpolation, proportional save migration,
+  and identical results from simulated 30/60/90/120 Hz render loops. Adapter tests
   prove that raw Android touch owns world intent while its emulated mouse copy
   is ignored, so one physical tap cannot attach and immediately release.
 - The existing headless, architecture, CI, and Android debug build substrate.
@@ -130,13 +139,18 @@ Burst boost.
 ### What is deliberately not implemented
 
 No authored Phase 1 chunk pack, moving hazards, finalized currency/economy,
-missions, production monetization, or approved production art. The generated
-environment tiles, fly-funded upgrades,
+missions, production monetization, or approved production art. Temporary
+spider-style modes, ability-bearing spider locks, extra Burst charges, and
+fixed-stat Challenge runs are deliberately deferred until the new progression
+foundation is device-balanced. The generated environment tiles, fly-funded upgrades,
 temporary boost, one-run rescue, spider profiles, and local Course Lab are
 deliberately small architecture-proving slices—not approved balance or
 production content. There is no Google Play Billing SDK, real-money catalogue,
 purchase verification, server entitlement, hourly life timer, course sharing,
 or moderation. Those require explicit later product and infrastructure work.
+
+The implementation order and the ideas deliberately rejected or deferred are in
+[the deep progression direction](docs/product/deep-progression-direction.md).
 
 Phase 0 is tracked in [issue #2](../../issues/2). The implementation is ready for
 device playtesting, but none of its three presets is an approved baseline yet.

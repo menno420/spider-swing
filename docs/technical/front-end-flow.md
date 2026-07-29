@@ -14,7 +14,7 @@ The first visible screen presents these real routes:
 
 - **Play** — creates a new Swing Laboratory session with the saved options;
 - **Garage** — compares spider profiles, palettes, and web treatments;
-- **Shop** — spends laboratory flies on capped profile-specific upgrade tracks;
+- **Shop** — spends laboratory flies on shared core and profile-identity tracks;
 - **Tutorial** — opens the six-step animated mechanics guide;
 - **Course Lab** — edits and playtests a six-piece local deterministic pattern;
 - **Settings** — edits real, persisted player options.
@@ -52,9 +52,15 @@ progression obscuring the feel test.
 The selected profile resolves into the same `SwingConfig` consumed by
 simulation. Presentation only shows those resolved values.
 
-The Shop has three five-level tracks per profile and spends `spendable_flies` through
-`ProgressionService`. Purchases persist atomically through `SaveRepository`.
-There are no real-money products or entitlements in this build.
+The Shop gives every profile the same five core tracks plus two identity tracks.
+Each track has 20 small levels. Levels 5, 10, 15, and 20 are visible
+breakthroughs that grant one extra tuning step without adding another input or
+charge. The seven selected-profile rows live in a focus-following vertical
+`ScrollContainer` so they remain reachable at 1040×480.
+Purchases spend `spendable_flies` through `ProgressionService` and persist
+atomically through `SaveRepository`. Schema 4 maps each former five-level value
+to the equivalent four-level interval exactly once. There are no real-money
+products or entitlements in this build.
 
 ### Course Lab
 
@@ -86,9 +92,10 @@ profile upgrades, palettes, web variants, and the saved creator pattern.
 `SaveRepository` is the exclusive persistent writer and performs a recoverable
 temp → primary rotation for both records.
 Settings survive app restarts; invalid or corrupt values fall back safely.
-The Settings card is a vertical `ScrollContainer` with larger text, 58–68-pixel
-controls, and focus-follow behavior. All actions remain reachable on the
-1040×480 Android viewport from the owner recording and on taller aspect ratios.
+The Settings and Shop cards use vertical `ScrollContainer` surfaces with larger
+text, mobile-sized controls, and focus-follow behavior. All actions remain
+reachable on the 1040×480 Android viewport from the owner recording and on
+taller aspect ratios.
 
 ## Ownership
 
@@ -118,8 +125,10 @@ No global manager or autoload is introduced.
 - invalid settings are rejected and valid changes emit once;
 - settings and progression encode/decode and actual atomic filesystem
   persistence round-trips;
-- duplicate settlement rejection, fly-funded capped upgrades, creator edits,
-  selections, and fly/distance cosmetic milestones;
+- duplicate settlement rejection, the five-core/two-identity Shop structure,
+  20-level caps and breakthroughs, proportional one-time migration,
+  fly-funded upgrades, creator edits, selections, and fly/distance cosmetic
+  milestones;
 - the composition root enters gameplay only through the Play request;
 - Menu emits one return request without leaking into a web action;
 - disabling debug tools removes their touch surface.

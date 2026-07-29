@@ -4,10 +4,10 @@ extends SceneTree
 const MAIN_SCENE_PATH := "res://game/bootstrap/main.tscn"
 const EXPORT_PRESETS_PATH := "res://export_presets.cfg"
 const ANDROID_WORKFLOW_PATH := "res://.github/workflows/android-debug.yml"
-const BUILD_VERSION := "0.9.0-living-forest-test"
-const ANDROID_VERSION_CODE := 21
-const ANDROID_APP_NAME := "Spider Swing Living Forest (dev)"
-const EXPECTED_CHECK_COUNT := 82
+const BUILD_VERSION := "0.10.0-deep-progression-test"
+const ANDROID_VERSION_CODE := 22
+const ANDROID_APP_NAME := "Spider Swing Deep Progression (dev)"
+const EXPECTED_CHECK_COUNT := 86
 const REQUIRED_INPUT_ACTIONS := [
 	"web_action", "reel_in", "burst_action", "pause", "restart_run",
 	"toggle_debug"]

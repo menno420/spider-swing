@@ -79,11 +79,13 @@ func purchase_upgrade(
 	if progress.spendable_flies < cost:
 		return {"purchased": false, "reason": "flies", "cost": cost}
 	progress.spendable_flies -= cost
-	progress.upgrade_levels[str(upgrade_id)] = level + 1
+	var next_level := level + 1
+	progress.upgrade_levels[str(upgrade_id)] = next_level
 	return {
 		"purchased": true,
-		"level": level + 1,
+		"level": next_level,
 		"cost": cost,
+		"breakthrough": SpiderCatalog.is_breakthrough_level(next_level),
 	}
 
 

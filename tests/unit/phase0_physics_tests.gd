@@ -24,6 +24,8 @@ static func run() -> Dictionary:
 	passed += _test_extended_web_reach(failures)
 	passed += _test_burst_crosses_configured_fraction(failures)
 	passed += _test_minimum_burst_travel_is_real_and_upgradeable(failures)
+	passed += _test_upgrade_catalog_has_shared_core_and_breakthroughs(
+		failures)
 	passed += _test_pull_can_be_interrupted_by_recovery_web(failures)
 	passed += _test_double_tap_falls_back_to_recovery_web(failures)
 	passed += _test_downward_web_is_a_short_one_shot_pull(failures)
@@ -449,13 +451,122 @@ static func _test_minimum_burst_travel_is_real_and_upgradeable(
 			not is_equal_approx(upgraded.burst_minimum_distance, 200.0):
 		failures.append("Reliable Launch did not raise minimum Burst travel by level")
 		return 0
-	if SpiderCatalog.MAX_UPGRADE_LEVEL != 5 or \
-			SpiderCatalog.cost_for_level(4) != 55:
-		failures.append("meaningful five-level upgrade progression is missing")
+	return 1
+
+
+static func _test_upgrade_catalog_has_shared_core_and_breakthroughs(
+	failures: PackedStringArray,
+) -> int:
+	if SpiderCatalog.MAX_UPGRADE_LEVEL != 20 or \
+			SpiderCatalog.UPGRADE_COSTS.size() != 20 or \
+			SpiderCatalog.cost_for_level(0) != 2 or \
+			SpiderCatalog.cost_for_level(4) != 5 or \
+			SpiderCatalog.cost_for_level(19) != 20 or \
+			SpiderCatalog.cost_for_level(20) != 0:
+		failures.append("twenty-level upgrade pacing or its bounded costs regressed")
 		return 0
+	if SpiderCatalog.effective_steps(4) != 4 or \
+			SpiderCatalog.effective_steps(5) != 6 or \
+			SpiderCatalog.effective_steps(10) != 12 or \
+			SpiderCatalog.effective_steps(20) != 24:
+		failures.append("five-level breakthroughs do not grant a real tuning step")
+		return 0
+	for level in [5, 10, 15, 20]:
+		if not SpiderCatalog.is_breakthrough_level(level):
+			failures.append("level %d is not marked as a breakthrough" % level)
+			return 0
+	if SpiderCatalog.is_breakthrough_level(4) or \
+			SpiderCatalog.next_breakthrough_level(6) != 10 or \
+			SpiderCatalog.next_breakthrough_level(20) != 20:
+		failures.append("breakthrough boundaries are not deterministic")
+		return 0
+
+	var expected_core: Array[StringName] = [
+		SpiderCatalog.REEL_SPEED,
+		SpiderCatalog.BURST_REACH,
+		SpiderCatalog.BURST_FLOOR,
+		SpiderCatalog.REEL_CAPACITY,
+		SpiderCatalog.REEL_RECOVERY,
+	]
 	for spider_id: StringName in SpiderCatalog.ALL_IDS:
-		if SpiderCatalog.upgrades_for(spider_id).size() != 3:
-			failures.append("%s does not expose three upgrade paths" % spider_id)
+		var tracks := SpiderCatalog.upgrades_for(spider_id)
+		if tracks.size() != 7:
+			failures.append("%s does not expose seven upgrade paths" % spider_id)
+			return 0
+		var core_kinds: Array[StringName] = []
+		var identity_count := 0
+		for track: Dictionary in tracks:
+			var scope := StringName(track["scope"])
+			if scope == SpiderCatalog.SCOPE_CORE:
+				core_kinds.append(StringName(track["kind"]))
+			elif scope == SpiderCatalog.SCOPE_IDENTITY:
+				identity_count += 1
+		if core_kinds != expected_core or identity_count != 2:
+			failures.append(
+				"%s does not have the shared five-core/two-identity structure" %
+					spider_id)
+			return 0
+	if SpiderCatalog.all_upgrades().size() != 35:
+		failures.append("upgrade catalog does not contain five complete profiles")
+		return 0
+
+	var base := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	var zero_level := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	SpiderCatalog.apply_to_config(zero_level, PlayerProgress.defaults())
+	if not is_equal_approx(
+		base.reel_retraction_rate,
+		zero_level.reel_retraction_rate,
+	) or not is_equal_approx(
+		base.burst_distance_fraction,
+		zero_level.burst_distance_fraction,
+	) or not is_equal_approx(
+		base.burst_minimum_distance,
+		zero_level.burst_minimum_distance,
+	):
+		failures.append("new progression changed the level-zero Garden Spider")
+		return 0
+
+	var identity_expectations := [
+		[SpiderCatalog.CLASSIC, &"classic_flow",
+			&"automatic_take_up_retention", 1.0],
+		[SpiderCatalog.CLASSIC, &"classic_rhythm",
+			&"burst_cooldown", -1.0],
+		[SpiderCatalog.SKITTER, &"skitter_size",
+			&"player_collision_radius", -1.0],
+		[SpiderCatalog.SKITTER, &"skitter_drive",
+			&"horizontal_drive_acceleration", 1.0],
+		[SpiderCatalog.ANCHORITE, &"anchorite_momentum",
+			&"burst_exit_speed", 1.0],
+		[SpiderCatalog.ANCHORITE, &"anchorite_pendulum",
+			&"burst_tangential_retention", 1.0],
+		[SpiderCatalog.BALLOONER, &"ballooner_glide",
+			&"glide_duration", 1.0],
+		[SpiderCatalog.BALLOONER, &"ballooner_reach",
+			&"web_maximum_length", 1.0],
+		[SpiderCatalog.SPRINGTAIL, &"springtail_shell",
+			&"surface_bounce_max_impact_speed", 1.0],
+		[SpiderCatalog.SPRINGTAIL, &"springtail_bounce",
+			&"surface_bounce_retention", 1.0],
+	]
+	for expectation: Array in identity_expectations:
+		var profile_id := StringName(expectation[0])
+		var upgrade_id := StringName(expectation[1])
+		var property := StringName(expectation[2])
+		var direction := float(expectation[3])
+		var profile_progress := PlayerProgress.defaults()
+		profile_progress.selected_spider_id = profile_id
+		var profile_base := SwingConfig.from_preset(
+			SwingConfig.PRESET_BALANCED)
+		SpiderCatalog.apply_to_config(profile_base, profile_progress)
+		profile_progress.upgrade_levels[str(upgrade_id)] = \
+			SpiderCatalog.MAX_UPGRADE_LEVEL
+		var identity_max := SwingConfig.from_preset(
+			SwingConfig.PRESET_BALANCED)
+		SpiderCatalog.apply_to_config(identity_max, profile_progress)
+		var delta := float(identity_max.get(property)) - \
+			float(profile_base.get(property))
+		if delta * direction <= 0.0:
+			failures.append("%s identity track has no intended effect" % upgrade_id)
 			return 0
 	return 1
 

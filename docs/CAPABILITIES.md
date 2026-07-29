@@ -115,6 +115,23 @@ as venue `any`.)
 kit-owned — they refresh at upgrade between the fence markers; local
 findings go here, below the fence.)
 
+- 2026-07-29 · capability · `owner-live` · **The deep-progression and stable
+  presentation slice survives the complete Godot and Android path** · PR #28
+  `game-quality` run
+  [30489461720](https://github.com/menno420/spider-swing/actions/runs/30489461720)
+  passed all 86 contracts on Godot 4.7.1 at source
+  `c8d093109860d4a0716aa2e3ddd7b6d163c82a70`; Android run
+  [30489461754](https://github.com/menno420/spider-swing/actions/runs/30489461754)
+  produced artifact
+  [`8739088355`](https://github.com/menno420/spider-swing/actions/runs/30489461754/artifacts/8739088355),
+  61,370,244 bytes with digest
+  `sha256:4e466ec3453c51dc2e2f0d9a2828916fe258bb2be0e76256e4b3895a69982eac`.
+  The downloaded ZIP matched that digest and passed archive validation. Its
+  61,770,490-byte APK passed archive validation with SHA-256
+  `310ea5419e0bd0df5ee78c7a1626a5a5ef560b272229ef2f79c40a4c186e14b5`;
+  `build-info.txt` proves version `0.10.0-deep-progression-test`, exact source,
+  dev package, and display name `Spider Swing Deep Progression (dev)`.
+
 - 2026-07-29 · capability · `owner-live` · **The living Ancient Forest depth
   slice survives the complete Godot and Android path** · PR #27 `game-quality`
   run

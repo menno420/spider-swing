@@ -11,6 +11,8 @@ static func run() -> Dictionary:
 	passed += _test_reel_button_emits_only_reel(failures)
 	passed += _test_burst_button_emits_only_burst(failures)
 	passed += _test_action_feedback_is_event_driven(failures)
+	passed += _test_spider_presentation_is_interpolated_and_mipmapped(
+		failures)
 	passed += _test_double_tap_has_a_separate_burst_route(failures)
 	passed += _test_touch_mouse_emulation_produces_one_intent(failures)
 	passed += _test_device_tap_keeps_recovery_web_attached(failures)
@@ -199,6 +201,83 @@ static func _test_action_feedback_is_event_driven(
 			"_session.event_published.connect(_input_router.present_simulation_event)"):
 		failures.append("authoritative action events are not wired to haptics")
 		return 0
+	return 1
+
+
+static func _test_spider_presentation_is_interpolated_and_mipmapped(
+	failures: PackedStringArray,
+) -> int:
+	var view := SwingLabView.new()
+	var first := SimulationSnapshot.new()
+	first.tick = 10
+	first.position = Vector2(100.0, 200.0)
+	first.velocity = Vector2(300.0, -80.0)
+	first.target_speed = 360.0
+	view.present(first)
+	var second := SimulationSnapshot.new()
+	second.tick = 11
+	second.position = Vector2(120.0, 240.0)
+	second.velocity = Vector2(340.0, -40.0)
+	second.target_speed = 360.0
+	second.reel_active = true
+	view.present(second)
+	if not view._render_spider_position(0.5).is_equal_approx(
+		Vector2(110.0, 220.0),
+	) or not view._render_spider_velocity(0.5).is_equal_approx(
+		Vector2(320.0, -60.0),
+	):
+		failures.append("custom spider rendering does not interpolate fixed snapshots")
+		view.free()
+		return 0
+	var pose := view._spider_pose_scale(view._render_spider_velocity(0.5))
+	if pose.x < 0.97 or pose.x > 1.045 or \
+			pose.y < 0.97 or pose.y > 1.035 or \
+			pose.is_equal_approx(Vector2.ONE):
+		failures.append("spider action pose is missing or too strong")
+		view.free()
+		return 0
+	view.configure_player_options(true, true, true)
+	if not view._spider_pose_scale(Vector2(600.0, 100.0)).is_equal_approx(
+		Vector2.ONE,
+	):
+		failures.append("reduced motion does not disable spider pose animation")
+		view.free()
+		return 0
+	var teleported := SimulationSnapshot.new()
+	teleported.tick = 12
+	teleported.position = Vector2(900.0, 240.0)
+	teleported.velocity = Vector2.ZERO
+	view.present(teleported)
+	if not view._render_spider_position(0.5).is_equal_approx(
+		teleported.position,
+	):
+		failures.append("presentation interpolation smears run resets or teleports")
+		view.free()
+		return 0
+	view.free()
+
+	var renderer := FileAccess.open(
+		"res://game/presentation/scripts/swing_lab.gd",
+		FileAccess.READ,
+	)
+	if renderer == null:
+		failures.append("spider presentation source cannot be inspected")
+		return 0
+	var source := renderer.get_as_text()
+	if not source.contains("Engine.get_physics_interpolation_fraction()") or \
+			not source.contains("TEXTURE_FILTER_LINEAR_WITH_MIPMAPS"):
+		failures.append("spider smoothing is not tied to Godot interpolation and mips")
+		return 0
+	for import_path in [
+		"res://assets/runtime/characters/classic-garden-spider.png.import",
+		"res://assets/runtime/collectibles/golden-forest-fly.png.import",
+	]:
+		var import_file := FileAccess.open(import_path, FileAccess.READ)
+		if import_file == null or not import_file.get_as_text().contains(
+			"mipmaps/generate=true",
+		):
+			failures.append("minified moving art lacks mipmaps: %s" % import_path)
+			return 0
 	return 1
 
 

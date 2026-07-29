@@ -42,6 +42,8 @@ var _shop_flies: Label
 var _shop_title: Label
 var _shop_description: Label
 var _upgrade_buttons: Dictionary = {}
+var _upgrade_rows: Dictionary = {}
+var _upgrade_descriptions: Dictionary = {}
 var _creator_slot_buttons: Array[Button] = []
 var _buttons: Dictionary = {}
 var _interface_ready: bool = false
@@ -397,23 +399,46 @@ func _build_shop() -> void:
 	content.add_child(_paragraph(
 		"Prototype upgrades use flies collected in play. No store purchase or "
 		+ "real-money entitlement is connected in this build."))
+	_shop_description = _setting_description(
+		"Five CORE tracks shape every spider consistently; two IDENTITY tracks "
+		+ "reinforce the selected spider's trade-off.")
+	_shop_description.custom_minimum_size.y = 42.0
+	content.add_child(_shop_description)
+	var scroll := ScrollContainer.new()
+	scroll.name = "ShopUpgradeScroll"
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	scroll.follow_focus = true
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content.add_child(scroll)
 	var upgrades := VBoxContainer.new()
 	upgrades.add_theme_constant_override("separation", 12)
-	content.add_child(upgrades)
-	for upgrade_item: Dictionary in SpiderCatalog.UPGRADES:
+	upgrades.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(upgrades)
+	for upgrade_item: Dictionary in SpiderCatalog.all_upgrades():
 		var upgrade_id := StringName(upgrade_item["id"])
+		var row := VBoxContainer.new()
+		row.name = "UpgradeRow%s" % str(upgrade_id).to_pascal_case()
+		row.add_theme_constant_override("separation", 4)
+		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var button := _button(
 			StringName("Upgrade%s" % str(upgrade_id).to_pascal_case()),
 			"",
 			GREEN,
-			78.0,
+			72.0,
 		)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.pressed.connect(_on_upgrade.bind(upgrade_id))
-		upgrades.add_child(button)
+		row.add_child(button)
+		var description := _setting_description("")
+		description.add_theme_font_size_override("font_size", 15)
+		description.custom_minimum_size.y = 34.0
+		row.add_child(description)
+		upgrades.add_child(row)
 		_upgrade_buttons[upgrade_id] = button
-	_shop_description = _setting_description("")
-	_shop_description.custom_minimum_size.y = 56.0
-	content.add_child(_shop_description)
+		_upgrade_rows[upgrade_id] = row
+		_upgrade_descriptions[upgrade_id] = description
 	var garage := _button(&"ShopGarage", "CHANGE SPIDER", CYAN, 58.0)
 	garage.pressed.connect(_on_garage)
 	content.add_child(garage)
@@ -564,28 +589,45 @@ func _render_shop() -> void:
 	_shop_title.text = "%s UPGRADES" % str(profile_item["name"]).to_upper()
 	_shop_flies.text = "%d FLIES AVAILABLE" % _state.progress.spendable_flies
 	for upgrade_id: StringName in _upgrade_buttons:
-		(_upgrade_buttons[upgrade_id] as Button).visible = false
-	var descriptions := PackedStringArray()
+		(_upgrade_rows[upgrade_id] as Control).visible = false
 	for upgrade_item: Dictionary in SpiderCatalog.upgrades_for(selected):
 		var upgrade_id := StringName(upgrade_item["id"])
 		var button: Button = _upgrade_buttons[upgrade_id]
+		var row: Control = _upgrade_rows[upgrade_id]
+		var description: Label = _upgrade_descriptions[upgrade_id]
 		var level := _state.progress.upgrade_level(upgrade_id)
 		var maximum := level >= SpiderCatalog.MAX_UPGRADE_LEVEL
 		var cost := SpiderCatalog.cost_for_level(level)
-		button.visible = true
+		var next_level := mini(SpiderCatalog.MAX_UPGRADE_LEVEL, level + 1)
+		var next_is_breakthrough := \
+			SpiderCatalog.is_breakthrough_level(next_level)
+		var scope := StringName(upgrade_item["scope"])
+		row.visible = true
 		button.disabled = maximum or _state.progress.spendable_flies < cost
 		button.text = (
-			"%s  ·  LEVEL %d/%d  ·  %s"
+			"%s · %s\nLEVEL %d/%d  ·  %s%s"
 			% [
+				"CORE" if scope == SpiderCatalog.SCOPE_CORE else "IDENTITY",
 				str(upgrade_item["name"]).to_upper(),
 				level,
 				SpiderCatalog.MAX_UPGRADE_LEVEL,
 				"MAXIMUM" if maximum else "%d FLIES" % cost,
+				(
+					"  ·  BREAKTHROUGH"
+					if next_is_breakthrough and not maximum
+					else ""
+				),
 			]
 		)
-		descriptions.append(
-			"%s: %s" % [upgrade_item["name"], upgrade_item["description"]])
-	_shop_description.text = "\n".join(descriptions)
+		var next_breakthrough := SpiderCatalog.next_breakthrough_level(level)
+		description.text = "%s  ·  %s" % [
+			upgrade_item["description"],
+			(
+				"All breakthroughs earned"
+				if maximum
+				else "Next breakthrough: level %d" % next_breakthrough
+			),
+		]
 
 
 func _render_creator() -> void:

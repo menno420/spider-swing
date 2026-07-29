@@ -145,7 +145,8 @@ four configurable seconds; it does not grant extra Dive Pull charges. Death
 creates one idempotent settlement through `ProgressionService`;
 `SaveRepository` atomically persists lifetime and spendable fly totals,
 profile-specific upgrade levels, selections, the local creator pattern, and
-cosmetic milestones. The current fly costs are comparison values only.
+cosmetic milestones. Schema 4 proportionally migrates former five-level tracks
+into the 20-level catalog. The current fly costs are comparison values only.
 
 ## Debug tuning
 
@@ -212,9 +213,11 @@ state, retained stream chunks, record/replay, and JSON export. Runtime changes
 reset when the app restarts.
 
 These controls are also the measurement surface for possible future upgrades.
-The Garage already proves that validated profile and fly-funded upgrade
-modifiers can resolve over one base `SwingConfig`; it does not create parallel
-physics implementations. Current costs and caps are test data. Record
+The Garage and seven-track Shop prove that validated profile and fly-funded
+upgrade modifiers can resolve over one base `SwingConfig`; they do not create
+parallel physics implementations. The five shared core tracks and two identity
+tracks each have 20 small levels with deterministic 5/10/15/20 breakthrough
+steps. Current costs and caps are test data. Record
 eligibility, the final economy, and any real-money entitlement remain separate
 product decisions.
 
@@ -243,9 +246,10 @@ product decisions.
 - a one-second safe guided opening that remains interruptible from its first
   tick;
 - one authoritative rescue followed by normal death on the next lethal contact;
-- five catalogued spider profiles, three five-level upgrade paths each, a real
-  bounded glide state, and Springtail's one-charge moderate rail bounce using
-  the same central configuration;
+- five catalogued spider profiles, five shared core plus two identity upgrade
+  paths each, 20-level bounds, deterministic breakthroughs, level-zero
+  preservation, a real bounded glide state, and Springtail's one-charge
+  moderate rail bounce using the same central configuration;
 - independently safe/lethal course rails, swept pickups that do not respawn,
   idempotent persistent progression, and milestone cosmetic unlocks;
 - nonlethal upper and lethal lower/left/obstacle boundaries;
@@ -255,6 +259,8 @@ product decisions.
 - fixed-rate trajectory equivalence at simulated 30/60/90/120 Hz render rates.
 - all six finished-art runtime textures load through one presentation-owned
   catalog without changing authoritative course geometry.
+- custom spider/web presentation interpolates fixed snapshots, snaps teleports,
+  honors reduced motion, and uses mipmaps for heavily minified moving art.
 
 ## Owner device playtest
 
@@ -309,17 +315,21 @@ signed dev app, then check:
 22. compare all five Garage profiles, especially Skitter's smaller collision
     radius, Anchorite's weight, Ballooner's visible bounded glide, and
     Springtail's charged moderate rail bounce;
-23. spend laboratory flies on one Shop track and confirm the shown resolved
-    value changes and survives restart;
+23. spend laboratory flies through levels 4→5 on one Shop track, confirm the
+    breakthrough is visible, the resolved value changes, and the level survives
+    restart;
 24. create a six-piece Course Lab pattern, playtest it after the opening, return
     Home, and confirm the saved pattern remains;
 25. follow fly arcs, collect Burst Frenzy, use multiple Bursts before it expires,
     and confirm it does not bypass the upper-web requirement for another Dive.
-25. compare full-speed distances around 3000/5000/6500 m and confirm the default
+26. compare full-speed distances around 3000/5000/6500 m and confirm the default
     no longer feels near maximum during the opening kilometre;
-26. spend Springtail's shell on a moderate rail hit, confirm a second hit kills,
+27. spend Springtail's shell on a moderate rail hit, confirm a second hit kills,
     then attach an upper web and verify the shell becomes ready again;
-27. verify Springtail still dies to obstacles, an excessive rail impact, or
+28. verify Springtail still dies to obstacles, an excessive rail impact, or
     contact caused by a Burst/Dive pull.
+29. compare the spider at steady speed, during Reel, and during Burst on the
+    1040×480 device recording path; confirm it no longer vibrates or leaves the
+    attached web behind, and that the restrained poses remain readable.
 
 Phase 1 remains gated on an explicitly approved movement baseline.

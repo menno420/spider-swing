@@ -87,11 +87,11 @@ Run directly:
 godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-82 checks, grouped so one subsystem failure never hides the rest:
+86 checks, grouped so one subsystem failure never hides the rest:
 
 - engine, main-scene, input-action, 60 Hz, renderer/viewport, Android preset,
   inward-dependency, and no-autoload bootstrap contracts;
-- forty-one deterministic physics contracts, including extended arbitrary-point
+- forty-two deterministic physics contracts, including extended arbitrary-point
   solid attachment, larger aim forgiveness, momentum preservation, speed-neutral
   Reel and automatic take-up, exact Burst/Dive distance shares and minimum
   Burst travel, recovery-web interruption,
@@ -103,12 +103,14 @@ godot --headless --path . --script res://tests/test_runner.gd
   both single/paired natural compositions, a
   three-lane Classic-sized steering-envelope sweep through every root-passage
   fly route, the guided opening
-  trajectory, one-run rescue, five spider profiles,
+  trajectory, one-run rescue, five spider profiles, the shared
+  five-core/two-identity upgrade structure, 20-level cost bounds,
+  5/10/15/20 breakthroughs, level-zero preservation,
   bounded glide and impact-shell recovery, creator-pattern bounds, swept
   pickups, runtime pull tuning, and
   identical trajectories from
   simulated 30/60/90/120 Hz render loops;
-- twenty mobile HUD contracts proving large separated Reel and Burst controls,
+- twenty-one mobile HUD contracts proving large separated Reel and Burst controls,
   DEBUG, and Menu are event-consuming
   Buttons, GUI geometry shares one layout source, accepted actions drive visual
   and haptic feedback, UI actions do not leak into web input, debug tools can be
@@ -116,16 +118,18 @@ godot --headless --path . --script res://tests/test_runner.gd
   controls, finished Ancient Forest obstacles never paint the legacy polygon
   backing, wall-grown art overlaps behind continuous rails without stretched
   gate halves, active Ancient Forest art includes a world-anchored rail tile,
-  growth socket, stump, and three depth layers, and world input waits for Godot
-  GUI handling;
-- eleven front-end contracts proving Home starts before gameplay,
+  growth socket, stump, and three depth layers, custom fixed-snapshot spider
+  interpolation, mipmapped moving art, restrained/reduced-motion-safe action
+  poses, and world input waits for Godot GUI handling;
+- thirteen front-end contracts proving Home starts before gameplay,
   Play/Garage/Shop/Tutorial/Course Lab/Settings route correctly, the six tutorial
   steps cover live mechanics, Settings
   is scrollable and mobile-readable, options
   validate and emit once, serialization is stable, atomic filesystem persistence
-  round-trips, progression settlements remain idempotent, profile upgrades and
-  creator edits persist, milestone unlocks persist, and only a play request
-  mounts the run.
+  round-trips, progression settlements remain idempotent, the seven-track Shop
+  remains mobile-scrollable, former five-level saves migrate once and
+  proportionally, profile upgrades and creator edits persist, milestone unlocks
+  persist, and only a play request mounts the run.
 
 The physics group lives in `tests/unit/phase0_physics_tests.gd`, mobile input in
 `tests/unit/mobile_hud_layout_tests.gd`, and the front-end flow in

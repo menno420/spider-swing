@@ -2,7 +2,7 @@ extends RefCounted
 class_name PlayerProgress
 ## Versioned player progression value object.
 
-const SCHEMA_VERSION := 3
+const SCHEMA_VERSION := 4
 const STYLE_GARDEN := &"garden"
 const STYLE_AMBER := &"amber"
 const STYLE_COMET := &"comet"
@@ -46,6 +46,7 @@ static func defaults() -> PlayerProgress:
 
 static func from_dictionary(data: Dictionary) -> PlayerProgress:
 	var progress := PlayerProgress.new()
+	var source_schema := maxi(1, int(data.get("schema_version", 1)))
 	progress.total_flies = maxi(0, int(data.get("total_flies", 0)))
 	progress.spendable_flies = maxi(
 		0,
@@ -91,8 +92,11 @@ static func from_dictionary(data: Dictionary) -> PlayerProgress:
 			var upgrade_id := StringName(str(raw_key))
 			if SpiderCatalog.upgrade(upgrade_id).is_empty():
 				continue
+			var saved_level := int((raw_upgrades as Dictionary)[raw_key])
+			if source_schema < SCHEMA_VERSION:
+				saved_level *= SpiderCatalog.LEGACY_LEVEL_MULTIPLIER
 			progress.upgrade_levels[str(upgrade_id)] = clampi(
-				int((raw_upgrades as Dictionary)[raw_key]),
+				saved_level,
 				0,
 				SpiderCatalog.MAX_UPGRADE_LEVEL,
 			)

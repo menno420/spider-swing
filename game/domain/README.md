@@ -23,9 +23,12 @@ expected; importing `game/simulation/`, `game/application/`, `game/adapters/`, o
 - `RunSettlement` and its identity, so idempotent settlement is expressible in one
   place (GDD § 15.1, § 20).
 - `SpiderCatalog` profile and upgrade definitions. Profiles are modifiers over
-  one `SwingConfig`; they do not fork the physics implementation.
+  one `SwingConfig`; they do not fork the physics implementation. Every profile
+  instantiates one canonical five-track core plus two identity tracks, with 20
+  levels and deterministic breakthroughs at 5/10/15/20.
 - Versioned `PlayerProgress`, including spendable/lifetime flies, selections,
-  capped upgrade levels, and the local creator pattern.
+  capped upgrade levels, proportional migration from the former five-level
+  schema, and the local creator pattern.
 
 ## What does not
 

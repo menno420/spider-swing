@@ -86,9 +86,11 @@ without a reported regression.
 - `SpiderCatalog` defines five comparison profiles over one `SwingConfig`:
   balanced Garden Spider, smaller/faster Skitter, heavier Anchorite, and
   bounded-glide Ballooner, plus Springtail's one-charge moderate rail bounce.
-  Each exposes an explicit trade-off and three five-level fly-funded prototype
-  upgrade tracks. All are unlocked during Phase 0 so progression cannot hide a
-  feel candidate.
+  Each exposes an explicit trade-off, the same five core fly-funded tracks, and
+  two identity tracks. Every track has 20 small levels; levels 5/10/15/20 grant
+  one extra deterministic tuning step. Schema 4 migrates former five-level
+  progress proportionally and exactly once. All spiders remain unlocked during
+  Phase 0 so progression cannot hide a feel candidate.
 - Garage owns profile, palette, and web-treatment selection; Shop spends
   collected flies through `ProgressionService`; Course Lab saves six
   EMPTY/LEAF/POD/VINE/GATE slots and substitutes the post-opening course during
@@ -123,27 +125,39 @@ without a reported regression.
   transparent joins, missing wood at profile changes, and stretched gate halves.
   Missing assets fall back to textured geometry rather than creating invisible
   collision. Collision outlines and web-target guides both load off and can be
-  enabled independently under DEBUG → OVERLAYS.
+  enabled independently under DEBUG → OVERLAYS. The custom-drawn spider and
+  attached web interpolate between consecutive fixed snapshots using Godot's
+  render interpolation fraction; teleports snap, reduced motion disables the
+  restrained action poses, and mipmaps improve the heavily downscaled spider
+  and fly without touching physics.
 - No autoload singletons exist, and a test fails if one appears.
 
 **Verification**
 
 - `python3 tools/verify.py --require-godot` — passes locally on Godot
   `4.7.1.stable.official.a13da4feb`: architecture fixtures/scan, clean import,
-  front-end boot, and all 82 headless contracts.
-- The last merged baseline is PR #26. Its final `game-quality` run
-  [30476965313](https://github.com/menno420/spider-swing/actions/runs/30476965313)
-  passes the complete 80-check suite on Godot 4.7.1 at source
-  `32cb11459d4be05b180c736316b8ef5cd27bda9d`.
-- `tests/test_runner.gd` — 82 declared checks: forty-one
-  deterministic physics, twenty GUI-owned mobile HUD, eleven front-end
+  front-end boot, and all 86 headless contracts.
+- PR #28 `game-quality` run
+  [30489461720](https://github.com/menno420/spider-swing/actions/runs/30489461720)
+  passes the same 86 contracts at source
+  `c8d093109860d4a0716aa2e3ddd7b6d163c82a70`. Android run
+  [30489461754](https://github.com/menno420/spider-swing/actions/runs/30489461754)
+  produced the verified `spider-swing-android-debug` artifact
+  [8739088355](https://github.com/menno420/spider-swing/actions/runs/30489461754/artifacts/8739088355).
+- The last merged baseline is PR #27. Its final `game-quality` run
+  [30485134026](https://github.com/menno420/spider-swing/actions/runs/30485134026)
+  passes the complete 82-check suite on Godot 4.7.1 at source
+  `06a4c65aeb87b4d47a54423f9cd56ce87dcaaba5`.
+- `tests/test_runner.gd` — 86 declared checks: forty-two
+  deterministic physics, twenty-one GUI-owned mobile HUD, thirteen front-end
   navigation/settings/progression, plus bootstrap and exact build-version
   contracts. Physics covers exact 40%/40% pull shares,
   detached targeted Burst, recovery-web interruption, double-tap fallback,
   release/retarget modes, speed-neutral Reel shortening, solid polygon
   targeting/collision, take-up, rail toggles, swept pickups, tuning controls, and
   paced bounded streaming, scaled authoritative geometry, guided opening,
-  rescue, spider profiles/glide, creator-pattern bounds, a 5000 m pacing curve,
+  rescue, spider profiles/glide, the shared seven-track/20-level structure,
+  breakthrough steps, level-zero preservation, creator-pattern bounds, a 5000 m pacing curve,
   continuous contoured rails, a deterministic distance-banded pattern catalog,
   upgradeable minimum Burst travel, and bounded Springtail impacts. A three-lane
   route sweep proves a Classic-sized spider
@@ -152,9 +166,11 @@ without a reported regression.
   and toggle independently, and that finished forest obstacles omit the legacy
   backing fill, overlap behind continuous rails, never stretch the retired
   circular gate halves, and register all six living-forest depth/attachment
-  assets. The front-end group
-  performs real filesystem settings and progression round-trips plus settlement
-  idempotency, profile upgrades, and creator edits. The trajectory
+  assets, custom presentation interpolation, moving-art mipmaps, and
+  reduced-motion-safe action poses. The front-end group performs real filesystem
+  settings and progression round-trips plus settlement idempotency,
+  proportional one-time upgrade migration, a mobile-scrollable seven-track
+  Shop, profile upgrades, and creator edits. The trajectory
   fixture produces the same final state when driven through simulated 30, 60,
   90, and 120 Hz render loops.
 - `tools/check_architecture.py` — 14 fixtures, all passing, asserting both
@@ -440,19 +456,16 @@ without a reported regression.
 
 ## In flight
 
-Phase 0.21 is in flight through PR #27. The broad passage from PR #24 remains
-authoritative and unchanged. A world-anchored branch texture now spans every
-ceiling/floor profile and chunk seam; root-and-moss sockets hide each obstacle
-join; broken stumps add a new natural silhouette; and three restrained forest
-depths replace the abstract circle backdrop. `CoursePatternCatalog` adds
-curated, repetition-protected distance bands: small hazards grow only 6–12%
-after the runway, paired/staggered compositions begin after 2000 m, and later
-tight rails occur on a predictable eight-chunk cadence without a stacked
-floating blocker. Collision outlines and web-target guides still begin off and
-have independent DEBUG → OVERLAYS controls. All 82 local contracts pass. The
-maximum-speed ramp still spans 5000 m, no rail moves inward before 2000 m by
-default, and the broad passage opening does not shrink. Phase 1 remains blocked
-on owner device review of both feel and art.
+Phase 0.22 is in flight through PR #28. The level-zero Garden Spider, targeting
+policy, course geometry, 5000 m speed ramp, 1000 m learning runway, 2000 m
+inward-rail protection, and broad passage remain unchanged. The Shop now exposes
+five shared core tracks and two identity tracks per spider over 20 small levels,
+with visible 5/10/15/20 breakthroughs and proportional schema migration. Custom
+presentation interpolation and mipmapped minification target the reported
+spider shimmer without changing authoritative positions. All 86 local contracts
+pass. Temporary modes, spider locks, paid power, Challenge mode, and additional
+course difficulty remain deferred until the progression and clarity slice is
+reviewed on device.
 
 ## Recently shipped (newest first)
 
