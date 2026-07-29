@@ -18,7 +18,9 @@ Coordinates the run. Owns lifecycle and sequencing; does not own physics truth.
   and obstacle window and can substitute a bounded local creator pattern. One
   explicit route plan coordinates boundary shaping, obstacle placement, and fly
   guidance; the first 2000 m forbid inward rails by default, and later inward
-  passages remain rail-only. Phase 1 extends this seam with selected authored
+  passages remain rail-only. Fly-advertised root passages grow from both rails
+  and expose a verified steering envelope rather than a centre-line-only hole.
+  Phase 1 extends this seam with selected authored
   chunks and pooling.
 - **Effect State** — applies, refreshes, expires, and reports power-ups. Refresh
   does not stack strength unless explicitly specified (GDD § 11.3).
@@ -41,5 +43,7 @@ Coordinates the run. Owns lifecycle and sequencing; does not own physics truth.
 settings intent. `ProgressionService` is the only mutator for fly-funded
 upgrades, selections, and creator slots.
 `SwingLabSession` owns the active laboratory command buffer, fixed-step order,
-candidate presets, snapshots, recording, replay, diagnostics, and chunk-boundary refreshes. `CourseStream` owns the seven-chunk deterministic geometry window. Neither imports
+candidate presets, snapshots, recording, replay, independent diagnostic-overlay
+state, and chunk-boundary refreshes. `CourseStream` owns the seven-chunk
+deterministic geometry window. Neither imports
 adapters or presentation. See ADR 0002.

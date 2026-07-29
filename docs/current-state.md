@@ -62,7 +62,7 @@ without a reported regression.
   attachment.
 - Double-tap carries a target in the authoritative command, so Burst works
   atomically even when the first tap has not attached yet. Ceiling pieces,
-  hanging/floor branches, obstacles, and split root gates all resolve through one
+  hanging/floor branches, obstacles, and rail-grown root passages all resolve through one
   solid-edge targeting policy.
 - Burst and Dive Pull are interruptible transitions rather than input locks. A
   valid upper-solid tap attaches a recovery web immediately, and a platform
@@ -71,10 +71,10 @@ without a reported regression.
 - Accepted Reel, Burst, and Dive Pull actions emit authoritative events.
   Presentation renders short directional flashes and the input adapter supplies
   distinct handheld haptics; unavailable actions do not fake success feedback.
-- The stream keeps a 1000 m learning runway free of detached middle hazards
+- The stream keeps a 1000 m learning runway free of large middle-lane challenges
   and, independently, forbids inward rail movement before 2000 m by default.
   It then combines continuous shaped ceiling/floor rails, leaf clusters, vine
-  forks, hanging seed pods, and split root gates. Rails are lethal by default;
+  forks, hanging seed pods, and broad rail-grown root passages. Rails are lethal by default;
   one explicit route plan coordinates each challenge's rails and fly trail.
   Most patterns open a high, low, or centre bypass; occasional later inward
   passages are rail-only rather than stacked with a floating obstacle. Sparse Burst Frenzy
@@ -94,7 +94,7 @@ without a reported regression.
   EMPTY/LEAF/POD/VINE/GATE slots and substitutes the post-opening course during
   its playtest. These are local foundations, not production economy or UGC.
 - The touch-first debug panel groups controls into Movement, Pacing, Rope,
-  Pulls, Course, Routes, Run, and Tools. Large cards use plain names, short
+  Pulls, Course, Routes, Run, Look, Overlays, and Tools. Large cards use plain names, short
   descriptions, direct
   comparison values, and `−` / `+` controls for gravity, forward drive,
   500–1400 px range, default RELEASE vs optional atomic RETARGET tap behavior,
@@ -114,22 +114,24 @@ without a reported regression.
   collision, targeting, pace, or lethality.
 - `ArtAssetCatalog` adds one cohesive Ancient Forest candidate-production
   grammar over that same geometry: mirrored mossy branch edges, rooted
-  brambles, top-anchored thorn vines, a grouped split root gate, a finished
+  brambles, top-anchored thorn vines, a grouped rail-grown root passage, a finished
   Classic Garden Spider sprite, and golden forest flies. Obstacle alpha is
-  backed by a dark collision shadow; normal play has no graphic rail or hazard
-  outline, while DEBUG restores exact collision overlays.
+  backed by a dark collision shadow. Collision outlines and web-target guides
+  both load off and can be enabled independently under DEBUG → OVERLAYS.
 - No autoload singletons exist, and a test fails if one appears.
 
 **Verification**
 
-- `python3 tools/verify.py` — architecture self-test and scan pass locally.
-  PR #23 `game-quality` run
+- `python3 tools/verify.py --require-godot` — passes locally on Godot
+  `4.7.1.stable.official.a13da4feb`: architecture fixtures/scan, clean import,
+  front-end boot, and all 78 headless contracts.
+- The last merged baseline remains PR #23. Its `game-quality` run
   [30463832533](https://github.com/menno420/spider-swing/actions/runs/30463832533)
   supplied Godot 4.7.1 and passed import, boot, and the complete 77-check
   headless suite at source
   `5e11740ccd249b5754114443316fa64207490de5`.
-- `tests/test_runner.gd` — 77 declared checks: forty
-  deterministic physics, sixteen GUI-owned mobile HUD, eleven front-end
+- `tests/test_runner.gd` — 78 declared checks: forty
+  deterministic physics, seventeen GUI-owned mobile HUD, eleven front-end
   navigation/settings/progression, plus bootstrap and exact build-version
   contracts. Physics covers exact 40%/40% pull shares,
   detached targeted Burst, recovery-web interruption, double-tap fallback,
@@ -138,9 +140,10 @@ without a reported regression.
   paced bounded streaming, scaled authoritative geometry, guided opening,
   rescue, spider profiles/glide, creator-pattern bounds, a 5000 m pacing curve,
   continuous contoured rails, upgradeable minimum Burst travel, and bounded
-  Springtail impacts. A route sweep proves a Classic-sized spider clears both
-  roots and both rails across the full split gate at every supported Creator
-  opening. The front-end group
+  Springtail impacts. A three-lane route sweep proves a Classic-sized spider
+  clears both rail-grown roots across the passage's full width at every
+  supported Creator opening; the mobile group proves both overlays begin off
+  and toggle independently. The front-end group
   performs real filesystem settings and progression round-trips plus settlement
   idempotency, profile upgrades, and creator edits. The trajectory
   fixture produces the same final state when driven through simulated 30, 60,
@@ -377,12 +380,15 @@ without a reported regression.
 
 ## In flight
 
-Phase 0.17 is verified in PR #23: the fly-advertised Ancient Forest root gate is
-two disconnected upper/lower arcs with matching art instead of an unreachable
-hole inside a closed ring. All 77 contracts and the Android export pass. The
-maximum-speed ramp still spans 5000 m, no rail moves inward before 2000 m by
-default, and later inward passages remain rail-only. Phase 1 remains blocked on
-owner device review of both feel and art.
+Phase 0.18 is in flight: the exact centre-line split gate from PR #23 has become
+one broad passage grown from both rails. At the 112% default its authoritative
+opening is roughly 266 reference pixels high, and the regression sweeps three
+Classic-sized lanes across it; even the 80% minimum preserves a useful steering
+band. Collision outlines and web-target guides now begin off and have independent
+DEBUG → OVERLAYS controls. All 78 local contracts pass. The maximum-speed ramp
+still spans 5000 m, no rail moves inward before 2000 m by default, and later
+inward passages remain rail-only. Phase 1 remains blocked on owner device review
+of both feel and art.
 
 ## Recently shipped (newest first)
 

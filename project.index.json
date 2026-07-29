@@ -131,7 +131,7 @@
       ],
       "gates": [
         "Home, six-step animated Tutorial, scrolling readable Settings, and Menu return are implemented.",
-        "The code-drawn graybox view consumes snapshots/events and shows continuous ceiling surfaces, reach-aware aim guides, striped test obstacles, Reel and attached-Burst state, tuning controls, and diagnostics.",
+        "The code-drawn view consumes snapshots/events and shows continuous ceiling surfaces, natural or graybox obstacle art, Reel and attached-Burst state, tuning controls, and off-by-default collision/web-guide diagnostics.",
         "The view and obstacles are test instrumentation, not production art or an approved Phase 1 content pack."
       ],
       "verification": [

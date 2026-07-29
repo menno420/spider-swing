@@ -35,4 +35,6 @@ Anything that touches the scene tree, physics bodies, files, or rendering.
 `SwingConfig`, `SpiderCatalog`, `PlayerProgress`, and shared layout contracts are
 live. The shared layout contract
 owns both drawn and interactive rope-action geometry so tests and adapters cannot
-silently disagree. See ADR 0002.
+silently disagree. `SimulationSnapshot` also carries independent, off-by-default
+collision-outline and web-guide presentation flags; neither flag changes
+authoritative geometry. See ADR 0002.

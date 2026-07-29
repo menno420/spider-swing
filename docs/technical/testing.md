@@ -87,7 +87,7 @@ Run directly:
 godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-77 checks, grouped so one subsystem failure never hides the rest:
+78 checks, grouped so one subsystem failure never hides the rest:
 
 - engine, main-scene, input-action, 60 Hz, renderer/viewport, Android preset,
   inward-dependency, and no-autoload bootstrap contracts;
@@ -99,17 +99,19 @@ godot --headless --path . --script res://tests/test_runner.gd
   polygon anchoring/collision, a 1000 m runway, smooth 5000 m speed ramp, and
   bounded organic streaming with continuous contoured rails, lower rail
   coverage, independent rail lethality, authoritative obstacle scaling, a
-  Classic-sized sweep through every split-gate fly route, the guided opening
+  three-lane Classic-sized steering-envelope sweep through every root-passage
+  fly route, the guided opening
   trajectory, one-run rescue, five spider profiles,
   bounded glide and impact-shell recovery, creator-pattern bounds, swept
   pickups, runtime pull tuning, and
   identical trajectories from
   simulated 30/60/90/120 Hz render loops;
-- sixteen mobile HUD contracts proving large separated Reel and Burst controls,
+- seventeen mobile HUD contracts proving large separated Reel and Burst controls,
   DEBUG, and Menu are event-consuming
   Buttons, GUI geometry shares one layout source, accepted actions drive visual
   and haptic feedback, UI actions do not leak into web input, debug tools can be
-  removed, and world input waits for Godot GUI handling;
+  removed, collision outlines and web-target guides are independent opt-in
+  controls, and world input waits for Godot GUI handling;
 - eleven front-end contracts proving Home starts before gameplay,
   Play/Garage/Shop/Tutorial/Course Lab/Settings route correctly, the six tutorial
   steps cover live mechanics, Settings

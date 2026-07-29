@@ -30,7 +30,8 @@ mistake; the HUD always says whether it is ready or spent.
 
 Every edge in the retained polygon geometry is a valid target: ceiling pieces,
 floor branches, hanging shapes, and gate pieces. Aim guides are visual hints
-only. A tap may land up to 220 reference pixels from the nearest solid edge, but
+only and load hidden. DEBUG → OVERLAYS can reveal them without enabling
+collision outlines. A tap may land up to 220 reference pixels from the nearest solid edge, but
 the resolved anchor must still be within the shared 1000-pixel candidate web
 range. The debug upper limit is 1400 pixels for right-hand reach experiments.
 
@@ -106,7 +107,7 @@ routes, flies, and recovery timing. Later chunks vary:
   after the protected distance, occasionally form a rail-only smaller gap;
 - floor-grown leaf clusters and vine forks;
 - ceiling-hanging seed pods and leaf clusters;
-- split upper/lower root gates with a horizontally traversable opening;
+- broad root passages grown from both rails, with a steerable centre opening;
 - lower rail targets placed before the pattern's key hazard;
 - five-fly trails placed from the same route plan that shapes the rails and
   selected obstacle;
@@ -114,12 +115,14 @@ routes, flies, and recovery timing. Later chunks vary:
 
 Obstacle polygons are lethal on contact and also valid anchors. Course rails are
 attachable structural surfaces, lethal by default, and independently
-configurable as visible or absent and safe or lethal. DEBUG draws the predicted endpoint of the nearest
-available Dive in green or red. Four generated environment packs now texture the
+configurable as visible or absent and safe or lethal. DEBUG → OVERLAYS can draw
+the predicted endpoint of the nearest available Dive in green or red. Four
+generated environment packs now texture the
 same polygons for art-direction comparison. Ancient Forest additionally composes
 finished candidate branch, bramble, hanging-vine, root-gate, Classic spider, and
-fly sprites over those exact silhouettes. Its normal play view removes graphic
-collision outlines; DEBUG restores the exact polygon and spider-radius overlays.
+fly sprites over those exact silhouettes. Normal play removes graphic collision
+outlines and web-target guides; the two independent OVERLAYS switches restore
+only the requested diagnostics.
 The other three material packs remain prototype comparisons. Moving hazards,
 production balancing, and final art for the other spider profiles remain
 deferred.
@@ -140,7 +143,7 @@ cosmetic milestones. The current fly costs are comparison values only.
 ## Debug tuning
 
 The touch-first debug panel is split into **Movement**, **Pacing**, **Rope**,
-**Pulls**, **Course**, **Routes**, **Run**, **Look**, and **Tools**. Every tuning
+**Pulls**, **Course**, **Routes**, **Run**, **Look**, **Overlays**, and **Tools**. Every tuning
 section shows
 at most six large setting cards.
 Each card uses a plain name, one-sentence description, direct comparison values,
@@ -152,7 +155,8 @@ Ancient Forest, Mossy Ravine, Overgrown Greenhouse, and Reclaimed Attic. The
 selector changes only presentation-owned texture, object art, and palette data.
 Graybox remains the exact silhouette check; selecting a look cannot resize,
 move, add, or remove a collision surface. Ancient Forest uses natural art in
-normal play and reveals its exact collision outlines only through DEBUG.
+normal play. **Overlays** contains separate, off-by-default switches for exact
+collision outlines and web-target guides.
 
 | Debug value | Meaning | Step / range |
 | --- | --- | --- |
@@ -180,7 +184,7 @@ normal play and reveals its exact collision outlines only through DEBUG.
 | `Floating hazards begin` | first detached middle-hazard distance | 100 m / 250–2000 m |
 | `Edge obstacle size` | scale rail-grown leaves, vines, and pods | 2% / 70–115% |
 | `Floating obstacle size` | scale detached middle hazards | 2% / 70–115% |
-| `Gate opening size` | widen or tighten split root-gate passages | 4% / 80–140% |
+| `Gate opening size` | widen or tighten rail-grown root passages | 4% / 80–140% |
 | `Shaped ceiling and floor` | contour continuous rails around challenges | off / on |
 | `Bypass room` | extra room on most high/low routes | 10% / 50–150% |
 | `Small-gap opening` | height of later rail-only inward passages | 5% / 75–140% |
@@ -227,7 +231,7 @@ product decisions.
   deterministic organic geometry after it, one shared route plan for rails,
   fly guidance, and obstacles, rail-only late tight routes, lower-anchor
   coverage, independently scaled obstacle polygons, creator-pattern bounds, a
-  Classic-sized sweep through split root-gate routes, and a bounded seven-chunk
+  three-lane Classic-sized steering-envelope sweep through root passages, and a bounded seven-chunk
   window;
 - a one-second safe guided opening that remains interruptible from its first
   tick;
@@ -286,20 +290,23 @@ signed dev app, then check:
 17. compare rails off, rails safe, and rails lethal; verify continuous shaped
     rails open usable high/low bypasses and only occasionally close into a small
     gap;
-18. confirm no detached middle hazard appears before roughly 1000 m, then judge
-    whether later leaf, vine, seed-pod, and pot patterns remain readable;
+18. confirm no large middle-lane challenge appears before roughly 1000 m, then
+    judge whether later leaf, vine, seed-pod, and root patterns remain readable;
 19. compare floating obstacle sizes around 85%, 90%, and 95%, then vary gate
-    opening size; collision edges must remain aligned with the silhouettes;
-20. deliberately hit a lethal obstacle once and verify `RESCUE READY` becomes
+    opening size; every root passage must remain steerable and its collision
+    edges must remain aligned with the silhouettes;
+20. open DEBUG → OVERLAYS and verify collision outlines and web-target guides
+    begin off, can be enabled independently, and return off in a new run;
+21. deliberately hit a lethal obstacle once and verify `RESCUE READY` becomes
     `RESCUE SPENT`; the next lethal hit must end the run;
-21. compare all five Garage profiles, especially Skitter's smaller collision
+22. compare all five Garage profiles, especially Skitter's smaller collision
     radius, Anchorite's weight, Ballooner's visible bounded glide, and
     Springtail's charged moderate rail bounce;
-22. spend laboratory flies on one Shop track and confirm the shown resolved
+23. spend laboratory flies on one Shop track and confirm the shown resolved
     value changes and survives restart;
-23. create a six-piece Course Lab pattern, playtest it after the opening, return
+24. create a six-piece Course Lab pattern, playtest it after the opening, return
     Home, and confirm the saved pattern remains;
-24. follow fly arcs, collect Burst Frenzy, use multiple Bursts before it expires,
+25. follow fly arcs, collect Burst Frenzy, use multiple Bursts before it expires,
     and confirm it does not bypass the upper-web requirement for another Dive.
 25. compare full-speed distances around 3000/5000/6500 m and confirm the default
     no longer feels near maximum during the opening kilometre;
