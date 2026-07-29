@@ -62,7 +62,7 @@ without a reported regression.
   attachment.
 - Double-tap carries a target in the authoritative command, so Burst works
   atomically even when the first tap has not attached yet. Ceiling pieces,
-  hanging/floor branches, obstacles, and split root gates all resolve through one
+  hanging/floor branches, obstacles, and rail-grown root passages all resolve through one
   solid-edge targeting policy.
 - Burst and Dive Pull are interruptible transitions rather than input locks. A
   valid upper-solid tap attaches a recovery web immediately, and a platform
@@ -71,10 +71,10 @@ without a reported regression.
 - Accepted Reel, Burst, and Dive Pull actions emit authoritative events.
   Presentation renders short directional flashes and the input adapter supplies
   distinct handheld haptics; unavailable actions do not fake success feedback.
-- The stream keeps a 1000 m learning runway free of detached middle hazards
+- The stream keeps a 1000 m learning runway free of large middle-lane challenges
   and, independently, forbids inward rail movement before 2000 m by default.
   It then combines continuous shaped ceiling/floor rails, leaf clusters, vine
-  forks, hanging seed pods, and split root gates. Rails are lethal by default;
+  forks, hanging seed pods, and broad rail-grown root passages. Rails are lethal by default;
   one explicit route plan coordinates each challenge's rails and fly trail.
   Most patterns open a high, low, or centre bypass; occasional later inward
   passages are rail-only rather than stacked with a floating obstacle. Sparse Burst Frenzy
@@ -94,7 +94,7 @@ without a reported regression.
   EMPTY/LEAF/POD/VINE/GATE slots and substitutes the post-opening course during
   its playtest. These are local foundations, not production economy or UGC.
 - The touch-first debug panel groups controls into Movement, Pacing, Rope,
-  Pulls, Course, Routes, Run, and Tools. Large cards use plain names, short
+  Pulls, Course, Routes, Run, Look, Overlays, and Tools. Large cards use plain names, short
   descriptions, direct
   comparison values, and `−` / `+` controls for gravity, forward drive,
   500–1400 px range, default RELEASE vs optional atomic RETARGET tap behavior,
@@ -114,22 +114,25 @@ without a reported regression.
   collision, targeting, pace, or lethality.
 - `ArtAssetCatalog` adds one cohesive Ancient Forest candidate-production
   grammar over that same geometry: mirrored mossy branch edges, rooted
-  brambles, top-anchored thorn vines, a grouped split root gate, a finished
+  brambles, top-anchored thorn vines, a grouped rail-grown root passage, a finished
   Classic Garden Spider sprite, and golden forest flies. Obstacle alpha is
-  backed by a dark collision shadow; normal play has no graphic rail or hazard
-  outline, while DEBUG restores exact collision overlays.
+  backed by a dark collision shadow. Collision outlines and web-target guides
+  both load off and can be enabled independently under DEBUG → OVERLAYS.
 - No autoload singletons exist, and a test fails if one appears.
 
 **Verification**
 
-- `python3 tools/verify.py` — architecture self-test and scan pass locally.
-  PR #23 `game-quality` run
-  [30463832533](https://github.com/menno420/spider-swing/actions/runs/30463832533)
-  supplied Godot 4.7.1 and passed import, boot, and the complete 77-check
+- `python3 tools/verify.py --require-godot` — passes locally on Godot
+  `4.7.1.stable.official.a13da4feb`: architecture fixtures/scan, clean import,
+  front-end boot, and all 78 headless contracts.
+- The last merged baseline remains PR #23. The current PR #24 candidate's
+  `game-quality` run
+  [30468085710](https://github.com/menno420/spider-swing/actions/runs/30468085710)
+  supplies Godot 4.7.1 and passes import, boot, and the complete 78-check
   headless suite at source
-  `5e11740ccd249b5754114443316fa64207490de5`.
-- `tests/test_runner.gd` — 77 declared checks: forty
-  deterministic physics, sixteen GUI-owned mobile HUD, eleven front-end
+  `5029e2c501b01e48c12e88a2ba266212014c0ef9`.
+- `tests/test_runner.gd` — 78 declared checks: forty
+  deterministic physics, seventeen GUI-owned mobile HUD, eleven front-end
   navigation/settings/progression, plus bootstrap and exact build-version
   contracts. Physics covers exact 40%/40% pull shares,
   detached targeted Burst, recovery-web interruption, double-tap fallback,
@@ -138,9 +141,10 @@ without a reported regression.
   paced bounded streaming, scaled authoritative geometry, guided opening,
   rescue, spider profiles/glide, creator-pattern bounds, a 5000 m pacing curve,
   continuous contoured rails, upgradeable minimum Burst travel, and bounded
-  Springtail impacts. A route sweep proves a Classic-sized spider clears both
-  roots and both rails across the full split gate at every supported Creator
-  opening. The front-end group
+  Springtail impacts. A three-lane route sweep proves a Classic-sized spider
+  clears both rail-grown roots across the passage's full width at every
+  supported Creator opening; the mobile group proves both overlays begin off
+  and toggle independently. The front-end group
   performs real filesystem settings and progression round-trips plus settlement
   idempotency, profile upgrades, and creator edits. The trajectory
   fixture produces the same final state when driven through simulated 30, 60,
@@ -213,6 +217,13 @@ without a reported regression.
   sweeps the complete fly-advertised route through the split root gate at 80%,
   112%, and 140% openings. The host verifier also rejects fatal Godot script
   diagnostics even when the engine process exits 0.
+- PR #24 `game-quality` run
+  [30468085710](https://github.com/menno420/spider-swing/actions/runs/30468085710)
+  passes all 78 runtime contracts on Godot 4.7.1 at source
+  `5029e2c501b01e48c12e88a2ba266212014c0ef9`. The strengthened route contract
+  sweeps three useful steering lanes across the entire rail-grown root passage,
+  while the expanded mobile contract proves collision outlines and unattached
+  web guides both start hidden and toggle independently.
 - `substrate-gate` — kit-owned. A born-red session card deliberately holds a PR
   until close-out; it must be green on the completed card before merge.
 - `android-debug` — **green on `main`, APK proven.** Run #1 produced artifact
@@ -344,6 +355,19 @@ without a reported regression.
   `build-info.txt` proves version `0.8.1-split-gate-test`, source
   `60bb5e83fb747f9cb6418218db4db2cd03c3fa26`, dev package, and display name
   `Spider Swing Split Gate (dev)`.
+- PR #24 `android-debug` run
+  [30468087491](https://github.com/menno420/spider-swing/actions/runs/30468087491)
+  produced downloadable artifact
+  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30468087491/artifacts/8730447877)
+  ID `8730447877`, 58,595,704 bytes, digest
+  `sha256:3dbd6a975f512e3633fb03cc65d07320b3b30c686b367fe18130c96ae395d006`.
+  The downloaded ZIP and its 58,983,802-byte APK passed archive validation; the
+  APK has SHA-256
+  `cfc39b42a49a83bb5111113f9737e74ccc4c74f23f859100e800c30544b5756f`
+  and contains `classes.dex`, `AndroidManifest.xml`, and
+  `assets/project.binary`. `build-info.txt` proves version
+  `0.8.2-wide-passage-test`, exact source, dev package, and display name
+  `Spider Swing Wide Passage (dev)`.
 - **Dependabot** — live. Its first run opened two bumps against the kit-owned
   `substrate-gate.yml`; both were closed because `adopt`/`upgrade` regenerates that
   file. The rule is documented in `.github/dependabot.yml`: kit-owned-only bumps get
@@ -377,12 +401,16 @@ without a reported regression.
 
 ## In flight
 
-Phase 0.17 is verified in PR #23: the fly-advertised Ancient Forest root gate is
-two disconnected upper/lower arcs with matching art instead of an unreachable
-hole inside a closed ring. All 77 contracts and the Android export pass. The
-maximum-speed ramp still spans 5000 m, no rail moves inward before 2000 m by
-default, and later inward passages remain rail-only. Phase 1 remains blocked on
-owner device review of both feel and art.
+Phase 0.18 is in flight: the exact centre-line split gate from PR #23 has become
+one broad passage grown from both rails. At the 112% default its authoritative
+opening is roughly 266 reference pixels high, and the regression sweeps three
+Classic-sized lanes across it; even the 80% minimum preserves a useful steering
+band. Collision outlines and web-target guides now begin off and have independent
+DEBUG → OVERLAYS controls. All 78 local and PR `game-quality` contracts pass,
+and the Android candidate artifact is verified. The maximum-speed ramp
+still spans 5000 m, no rail moves inward before 2000 m by default, and later
+inward passages remain rail-only. Phase 1 remains blocked on owner device review
+of both feel and art.
 
 ## Recently shipped (newest first)
 

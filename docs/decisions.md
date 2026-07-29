@@ -204,8 +204,9 @@
 
 ## [D-0015] Make advertised gate routes open in the movement plane
 
-- status: decided
+- status: superseded
 - date: 2026-07-29
+- superseded-by: D-0016
 - verdict: A gate advertised by a horizontal fly trail is two disconnected
   upper/lower collision arcs. Its Ancient Forest art uses the same two pieces,
   and each arc is fitted to its own authoritative polygon so the editable
@@ -217,3 +218,32 @@
   instead of checking only isolated fly points.
 - provenance: Menno's `0.8.0-forest-art-test` device recording and the split-gate
   regression session
+
+## [D-0016] Validate route envelopes and grow gates from the rails
+
+- status: decided
+- date: 2026-07-29
+- verdict: A fly-advertised root gate is one broad passage between an upper root
+  grown from the ceiling and a lower root grown from the floor. At every
+  supported opening value, the authoritative route must clear the Classic
+  spider plus a useful vertical steering band across the gate's full width.
+- why: The split pieces in `0.8.1-split-gate-test` made the exact centre line
+  mathematically open, but Menno's Android recording showed that a real swing
+  cannot hold that line precisely. A collectible route is honest only when it
+  tolerates normal approach angle and vertical correction, and rail-grown roots
+  read as one environmental opening instead of another floating obstacle.
+- provenance: Menno's `0.8.1-split-gate-test` device recording and the
+  wide-passage regression session
+
+## [D-0017] Keep world diagnostics opt-in and independent
+
+- status: decided
+- date: 2026-07-29
+- verdict: Opening the DEBUG panel does not enable world overlays. Collision
+  outlines and web-target guides are separate session-owned switches under
+  DEBUG → OVERLAYS, and both begin off on every run.
+- why: Natural art is the default play-reading surface. Collision and targeting
+  diagnostics remain necessary for verification, but they should appear only
+  when deliberately requested and should not be coupled to whether the tuning
+  panel is open.
+- provenance: Menno's `0.8.1-split-gate-test` presentation feedback

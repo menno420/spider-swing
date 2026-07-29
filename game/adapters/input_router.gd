@@ -14,6 +14,8 @@ signal burst_gesture(screen_position: Vector2)
 signal restart_requested
 signal menu_requested
 signal debug_toggle_requested
+signal collision_outlines_toggle_requested
+signal web_guides_toggle_requested
 signal debug_pause_requested
 signal debug_frame_step_requested
 signal slow_motion_requested
@@ -239,6 +241,25 @@ func install_touch_surface(
 		theme_button.pressed.connect(
 			_emit_environment_theme.bind(theme_index))
 		_register_category_control(visual_controls, theme_button)
+
+	var overlay_category_index := TuningCatalog.category_index(
+		TuningCatalog.CATEGORY_OVERLAYS)
+	var overlay_controls: Array = _debug_category_controls[
+		overlay_category_index]
+	var collision_outlines := _make_fixed_button(
+		&"CollisionOutlines",
+		LabLayout.parameter_card_rect(0, layout_size),
+	)
+	collision_outlines.pressed.connect(
+		func() -> void: collision_outlines_toggle_requested.emit())
+	_register_category_control(overlay_controls, collision_outlines)
+	var web_guides := _make_fixed_button(
+		&"WebGuides",
+		LabLayout.parameter_card_rect(1, layout_size),
+	)
+	web_guides.pressed.connect(
+		func() -> void: web_guides_toggle_requested.emit())
+	_register_category_control(overlay_controls, web_guides)
 
 	for index in range(6):
 		var utility := _make_fixed_button(

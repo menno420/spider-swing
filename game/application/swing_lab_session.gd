@@ -26,6 +26,8 @@ var _rescue_available: bool = true
 var _command_buffer: Array[InputCommand] = []
 var _sequence: int = 0
 var _debug_visible: bool = false
+var _collision_outlines_visible: bool = false
+var _web_guides_visible: bool = false
 var _debug_paused: bool = false
 var _slow_motion: bool = false
 var _slow_motion_phase: int = 0
@@ -120,6 +122,16 @@ func request_restart() -> void:
 
 func toggle_debug() -> void:
 	_debug_visible = not _debug_visible
+	_publish_snapshot()
+
+
+func toggle_collision_outlines() -> void:
+	_collision_outlines_visible = not _collision_outlines_visible
+	_publish_snapshot()
+
+
+func toggle_web_guides() -> void:
+	_web_guides_visible = not _web_guides_visible
 	_publish_snapshot()
 
 
@@ -491,6 +503,8 @@ func _make_snapshot() -> SimulationSnapshot:
 	snapshot.player_collision_radius = _config.player_collision_radius
 	_populate_dive_preview(snapshot)
 	snapshot.debug_visible = _debug_visible
+	snapshot.collision_outlines_visible = _collision_outlines_visible
+	snapshot.web_guides_visible = _web_guides_visible
 	snapshot.debug_paused = _debug_paused
 	snapshot.slow_motion = _slow_motion
 	snapshot.recording = _recording

@@ -873,14 +873,20 @@ static func _test_opening_runway_has_no_middle_hazards(
 						metres)
 				return 0
 	var later := stream.update_for_position(12000.0, 10000.0)
-	var found_middle := false
+	var found_lane_intrusion := false
 	for obstacle: PackedVector2Array in later.obstacles:
 		var bounds := SolidGeometry.bounds(obstacle)
-		if bounds.position.y > 210.0 and bounds.end.y < 620.0:
-			found_middle = true
+		var hangs_into_lane := \
+			bounds.position.y <= CourseStream.CEILING_Y + 1.0 and \
+			bounds.end.y >= CourseStream.CEILING_Y + 180.0
+		var grows_into_lane := \
+			bounds.end.y >= CourseStream.FLOOR_Y - 1.0 and \
+			bounds.position.y <= CourseStream.FLOOR_Y - 180.0
+		if hangs_into_lane or grows_into_lane:
+			found_lane_intrusion = true
 			break
-	if not found_middle:
-		failures.append("course never introduces middle hazards after the runway")
+	if not found_lane_intrusion:
+		failures.append("course never introduces rail-grown challenges after the runway")
 		return 0
 	return 1
 
@@ -1057,41 +1063,60 @@ static func _test_gate_fly_route_is_traversable(
 		var pattern: Array[StringName] = [&"gate"]
 		stream.reset(10000.0, 0.94, 0.90, opening_scale, pattern)
 		var geometry := stream.update_for_position(1300.0)
-		var found_gate_piece := false
-		for sample_index in range(61):
-			var sample_x := lerpf(
-				gate_center.x - 150.0,
-				gate_center.x + 150.0,
-				float(sample_index) / 60.0,
-			)
-			var route_sample := Vector2(sample_x, gate_center.y)
-			for boundary: PackedVector2Array in geometry.boundary_surfaces:
-				if SolidGeometry.circle_intersects_polygon(
-					route_sample,
-					route_radius,
-					boundary,
-				):
-					failures.append(
-						"gate fly route meets a course boundary at %.0f%%" %
-						(opening_scale * 100.0))
-					return 0
-			for obstacle: PackedVector2Array in geometry.obstacles:
-				var obstacle_bounds := SolidGeometry.bounds(obstacle)
-				if absf(obstacle_bounds.get_center().x - gate_center.x) > 130.0:
-					continue
-				found_gate_piece = true
-				if SolidGeometry.circle_intersects_polygon(
-					route_sample,
-					route_radius,
-					obstacle,
-				):
-					failures.append(
-						"gate fly route blocks a Classic-sized spider at %.0f%%" %
-						(opening_scale * 100.0))
-					return 0
-		if not found_gate_piece:
-			failures.append("gate route fixture produced no gate collision pieces")
+		var gate_pieces: Array[PackedVector2Array] = []
+		for obstacle: PackedVector2Array in geometry.obstacles:
+			var obstacle_bounds := SolidGeometry.bounds(obstacle)
+			if absf(obstacle_bounds.get_center().x - gate_center.x) <= 130.0:
+				gate_pieces.append(obstacle)
+		if gate_pieces.size() != 2:
+			failures.append("gate route fixture did not produce two rail-grown pieces")
 			return 0
+		var upper_bounds := SolidGeometry.bounds(gate_pieces[0])
+		var lower_bounds := SolidGeometry.bounds(gate_pieces[1])
+		if upper_bounds.position.y > CourseStream.CEILING_Y + 1.0 or \
+				lower_bounds.end.y < CourseStream.FLOOR_Y - 1.0:
+			failures.append(
+				"gate pieces still float instead of growing from both rails")
+			return 0
+		var steering_half_band := 60.0
+		if is_equal_approx(opening_scale, 1.12):
+			steering_half_band = 96.0
+		elif opening_scale > 1.12:
+			steering_half_band = 124.0
+		for lane_y in [
+			gate_center.y - steering_half_band,
+			gate_center.y,
+			gate_center.y + steering_half_band,
+		]:
+			for sample_index in range(61):
+				var sample_x := lerpf(
+					gate_center.x - 150.0,
+					gate_center.x + 150.0,
+					float(sample_index) / 60.0,
+				)
+				var route_sample := Vector2(sample_x, lane_y)
+				for boundary: PackedVector2Array in geometry.boundary_surfaces:
+					if SolidGeometry.circle_intersects_polygon(
+						route_sample,
+						route_radius,
+						boundary,
+					):
+						failures.append(
+							"gate steering envelope meets a rail at %.0f%%" %
+							(opening_scale * 100.0))
+						return 0
+				for obstacle: PackedVector2Array in gate_pieces:
+					if SolidGeometry.circle_intersects_polygon(
+						route_sample,
+						route_radius,
+						obstacle,
+					):
+						failures.append(
+							"gate blocks the %.0f px steering lane at %.0f%%" % [
+								steering_half_band,
+								opening_scale * 100.0,
+							])
+						return 0
 	return 1
 
 

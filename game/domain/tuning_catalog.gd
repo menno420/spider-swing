@@ -13,6 +13,7 @@ const CATEGORY_COURSE := &"course"
 const CATEGORY_ROUTES := &"routes"
 const CATEGORY_RUN := &"run"
 const CATEGORY_VISUALS := &"visuals"
+const CATEGORY_OVERLAYS := &"overlays"
 const CATEGORY_TOOLS := &"tools"
 
 const CATEGORIES := [
@@ -55,6 +56,11 @@ const CATEGORIES := [
 		"id": CATEGORY_VISUALS,
 		"label": "LOOK",
 		"help": "Swap environment art without changing any collision shape.",
+	},
+	{
+		"id": CATEGORY_OVERLAYS,
+		"label": "OVERLAYS",
+		"help": "Reveal optional collision and web-target diagnostics.",
 	},
 	{
 		"id": CATEGORY_TOOLS,

@@ -25,7 +25,8 @@ endpoints; it does not drive physics (GDD § 17.2).
 - `tutorial_preview.gd` — reduced-motion-aware in-engine mechanics animation.
 - `swing_lab.tscn` + `swing_lab.gd` — Phase 0 camera, anchors, spider, web,
   HUD, Reel energy, opening/rescue/profile feedback,
-  authoritative-event-driven action flashes, and diagnostic overlays.
+  authoritative-event-driven action flashes, and opt-in collision/web-guide
+  overlays. The DEBUG panel and world overlays are independent.
 - `environment_theme_catalog.gd` — one visual-only registry for the Graybox,
   Ancient Forest, Mossy Ravine, Overgrown Greenhouse, and Reclaimed Attic
   looks. It may change texture and palette but never course geometry.

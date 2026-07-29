@@ -328,7 +328,8 @@ func _append_middle_challenge(
 				105.0 * _floating_obstacle_scale,
 				165.0 * _floating_obstacle_scale)
 		3:
-			_append_split_root_gate(result, start_x + 690.0, 370.0)
+			_append_split_root_gate(
+				result, start_x + 690.0, 370.0, ceiling_y, floor_y)
 		4:
 			_append_vine_fork(
 				result, start_x + 650.0, floor_y,
@@ -347,7 +348,8 @@ func _append_middle_challenge(
 				result, start_x + 815.0, ceiling_y, true,
 				_floating_obstacle_scale)
 		_:
-			_append_split_root_gate(result, start_x + 700.0, 350.0)
+			_append_split_root_gate(
+				result, start_x + 700.0, 350.0, ceiling_y, floor_y)
 
 
 func _append_creator_challenge(
@@ -373,7 +375,8 @@ func _append_creator_challenge(
 				235.0 * _floating_obstacle_scale,
 				195.0 * _floating_obstacle_scale)
 		&"gate":
-			_append_split_root_gate(result, start_x + 690.0, 370.0)
+			_append_split_root_gate(
+				result, start_x + 690.0, 370.0, ceiling_y, floor_y)
 		_:
 			pass
 
@@ -544,34 +547,33 @@ func _append_split_root_gate(
 	result: CourseGeometry,
 	center_x: float,
 	center_y: float,
+	ceiling_y: float,
+	floor_y: float,
 ) -> void:
-	var outer_x := 105.0 * _floating_obstacle_scale
-	var outer_y := 126.0 * _floating_obstacle_scale
-	var inner_x := 48.0 * _floating_obstacle_scale
-	var opening_y := 57.0 * _floating_obstacle_scale * _gate_opening_scale
-	var left := center_x - outer_x
-	var right := center_x + outer_x
-	var top := center_y - outer_y
-	var bottom := center_y + outer_y
-	var inner_left := center_x - inner_x
-	var inner_right := center_x + inner_x
-	var opening_top := center_y - opening_y
-	var opening_bottom := center_y + opening_y
-	# A side-scrolling route cannot enter a closed ring: its left or right wall
-	# must be crossed before the nominal centre hole is reachable. The gate is
-	# therefore authored as two disconnected arcs. The same opening_y value
-	# controls their collision edges and the fly route's real clearance.
+	var root_half_width := 105.0 * _floating_obstacle_scale
+	var throat_half_width := 56.0 * _floating_obstacle_scale
+	var opening_half_height := \
+		132.0 * _floating_obstacle_scale * _gate_opening_scale
+	var root_left := center_x - root_half_width
+	var root_right := center_x + root_half_width
+	var throat_left := center_x - throat_half_width
+	var throat_right := center_x + throat_half_width
+	var opening_top := center_y - opening_half_height
+	var opening_bottom := center_y + opening_half_height
+	# These are not detached precision obstacles. Each root overlaps its lethal
+	# rail and tapers toward one broad opening. The single opening value controls
+	# the visible throat, collision edge, and verified steering envelope.
 	result.obstacles.append(PackedVector2Array([
-		Vector2(left + 30.0, top),
-		Vector2(right - 24.0, top + 12.0),
-		Vector2(inner_right, opening_top),
-		Vector2(inner_left, opening_top),
+		Vector2(root_left, ceiling_y - 4.0),
+		Vector2(root_right, ceiling_y - 4.0),
+		Vector2(throat_right, opening_top),
+		Vector2(throat_left, opening_top),
 	]))
 	result.obstacles.append(PackedVector2Array([
-		Vector2(inner_left, opening_bottom),
-		Vector2(inner_right, opening_bottom),
-		Vector2(right - 32.0, bottom),
-		Vector2(left + 38.0, bottom - 10.0),
+		Vector2(throat_left, opening_bottom),
+		Vector2(throat_right, opening_bottom),
+		Vector2(root_right, floor_y + 4.0),
+		Vector2(root_left, floor_y + 4.0),
 	]))
 
 

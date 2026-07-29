@@ -263,7 +263,8 @@ func _draw_course(size: Vector2) -> void:
 				surface_bounds.position.x > size.x + 80.0:
 			continue
 		draw_colored_polygon(screen_surface, Color(0.07, 0.26, 0.29, 0.96))
-		_draw_closed_polyline(screen_surface, CYAN, 4.0)
+		if _snapshot.collision_outlines_visible:
+			_draw_closed_polyline(screen_surface, CYAN, 2.0)
 
 	for boundary: PackedVector2Array in _snapshot.boundary_surfaces:
 		var screen_boundary := _polygon_to_screen(boundary)
@@ -288,24 +289,25 @@ func _draw_course(size: Vector2) -> void:
 		)
 		if _uses_forest_art():
 			_draw_forest_boundary_edge(boundary, screen_boundary)
-		if not _uses_forest_art() or _snapshot.debug_visible:
+		if _snapshot.collision_outlines_visible:
 			_draw_closed_polyline(
 				screen_boundary,
 				outline,
-				2.0 if _snapshot.debug_visible else 4.0,
+				2.0,
 			)
 
-	for guide: Vector2 in _snapshot.anchors:
-		var screen := _world_to_screen(guide)
-		if screen.x < -80.0 or screen.x > size.x + 80.0:
-			continue
-		var distance := guide.distance_to(_snapshot.position)
-		var in_range := distance >= 90.0 and \
-			distance <= _snapshot.web_maximum_length
-		var color := GREEN if in_range else YELLOW
-		draw_circle(screen, 10.0, Color(color, 0.12))
-		draw_arc(screen, 11.0, 0.0, TAU, 24, Color(color, 0.72), 2.0)
-		draw_circle(screen, 3.0, WEB)
+	if _snapshot.web_guides_visible:
+		for guide: Vector2 in _snapshot.anchors:
+			var screen := _world_to_screen(guide)
+			if screen.x < -80.0 or screen.x > size.x + 80.0:
+				continue
+			var distance := guide.distance_to(_snapshot.position)
+			var in_range := distance >= 90.0 and \
+				distance <= _snapshot.web_maximum_length
+			var color := GREEN if in_range else YELLOW
+			draw_circle(screen, 10.0, Color(color, 0.12))
+			draw_arc(screen, 11.0, 0.0, TAU, 24, Color(color, 0.72), 2.0)
+			draw_circle(screen, 3.0, WEB)
 
 	var obstacle_index := 0
 	while obstacle_index < _snapshot.obstacles.size():
@@ -342,7 +344,7 @@ func _draw_course(size: Vector2) -> void:
 			boost_screen + Vector2(7.0, 12.0),
 		]), WEB, 4.0, true)
 
-	if _snapshot.debug_visible and _snapshot.dive_preview_available:
+	if _snapshot.web_guides_visible and _snapshot.dive_preview_available:
 		var preview_color := GREEN if _snapshot.dive_preview_safe else RED
 		var preview_start := _world_to_screen(_snapshot.position)
 		var preview_end := _world_to_screen(_snapshot.dive_preview_endpoint)
@@ -351,9 +353,11 @@ func _draw_course(size: Vector2) -> void:
 		draw_line(preview_end, preview_anchor, Color(preview_color, 0.35), 2.0)
 		draw_arc(preview_end, 13.0, 0.0, TAU, 24, preview_color, 3.0)
 
-	var kill_x := _world_to_screen(Vector2(_snapshot.left_kill_boundary, 0.0)).x
-	if kill_x > 0.0 and kill_x < size.x:
-		draw_line(Vector2(kill_x, 0.0), Vector2(kill_x, size.y), RED, 3.0)
+	if _snapshot.collision_outlines_visible:
+		var kill_x := _world_to_screen(
+			Vector2(_snapshot.left_kill_boundary, 0.0)).x
+		if kill_x > 0.0 and kill_x < size.x:
+			draw_line(Vector2(kill_x, 0.0), Vector2(kill_x, size.y), RED, 3.0)
 
 
 func _draw_forest_boundary_edge(
@@ -434,7 +438,7 @@ func _draw_obstacle(
 		var texture := _art_texture(asset_id)
 		if texture != null:
 			_draw_texture_fitted(texture, screen_bounds.grow(3.0), flip_y)
-		if _snapshot.debug_visible:
+		if _snapshot.collision_outlines_visible:
 			_draw_closed_polyline(
 				polygon,
 				environment["lethal_edge"] as Color,
@@ -447,11 +451,12 @@ func _draw_obstacle(
 		environment["obstacle_tint"] as Color,
 		OBSTACLE_DARK,
 	)
-	_draw_closed_polyline(
-		polygon,
-		environment["lethal_edge"] as Color,
-		4.0,
-	)
+	if _snapshot.collision_outlines_visible:
+		_draw_closed_polyline(
+			polygon,
+			environment["lethal_edge"] as Color,
+			2.0,
+		)
 	if _environment_theme_index != 0:
 		return
 	var center := Vector2.ZERO
@@ -495,7 +500,7 @@ func _draw_forest_gate(first_index: int, viewport_size: Vector2) -> void:
 			_polygon_bounds(screen_polygons[1]),
 			FOREST_GATE_LOWER_SOURCE,
 		)
-	if _snapshot.debug_visible:
+	if _snapshot.collision_outlines_visible:
 		var color := _environment_theme()["lethal_edge"] as Color
 		for polygon: PackedVector2Array in screen_polygons:
 			_draw_closed_polyline(polygon, color, 2.0)
@@ -511,14 +516,15 @@ func _is_forest_gate_group(first_index: int) -> bool:
 	var upper_bounds := _polygon_bounds(upper)
 	var lower_bounds := _polygon_bounds(lower)
 	var union_bounds := upper_bounds.merge(lower_bounds)
-	return upper_bounds.size.x > upper_bounds.size.y and \
-		lower_bounds.size.x > lower_bounds.size.y and \
-		upper_bounds.get_center().y < lower_bounds.get_center().y and \
+	return upper_bounds.get_center().y < lower_bounds.get_center().y and \
+		upper_bounds.position.y <= CourseStream.CEILING_Y + 2.0 and \
+		lower_bounds.end.y >= CourseStream.FLOOR_Y - 2.0 and \
+		upper_bounds.end.y < lower_bounds.position.y and \
 		absf(
 			upper_bounds.get_center().x - lower_bounds.get_center().x,
 		) <= 8.0 and \
 		union_bounds.size.x >= 110.0 and union_bounds.size.x <= 240.0 and \
-		union_bounds.size.y >= 170.0 and union_bounds.size.y <= 330.0
+		union_bounds.size.y >= 520.0 and union_bounds.size.y <= 640.0
 
 
 func _draw_fly(screen_position: Vector2, world_position: Vector2) -> void:
@@ -719,7 +725,7 @@ func _draw_spider() -> void:
 			GREEN if _snapshot.surface_bounce_ready else Color(MUTED, 0.42),
 			4.0,
 		)
-	if _show_debug_tools and _snapshot.debug_visible:
+	if _show_debug_tools and _snapshot.collision_outlines_visible:
 		draw_arc(center, _snapshot.player_collision_radius, 0.0, TAU, 40, CYAN, 1.5)
 		draw_line(center, center + _snapshot.velocity * 0.12, YELLOW, 2.0)
 
@@ -915,6 +921,8 @@ func _draw_debug(size: Vector2) -> void:
 	)
 	if StringName(active_category["id"]) == TuningCatalog.CATEGORY_VISUALS:
 		_draw_environment_theme_cards(size)
+	elif StringName(active_category["id"]) == TuningCatalog.CATEGORY_OVERLAYS:
+		_draw_overlay_controls(size)
 	elif _snapshot.debug_category_index == TuningCatalog.tools_category_index():
 		_draw_debug_tools(size)
 	else:
@@ -1059,6 +1067,40 @@ func _draw_debug_tools(size: Vector2) -> void:
 				state = "TOUCH TO SAVE"
 		if not state.is_empty():
 			_draw_text(card.position + Vector2(20.0, 111.0), state, 14, YELLOW)
+
+
+func _draw_overlay_controls(size: Vector2) -> void:
+	var labels := ["Collision outlines", "Web target guides"]
+	var descriptions := [
+		"Show exact lethal polygons, player radius, velocity, and kill boundary.",
+		"Show optional attachment markers and the predicted Dive endpoint.",
+	]
+	var active_states := [
+		_snapshot.collision_outlines_visible,
+		_snapshot.web_guides_visible,
+	]
+	for index in range(labels.size()):
+		var card := LabLayout.parameter_card_rect(index, size)
+		var active: bool = active_states[index]
+		draw_rect(
+			card,
+			Color(0.08, 0.35, 0.38, 0.94) if active
+				else Color(0.025, 0.105, 0.13, 0.98),
+		)
+		draw_rect(card, CYAN if active else MUTED, false, 2.0)
+		_draw_text(card.position + Vector2(20.0, 42.0), labels[index], 20, WEB)
+		_draw_text(
+			card.position + Vector2(20.0, 74.0),
+			descriptions[index],
+			14,
+			MUTED,
+		)
+		_draw_text(
+			card.position + Vector2(20.0, 111.0),
+			"ON" if active else "OFF",
+			14,
+			GREEN if active else YELLOW,
+		)
 
 
 func _draw_environment_theme_cards(size: Vector2) -> void:

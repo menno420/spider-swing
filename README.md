@@ -48,7 +48,8 @@ Burst boost.
 - A deterministic opening trajectory that uses the ordinary web constraint and
   remains interruptible from the first tick, plus one optional rescue charge per
   run with a short collision shield and clear HUD state.
-- Polygonal ceilings and obstacles with optional aim guides, a 1000-pixel shared
+- Polygonal ceilings and obstacles with off-by-default web-target guides, a
+  1000-pixel shared
   web range, a 220-pixel aim-forgiveness band, manual release, Reel-In
   drain/regeneration/lockout, and multi-touch input that keeps UI touches out of
   the web path. Every solid edge is a valid target.
@@ -59,7 +60,7 @@ Burst boost.
   which the lethal ceiling/floor rails never move inward. One shared route plan
   shapes the rails and fly trail around each challenge; occasional later tight
   gaps are rail-only rather than stacked with a floating blocker. Leaf clusters,
-  vine forks, hanging seed pods, split root gates, fly route arcs, and lower
+  vine forks, hanging seed pods, broad rail-grown root passages, fly route arcs, and lower
   anchors before later challenges. Base Burst crosses 40% of the
   selected web distance; downward taps make a one-shot 40% Dive Pull. Both are
   collision-checked, but only Burst uses a timer. Dive rearms after the next
@@ -71,10 +72,11 @@ Burst boost.
 - Four generated 384×384 environment packs—Ancient Forest, Mossy Ravine,
   Overgrown Greenhouse, and Reclaimed Attic—plus the original Graybox. Ancient
   Forest is the default and now adds a cohesive finished-art candidate:
-  mossy branch edges, rooted brambles, hanging thorn vines, a split root gate,
+  mossy branch edges, rooted brambles, hanging thorn vines, a broad root passage,
   the Classic Garden Spider, and golden forest flies. DEBUG → LOOK swaps visual
-  treatment without changing a course polygon or collision, and shows exact
-  collision outlines only when diagnostics are visible.
+  treatment without changing a course polygon or collision. DEBUG → OVERLAYS
+  independently enables exact collision outlines or web-target guides; both
+  load off.
 - Base Reel-In is deliberately reduced to 400 px/s and Burst starts at 40% with
   80 px minimum useful travel. Spider-specific fly upgrades can improve Reel,
   Burst share, minimum Burst travel, drive, hitbox, reach, glide, momentum, or
@@ -90,7 +92,7 @@ Burst boost.
   upper web to recharge. Obstacles, high-speed impacts, pull collisions, and a
   second rail contact remain lethal.
 - A presentation view with camera follow, 228-pixel thumb targets,
-  action flashes/haptics, pause/frame-step/slow-motion, and a nine-section,
+  action flashes/haptics, pause/frame-step/slow-motion, and a ten-section,
   touch-first DEBUG panel with direct values for Burst/Dive percentages and
   durations, Burst cooldown, Reel shortening speed,
   natural take-up mode/percentage, rail presence/lethality, obstacle sizes,
@@ -98,14 +100,15 @@ Burst boost.
   inward-rail start distance, and tight gaps,
   opening web, rescue, and impact-shell controls, middle-hazard start, boost duration, attach
   catch, aim forgiveness, range, RELEASE/RETARGET behavior,
-  deterministic input recording/replay, visual-theme comparison, and diagnostic
-  export.
-- Forty deterministic physics tests (77 runtime contracts total),
+  deterministic input recording/replay, visual-theme comparison, independent
+  opt-in overlays, and diagnostic export.
+- Forty deterministic physics tests (78 runtime contracts total),
   including interruptible recovery webs, double-tap fallback, explicit
   release/retarget modes, opening-runway pacing, lower anchor coverage, exact
   pull-distance shares, speed-neutral Reel/take-up shortening, rail policy,
   swept pickups, idempotent progression, polygon anchors/collisions, and
-  creator-pattern bounds, a Classic-sized sweep through every split-gate route,
+  creator-pattern bounds, a three-lane Classic-sized steering-envelope sweep
+  through every root passage,
   the guided opening trajectory, spider profiles/glide,
   rescue consumption, and identical results from simulated 30/60/90/120 Hz
   render loops. Adapter tests

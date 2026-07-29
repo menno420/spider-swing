@@ -243,7 +243,7 @@
       "\ud83d\udca1",
       "\ud83d\udcca"
     ],
-    "summary": "> **Status:** `in-progress`"
+    "summary": "> **Status:** `complete`"
   },
   {
     "slug": "gradual-progression-impact",
@@ -256,6 +256,20 @@
       "progression",
       "impact",
       "survival",
+      "\ud83d\udca1",
+      "\ud83d\udcca"
+    ],
+    "summary": "> **Status:** `complete`"
+  },
+  {
+    "slug": "hollow-gate-route-fix",
+    "date": "2026-07-29",
+    "tags": [
+      "hollow",
+      "gate",
+      "route",
+      "fix",
+      "session",
       "\ud83d\udca1",
       "\ud83d\udcca"
     ],
@@ -276,5 +290,19 @@
       "\ud83d\udcca"
     ],
     "summary": "> **Status:** `complete`"
+  },
+  {
+    "slug": "wide-gate-clean-start",
+    "date": "2026-07-29",
+    "tags": [
+      "wide",
+      "gate",
+      "clean-start",
+      "diagnostics",
+      "session",
+      "\ud83d\udca1",
+      "\ud83d\udcca"
+    ],
+    "summary": "> **Status:** `in-progress`"
   }
 ]

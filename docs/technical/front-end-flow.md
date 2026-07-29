@@ -75,6 +75,11 @@ The current options all affect runtime behavior:
 | Reduced motion | Stops decorative front-end/tutorial motion and removes camera easing/parallax |
 | Debug tools | Shows or removes the laboratory DEBUG control and panel hit regions |
 
+DEBUG availability is a player setting; world overlays are not. Every new run
+starts with collision outlines and web-target guides off. Their independent
+OVERLAYS buttons affect only the current laboratory session and cannot mutate
+course geometry, targeting, or collision.
+
 `PlayerSettings` validates and versions these values. `PlayerProgress` separately
 versions lifetime/spendable flies, distance milestones, selected spider,
 profile upgrades, palettes, web variants, and the saved creator pattern.

@@ -4,10 +4,10 @@ extends SceneTree
 const MAIN_SCENE_PATH := "res://game/bootstrap/main.tscn"
 const EXPORT_PRESETS_PATH := "res://export_presets.cfg"
 const ANDROID_WORKFLOW_PATH := "res://.github/workflows/android-debug.yml"
-const BUILD_VERSION := "0.8.1-split-gate-test"
-const ANDROID_VERSION_CODE := 17
-const ANDROID_APP_NAME := "Spider Swing Split Gate (dev)"
-const EXPECTED_CHECK_COUNT := 77
+const BUILD_VERSION := "0.8.2-wide-passage-test"
+const ANDROID_VERSION_CODE := 18
+const ANDROID_APP_NAME := "Spider Swing Wide Passage (dev)"
+const EXPECTED_CHECK_COUNT := 78
 const REQUIRED_INPUT_ACTIONS := [
 	"web_action", "reel_in", "burst_action", "pause", "restart_run",
 	"toggle_debug"]
