@@ -125,11 +125,12 @@ without a reported regression.
 - `python3 tools/verify.py --require-godot` — passes locally on Godot
   `4.7.1.stable.official.a13da4feb`: architecture fixtures/scan, clean import,
   front-end boot, and all 78 headless contracts.
-- The last merged baseline remains PR #23. Its `game-quality` run
-  [30463832533](https://github.com/menno420/spider-swing/actions/runs/30463832533)
-  supplied Godot 4.7.1 and passed import, boot, and the complete 77-check
+- The last merged baseline remains PR #23. The current PR #24 candidate's
+  `game-quality` run
+  [30468085710](https://github.com/menno420/spider-swing/actions/runs/30468085710)
+  supplies Godot 4.7.1 and passes import, boot, and the complete 78-check
   headless suite at source
-  `5e11740ccd249b5754114443316fa64207490de5`.
+  `5029e2c501b01e48c12e88a2ba266212014c0ef9`.
 - `tests/test_runner.gd` — 78 declared checks: forty
   deterministic physics, seventeen GUI-owned mobile HUD, eleven front-end
   navigation/settings/progression, plus bootstrap and exact build-version
@@ -216,6 +217,13 @@ without a reported regression.
   sweeps the complete fly-advertised route through the split root gate at 80%,
   112%, and 140% openings. The host verifier also rejects fatal Godot script
   diagnostics even when the engine process exits 0.
+- PR #24 `game-quality` run
+  [30468085710](https://github.com/menno420/spider-swing/actions/runs/30468085710)
+  passes all 78 runtime contracts on Godot 4.7.1 at source
+  `5029e2c501b01e48c12e88a2ba266212014c0ef9`. The strengthened route contract
+  sweeps three useful steering lanes across the entire rail-grown root passage,
+  while the expanded mobile contract proves collision outlines and unattached
+  web guides both start hidden and toggle independently.
 - `substrate-gate` — kit-owned. A born-red session card deliberately holds a PR
   until close-out; it must be green on the completed card before merge.
 - `android-debug` — **green on `main`, APK proven.** Run #1 produced artifact
@@ -347,6 +355,19 @@ without a reported regression.
   `build-info.txt` proves version `0.8.1-split-gate-test`, source
   `60bb5e83fb747f9cb6418218db4db2cd03c3fa26`, dev package, and display name
   `Spider Swing Split Gate (dev)`.
+- PR #24 `android-debug` run
+  [30468087491](https://github.com/menno420/spider-swing/actions/runs/30468087491)
+  produced downloadable artifact
+  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30468087491/artifacts/8730447877)
+  ID `8730447877`, 58,595,704 bytes, digest
+  `sha256:3dbd6a975f512e3633fb03cc65d07320b3b30c686b367fe18130c96ae395d006`.
+  The downloaded ZIP and its 58,983,802-byte APK passed archive validation; the
+  APK has SHA-256
+  `cfc39b42a49a83bb5111113f9737e74ccc4c74f23f859100e800c30544b5756f`
+  and contains `classes.dex`, `AndroidManifest.xml`, and
+  `assets/project.binary`. `build-info.txt` proves version
+  `0.8.2-wide-passage-test`, exact source, dev package, and display name
+  `Spider Swing Wide Passage (dev)`.
 - **Dependabot** — live. Its first run opened two bumps against the kit-owned
   `substrate-gate.yml`; both were closed because `adopt`/`upgrade` regenerates that
   file. The rule is documented in `.github/dependabot.yml`: kit-owned-only bumps get
@@ -385,7 +406,8 @@ one broad passage grown from both rails. At the 112% default its authoritative
 opening is roughly 266 reference pixels high, and the regression sweeps three
 Classic-sized lanes across it; even the 80% minimum preserves a useful steering
 band. Collision outlines and web-target guides now begin off and have independent
-DEBUG → OVERLAYS controls. All 78 local contracts pass. The maximum-speed ramp
+DEBUG → OVERLAYS controls. All 78 local and PR `game-quality` contracts pass,
+and the Android candidate artifact is verified. The maximum-speed ramp
 still spans 5000 m, no rail moves inward before 2000 m by default, and later
 inward passages remain rail-only. Phase 1 remains blocked on owner device review
 of both feel and art.
