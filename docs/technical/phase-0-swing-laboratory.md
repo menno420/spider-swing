@@ -119,11 +119,14 @@ configurable as visible or absent and safe or lethal. DEBUG → OVERLAYS can dra
 the predicted endpoint of the nearest available Dive in green or red. Four
 generated environment packs now texture the
 same polygons for art-direction comparison. Ancient Forest additionally composes
-finished candidate branch, bramble, hanging-vine, root-gate, Classic spider, and
-fly sprites around those exact authoritative bounds. Its transparent obstacle
+finished candidate branch, bramble, hanging-vine, Classic spider, and fly
+sprites around those exact authoritative bounds. Its transparent obstacle
 art replaces the prototype filled polygon rather than revealing that old shape
-underneath; a small visual overscan keeps thorn tips outside the collision
-bounds. If a required art asset is missing, presentation falls back to the
+underneath. Wall-grown art overlaps behind the branch rail and the continuous
+rail is redrawn over the join; aspect-preserving source crops prevent non-uniform
+sprite distortion. The broad passage is two natural rail-grown hazards around
+the same authoritative opening, not a stretched circular sprite. If a required
+art asset is missing, presentation falls back to the
 textured geometry instead of creating an invisible hazard. Normal play removes
 graphic collision outlines and web-target guides; the two independent OVERLAYS
 switches restore only the requested diagnostics.

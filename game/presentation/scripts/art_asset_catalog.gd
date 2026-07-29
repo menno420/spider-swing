@@ -10,7 +10,6 @@ class_name ArtAssetCatalog
 const FOREST_BRANCH := &"forest_branch"
 const FOREST_BRAMBLE := &"forest_bramble"
 const FOREST_HANGING_VINE := &"forest_hanging_vine"
-const FOREST_ROOT_GATE := &"forest_root_gate"
 const CLASSIC_SPIDER := &"classic_spider"
 const GOLDEN_FLY := &"golden_fly"
 
@@ -21,8 +20,6 @@ const ASSETS := {
 		"res://assets/runtime/forest-biome/thorn-bramble.png",
 	FOREST_HANGING_VINE:
 		"res://assets/runtime/forest-biome/hanging-thorn-vine.png",
-	FOREST_ROOT_GATE:
-		"res://assets/runtime/forest-biome/split-thorn-root-gate.png",
 	CLASSIC_SPIDER:
 		"res://assets/runtime/characters/classic-garden-spider.png",
 	GOLDEN_FLY:
