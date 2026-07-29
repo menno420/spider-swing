@@ -1,1 +1,0 @@
-- `claude/debug-lab-dive-reset` · **debug lab and Dive reset** · presentation, input, simulation, tests, docs · 2026-07-29

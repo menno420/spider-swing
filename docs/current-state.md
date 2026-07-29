@@ -185,6 +185,19 @@ without a reported regression.
   `9050ea46d9894f6bb8198a6ee5a454e04e39f62a`, package
   `com.menno420.spiderswing.dev`, and display name
   `Spider Swing Gameplay Foundation (dev)`.
+- PR #17 `android-debug` run
+  [30420061815](https://github.com/menno420/spider-swing/actions/runs/30420061815)
+  produced downloadable artifact
+  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30420061815/artifacts/8711576758)
+  ID `8711576758`, 56,800,048 bytes, digest
+  `sha256:57f77723586babbe408bb6b86f987bb3e8caa622b01f9130fd943b91c58b4dcd`.
+  The downloaded 57,182,655-byte APK passed archive verification and had
+  SHA-256
+  `2b9438829f631d3486a668b28915aa8ff9d618639d287a8f87166b9771f20db6`.
+  Its build manifest proves version `0.4.1-debug-lab-dive-reset-test`, source
+  `b00007514aaad431dcfaa5b41c8ec9413a1eadba`, package
+  `com.menno420.spiderswing.dev`, and display name
+  `Spider Swing Dive Reset (dev)`.
 - **Dependabot** — live. Its first run opened two bumps against the kit-owned
   `substrate-gate.yml`; both were closed because `adopt`/`upgrade` regenerates that
   file. The rule is documented in `.github/dependabot.yml`: kit-owned-only bumps get

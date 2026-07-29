@@ -177,6 +177,22 @@ never edit.
 
 **Godot / Android specifics worth not rediscovering**
 
+- 2026-07-29 · capability · `owner-live` · **The responsive tuning-lab and
+  contact-rearmed Dive build survives the full Android export path** · PR #17
+  `game-quality` run
+  [30420061825](https://github.com/menno420/spider-swing/actions/runs/30420061825)
+  passed 63 contracts at source
+  `b00007514aaad431dcfaa5b41c8ec9413a1eadba`; Android run
+  [30420061815](https://github.com/menno420/spider-swing/actions/runs/30420061815)
+  produced artifact
+  [`8711576758`](https://github.com/menno420/spider-swing/actions/runs/30420061815/artifacts/8711576758).
+  The downloaded 56,800,048-byte ZIP matched GitHub's SHA-256
+  `57f77723586babbe408bb6b86f987bb3e8caa622b01f9130fd943b91c58b4dcd`;
+  its 57,182,655-byte APK passed archive verification with SHA-256
+  `2b9438829f631d3486a668b28915aa8ff9d618639d287a8f87166b9771f20db6`.
+  `build-info.txt` proved version
+  `0.4.1-debug-lab-dive-reset-test`, exact source, dev package, and display
+  name `Spider Swing Dive Reset (dev)`.
 - 2026-07-28 · capability · `owner-live` · **The gameplay-foundation APK proves
   newly added effects and progression code survive the full Android export
   path** · PR #16 `game-quality` run

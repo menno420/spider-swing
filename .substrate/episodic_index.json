@@ -182,5 +182,21 @@
       "\ud83d\udcca"
     ],
     "summary": "> **Status:** `complete`"
+  },
+  {
+    "slug": "debug-lab-dive-reset",
+    "date": "2026-07-29",
+    "tags": [
+      "phase",
+      "0",
+      "11",
+      "debug",
+      "lab",
+      "dive",
+      "reset",
+      "\ud83d\udca1",
+      "\ud83d\udcca"
+    ],
+    "summary": "> **Status:** `in-progress`"
   }
 ]
