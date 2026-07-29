@@ -1,0 +1,1 @@
+- `claude/environment-theme-packs` · **environment visuals** — add four generated rail texture packs, a centralized theme catalog, debug comparison controls, tests, docs, and Android identity · `assets/runtime/environment-themes/`, `assets/source/environment-themes/`, `game/presentation/`, `tests/`, build/docs · 2026-07-29
