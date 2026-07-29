@@ -1,0 +1,1 @@
+- `claude/opening-swing-spider-garage` · **Build tunable opening course, spider garage, upgrades, rescue life, and creator-course foundation** · game/domain + game/simulation + game/application + game/presentation + tests + docs · 2026-07-29
