@@ -24,6 +24,9 @@ static func run() -> Dictionary:
 	passed += _test_forest_obstacles_join_the_rails_without_gate_distortion(
 		failures,
 	)
+	passed += _test_living_forest_has_continuous_rails_and_depth_layers(
+		failures,
+	)
 	passed += _test_debug_panel_expands_for_wide_phone(failures)
 	passed += _test_debug_controls_can_be_disabled(failures)
 	passed += _test_world_input_waits_for_gui(failures)
@@ -550,8 +553,8 @@ static func _test_environment_theme_packs_are_visual_only(
 			failures.append("environment texture is not a 384 px runtime tile")
 			return 0
 	var art_paths := ArtAssetCatalog.texture_paths()
-	if art_paths.size() != 5:
-		failures.append("finished forest slice does not expose five active art assets")
+	if art_paths.size() != 10:
+		failures.append("finished forest slice does not expose ten active art assets")
 		return 0
 	for path: String in art_paths:
 		if not ResourceLoader.exists(path):
@@ -677,6 +680,56 @@ static func _test_forest_obstacles_join_the_rails_without_gate_distortion(
 		failures.append(
 			"forest obstacle art still permits non-uniform texture distortion")
 		return 0
+	return 1
+
+
+static func _test_living_forest_has_continuous_rails_and_depth_layers(
+	failures: PackedStringArray,
+) -> int:
+	var renderer := FileAccess.open(
+		"res://game/presentation/scripts/swing_lab.gd",
+		FileAccess.READ,
+	)
+	var catalog := FileAccess.open(
+		"res://game/presentation/scripts/art_asset_catalog.gd",
+		FileAccess.READ,
+	)
+	if renderer == null or catalog == null:
+		failures.append("living forest presentation sources cannot be inspected")
+		return 0
+	var renderer_source := renderer.get_as_text()
+	var catalog_source := catalog.get_as_text()
+	for token in [
+		"FOREST_RAIL_TILE",
+		"FOREST_GROWTH_SOCKET",
+		"FOREST_BACKDROP_FAR",
+		"FOREST_BACKDROP_MID",
+		"FOREST_BACKDROP_NEAR",
+		"FOREST_ROOT_STUMP",
+	]:
+		if not catalog_source.contains(token):
+			failures.append("living forest art catalog is missing %s" % token)
+			return 0
+	for token in [
+		"_draw_continuous_forest_profile",
+		"draw_texture_rect_region",
+		"_draw_forest_growth_socket",
+		"_draw_forest_backdrop_layer",
+	]:
+		if not renderer_source.contains(token):
+			failures.append("living forest renderer is missing %s" % token)
+			return 0
+	for path in [
+		"res://assets/runtime/forest-biome/ancient-branch-rail-tile.png",
+		"res://assets/runtime/forest-biome/mossy-growth-socket.png",
+		"res://assets/runtime/forest-biome/forest-backdrop-far.webp",
+		"res://assets/runtime/forest-biome/forest-backdrop-mid.png",
+		"res://assets/runtime/forest-biome/forest-backdrop-near.png",
+		"res://assets/runtime/forest-biome/fallen-root-stump.png",
+	]:
+		if not ResourceLoader.exists(path):
+			failures.append("living forest runtime asset is missing: %s" % path)
+			return 0
 	return 1
 
 

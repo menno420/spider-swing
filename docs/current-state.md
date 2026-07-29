@@ -113,32 +113,30 @@ without a reported regression.
   the exact snapshot polygons; theme selection cannot change course geometry,
   collision, targeting, pace, or lethality.
 - `ArtAssetCatalog` adds one cohesive Ancient Forest candidate-production
-  grammar over that same geometry: mirrored mossy branch edges, rooted
-  brambles, top-anchored thorn vines, natural upper/lower growth around broad
-  rail passages, a finished Classic Garden Spider sprite, and golden forest
-  flies. Finished obstacle alpha replaces the prototype filled polygon in
-  normal play. Wall-grown art overlaps behind the continuous branch rail and
-  source regions are cropped without changing aspect ratio, eliminating
-  transparent joins and stretched gate halves. Missing assets fall back to
-  textured geometry rather than creating invisible collision. Collision
-  outlines and web-target guides both load off and can be enabled independently
-  under DEBUG → OVERLAYS.
+  grammar over that same geometry: a world-continuous mossy branch rail, rooted
+  brambles, top-anchored thorn vines, broken root stumps, natural upper/lower
+  growth around broad rail passages, three low-contrast forest depth layers, a
+  finished Classic Garden Spider sprite, and golden forest flies. Finished
+  obstacle alpha replaces the prototype filled polygon in normal play.
+  Wall-grown art overlaps a root-and-moss growth socket behind the rail; source
+  regions are cropped without changing aspect ratio. This eliminates
+  transparent joins, missing wood at profile changes, and stretched gate halves.
+  Missing assets fall back to textured geometry rather than creating invisible
+  collision. Collision outlines and web-target guides both load off and can be
+  enabled independently under DEBUG → OVERLAYS.
 - No autoload singletons exist, and a test fails if one appears.
 
 **Verification**
 
 - `python3 tools/verify.py --require-godot` — passes locally on Godot
   `4.7.1.stable.official.a13da4feb`: architecture fixtures/scan, clean import,
-  front-end boot, and all 80 headless contracts.
-- The last merged baseline is PR #25. Its final `game-quality` run
-  [30474513238](https://github.com/menno420/spider-swing/actions/runs/30474513238)
-  supplied Godot 4.7.1 and passed the complete 79-check suite, merged as
-  `84ef6afe2658fe4e567a9e0eeb55125283f607c5`. PR #26 `game-quality` run
+  front-end boot, and all 82 headless contracts.
+- The last merged baseline is PR #26. Its final `game-quality` run
   [30476965313](https://github.com/menno420/spider-swing/actions/runs/30476965313)
   passes the complete 80-check suite on Godot 4.7.1 at source
   `32cb11459d4be05b180c736316b8ef5cd27bda9d`.
-- `tests/test_runner.gd` — 80 declared checks: forty
-  deterministic physics, nineteen GUI-owned mobile HUD, eleven front-end
+- `tests/test_runner.gd` — 82 declared checks: forty-one
+  deterministic physics, twenty GUI-owned mobile HUD, eleven front-end
   navigation/settings/progression, plus bootstrap and exact build-version
   contracts. Physics covers exact 40%/40% pull shares,
   detached targeted Burst, recovery-web interruption, double-tap fallback,
@@ -146,13 +144,15 @@ without a reported regression.
   targeting/collision, take-up, rail toggles, swept pickups, tuning controls, and
   paced bounded streaming, scaled authoritative geometry, guided opening,
   rescue, spider profiles/glide, creator-pattern bounds, a 5000 m pacing curve,
-  continuous contoured rails, upgradeable minimum Burst travel, and bounded
-  Springtail impacts. A three-lane route sweep proves a Classic-sized spider
+  continuous contoured rails, a deterministic distance-banded pattern catalog,
+  upgradeable minimum Burst travel, and bounded Springtail impacts. A three-lane
+  route sweep proves a Classic-sized spider
   clears both rail-grown roots across the passage's full width at every
   supported Creator opening; the mobile group proves both overlays begin off
   and toggle independently, and that finished forest obstacles omit the legacy
-  backing fill, overlap behind continuous rails, and never stretch the retired
-  circular gate halves. The front-end group
+  backing fill, overlap behind continuous rails, never stretch the retired
+  circular gate halves, and register all six living-forest depth/attachment
+  assets. The front-end group
   performs real filesystem settings and progression round-trips plus settlement
   idempotency, profile upgrades, and creator edits. The trajectory
   fixture produces the same final state when driven through simulated 30, 60,
@@ -440,18 +440,19 @@ without a reported regression.
 
 ## In flight
 
-Phase 0.20 is in flight: the broad passage from PR #24 remains authoritative and
-unchanged, while PR #26 composes every wall-grown Ancient Forest obstacle through
-an explicit overlap behind the continuous rail. The rail is redrawn over the
-join, source art is cropped without aspect distortion, and broad passages use
-the normal upper/lower bramble grammar instead of the retired split-circle
-texture. Finished obstacle art remains sprite-only in normal play, with textured
-geometry retained as a missing-asset fallback and exact polygons retained for
-the opt-in collision overlay. Collision outlines and web-target guides still
-begin off and have independent DEBUG → OVERLAYS controls. All 80 local contracts
-pass. The maximum-speed ramp still spans 5000 m, no rail moves inward before
-2000 m by default, and later inward passages remain rail-only. Phase 1 remains
-blocked on owner device review of both feel and art.
+Phase 0.21 is in flight through PR #27. The broad passage from PR #24 remains
+authoritative and unchanged. A world-anchored branch texture now spans every
+ceiling/floor profile and chunk seam; root-and-moss sockets hide each obstacle
+join; broken stumps add a new natural silhouette; and three restrained forest
+depths replace the abstract circle backdrop. `CoursePatternCatalog` adds
+curated, repetition-protected distance bands: small hazards grow only 6–12%
+after the runway, paired/staggered compositions begin after 2000 m, and later
+tight rails occur on a predictable eight-chunk cadence without a stacked
+floating blocker. Collision outlines and web-target guides still begin off and
+have independent DEBUG → OVERLAYS controls. All 82 local contracts pass. The
+maximum-speed ramp still spans 5000 m, no rail moves inward before 2000 m by
+default, and the broad passage opening does not shrink. Phase 1 remains blocked
+on owner device review of both feel and art.
 
 ## Recently shipped (newest first)
 

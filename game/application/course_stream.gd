@@ -97,12 +97,13 @@ func _build_range(first: int, last: int) -> CourseGeometry:
 
 func _append_chunk(result: CourseGeometry, chunk_index: int) -> void:
 	var start_x := float(chunk_index) * CHUNK_WIDTH
-	var pattern := posmod(chunk_index, 8)
+	var opening_pattern := posmod(chunk_index, 8)
 	var ceiling_y := CEILING_Y
 	var floor_y := FLOOR_Y
 	var distance_at_chunk := maxf(0.0, start_x - START_X)
 	var has_middle_hazard := \
 		distance_at_chunk >= _middle_hazard_start_distance
+	var pattern_id := pattern_id_for_chunk(chunk_index)
 	var creator_piece := &""
 	if not _creator_pattern.is_empty() and chunk_index >= 1:
 		creator_piece = _creator_pattern[posmod(
@@ -110,7 +111,7 @@ func _append_chunk(result: CourseGeometry, chunk_index: int) -> void:
 			_creator_pattern.size(),
 		)]
 	var route := _route_plan(
-		pattern,
+		pattern_id,
 		chunk_index,
 		has_middle_hazard,
 		distance_at_chunk >= _tight_corridor_start_distance,
@@ -138,6 +139,7 @@ func _append_chunk(result: CourseGeometry, chunk_index: int) -> void:
 			ceiling_y,
 			floor_y,
 			creator_piece,
+			StringName(route["lane"]),
 		)
 	elif not has_middle_hazard:
 		_append_opening_edge_detail(
@@ -145,8 +147,9 @@ func _append_chunk(result: CourseGeometry, chunk_index: int) -> void:
 			start_x,
 			ceiling_y,
 			floor_y,
-			pattern,
+			opening_pattern,
 			chunk_index,
+			StringName(route["lane"]),
 		)
 	elif StringName(route["lane"]) != ROUTE_TIGHT:
 		_append_middle_challenge(
@@ -154,7 +157,9 @@ func _append_chunk(result: CourseGeometry, chunk_index: int) -> void:
 			start_x,
 			ceiling_y,
 			floor_y,
-			pattern,
+			pattern_id,
+			StringName(route["lane"]),
+			distance_at_chunk,
 		)
 
 	if chunk_index >= 3 and posmod(chunk_index, 5) == 3:
@@ -162,6 +167,17 @@ func _append_chunk(result: CourseGeometry, chunk_index: int) -> void:
 			start_x + 720.0,
 			lerpf(ceiling_y + 150.0, floor_y - 120.0, 0.5),
 		))
+
+
+func pattern_id_for_chunk(chunk_index: int) -> StringName:
+	var distance_at_chunk := maxf(
+		0.0,
+		float(chunk_index) * CHUNK_WIDTH - START_X,
+	)
+	return CoursePatternCatalog.pattern_id_for_chunk(
+		chunk_index,
+		distance_at_chunk,
+	)
 
 
 func _append_boundary_pattern(
@@ -174,61 +190,83 @@ func _append_boundary_pattern(
 	# The rails never disappear. Their matching endpoints keep chunk seams
 	# continuous, while local profiles open a readable bypass around most
 	# hazards. Only occasional late patterns narrow both sides into a gap.
-	var ceiling_profile := PackedVector2Array([
-		Vector2(start_x, ceiling_y),
-		Vector2(start_x + 240.0, ceiling_y),
-		Vector2(start_x + 430.0, ceiling_y),
-		Vector2(start_x + 720.0, ceiling_y),
-		Vector2(start_x + CHUNK_WIDTH, ceiling_y),
-	])
-	var floor_profile := PackedVector2Array([
-		Vector2(start_x, floor_y),
-		Vector2(start_x + 240.0, floor_y),
-		Vector2(start_x + 430.0, floor_y),
-		Vector2(start_x + 720.0, floor_y),
-		Vector2(start_x + CHUNK_WIDTH, floor_y),
-	])
-	# Keep the first screen geometrically quiet so its authored training web
-	# always starts from the same readable arc. Contours begin with chunk one,
-	# where edge hazards and route choices actually start.
-	if _corridor_contours_enabled and start_x >= CHUNK_WIDTH:
-		var clearance := 60.0 * _corridor_clearance_scale
-		if route_lane == ROUTE_HIGH:
-			ceiling_profile.set(
-				2, ceiling_profile[2] + Vector2.UP * clearance * 0.72)
-			ceiling_profile.set(
-				3, ceiling_profile[3] + Vector2.UP * clearance)
-		elif route_lane == ROUTE_LOW:
-			floor_profile.set(
-				2, floor_profile[2] + Vector2.DOWN * clearance * 0.72)
-			floor_profile.set(
-				3, floor_profile[3] + Vector2.DOWN * clearance)
-		elif route_lane == ROUTE_CENTRE:
-			ceiling_profile.set(
-				2, ceiling_profile[2] + Vector2.UP * clearance * 0.55)
-			ceiling_profile.set(
-				3, ceiling_profile[3] + Vector2.UP * clearance * 0.72)
-			floor_profile.set(
-				2, floor_profile[2] + Vector2.DOWN * clearance * 0.55)
-			floor_profile.set(
-				3, floor_profile[3] + Vector2.DOWN * clearance * 0.72)
-		elif route_lane == ROUTE_TIGHT:
-			var gap := 324.0 * _corridor_tight_gap_scale
-			var centre := 398.0
-			ceiling_profile.set(
-				2, Vector2(ceiling_profile[2].x, centre - gap * 0.5))
-			ceiling_profile.set(
-				3, Vector2(ceiling_profile[3].x, centre - gap * 0.5))
-			floor_profile.set(
-				2, Vector2(floor_profile[2].x, centre + gap * 0.5))
-			floor_profile.set(
-				3, Vector2(floor_profile[3].x, centre + gap * 0.5))
+	var ceiling_profile := _boundary_profile(
+		start_x,
+		ceiling_y,
+		route_lane,
+		true,
+	)
+	var floor_profile := _boundary_profile(
+		start_x,
+		floor_y,
+		route_lane,
+		false,
+	)
 	_append_ceiling_profile(result, ceiling_profile)
 	_append_floor_profile(result, floor_profile)
 
 
+func _boundary_profile(
+	start_x: float,
+	base_y: float,
+	route_lane: StringName,
+	is_ceiling: bool,
+) -> PackedVector2Array:
+	var profile := PackedVector2Array([
+		Vector2(start_x, base_y),
+		Vector2(start_x + 240.0, base_y),
+		Vector2(start_x + 430.0, base_y),
+		Vector2(start_x + 720.0, base_y),
+		Vector2(start_x + CHUNK_WIDTH, base_y),
+	])
+	if not _corridor_contours_enabled or start_x < CHUNK_WIDTH:
+		return profile
+	var clearance := 60.0 * _corridor_clearance_scale
+	if route_lane == ROUTE_HIGH and is_ceiling:
+		profile.set(2, profile[2] + Vector2.UP * clearance * 0.72)
+		profile.set(3, profile[3] + Vector2.UP * clearance)
+	elif route_lane == ROUTE_LOW and not is_ceiling:
+		profile.set(2, profile[2] + Vector2.DOWN * clearance * 0.72)
+		profile.set(3, profile[3] + Vector2.DOWN * clearance)
+	elif route_lane == ROUTE_CENTRE:
+		var direction := Vector2.UP if is_ceiling else Vector2.DOWN
+		profile.set(2, profile[2] + direction * clearance * 0.55)
+		profile.set(3, profile[3] + direction * clearance * 0.72)
+	elif route_lane == ROUTE_TIGHT:
+		var gap := 324.0 * _corridor_tight_gap_scale
+		var centre := 398.0
+		var edge_y := centre - gap * 0.5 if is_ceiling \
+			else centre + gap * 0.5
+		profile.set(2, Vector2(profile[2].x, edge_y))
+		profile.set(3, Vector2(profile[3].x, edge_y))
+	return profile
+
+
+func _boundary_edge_y_at(
+	start_x: float,
+	world_x: float,
+	base_y: float,
+	route_lane: StringName,
+	is_ceiling: bool,
+) -> float:
+	var profile := _boundary_profile(
+		start_x,
+		base_y,
+		route_lane,
+		is_ceiling,
+	)
+	for index in range(profile.size() - 1):
+		var first := profile[index]
+		var second := profile[index + 1]
+		if world_x < first.x or world_x > second.x:
+			continue
+		var span := maxf(1.0, second.x - first.x)
+		return lerpf(first.y, second.y, (world_x - first.x) / span)
+	return base_y
+
+
 func _route_plan(
-	pattern: int,
+	pattern_id: StringName,
 	chunk_index: int,
 	has_middle_hazard: bool,
 	allow_tight_corridor: bool,
@@ -252,29 +290,30 @@ func _route_plan(
 	if not has_middle_hazard:
 		if chunk_index == 0 or posmod(chunk_index, 3) != 1:
 			return {"lane": ROUTE_CENTRE, "guide_y": 398.0}
-		if pattern in [1, 3, 5, 7]:
+		if posmod(chunk_index, 2) == 1:
 			return {"lane": ROUTE_HIGH, "guide_y": CEILING_Y + 160.0}
 		return {"lane": ROUTE_LOW, "guide_y": FLOOR_Y - 160.0}
 
-	if pattern == 7 and allow_tight_corridor:
-		return {"lane": ROUTE_TIGHT, "guide_y": 398.0}
-	if pattern in [0, 4]:
-		return {"lane": ROUTE_HIGH, "guide_y": CEILING_Y + 160.0}
-	if pattern in [1, 5]:
-		return {"lane": ROUTE_LOW, "guide_y": FLOOR_Y - 160.0}
-	if pattern == 3:
+	var pattern := CoursePatternCatalog.pattern_for_chunk(
+		chunk_index,
+		maxf(0.0, float(chunk_index) * CHUNK_WIDTH - START_X),
+	)
+	var lane := StringName(pattern.get("lane", ROUTE_CENTRE))
+	if pattern_id == &"tight_rail" and allow_tight_corridor:
+		lane = ROUTE_TIGHT
+	elif lane == ROUTE_TIGHT:
+		lane = ROUTE_CENTRE
+	if pattern_id == &"rooted_gate":
 		return {
 			"lane": ROUTE_CENTRE,
 			"guide_y": 370.0,
 			"guide_end_x": 690.0,
 		}
-	if pattern == 7:
-		return {
-			"lane": ROUTE_CENTRE,
-			"guide_y": 350.0,
-			"guide_end_x": 700.0,
-		}
-	return {"lane": ROUTE_CENTRE, "guide_y": 398.0}
+	if lane == ROUTE_HIGH:
+		return {"lane": lane, "guide_y": CEILING_Y + 160.0}
+	if lane == ROUTE_LOW:
+		return {"lane": lane, "guide_y": FLOOR_Y - 160.0}
+	return {"lane": lane, "guide_y": 398.0}
 
 
 func _append_opening_edge_detail(
@@ -284,6 +323,7 @@ func _append_opening_edge_detail(
 	floor_y: float,
 	pattern: int,
 	chunk_index: int,
+	route_lane: StringName,
 ) -> void:
 	if chunk_index == 0:
 		return
@@ -291,12 +331,25 @@ func _append_opening_edge_detail(
 	# detached middle obstacle; sparse shapes grow only from an existing edge.
 	if posmod(chunk_index, 3) != 1:
 		return
-	if pattern in [1, 3, 5, 7]:
+	var obstacle_x := start_x + 650.0
+	if route_lane == ROUTE_HIGH:
 		_append_leaf_cluster(
-			result, start_x + 650.0, floor_y, false, _edge_obstacle_scale)
+			result,
+			obstacle_x,
+			_boundary_edge_y_at(
+				start_x, obstacle_x, floor_y, route_lane, false),
+			false,
+			_edge_obstacle_scale,
+		)
 	else:
 		_append_leaf_cluster(
-			result, start_x + 650.0, ceiling_y, true, _edge_obstacle_scale)
+			result,
+			obstacle_x,
+			_boundary_edge_y_at(
+				start_x, obstacle_x, ceiling_y, route_lane, true),
+			true,
+			_edge_obstacle_scale,
+		)
 
 
 func _append_middle_challenge(
@@ -304,52 +357,199 @@ func _append_middle_challenge(
 	start_x: float,
 	ceiling_y: float,
 	floor_y: float,
-	pattern: int,
+	pattern_id: StringName,
+	route_lane: StringName,
+	distance_at_chunk: float,
 ) -> void:
 	# Every challenge keeps a usable lower or upper rail before the hazard. Its
 	# fly trail communicates the intended route without making it mandatory.
-	match pattern:
-		0:
+	# Small hazards grow by at most 12%; the broad passage opening never shrinks.
+	var growth := _obstacle_growth_scale(distance_at_chunk)
+	match pattern_id:
+		&"floor_vine":
+			var x := start_x + 610.0
 			_append_vine_fork(
-				result, start_x + 610.0, floor_y,
-				220.0 * _floating_obstacle_scale,
-				180.0 * _floating_obstacle_scale)
-		1:
+				result,
+				x,
+				_boundary_edge_y_at(
+					start_x, x, floor_y, route_lane, false),
+				220.0 * _floating_obstacle_scale * growth,
+				180.0 * _floating_obstacle_scale * growth,
+			)
+		&"canopy_pod", &"hanging_vine":
+			var x := start_x + 650.0
 			_append_hanging_seed_pod(
-				result, start_x + 650.0, ceiling_y,
-				150.0 * _floating_obstacle_scale,
-				235.0 * _floating_obstacle_scale)
-		2:
+				result,
+				x,
+				_boundary_edge_y_at(
+					start_x, x, ceiling_y, route_lane, true),
+				150.0 * _floating_obstacle_scale * growth,
+				235.0 * _floating_obstacle_scale * growth,
+			)
+		&"thorn_ridge":
+			var x := start_x + 640.0
 			_append_leaf_cluster(
-				result, start_x + 620.0, floor_y, false,
-				_floating_obstacle_scale)
+				result,
+				x,
+				_boundary_edge_y_at(
+					start_x, x, floor_y, route_lane, false),
+				false,
+				_floating_obstacle_scale * growth,
+			)
+		&"bramble_curve":
+			var x := start_x + 655.0
+			_append_vine_fork(
+				result,
+				x,
+				_boundary_edge_y_at(
+					start_x, x, floor_y, route_lane, false),
+				245.0 * _floating_obstacle_scale * growth,
+				205.0 * _floating_obstacle_scale * growth,
+			)
+		&"staggered_s":
+			var floor_x := start_x + 570.0
+			var ceiling_x := start_x + 805.0
+			_append_leaf_cluster(
+				result,
+				floor_x,
+				_boundary_edge_y_at(
+					start_x, floor_x, floor_y, route_lane, false),
+				false,
+				_floating_obstacle_scale * growth,
+			)
 			_append_hanging_seed_pod(
-				result, start_x + 790.0, ceiling_y,
-				105.0 * _floating_obstacle_scale,
-				165.0 * _floating_obstacle_scale)
-		3:
+				result,
+				ceiling_x,
+				_boundary_edge_y_at(
+					start_x, ceiling_x, ceiling_y, route_lane, true),
+				105.0 * _floating_obstacle_scale * growth,
+				165.0 * _floating_obstacle_scale * growth,
+			)
+		&"rooted_gate":
+			var x := start_x + 690.0
 			_append_split_root_gate(
-				result, start_x + 690.0, 370.0, ceiling_y, floor_y)
-		4:
+				result,
+				x,
+				370.0,
+				_boundary_edge_y_at(
+					start_x, x, ceiling_y, route_lane, true),
+				_boundary_edge_y_at(
+					start_x, x, floor_y, route_lane, false),
+			)
+		&"tall_vine":
+			var x := start_x + 650.0
 			_append_vine_fork(
-				result, start_x + 650.0, floor_y,
-				250.0 * _floating_obstacle_scale,
-				215.0 * _floating_obstacle_scale)
-		5:
+				result,
+				x,
+				_boundary_edge_y_at(
+					start_x, x, floor_y, route_lane, false),
+				250.0 * _floating_obstacle_scale * growth,
+				215.0 * _floating_obstacle_scale * growth,
+			)
+		&"long_pod":
+			var x := start_x + 620.0
 			_append_hanging_seed_pod(
-				result, start_x + 620.0, ceiling_y,
-				175.0 * _floating_obstacle_scale,
-				260.0 * _floating_obstacle_scale)
-		6:
+				result,
+				x,
+				_boundary_edge_y_at(
+					start_x, x, ceiling_y, route_lane, true),
+				175.0 * _floating_obstacle_scale * growth,
+				260.0 * _floating_obstacle_scale * growth,
+			)
+		&"alternating_thorns":
+			var floor_x := start_x + 590.0
+			var ceiling_x := start_x + 815.0
 			_append_leaf_cluster(
-				result, start_x + 610.0, floor_y, false,
-				_floating_obstacle_scale)
+				result,
+				floor_x,
+				_boundary_edge_y_at(
+					start_x, floor_x, floor_y, route_lane, false),
+				false,
+				_floating_obstacle_scale * growth,
+			)
 			_append_leaf_cluster(
-				result, start_x + 815.0, ceiling_y, true,
-				_floating_obstacle_scale)
+				result,
+				ceiling_x,
+				_boundary_edge_y_at(
+					start_x, ceiling_x, ceiling_y, route_lane, true),
+				true,
+				_floating_obstacle_scale * growth,
+			)
+		&"fallen_stump", &"ceiling_stump":
+			var hanging := pattern_id == &"ceiling_stump"
+			var x := start_x + 650.0
+			var edge_y := _boundary_edge_y_at(
+				start_x,
+				x,
+				ceiling_y if hanging else floor_y,
+				route_lane,
+				hanging,
+			)
+			_append_root_stump(
+				result,
+				x,
+				edge_y,
+				hanging,
+				245.0 * _floating_obstacle_scale * growth,
+				190.0 * _floating_obstacle_scale * growth,
+			)
+		&"vine_curtain":
+			for local_x: float in [560.0, 805.0]:
+				var x := start_x + local_x
+				_append_hanging_seed_pod(
+					result,
+					x,
+					_boundary_edge_y_at(
+						start_x, x, ceiling_y, route_lane, true),
+					112.0 * _floating_obstacle_scale * growth,
+					(160.0 if local_x < 700.0 else 205.0) * \
+						_floating_obstacle_scale * growth,
+				)
+		&"bramble_steps", &"recovery_pair":
+			for local_x: float in [565.0, 805.0]:
+				var x := start_x + local_x
+				_append_root_stump(
+					result,
+					x,
+					_boundary_edge_y_at(
+						start_x, x, floor_y, route_lane, false),
+					false,
+					180.0 * _floating_obstacle_scale * growth,
+					(135.0 if local_x < 700.0 else 180.0) * \
+						_floating_obstacle_scale * growth,
+				)
+		&"stump_and_vine":
+			var floor_x := start_x + 560.0
+			var ceiling_x := start_x + 815.0
+			_append_root_stump(
+				result,
+				floor_x,
+				_boundary_edge_y_at(
+					start_x, floor_x, floor_y, route_lane, false),
+				false,
+				210.0 * _floating_obstacle_scale * growth,
+				165.0 * _floating_obstacle_scale * growth,
+			)
+			_append_hanging_seed_pod(
+				result,
+				ceiling_x,
+				_boundary_edge_y_at(
+					start_x, ceiling_x, ceiling_y, route_lane, true),
+				105.0 * _floating_obstacle_scale * growth,
+				160.0 * _floating_obstacle_scale * growth,
+			)
 		_:
-			_append_split_root_gate(
-				result, start_x + 700.0, 350.0, ceiling_y, floor_y)
+			pass
+
+
+func _obstacle_growth_scale(distance_at_chunk: float) -> float:
+	if distance_at_chunk < CoursePatternCatalog.CONTROL_START_DISTANCE:
+		return 1.0
+	if distance_at_chunk < CoursePatternCatalog.MASTERY_START_DISTANCE:
+		return 1.06
+	if distance_at_chunk < CoursePatternCatalog.DEEP_FOREST_START_DISTANCE:
+		return 1.10
+	return 1.12
 
 
 func _append_creator_challenge(
@@ -358,25 +558,50 @@ func _append_creator_challenge(
 	ceiling_y: float,
 	floor_y: float,
 	piece: StringName,
+	route_lane: StringName,
 ) -> void:
 	match piece:
 		&"leaf":
+			var x := start_x + 650.0
 			_append_leaf_cluster(
-				result, start_x + 650.0, floor_y, false,
-				_floating_obstacle_scale)
+				result,
+				x,
+				_boundary_edge_y_at(
+					start_x, x, floor_y, route_lane, false),
+				false,
+				_floating_obstacle_scale,
+			)
 		&"pod":
+			var x := start_x + 650.0
 			_append_hanging_seed_pod(
-				result, start_x + 650.0, ceiling_y,
+				result,
+				x,
+				_boundary_edge_y_at(
+					start_x, x, ceiling_y, route_lane, true),
 				160.0 * _floating_obstacle_scale,
-				235.0 * _floating_obstacle_scale)
-		&"vine":
-			_append_vine_fork(
-				result, start_x + 650.0, floor_y,
 				235.0 * _floating_obstacle_scale,
-				195.0 * _floating_obstacle_scale)
+			)
+		&"vine":
+			var x := start_x + 650.0
+			_append_vine_fork(
+				result,
+				x,
+				_boundary_edge_y_at(
+					start_x, x, floor_y, route_lane, false),
+				235.0 * _floating_obstacle_scale,
+				195.0 * _floating_obstacle_scale,
+			)
 		&"gate":
+			var x := start_x + 690.0
 			_append_split_root_gate(
-				result, start_x + 690.0, 370.0, ceiling_y, floor_y)
+				result,
+				x,
+				370.0,
+				_boundary_edge_y_at(
+					start_x, x, ceiling_y, route_lane, true),
+				_boundary_edge_y_at(
+					start_x, x, floor_y, route_lane, false),
+			)
 		_:
 			pass
 
@@ -522,6 +747,25 @@ func _append_vine_fork(
 		Vector2(center_x + width * 0.46, floor_y - height * 0.73),
 		Vector2(center_x + width * 0.28, floor_y - height * 0.37),
 		Vector2(center_x + width * 0.48, floor_y),
+	]))
+
+
+func _append_root_stump(
+	result: CourseGeometry,
+	center_x: float,
+	edge_y: float,
+	hanging: bool,
+	width: float,
+	height: float,
+) -> void:
+	var direction := 1.0 if hanging else -1.0
+	result.obstacles.append(PackedVector2Array([
+		Vector2(center_x - width * 0.50, edge_y),
+		Vector2(center_x - width * 0.42, edge_y + direction * height * 0.28),
+		Vector2(center_x - width * 0.10, edge_y + direction * height),
+		Vector2(center_x + width * 0.12, edge_y + direction * height * 0.74),
+		Vector2(center_x + width * 0.43, edge_y + direction * height * 0.34),
+		Vector2(center_x + width * 0.50, edge_y),
 	]))
 
 

@@ -16,7 +16,7 @@ The product *is* the swinging. Everything else exists to support it.
 > `com.menno420.spiderswing.dev` are all development identifiers and are all
 > expected to change.
 
-## Current phase: Phase 0.15 environment-theme comparison
+## Current phase: Phase 0.21 living Ancient Forest depth
 
 **The first playable traversal test is implemented.** The project opens on a
 player-facing Home screen with Play, Garage, Shop, a six-step Tutorial, Course
@@ -58,27 +58,32 @@ Burst boost.
 - A deterministic bounded course stream with a 1000 m learning runway before
   detached middle hazards and a separate 2000 m default protection period in
   which the lethal ceiling/floor rails never move inward. One shared route plan
-  shapes the rails and fly trail around each challenge; occasional later tight
-  gaps are rail-only rather than stacked with a floating blocker. Leaf clusters,
-  vine forks, hanging seed pods, broad rail-grown root passages, fly route arcs, and lower
-  anchors before later challenges. Base Burst crosses 40% of the
+  shapes the rails and fly trail around each challenge. A curated,
+  distance-banded pattern catalog prevents immediate repeats, introduces
+  paired/staggered compositions only after 2000 m, and reserves predictable
+  later tight gaps for rail-only challenges. Leaf clusters, vine forks, hanging
+  seed pods, broken root stumps, broad rail-grown root passages, fly route arcs,
+  and lower anchors appear in distinct rhythms. Base Burst crosses 40% of the
   selected web distance; downward taps make a one-shot 40% Dive Pull. Both are
   collision-checked, but only Burst uses a timer. Dive rearms after the next
   successful upper/obstacle web attachment. Either pull can be cancelled
   immediately by a recovery-web tap.
-- Slightly reduced floating hazards, with independent DEBUG controls for edge
-  obstacle size, floating obstacle size, and gate opening size. Collision and
+- Small post-runway hazards gain only 6–12% size across later distance bands,
+  with independent DEBUG controls for edge obstacle size, floating obstacle
+  size, and gate opening size. The broad passage is not narrowed. Collision and
   presentation always consume the same scaled polygons.
 - Four generated 384×384 environment packs—Ancient Forest, Mossy Ravine,
   Overgrown Greenhouse, and Reclaimed Attic—plus the original Graybox. Ancient
   Forest is the default and now adds a cohesive finished-art candidate:
-  mossy branch edges, rooted brambles, hanging thorn vines, a broad root passage,
-  the Classic Garden Spider, and golden forest flies. Its transparent obstacle
+  world-continuous mossy branch rails, rooted brambles, hanging thorn vines,
+  broken root stumps, a broad root passage, three layered forest depths, the
+  Classic Garden Spider, and golden forest flies. Its transparent obstacle
   sprites replace the prototype polygon backing instead of layering over it;
-  wall-grown art extends behind a continuous rail overlay, closing transparent
-  join gaps, while aspect-preserving crops keep differently sized hazards from
-  distorting. The broad passage uses the same natural upper/lower growth instead
-  of stretched circular halves.
+  root-and-moss growth sockets join every wall-grown hazard behind the rail,
+  while aspect-preserving crops keep differently sized hazards from distorting.
+  The broad passage uses the same natural upper/lower growth instead of
+  stretched circular halves. Background layers scroll at restrained independent
+  rates and stay lower contrast than gameplay.
   DEBUG → LOOK swaps visual treatment without changing a course polygon or
   collision. DEBUG → OVERLAYS
   independently enables exact collision outlines or web-target guides; both
@@ -108,7 +113,7 @@ Burst boost.
   catch, aim forgiveness, range, RELEASE/RETARGET behavior,
   deterministic input recording/replay, visual-theme comparison, independent
   opt-in overlays, and diagnostic export.
-- Forty deterministic physics tests (80 runtime contracts total),
+- Forty-one deterministic physics tests (82 runtime contracts total),
   including interruptible recovery webs, double-tap fallback, explicit
   release/retarget modes, opening-runway pacing, lower anchor coverage, exact
   pull-distance shares, speed-neutral Reel/take-up shortening, rail policy,

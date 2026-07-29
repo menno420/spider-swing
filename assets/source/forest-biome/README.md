@@ -2,20 +2,22 @@
 
 > **Status:** `candidate-production-source-record`
 
-Six original assets were generated with OpenAI image generation on 2026-07-29;
-five remain active runtime assets after the dedicated split-gate raster was
-retired. They were reviewed individually at source and gameplay scale. The previously generated
+Twelve original assets were generated with OpenAI image generation on
+2026-07-29; ten are active runtime assets. The earlier single-branch rail and
+dedicated split-gate raster are retained only as recoverable history. Every
+active asset was reviewed individually, in repeated-tile or layered-composition
+previews where relevant, and at mobile gameplay scale. The previously generated
 Spider Swing environment concept was supplied only as an internal style,
 lighting, material, and scale reference. No third-party image was copied into an
 asset.
 
-Every source used a perfectly flat `#ff00ff` chroma background. The background
-was removed with the image-generation skill's `remove_chroma_key.py` using
-border auto-key, soft matte, thresholds 12/220, and despill. Runtime images were
-alpha-trimmed, padded by 8 pixels, and downscaled with ImageMagick. Full
-generation canvases are represented here by their SHA-256 rather than committed:
-Godot would otherwise import roughly 9 MiB of regeneration input that the game
-never loads.
+Isolated sources used a perfectly flat `#ff00ff` chroma background. It was
+removed with the image-generation skill's `remove_chroma_key.py`, using an
+explicit key for compositions whose foliage touched the border, then soft matte
+and despill. The opaque far background was exported directly. Runtime images
+were cropped and downscaled with ImageMagick as appropriate. Full generation
+canvases are represented here by SHA-256 rather than committed: Godot only
+imports the exact runtime files.
 
 ## Art direction shared by all six assets
 
@@ -38,6 +40,60 @@ the full canvas and has no perspective taper.
 - runtime: `assets/runtime/forest-biome/ancient-branch-ceiling.png`
 - runtime SHA-256:
   `a6eb7bdd47ebbda4aceceed126ca773ebb6d9e8412970053f09df27a6c928f00`
+
+## Continuous ancient branch rail tile
+
+Generation specification: one long side-on old branch band with cracked bark,
+moss, root fibres, warm dappled highlights, and enough visual mass to read as
+both ceiling and floor. Its left and right edges carry matching bark and moss
+structure for repetition, while the collision-facing edge stays continuous and
+free of long hanging pieces.
+
+- source SHA-256:
+  `eccf9eca581b462b8fc5f28fe368ed39a484a57f4fa03ef9329b75cb1c617675`
+- runtime: `assets/runtime/forest-biome/ancient-branch-rail-tile.png`
+- runtime SHA-256:
+  `24198c4fe47c5d97e2a9ad3bd98b2fb24c856011afbbcaf01d33076252aa36dd`
+
+## Mossy growth socket
+
+Generation specification: one low horizontal root collar made from intertwined
+roots, moss, tiny leaves, bark debris, and a restrained contact shadow. It has a
+broad transparent base and no independent obstacle silhouette, so it only reads
+as the transition between a hazard and its supporting branch.
+
+- source SHA-256:
+  `a1619b1708c0e8048346382a688b5222cb44ebd6726907ac41dfa6577bc4a7d9`
+- runtime: `assets/runtime/forest-biome/mossy-growth-socket.png`
+- runtime SHA-256:
+  `a82002aa72724dbdec8bd82d236a13e4cbdc3b9e19c0ba33930db9707b80cc86`
+
+## Fallen root stump
+
+Generation specification: one side-on broken root stump with a wide embedded
+base, a short asymmetric upward mass, cracked reddish bark, moss, small fungal
+details, and restrained thorns. It contains no central opening or detached
+debris and remains readable at roughly 180–245 world pixels.
+
+- source SHA-256:
+  `d0bab7d250581e79f25da60ebc5183521bca1e10c15192186ba72a33bc702b19`
+- runtime: `assets/runtime/forest-biome/fallen-root-stump.png`
+- runtime SHA-256:
+  `efdf2267860c7c25aee5e725cc768941316c76921d375d7bf447494e6e257d6e`
+
+## Layered forest depth
+
+The far source is one complete misty old-growth forest with warm shafts of
+light and no gameplay silhouettes. The mid source contains only isolated trunks,
+branches, and hanging moss on chroma. The near source contains only restrained
+edge foliage and roots on chroma; a second edit removed bright pollen and glow
+that competed with flies.
+
+| Layer | Source SHA-256 | Runtime | Runtime SHA-256 |
+| --- | --- | --- | --- |
+| far | `b0d96b72a399ab6295b8508b55adf9158e73a082a8a82dcc27ec18b56868e2fe` | `assets/runtime/forest-biome/forest-backdrop-far.webp` | `7f38e49940d12f6ca7dfa807880208da05f1a79b4217148bc9fab58848accf65` |
+| mid | `69f5e46a8f107653a8c5db48a7b2e83529351877a532e6b1e655c828f09a581e` | `assets/runtime/forest-biome/forest-backdrop-mid.png` | `d31afea8fdc986f43683244f9fb6187ea64f9c720459966fb63feb39da612d4b` |
+| near | `699f0436e6bb41b44338874096a9b8d5f03f820a97821a85f4640ef7e9985237` | `assets/runtime/forest-biome/forest-backdrop-near.png` | `1cfeb45eeb8e1c607d5ea4779a1cfd5ed817ecac827fea01ad38e0cabfe1055d` |
 
 ## Floor thorn bramble
 
