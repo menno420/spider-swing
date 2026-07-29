@@ -75,7 +75,10 @@ Burst boost.
   mossy branch edges, rooted brambles, hanging thorn vines, a broad root passage,
   the Classic Garden Spider, and golden forest flies. Its transparent obstacle
   sprites replace the prototype polygon backing instead of layering over it;
-  an 8-pixel overscan keeps the visible thorns outside the authoritative bounds.
+  wall-grown art extends behind a continuous rail overlay, closing transparent
+  join gaps, while aspect-preserving crops keep differently sized hazards from
+  distorting. The broad passage uses the same natural upper/lower growth instead
+  of stretched circular halves.
   DEBUG → LOOK swaps visual treatment without changing a course polygon or
   collision. DEBUG → OVERLAYS
   independently enables exact collision outlines or web-target guides; both
@@ -105,7 +108,7 @@ Burst boost.
   catch, aim forgiveness, range, RELEASE/RETARGET behavior,
   deterministic input recording/replay, visual-theme comparison, independent
   opt-in overlays, and diagnostic export.
-- Forty deterministic physics tests (79 runtime contracts total),
+- Forty deterministic physics tests (80 runtime contracts total),
   including interruptible recovery webs, double-tap fallback, explicit
   release/retarget modes, opening-runway pacing, lower anchor coverage, exact
   pull-distance shares, speed-neutral Reel/take-up shortening, rail policy,

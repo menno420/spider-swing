@@ -2,8 +2,9 @@
 
 > **Status:** `candidate-production-source-record`
 
-Six original assets were generated with OpenAI image generation on 2026-07-29
-and reviewed individually at source and gameplay scale. The previously generated
+Six original assets were generated with OpenAI image generation on 2026-07-29;
+five remain active runtime assets after the dedicated split-gate raster was
+retired. They were reviewed individually at source and gameplay scale. The previously generated
 Spider Swing environment concept was supplied only as an internal style,
 lighting, material, and scale reference. No third-party image was copied into an
 asset.
@@ -65,6 +66,11 @@ seed-pod tip. It has no detached pieces or false central route.
 
 ## Split thorn-root gate
 
+> **Runtime status:** retired after `0.8.3-clean-forest-test`. Stretching the two
+> circular halves across variable upper/lower obstacle rectangles visibly
+> distorted them and made them read as floating pieces. The broad passage now
+> uses the same rail-grown bramble/vine grammar as the rest of the biome.
+
 Generation specification: preserve the Ancient Forest gate's bark, moss,
 outward thorns, palette, and lighting, but replace its closed ring topology with
 exactly two disconnected upper/lower arcs. Both sides remain completely open,
@@ -78,8 +84,7 @@ superseded closed-ring runtime asset remains recoverable from PR #22.
 
 - source SHA-256:
   `61838a6ae54fe7f7fa8083f66bff6e9a6f1272296dd760413028aa6d5a664a4b`
-- runtime: `assets/runtime/forest-biome/split-thorn-root-gate.png`
-- runtime SHA-256:
+- retired runtime SHA-256:
   `dda9625bd3f8a61ab5bc9f69fabe26b8a1c05ce58d78224fd8281f4bbe6cc800`
 
 ## Classic Garden Spider

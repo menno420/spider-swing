@@ -21,6 +21,9 @@ static func run() -> Dictionary:
 	passed += _test_debug_catalog_uses_plain_language(failures)
 	passed += _test_environment_theme_packs_are_visual_only(failures)
 	passed += _test_finished_forest_has_no_legacy_obstacle_backing(failures)
+	passed += _test_forest_obstacles_join_the_rails_without_gate_distortion(
+		failures,
+	)
 	passed += _test_debug_panel_expands_for_wide_phone(failures)
 	passed += _test_debug_controls_can_be_disabled(failures)
 	passed += _test_world_input_waits_for_gui(failures)
@@ -547,8 +550,8 @@ static func _test_environment_theme_packs_are_visual_only(
 			failures.append("environment texture is not a 384 px runtime tile")
 			return 0
 	var art_paths := ArtAssetCatalog.texture_paths()
-	if art_paths.size() != 6:
-		failures.append("finished forest slice does not expose six art assets")
+	if art_paths.size() != 5:
+		failures.append("finished forest slice does not expose five active art assets")
 		return 0
 	for path: String in art_paths:
 		if not ResourceLoader.exists(path):
@@ -634,6 +637,45 @@ static func _test_finished_forest_has_no_legacy_obstacle_backing(
 	if renderer.get_as_text().contains("FOREST_OBSTACLE_SHADOW"):
 		failures.append(
 			"finished forest still draws the old polygon silhouette behind art")
+		return 0
+	return 1
+
+
+static func _test_forest_obstacles_join_the_rails_without_gate_distortion(
+	failures: PackedStringArray,
+) -> int:
+	var renderer := FileAccess.open(
+		"res://game/presentation/scripts/swing_lab.gd",
+		FileAccess.READ,
+	)
+	var catalog := FileAccess.open(
+		"res://game/presentation/scripts/art_asset_catalog.gd",
+		FileAccess.READ,
+	)
+	if renderer == null or catalog == null:
+		failures.append("forest presentation sources cannot be inspected")
+		return 0
+	var renderer_source := renderer.get_as_text()
+	var catalog_source := catalog.get_as_text()
+	if not renderer_source.contains("FOREST_RAIL_JOIN_OVERLAP") or \
+			not renderer_source.contains("_redraw_forest_boundary_edges"):
+		failures.append(
+			"wall-grown forest art has no explicit rail-overlap composition")
+		return 0
+	if renderer_source.contains("FOREST_GATE_UPPER_SOURCE") or \
+			renderer_source.contains("FOREST_GATE_LOWER_SOURCE") or \
+			renderer_source.contains("_draw_forest_gate"):
+		failures.append(
+			"broad forest passage still stretches cropped circular gate halves")
+		return 0
+	if catalog_source.contains("FOREST_ROOT_GATE") or \
+			catalog_source.contains("split-thorn-root-gate.png"):
+		failures.append(
+			"retired circular gate art remains in the runtime asset catalog")
+		return 0
+	if not renderer_source.contains("_draw_texture_cover"):
+		failures.append(
+			"forest obstacle art still permits non-uniform texture distortion")
 		return 0
 	return 1
 

@@ -87,7 +87,7 @@ Run directly:
 godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-79 checks, grouped so one subsystem failure never hides the rest:
+80 checks, grouped so one subsystem failure never hides the rest:
 
 - engine, main-scene, input-action, 60 Hz, renderer/viewport, Android preset,
   inward-dependency, and no-autoload bootstrap contracts;
@@ -106,13 +106,14 @@ godot --headless --path . --script res://tests/test_runner.gd
   pickups, runtime pull tuning, and
   identical trajectories from
   simulated 30/60/90/120 Hz render loops;
-- eighteen mobile HUD contracts proving large separated Reel and Burst controls,
+- nineteen mobile HUD contracts proving large separated Reel and Burst controls,
   DEBUG, and Menu are event-consuming
   Buttons, GUI geometry shares one layout source, accepted actions drive visual
   and haptic feedback, UI actions do not leak into web input, debug tools can be
   removed, collision outlines and web-target guides are independent opt-in
   controls, finished Ancient Forest obstacles never paint the legacy polygon
-  backing, and world input waits for Godot GUI handling;
+  backing, wall-grown art overlaps behind continuous rails without stretched
+  gate halves, and world input waits for Godot GUI handling;
 - eleven front-end contracts proving Home starts before gameplay,
   Play/Garage/Shop/Tutorial/Course Lab/Settings route correctly, the six tutorial
   steps cover live mechanics, Settings

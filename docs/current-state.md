@@ -114,28 +114,31 @@ without a reported regression.
   collision, targeting, pace, or lethality.
 - `ArtAssetCatalog` adds one cohesive Ancient Forest candidate-production
   grammar over that same geometry: mirrored mossy branch edges, rooted
-  brambles, top-anchored thorn vines, a grouped rail-grown root passage, a finished
-  Classic Garden Spider sprite, and golden forest flies. Finished obstacle alpha
-  replaces the prototype filled polygon in normal play, with an 8-pixel
-  overscan beyond the authoritative bounds. Missing assets fall back to textured
-  geometry rather than creating invisible collision. Collision outlines and
-  web-target guides both load off and can be enabled independently under
-  DEBUG → OVERLAYS.
+  brambles, top-anchored thorn vines, natural upper/lower growth around broad
+  rail passages, a finished Classic Garden Spider sprite, and golden forest
+  flies. Finished obstacle alpha replaces the prototype filled polygon in
+  normal play. Wall-grown art overlaps behind the continuous branch rail and
+  source regions are cropped without changing aspect ratio, eliminating
+  transparent joins and stretched gate halves. Missing assets fall back to
+  textured geometry rather than creating invisible collision. Collision
+  outlines and web-target guides both load off and can be enabled independently
+  under DEBUG → OVERLAYS.
 - No autoload singletons exist, and a test fails if one appears.
 
 **Verification**
 
 - `python3 tools/verify.py --require-godot` — passes locally on Godot
   `4.7.1.stable.official.a13da4feb`: architecture fixtures/scan, clean import,
-  front-end boot, and all 79 headless contracts.
-- The last merged baseline is PR #24. Its final `game-quality` run
-  [30468520943](https://github.com/menno420/spider-swing/actions/runs/30468520943)
-  supplied Godot 4.7.1 and passed the complete 78-check suite at PR source
-  `710d21ba4e1728036954a79de347a68ac30a5a45`, merged as
-  `c00e301ee2963d46f360777529cb75ac528b4a7b`. The current PR #25 candidate
-  adds the local 79th presentation contract.
-- `tests/test_runner.gd` — 79 declared checks: forty
-  deterministic physics, eighteen GUI-owned mobile HUD, eleven front-end
+  front-end boot, and all 80 headless contracts.
+- The last merged baseline is PR #25. Its final `game-quality` run
+  [30474513238](https://github.com/menno420/spider-swing/actions/runs/30474513238)
+  supplied Godot 4.7.1 and passed the complete 79-check suite, merged as
+  `84ef6afe2658fe4e567a9e0eeb55125283f607c5`. PR #26 `game-quality` run
+  [30476965313](https://github.com/menno420/spider-swing/actions/runs/30476965313)
+  passes the complete 80-check suite on Godot 4.7.1 at source
+  `32cb11459d4be05b180c736316b8ef5cd27bda9d`.
+- `tests/test_runner.gd` — 80 declared checks: forty
+  deterministic physics, nineteen GUI-owned mobile HUD, eleven front-end
   navigation/settings/progression, plus bootstrap and exact build-version
   contracts. Physics covers exact 40%/40% pull shares,
   detached targeted Burst, recovery-web interruption, double-tap fallback,
@@ -148,7 +151,8 @@ without a reported regression.
   clears both rail-grown roots across the passage's full width at every
   supported Creator opening; the mobile group proves both overlays begin off
   and toggle independently, and that finished forest obstacles omit the legacy
-  backing fill. The front-end group
+  backing fill, overlap behind continuous rails, and never stretch the retired
+  circular gate halves. The front-end group
   performs real filesystem settings and progression round-trips plus settlement
   idempotency, profile upgrades, and creator edits. The trajectory
   fixture produces the same final state when driven through simulated 30, 60,
@@ -390,6 +394,19 @@ without a reported regression.
   `assets/project.binary`. `build-info.txt` proves version
   `0.8.3-clean-forest-test`, exact source, dev package, and display name
   `Spider Swing Clean Forest (dev)`.
+- PR #26 `android-debug` run
+  [30476965336](https://github.com/menno420/spider-swing/actions/runs/30476965336)
+  produced downloadable artifact
+  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30476965336/artifacts/8734021620)
+  ID `8734021620`, 58,421,464 bytes, digest
+  `sha256:c46b101fc33200108d82fd10510a75f29ed431ede15c383783f5d2dc19ebbc68`.
+  The downloaded ZIP matched that digest and passed archive validation. Its
+  58,807,429-byte APK passed archive validation with SHA-256
+  `91c99a6cd151db64ac99d504e240f7ae5f3c877417448f5b324fbf254841d19c`
+  and contains `classes.dex`, `AndroidManifest.xml`, and
+  `assets/project.binary`. `build-info.txt` proves version
+  `0.8.4-cohesive-forest-test`, exact source, dev package, and display name
+  `Spider Swing Cohesive Forest (dev)`.
 - **Dependabot** — live. Its first run opened two bumps against the kit-owned
   `substrate-gate.yml`; both were closed because `adopt`/`upgrade` regenerates that
   file. The rule is documented in `.github/dependabot.yml`: kit-owned-only bumps get
@@ -423,17 +440,18 @@ without a reported regression.
 
 ## In flight
 
-Phase 0.19 is in flight: the broad passage from PR #24 remains authoritative and
-unchanged, while the Ancient Forest renderer no longer paints the old dark
-polygon underneath bramble, vine, and root-gate sprites. Finished obstacle art
-is sprite-only in normal play, with textured geometry retained as a missing-asset
-fallback and exact polygons retained for the opt-in collision overlay.
-Collision outlines and web-target guides still begin off and have independent
-DEBUG → OVERLAYS controls. All 79 local and PR `game-quality` contracts pass,
-and the clean-forest Android artifact is verified. The maximum-speed ramp
-still spans 5000 m, no rail moves inward before 2000 m by default, and later
-inward passages remain rail-only. Phase 1 remains blocked on owner device review
-of both feel and art.
+Phase 0.20 is in flight: the broad passage from PR #24 remains authoritative and
+unchanged, while PR #26 composes every wall-grown Ancient Forest obstacle through
+an explicit overlap behind the continuous rail. The rail is redrawn over the
+join, source art is cropped without aspect distortion, and broad passages use
+the normal upper/lower bramble grammar instead of the retired split-circle
+texture. Finished obstacle art remains sprite-only in normal play, with textured
+geometry retained as a missing-asset fallback and exact polygons retained for
+the opt-in collision overlay. Collision outlines and web-target guides still
+begin off and have independent DEBUG → OVERLAYS controls. All 80 local contracts
+pass. The maximum-speed ramp still spans 5000 m, no rail moves inward before
+2000 m by default, and later inward passages remain rail-only. Phase 1 remains
+blocked on owner device review of both feel and art.
 
 ## Recently shipped (newest first)
 

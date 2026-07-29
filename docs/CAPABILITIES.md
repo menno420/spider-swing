@@ -115,6 +115,24 @@ as venue `any`.)
 kit-owned — they refresh at upgrade between the fence markers; local
 findings go here, below the fence.)
 
+- 2026-07-29 · capability · `owner-live` · **The cohesive Ancient Forest
+  composition survives the full Android path** · PR #26 `game-quality` run
+  [30476965313](https://github.com/menno420/spider-swing/actions/runs/30476965313)
+  passed all 80 contracts at source
+  `32cb11459d4be05b180c736316b8ef5cd27bda9d`; Android run
+  [30476965336](https://github.com/menno420/spider-swing/actions/runs/30476965336)
+  produced artifact
+  [`8734021620`](https://github.com/menno420/spider-swing/actions/runs/30476965336/artifacts/8734021620),
+  58,421,464 bytes with digest
+  `sha256:c46b101fc33200108d82fd10510a75f29ed431ede15c383783f5d2dc19ebbc68`.
+  The downloaded ZIP matched that digest and passed archive validation. Its
+  58,807,429-byte APK passed archive validation with SHA-256
+  `91c99a6cd151db64ac99d504e240f7ae5f3c877417448f5b324fbf254841d19c`
+  and contains `classes.dex`, `AndroidManifest.xml`, and
+  `assets/project.binary`; `build-info.txt` proves version
+  `0.8.4-cohesive-forest-test`, exact source, dev package, and display name
+  `Spider Swing Cohesive Forest (dev)`.
+
 ### 2026-07-28 · founding bootstrap session · venue `owner-live`
 
 Recorded against the live surface of THIS repository. Where a seed row above

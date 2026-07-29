@@ -21,8 +21,7 @@ const ENVIRONMENT_TEXTURE_WORLD_SIZE := 420.0
 const FOREST_BRANCH_HEIGHT := 122.0
 const FOREST_BRANCH_BASELINE := 94.0
 const FOREST_OBSTACLE_ART_OVERSCAN := 8.0
-const FOREST_GATE_UPPER_SOURCE := Rect2(6.0, 3.0, 377.0, 186.0)
-const FOREST_GATE_LOWER_SOURCE := Rect2(2.0, 357.0, 373.0, 153.0)
+const FOREST_RAIL_JOIN_OVERLAP := 28.0
 
 var _snapshot: SimulationSnapshot
 var _camera_x: float = 0.0
@@ -287,8 +286,6 @@ func _draw_course(size: Vector2) -> void:
 			environment["material_tint"] as Color,
 			fill,
 		)
-		if _uses_forest_art():
-			_draw_forest_boundary_edge(boundary, screen_boundary)
 		if _snapshot.collision_outlines_visible:
 			_draw_closed_polyline(
 				screen_boundary,
@@ -311,10 +308,6 @@ func _draw_course(size: Vector2) -> void:
 
 	var obstacle_index := 0
 	while obstacle_index < _snapshot.obstacles.size():
-		if _uses_forest_art() and _is_forest_gate_group(obstacle_index):
-			_draw_forest_gate(obstacle_index, size)
-			obstacle_index += 2
-			continue
 		var obstacle: PackedVector2Array = _snapshot.obstacles[obstacle_index]
 		var screen_obstacle := _polygon_to_screen(obstacle)
 		var obstacle_bounds := _polygon_bounds(screen_obstacle)
@@ -324,6 +317,9 @@ func _draw_course(size: Vector2) -> void:
 			continue
 		_draw_obstacle(obstacle, screen_obstacle)
 		obstacle_index += 1
+
+	if _uses_forest_art():
+		_redraw_forest_boundary_edges(size)
 
 	for fly: Vector2 in _snapshot.fly_positions:
 		var fly_screen := _world_to_screen(fly)
@@ -411,6 +407,19 @@ func _draw_forest_boundary_edge(
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
+func _redraw_forest_boundary_edges(viewport_size: Vector2) -> void:
+	# Obstacles deliberately extend behind the wall art. Drawing the continuous
+	# rail last masks transparent source padding and makes each hazard look
+	# rooted in one environment without changing either collision shape.
+	for boundary: PackedVector2Array in _snapshot.boundary_surfaces:
+		var screen_boundary := _polygon_to_screen(boundary)
+		var bounds := _polygon_bounds(screen_boundary)
+		if bounds.end.x < -80.0 or \
+				bounds.position.x > viewport_size.x + 80.0:
+			continue
+		_draw_forest_boundary_edge(boundary, screen_boundary)
+
+
 func _draw_obstacle(
 	world_polygon: PackedVector2Array,
 	polygon: PackedVector2Array,
@@ -447,9 +456,17 @@ func _draw_obstacle(
 				OBSTACLE_DARK,
 			)
 		if texture != null:
-			_draw_texture_fitted(
+			var art_bounds := screen_bounds.grow(
+				FOREST_OBSTACLE_ART_OVERSCAN,
+			)
+			if world_bounds.position.y <= CourseStream.CEILING_Y + 2.0:
+				art_bounds.position.y -= FOREST_RAIL_JOIN_OVERLAP
+				art_bounds.size.y += FOREST_RAIL_JOIN_OVERLAP
+			elif world_bounds.end.y >= CourseStream.FLOOR_Y - 2.0:
+				art_bounds.size.y += FOREST_RAIL_JOIN_OVERLAP
+			_draw_texture_cover(
 				texture,
-				screen_bounds.grow(FOREST_OBSTACLE_ART_OVERSCAN),
+				art_bounds,
 				flip_y,
 			)
 		if _snapshot.collision_outlines_visible:
@@ -487,77 +504,6 @@ func _draw_obstacle(
 		)
 
 
-func _draw_forest_gate(first_index: int, viewport_size: Vector2) -> void:
-	var union_bounds := Rect2()
-	var world_polygons: Array[PackedVector2Array] = []
-	var screen_polygons: Array[PackedVector2Array] = []
-	for offset in range(2):
-		var world_polygon: PackedVector2Array = \
-			_snapshot.obstacles[first_index + offset]
-		var polygon := _polygon_to_screen(world_polygon)
-		world_polygons.append(world_polygon)
-		screen_polygons.append(polygon)
-		var bounds := _polygon_bounds(polygon)
-		union_bounds = bounds if offset == 0 else union_bounds.merge(bounds)
-	if union_bounds.end.x < -90.0 or \
-			union_bounds.position.x > viewport_size.x + 90.0:
-		return
-	var texture := _art_texture(ArtAssetCatalog.FOREST_ROOT_GATE)
-	var environment := _environment_theme()
-	var draw_backing := bool(environment.get(
-		"draw_obstacle_geometry_backing",
-		true,
-	)) or texture == null
-	if draw_backing:
-		for offset in range(2):
-			_draw_environment_polygon(
-				world_polygons[offset],
-				screen_polygons[offset],
-				environment["obstacle_tint"] as Color,
-				OBSTACLE_DARK,
-			)
-	if texture != null:
-		draw_texture_rect_region(
-			texture,
-			_polygon_bounds(screen_polygons[0]).grow(
-				FOREST_OBSTACLE_ART_OVERSCAN,
-			),
-			FOREST_GATE_UPPER_SOURCE,
-		)
-		draw_texture_rect_region(
-			texture,
-			_polygon_bounds(screen_polygons[1]).grow(
-				FOREST_OBSTACLE_ART_OVERSCAN,
-			),
-			FOREST_GATE_LOWER_SOURCE,
-		)
-	if _snapshot.collision_outlines_visible:
-		var color := _environment_theme()["lethal_edge"] as Color
-		for polygon: PackedVector2Array in screen_polygons:
-			_draw_closed_polyline(polygon, color, 2.0)
-
-
-func _is_forest_gate_group(first_index: int) -> bool:
-	if first_index + 1 >= _snapshot.obstacles.size():
-		return false
-	var upper: PackedVector2Array = _snapshot.obstacles[first_index]
-	var lower: PackedVector2Array = _snapshot.obstacles[first_index + 1]
-	if upper.size() != 4 or lower.size() != 4:
-		return false
-	var upper_bounds := _polygon_bounds(upper)
-	var lower_bounds := _polygon_bounds(lower)
-	var union_bounds := upper_bounds.merge(lower_bounds)
-	return upper_bounds.get_center().y < lower_bounds.get_center().y and \
-		upper_bounds.position.y <= CourseStream.CEILING_Y + 2.0 and \
-		lower_bounds.end.y >= CourseStream.FLOOR_Y - 2.0 and \
-		upper_bounds.end.y < lower_bounds.position.y and \
-		absf(
-			upper_bounds.get_center().x - lower_bounds.get_center().x,
-		) <= 8.0 and \
-		union_bounds.size.x >= 110.0 and union_bounds.size.x <= 240.0 and \
-		union_bounds.size.y >= 520.0 and union_bounds.size.y <= 640.0
-
-
 func _draw_fly(screen_position: Vector2, world_position: Vector2) -> void:
 	var texture := _art_texture(ArtAssetCatalog.GOLDEN_FLY)
 	if texture == null:
@@ -578,17 +524,32 @@ func _draw_fly(screen_position: Vector2, world_position: Vector2) -> void:
 	)
 
 
-func _draw_texture_fitted(
+func _draw_texture_cover(
 	texture: Texture2D,
 	bounds: Rect2,
 	flip_y: bool = false,
 ) -> void:
+	var texture_size := texture.get_size()
+	if texture_size.x <= 0.0 or texture_size.y <= 0.0 or \
+			bounds.size.x <= 0.0 or bounds.size.y <= 0.0:
+		return
+	var source := Rect2(Vector2.ZERO, texture_size)
+	var source_aspect := texture_size.x / texture_size.y
+	var target_aspect := bounds.size.x / bounds.size.y
+	if source_aspect > target_aspect:
+		var cropped_width := texture_size.y * target_aspect
+		source.position.x = (texture_size.x - cropped_width) * 0.5
+		source.size.x = cropped_width
+	else:
+		var cropped_height := texture_size.x / target_aspect
+		source.position.y = (texture_size.y - cropped_height) * 0.5
+		source.size.y = cropped_height
 	var scale_y := -1.0 if flip_y else 1.0
 	draw_set_transform(bounds.get_center(), 0.0, Vector2(1.0, scale_y))
-	draw_texture_rect(
+	draw_texture_rect_region(
 		texture,
 		Rect2(-bounds.size * 0.5, bounds.size),
-		false,
+		source,
 	)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
