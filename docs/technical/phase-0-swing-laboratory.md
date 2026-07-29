@@ -96,17 +96,20 @@ indices. It retains two chunks behind the spider and four ahead, so distance is
 not capped and retained state does not grow with a run.
 
 The first 1000 displayed metres are a learning runway with no detached
-middle-lane hazards. Sparse silhouettes may grow from an existing rail, but the
-player first learns the corridor, ceiling web, lower Dive routes, flies, and
-recovery timing. Later chunks vary:
+middle-lane hazards. Independently, the first 2000 metres forbid inward rail
+movement: a route may hold the normal corridor or move one or both rails
+outward, but it cannot pinch the player. Sparse silhouettes may grow from an
+existing rail, while the player learns the corridor, ceiling web, lower Dive
+routes, flies, and recovery timing. Later chunks vary:
 
-- continuous ceiling and floor contours that open high/low bypasses or
-  occasionally close into a smaller late gap;
+- continuous ceiling and floor contours that open high/low/centre bypasses or,
+  after the protected distance, occasionally form a rail-only smaller gap;
 - floor-grown leaf clusters and vine forks;
 - ceiling-hanging seed pods and leaf clusters;
 - broken-pot gates with a traversable opening;
 - lower rail targets placed before the pattern's key hazard;
-- five-fly arcs that communicate a suggested route;
+- five-fly trails placed from the same route plan that shapes the rails and
+  selected obstacle;
 - sparse Burst Frenzy pickups.
 
 Obstacle polygons are lethal on contact and also valid anchors. Course rails are
@@ -166,7 +169,8 @@ avoids searching through one long carousel during device playtests.
 | `Gate opening size` | widen or tighten broken-pot passages | 4% / 80–140% |
 | `Shaped ceiling and floor` | contour continuous rails around challenges | off / on |
 | `Bypass room` | extra room on most high/low routes | 10% / 50–150% |
-| `Small-gap opening` | occasional late tight-route size | 5% / 75–140% |
+| `Small-gap opening` | height of later rail-only inward passages | 5% / 75–140% |
+| `Inward rails begin` | first distance where a rail-only passage may narrow | 250 m / 1000–8000 m |
 | `Opening training web` | start on the ordinary guided ceiling web | off / on |
 | `One rescue per run` | recover the first lethal mistake | off / on |
 | `Burst Frenzy time` | Anchor Burst cooldown suppression | 0.5 / 1–10 s |
@@ -205,10 +209,11 @@ product decisions.
 - default manual release and optional atomic RETARGET behavior;
 - one-shot downward Dive Pull with exact 40% traversal and no persistent rope;
 - obstacle anchoring, polygon collision, and swept pull collision checks;
-- a 1000 m middle-hazard runway, deterministic organic geometry after it,
-  continuous shaped lethal-by-default rails with open and tight routes,
-  lower-anchor coverage, independently scaled obstacle polygons, creator-pattern
-  bounds, and a bounded seven-chunk window;
+- a 1000 m middle-hazard runway plus a 2000 m no-inward-rail period,
+  deterministic organic geometry after it, one shared route plan for rails,
+  fly guidance, and obstacles, rail-only late tight routes, lower-anchor
+  coverage, independently scaled obstacle polygons, creator-pattern bounds,
+  and a bounded seven-chunk window;
 - a one-second safe guided opening that remains interruptible from its first
   tick;
 - one authoritative rescue followed by normal death on the next lethal contact;
@@ -225,7 +230,7 @@ product decisions.
 
 ## Owner device playtest
 
-Install `0.6.0-gradual-progression-test` after uninstalling the previous ephemerally
+Install `0.6.1-fair-corridor-test` after uninstalling the previous ephemerally
 signed dev app, then check:
 
 1. start a run without touching the screen for one second; the ordinary opening

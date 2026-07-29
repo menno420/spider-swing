@@ -16,6 +16,10 @@ const FLOOR_THICKNESS := 54.0
 const CEILING_Y := 112.0
 const FLOOR_Y := 684.0
 const START_X := 220.0
+const ROUTE_HIGH := &"high"
+const ROUTE_LOW := &"low"
+const ROUTE_CENTRE := &"centre"
+const ROUTE_TIGHT := &"tight"
 
 var _geometry := CourseGeometry.new()
 var _middle_hazard_start_distance: float = 10000.0
@@ -26,6 +30,7 @@ var _creator_pattern: Array[StringName] = []
 var _corridor_contours_enabled: bool = true
 var _corridor_clearance_scale: float = 1.0
 var _corridor_tight_gap_scale: float = 1.0
+var _tight_corridor_start_distance: float = 20000.0
 
 
 func reset(
@@ -37,6 +42,7 @@ func reset(
 	corridor_contours_enabled: bool = true,
 	corridor_clearance_scale: float = 1.0,
 	corridor_tight_gap_scale: float = 1.0,
+	tight_corridor_start_distance: float = 20000.0,
 ) -> void:
 	_middle_hazard_start_distance = middle_hazard_start_distance
 	_edge_obstacle_scale = edge_obstacle_scale
@@ -46,6 +52,7 @@ func reset(
 	_corridor_contours_enabled = corridor_contours_enabled
 	_corridor_clearance_scale = corridor_clearance_scale
 	_corridor_tight_gap_scale = corridor_tight_gap_scale
+	_tight_corridor_start_distance = tight_corridor_start_distance
 	_geometry = CourseGeometry.new()
 	update_for_position(SimulationWorld.START_POSITION.x)
 
@@ -94,28 +101,45 @@ func _append_chunk(result: CourseGeometry, chunk_index: int) -> void:
 	var ceiling_y := CEILING_Y
 	var floor_y := FLOOR_Y
 	var distance_at_chunk := maxf(0.0, start_x - START_X)
+	var has_middle_hazard := \
+		distance_at_chunk >= _middle_hazard_start_distance
+	var creator_piece := &""
+	if not _creator_pattern.is_empty() and chunk_index >= 1:
+		creator_piece = _creator_pattern[posmod(
+			chunk_index - 1,
+			_creator_pattern.size(),
+		)]
+	var route := _route_plan(
+		pattern,
+		chunk_index,
+		has_middle_hazard,
+		distance_at_chunk >= _tight_corridor_start_distance,
+		creator_piece,
+	)
 	_append_boundary_pattern(
 		result,
 		start_x,
 		ceiling_y,
 		floor_y,
-		pattern,
-		distance_at_chunk >= _middle_hazard_start_distance,
+		StringName(route["lane"]),
 	)
-	_append_route_flies(result, start_x, ceiling_y, floor_y, pattern)
+	_append_route_flies(
+		result,
+		start_x,
+		float(route["guide_y"]),
+		StringName(route["lane"]),
+		float(route.get("guide_end_x", 710.0)),
+	)
 
-	if not _creator_pattern.is_empty() and chunk_index >= 1:
+	if not creator_piece.is_empty():
 		_append_creator_challenge(
 			result,
 			start_x,
 			ceiling_y,
 			floor_y,
-			_creator_pattern[posmod(
-				chunk_index - 1,
-				_creator_pattern.size(),
-			)],
+			creator_piece,
 		)
-	elif distance_at_chunk < _middle_hazard_start_distance:
+	elif not has_middle_hazard:
 		_append_opening_edge_detail(
 			result,
 			start_x,
@@ -124,7 +148,7 @@ func _append_chunk(result: CourseGeometry, chunk_index: int) -> void:
 			pattern,
 			chunk_index,
 		)
-	else:
+	elif StringName(route["lane"]) != ROUTE_TIGHT:
 		_append_middle_challenge(
 			result,
 			start_x,
@@ -145,8 +169,7 @@ func _append_boundary_pattern(
 	start_x: float,
 	ceiling_y: float,
 	floor_y: float,
-	pattern: int,
-	allow_tight_gap: bool,
+	route_lane: StringName,
 ) -> void:
 	# The rails never disappear. Their matching endpoints keep chunk seams
 	# continuous, while local profiles open a readable bypass around most
@@ -170,17 +193,17 @@ func _append_boundary_pattern(
 	# where edge hazards and route choices actually start.
 	if _corridor_contours_enabled and start_x >= CHUNK_WIDTH:
 		var clearance := 60.0 * _corridor_clearance_scale
-		if pattern in [0, 4]:
+		if route_lane == ROUTE_HIGH:
 			ceiling_profile.set(
 				2, ceiling_profile[2] + Vector2.UP * clearance * 0.72)
 			ceiling_profile.set(
 				3, ceiling_profile[3] + Vector2.UP * clearance)
-		elif pattern in [1, 5]:
+		elif route_lane == ROUTE_LOW:
 			floor_profile.set(
 				2, floor_profile[2] + Vector2.DOWN * clearance * 0.72)
 			floor_profile.set(
 				3, floor_profile[3] + Vector2.DOWN * clearance)
-		elif pattern in [2, 6]:
+		elif route_lane == ROUTE_CENTRE:
 			ceiling_profile.set(
 				2, ceiling_profile[2] + Vector2.UP * clearance * 0.55)
 			ceiling_profile.set(
@@ -189,12 +212,7 @@ func _append_boundary_pattern(
 				2, floor_profile[2] + Vector2.DOWN * clearance * 0.55)
 			floor_profile.set(
 				3, floor_profile[3] + Vector2.DOWN * clearance * 0.72)
-		elif pattern == 3:
-			ceiling_profile.set(
-				2, ceiling_profile[2] + Vector2.UP * clearance * 0.45)
-			floor_profile.set(
-				3, floor_profile[3] + Vector2.DOWN * clearance * 0.45)
-		elif pattern == 7 and allow_tight_gap:
+		elif route_lane == ROUTE_TIGHT:
 			var gap := 324.0 * _corridor_tight_gap_scale
 			var centre := 398.0
 			ceiling_profile.set(
@@ -207,6 +225,56 @@ func _append_boundary_pattern(
 				3, Vector2(floor_profile[3].x, centre + gap * 0.5))
 	_append_ceiling_profile(result, ceiling_profile)
 	_append_floor_profile(result, floor_profile)
+
+
+func _route_plan(
+	pattern: int,
+	chunk_index: int,
+	has_middle_hazard: bool,
+	allow_tight_corridor: bool,
+	creator_piece: StringName,
+) -> Dictionary:
+	if not creator_piece.is_empty():
+		match creator_piece:
+			&"leaf", &"vine":
+				return {"lane": ROUTE_HIGH, "guide_y": CEILING_Y + 160.0}
+			&"pod":
+				return {"lane": ROUTE_LOW, "guide_y": FLOOR_Y - 160.0}
+			&"gate":
+				return {
+					"lane": ROUTE_CENTRE,
+					"guide_y": 370.0,
+					"guide_end_x": 690.0,
+				}
+			_:
+				return {"lane": ROUTE_CENTRE, "guide_y": 398.0}
+
+	if not has_middle_hazard:
+		if chunk_index == 0 or posmod(chunk_index, 3) != 1:
+			return {"lane": ROUTE_CENTRE, "guide_y": 398.0}
+		if pattern in [1, 3, 5, 7]:
+			return {"lane": ROUTE_HIGH, "guide_y": CEILING_Y + 160.0}
+		return {"lane": ROUTE_LOW, "guide_y": FLOOR_Y - 160.0}
+
+	if pattern == 7 and allow_tight_corridor:
+		return {"lane": ROUTE_TIGHT, "guide_y": 398.0}
+	if pattern in [0, 4]:
+		return {"lane": ROUTE_HIGH, "guide_y": CEILING_Y + 160.0}
+	if pattern in [1, 5]:
+		return {"lane": ROUTE_LOW, "guide_y": FLOOR_Y - 160.0}
+	if pattern == 3:
+		return {
+			"lane": ROUTE_CENTRE,
+			"guide_y": 370.0,
+			"guide_end_x": 690.0,
+		}
+	if pattern == 7:
+		return {
+			"lane": ROUTE_CENTRE,
+			"guide_y": 350.0,
+			"guide_end_x": 700.0,
+		}
+	return {"lane": ROUTE_CENTRE, "guide_y": 398.0}
 
 
 func _append_opening_edge_detail(
@@ -391,18 +459,20 @@ func _append_guides(
 func _append_route_flies(
 	result: CourseGeometry,
 	start_x: float,
-	ceiling_y: float,
-	floor_y: float,
-	pattern: int,
+	guide_y: float,
+	route_lane: StringName,
+	guide_end_x: float,
 ) -> void:
-	var high_route := pattern in [1, 3, 4, 7]
-	var base_y := floor_y - 135.0 if high_route else ceiling_y + 155.0
-	var arc_sign := -1.0 if high_route else 1.0
+	var arc := 0.0
+	if route_lane == ROUTE_HIGH:
+		arc = 46.0
+	elif route_lane == ROUTE_LOW:
+		arc = -46.0
 	for index in range(5):
 		var progress := float(index) / 4.0
 		result.fly_positions.append(Vector2(
-			start_x + 230.0 + float(index) * 120.0,
-			base_y + sin(progress * PI) * 82.0 * arc_sign,
+			lerpf(start_x + 230.0, start_x + guide_end_x, progress),
+			guide_y + sin(progress * PI) * arc,
 		))
 
 

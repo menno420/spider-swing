@@ -6,7 +6,7 @@ class_name SwingConfig
 ## are deliberately not called "baseline": only the owner can approve that
 ## label after real-device playtesting.
 
-const SCHEMA_VERSION := 8
+const SCHEMA_VERSION := 9
 const PRESET_BALANCED := &"balanced_candidate"
 const PRESET_WEIGHTY := &"weighty_candidate"
 const PRESET_AGILE := &"agile_candidate"
@@ -61,6 +61,7 @@ const PRESET_AGILE := &"agile_candidate"
 @export var corridor_contours_enabled: bool = true
 @export var corridor_clearance_scale: float = 1.0
 @export var corridor_tight_gap_scale: float = 1.0
+@export var tight_corridor_start_distance: float = 20000.0
 @export var middle_hazard_start_distance: float = 10000.0
 @export var edge_obstacle_scale: float = 0.94
 @export var floating_obstacle_scale: float = 0.90
@@ -113,6 +114,7 @@ func apply_preset(name: StringName) -> void:
 	corridor_contours_enabled = true
 	corridor_clearance_scale = 1.0
 	corridor_tight_gap_scale = 1.0
+	tight_corridor_start_distance = 20000.0
 	middle_hazard_start_distance = 10000.0
 	edge_obstacle_scale = 0.94
 	floating_obstacle_scale = 0.90
@@ -276,6 +278,9 @@ func set_tuning_value(parameter: StringName, value: float) -> float:
 		&"tight_gap_size":
 			corridor_tight_gap_scale = safe_value
 			return corridor_tight_gap_scale
+		&"tight_corridor_m":
+			tight_corridor_start_distance = safe_value
+			return tight_corridor_start_distance
 		&"guided_start":
 			guided_start_enabled = safe_value >= 0.5
 			return 1.0 if guided_start_enabled else 0.0
@@ -355,6 +360,8 @@ func value_for(parameter: StringName) -> float:
 			return corridor_clearance_scale
 		&"tight_gap_size":
 			return corridor_tight_gap_scale
+		&"tight_corridor_m":
+			return tight_corridor_start_distance
 		&"guided_start":
 			return 1.0 if guided_start_enabled else 0.0
 		&"rescue_life":
@@ -407,6 +414,8 @@ func validate() -> PackedStringArray:
 		failures.append("input buffer duration must be positive")
 	if middle_hazard_start_distance < 0.0:
 		failures.append("middle hazard start distance must not be negative")
+	if tight_corridor_start_distance < 0.0:
+		failures.append("tight corridor start distance must not be negative")
 	if edge_obstacle_scale < 0.5 or edge_obstacle_scale > 1.3 or \
 			floating_obstacle_scale < 0.5 or floating_obstacle_scale > 1.3 or \
 			gate_opening_scale < 0.75 or gate_opening_scale > 1.5:

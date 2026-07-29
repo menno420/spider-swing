@@ -39,6 +39,8 @@ static func run() -> Dictionary:
 	passed += _test_spider_profiles_and_glide_share_one_config(failures)
 	passed += _test_creator_pattern_drives_deterministic_chunks(failures)
 	passed += _test_course_stream_places_lower_anchor_windows(failures)
+	passed += _test_early_routes_are_obstacle_aware_and_late_gaps_are_clear(
+		failures)
 	passed += _test_contoured_rails_are_continuous_and_varied(failures)
 	passed += _test_obstacle_collision_is_authoritative(failures)
 	passed += _test_boundary_lethality_is_a_toggle(failures)
@@ -67,9 +69,11 @@ static func _test_presets(failures: PackedStringArray) -> int:
 			not is_equal_approx(balanced.burst_distance_fraction, 0.40) or \
 			not is_equal_approx(balanced.burst_minimum_distance, 80.0) or \
 			not is_equal_approx(balanced.speed_curve_distance, 50000.0) or \
+			not is_equal_approx(
+				balanced.tight_corridor_start_distance, 20000.0) or \
 			not balanced.course_boundaries_lethal:
 		failures.append(
-			"balanced candidate lost its weaker base, 5 km ramp, or lethal rails")
+			"balanced candidate lost its weaker base, pacing, or rail defaults")
 		return 0
 	return 1
 
@@ -726,6 +730,7 @@ static func _test_pull_tuning_controls(failures: PackedStringArray) -> int:
 	var cooldown_before := config.burst_cooldown
 	var burst_minimum_before := config.burst_minimum_distance
 	var full_speed_before := config.speed_curve_distance
+	var tight_corridor_before := config.tight_corridor_start_distance
 	config.adjust(&"burst_pull_pct", 1.0)
 	config.adjust(&"burst_minimum", 1.0)
 	config.adjust(&"dive_pull_pct", -1.0)
@@ -738,6 +743,7 @@ static func _test_pull_tuning_controls(failures: PackedStringArray) -> int:
 	config.adjust(&"course_rails", -1.0)
 	config.adjust(&"lethal_rails", 1.0)
 	config.adjust(&"route_clearance", 1.0)
+	config.adjust(&"tight_corridor_m", 1.0)
 	config.adjust(&"full_speed_m", 1.0)
 	config.adjust(&"impact_shell", 1.0)
 	if absf(config.burst_distance_fraction - (burst_before + 0.05)) > 0.001:
@@ -761,6 +767,12 @@ static func _test_pull_tuning_controls(failures: PackedStringArray) -> int:
 		return 0
 	if absf(config.speed_curve_distance - (full_speed_before + 5000.0)) > 0.001:
 		failures.append("debug full-speed distance adjustment is not 500 m")
+		return 0
+	if absf(
+		config.tight_corridor_start_distance -
+			(tight_corridor_before + 2500.0)
+	) > 0.001:
+		failures.append("debug inward-rail threshold adjustment is not 250 m")
 		return 0
 	if not config.web_tap_retargets_when_attached:
 		failures.append("debug tap mode did not enable RETARGET")
@@ -793,6 +805,7 @@ static func _test_pull_tuning_controls(failures: PackedStringArray) -> int:
 		&"corridor_contours",
 		&"route_clearance",
 		&"tight_gap_size",
+		&"tight_corridor_m",
 		&"impact_shell",
 		&"safe_impact_speed",
 		&"bounce_strength",
@@ -905,7 +918,7 @@ static func _test_contoured_rails_are_continuous_and_varied(
 ) -> int:
 	var stream := CourseStream.new()
 	stream.reset()
-	var geometry := stream.update_for_position(15000.0)
+	var geometry := stream.update_for_position(23000.0)
 	var found_open_route := false
 	var found_tight_route := false
 	for chunk_index in range(
@@ -946,6 +959,89 @@ static func _test_contoured_rails_are_continuous_and_varied(
 	if not found_open_route or not found_tight_route:
 		failures.append("corridor stream lacks both open bypasses and late tight gaps")
 		return 0
+	return 1
+
+
+static func _test_early_routes_are_obstacle_aware_and_late_gaps_are_clear(
+	failures: PackedStringArray,
+) -> int:
+	var stream := CourseStream.new()
+	stream.reset()
+	var route_margin := 30.0
+	for chunk_index in range(22):
+		var chunk_start := float(chunk_index) * CourseStream.CHUNK_WIDTH
+		var chunk_end := chunk_start + CourseStream.CHUNK_WIDTH
+		var geometry := stream.update_for_position(chunk_start + 1.0)
+		var ceiling := PackedVector2Array()
+		var floor := PackedVector2Array()
+		for boundary: PackedVector2Array in geometry.boundary_surfaces:
+			var bounds := SolidGeometry.bounds(boundary)
+			if absf(bounds.position.x - chunk_start) > 0.01:
+				continue
+			if boundary[0].y < 400.0:
+				ceiling = boundary
+			else:
+				floor = boundary
+		if ceiling.is_empty() or floor.is_empty():
+			failures.append(
+				"early chunk %d is missing a continuous route boundary" %
+					chunk_index)
+			return 0
+		for point_index in range(5):
+			if ceiling[point_index].y > CourseStream.CEILING_Y + 0.01 or \
+					floor[point_index].y < CourseStream.FLOOR_Y - 0.01:
+				failures.append(
+					"chunk %d moves lethal rails inward before 2000 m" %
+						chunk_index)
+				return 0
+		var chunk_obstacles: Array[PackedVector2Array] = []
+		for obstacle: PackedVector2Array in geometry.obstacles:
+			var obstacle_bounds := SolidGeometry.bounds(obstacle)
+			if obstacle_bounds.get_center().x >= chunk_start and \
+					obstacle_bounds.get_center().x < chunk_end:
+				chunk_obstacles.append(obstacle)
+		for fly: Vector2 in geometry.fly_positions:
+			if fly.x < chunk_start or fly.x >= chunk_end:
+				continue
+			for obstacle: PackedVector2Array in chunk_obstacles:
+				if SolidGeometry.circle_intersects_polygon(
+					fly,
+					route_margin,
+					obstacle,
+				):
+					failures.append(
+						"chunk %d guides its route into an obstacle" %
+							chunk_index)
+					return 0
+
+	var tight_chunk_index := 23
+	var tight_chunk_start := \
+		float(tight_chunk_index) * CourseStream.CHUNK_WIDTH
+	var later := stream.update_for_position(tight_chunk_start + 1.0)
+	var found_inward_ceiling := false
+	var found_inward_floor := false
+	for boundary: PackedVector2Array in later.boundary_surfaces:
+		var bounds := SolidGeometry.bounds(boundary)
+		if absf(bounds.position.x - tight_chunk_start) > 0.01:
+			continue
+		if boundary[0].y < 400.0:
+			for point_index in range(5):
+				found_inward_ceiling = found_inward_ceiling or \
+					boundary[point_index].y > 200.0
+		else:
+			for point_index in range(5):
+				found_inward_floor = found_inward_floor or \
+					boundary[point_index].y < 590.0
+	if not found_inward_ceiling or not found_inward_floor:
+		failures.append("late course never introduces the configured tight corridor")
+		return 0
+	for obstacle: PackedVector2Array in later.obstacles:
+		var bounds := SolidGeometry.bounds(obstacle)
+		if bounds.get_center().x >= tight_chunk_start and \
+				bounds.get_center().x < \
+					tight_chunk_start + CourseStream.CHUNK_WIDTH:
+			failures.append("late tight corridor still overlaps a floating obstacle")
+			return 0
 	return 1
 
 

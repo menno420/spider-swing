@@ -349,3 +349,17 @@ never edit.
   `assets/project.binary`. `build-info.txt` proved version
   `0.5.0-opening-garage-test`, exact source, dev package, and display name
   `Spider Swing Opening Garage (dev)`.
+- 2026-07-29 · capability · `owner-live` · **Obstacle-aware early corridors
+  survive the full Android path** · PR #20 `game-quality` run
+  [30447006504](https://github.com/menno420/spider-swing/actions/runs/30447006504)
+  passed 75 contracts at source
+  `b700c61eaa1c427005b1e957cb708dc58e56390f`; Android run
+  [30447006513](https://github.com/menno420/spider-swing/actions/runs/30447006513)
+  produced artifact
+  [`8721864851`](https://github.com/menno420/spider-swing/actions/runs/30447006513/artifacts/8721864851),
+  56,858,997 bytes with digest
+  `sha256:53f7da38c36856e6f559731eb9a8c099d90247f5141c51c8cec7d44edd237c85`.
+  The downloaded 57,240,170-byte APK passed archive verification with SHA-256
+  `ab4727e70deee2bd041e1c6038968e67d998587ee76002a9c4d7e061b4774098`;
+  `build-info.txt` proves version `0.6.1-fair-corridor-test`, the exact source,
+  dev package, and display name `Spider Swing Fair Corridors (dev)`.
