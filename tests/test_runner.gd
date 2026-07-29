@@ -7,7 +7,7 @@ const ANDROID_WORKFLOW_PATH := "res://.github/workflows/android-debug.yml"
 const BUILD_VERSION := "0.8.2-wide-passage-test"
 const ANDROID_VERSION_CODE := 18
 const ANDROID_APP_NAME := "Spider Swing Wide Passage (dev)"
-const EXPECTED_CHECK_COUNT := 78
+const EXPECTED_CHECK_COUNT := 79
 const REQUIRED_INPUT_ACTIONS := [
 	"web_action", "reel_in", "burst_action", "pause", "restart_run",
 	"toggle_debug"]
