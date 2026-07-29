@@ -471,7 +471,7 @@ func _draw_hud(size: Vector2) -> void:
 
 
 func _draw_debug(size: Vector2) -> void:
-	var panel := LabLayout.DEBUG_PANEL
+	var panel := LabLayout.debug_panel_rect(size)
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.01, 0.03, 0.05, 0.56))
 	draw_rect(panel, Color(0.02, 0.07, 0.1, 0.98))
 	draw_rect(panel, CYAN, false, 2.0)
@@ -486,7 +486,7 @@ func _draw_debug(size: Vector2) -> void:
 	for index in range(SwingConfig.preset_names().size()):
 		var name := SwingConfig.preset_names()[index]
 		_draw_button(
-			LabLayout.preset_rect(index),
+			LabLayout.preset_rect(index, size),
 			_preset_label(name),
 			name == _snapshot.preset_name,
 		)
@@ -494,7 +494,7 @@ func _draw_debug(size: Vector2) -> void:
 	for index in range(TuningCatalog.category_count()):
 		var category := TuningCatalog.category(index)
 		_draw_button(
-			LabLayout.category_rect(index),
+			LabLayout.category_rect(index, size),
 			str(category["label"]),
 			index == _snapshot.debug_category_index,
 		)
@@ -508,9 +508,9 @@ func _draw_debug(size: Vector2) -> void:
 		MUTED,
 	)
 	if _snapshot.debug_category_index == TuningCatalog.tools_category_index():
-		_draw_debug_tools()
+		_draw_debug_tools(size)
 	else:
-		_draw_tuning_cards(StringName(active_category["id"]))
+		_draw_tuning_cards(StringName(active_category["id"]), size)
 
 	# The modal is drawn after the HUD, so redraw its close affordance on top.
 	_draw_button(
@@ -520,13 +520,16 @@ func _draw_debug(size: Vector2) -> void:
 	)
 
 
-func _draw_tuning_cards(category_id: StringName) -> void:
+func _draw_tuning_cards(
+	category_id: StringName,
+	size: Vector2,
+) -> void:
 	var parameters := TuningCatalog.parameters_for_category(category_id)
 	for card_index in range(parameters.size()):
 		var descriptor: Dictionary = parameters[card_index]
 		var parameter := StringName(descriptor["id"])
 		var value := float(_snapshot.tuning_values.get(parameter, 0.0))
-		var card := LabLayout.parameter_card_rect(card_index)
+		var card := LabLayout.parameter_card_rect(card_index, size)
 		var selected := parameter == _snapshot.selected_parameter
 		draw_rect(
 			card,
@@ -552,8 +555,10 @@ func _draw_tuning_cards(category_id: StringName) -> void:
 			18,
 			YELLOW,
 		)
-		_draw_button(LabLayout.parameter_minus_rect(card_index), "−", false)
-		_draw_button(LabLayout.parameter_plus_rect(card_index), "+", false)
+		_draw_button(
+			LabLayout.parameter_minus_rect(card_index, size), "−", false)
+		_draw_button(
+			LabLayout.parameter_plus_rect(card_index, size), "+", false)
 
 		var quick_values: Array = descriptor["quick"]
 		for quick_index in range(quick_values.size()):
@@ -563,6 +568,7 @@ func _draw_tuning_cards(category_id: StringName) -> void:
 					card_index,
 					quick_index,
 					quick_values.size(),
+					size,
 				),
 				_quick_value_label(parameter, quick_value),
 				is_equal_approx(value, quick_value),
@@ -572,10 +578,16 @@ func _draw_tuning_cards(category_id: StringName) -> void:
 		var status := "DIVE READY" if _snapshot.dive_ready \
 			else "DIVE NEEDS AN UPPER WEB"
 		var status_color := GREEN if _snapshot.dive_ready else YELLOW
-		_draw_text(Vector2(884.0, 684.0), status, 15, status_color)
+		var panel := LabLayout.debug_panel_rect(size)
+		_draw_text(
+			Vector2(panel.end.x - 324.0, panel.end.y - 24.0),
+			status,
+			15,
+			status_color,
+		)
 
 
-func _draw_debug_tools() -> void:
+func _draw_debug_tools(size: Vector2) -> void:
 	var labels := [
 		"Pause simulation",
 		"Advance one physics frame",
@@ -593,7 +605,7 @@ func _draw_debug_tools() -> void:
 		"Save positions, tuning, pull state, and command history.",
 	]
 	for index in range(labels.size()):
-		var card := LabLayout.utility_rect(index)
+		var card := LabLayout.utility_rect(index, size)
 		var active := (
 			(index == 0 and _snapshot.debug_paused)
 			or (index == 2 and _snapshot.slow_motion)

@@ -48,7 +48,7 @@ var _active_debug_category_index: int = 0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	install_touch_surface()
+	install_touch_surface(get_viewport().get_visible_rect().size)
 	set_process_unhandled_input(true)
 	set_process(true)
 
@@ -102,7 +102,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		_handle_debug_key(event as InputEventKey)
 
 
-func install_touch_surface() -> void:
+func install_touch_surface(
+	layout_size: Vector2 = LabLayout.REFERENCE_SIZE,
+) -> void:
 	if _touch_surface != null:
 		return
 	var layer := CanvasLayer.new()
@@ -115,6 +117,8 @@ func install_touch_surface() -> void:
 	_touch_surface.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_touch_surface.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(_touch_surface)
+	if layout_size.x <= 0.0 or layout_size.y <= 0.0:
+		layout_size = LabLayout.REFERENCE_SIZE
 
 	_menu_button = _make_anchored_button(
 		&"Menu",
@@ -156,7 +160,7 @@ func install_touch_surface() -> void:
 
 	var panel_blocker := _make_fixed_button(
 		&"DebugPanelBlocker",
-		LabLayout.DEBUG_PANEL,
+		LabLayout.debug_panel_rect(layout_size),
 	)
 	_debug_controls.append(panel_blocker)
 	_debug_always_controls.append(panel_blocker)
@@ -165,7 +169,7 @@ func install_touch_surface() -> void:
 		var preset_name := SwingConfig.preset_names()[index]
 		var button := _make_fixed_button(
 			StringName("Preset%d" % index),
-			LabLayout.preset_rect(index),
+			LabLayout.preset_rect(index, layout_size),
 		)
 		button.pressed.connect(_emit_preset.bind(preset_name))
 		_debug_controls.append(button)
@@ -175,7 +179,7 @@ func install_touch_surface() -> void:
 		_debug_category_controls[category_index] = []
 		var category_button := _make_fixed_button(
 			StringName("Category%d" % category_index),
-			LabLayout.category_rect(category_index),
+			LabLayout.category_rect(category_index, layout_size),
 		)
 		category_button.pressed.connect(
 			_emit_tuning_category.bind(category_index))
@@ -192,7 +196,7 @@ func install_touch_surface() -> void:
 			var parameter := StringName(descriptor["id"])
 			var minus := _make_fixed_button(
 				StringName("%sMinus" % parameter),
-				LabLayout.parameter_minus_rect(card_index),
+				LabLayout.parameter_minus_rect(card_index, layout_size),
 			)
 			minus.pressed.connect(
 				_emit_parameter_adjustment.bind(parameter, -1.0))
@@ -200,7 +204,7 @@ func install_touch_surface() -> void:
 
 			var plus := _make_fixed_button(
 				StringName("%sPlus" % parameter),
-				LabLayout.parameter_plus_rect(card_index),
+				LabLayout.parameter_plus_rect(card_index, layout_size),
 			)
 			plus.pressed.connect(
 				_emit_parameter_adjustment.bind(parameter, 1.0))
@@ -215,6 +219,7 @@ func install_touch_surface() -> void:
 						card_index,
 						quick_index,
 						quick_values.size(),
+						layout_size,
 					),
 				)
 				quick.pressed.connect(
@@ -224,7 +229,7 @@ func install_touch_surface() -> void:
 	for index in range(6):
 		var utility := _make_fixed_button(
 			StringName("Utility%d" % index),
-			LabLayout.utility_rect(index),
+			LabLayout.utility_rect(index, layout_size),
 		)
 		utility.pressed.connect(_emit_utility.bind(index))
 		var tool_controls: Array = _debug_category_controls[

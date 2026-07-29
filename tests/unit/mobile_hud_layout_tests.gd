@@ -18,6 +18,7 @@ static func run() -> Dictionary:
 	passed += _test_debug_button_and_panel_controls(failures)
 	passed += _test_debug_controls_are_large_and_direct(failures)
 	passed += _test_debug_catalog_uses_plain_language(failures)
+	passed += _test_debug_panel_expands_for_wide_phone(failures)
 	passed += _test_debug_controls_can_be_disabled(failures)
 	passed += _test_world_input_waits_for_gui(failures)
 	return {"passed": passed, "failures": failures}
@@ -452,6 +453,36 @@ static func _test_debug_catalog_uses_plain_language(
 			not str(dive.get("help", "")).contains("Dive Pull"):
 		failures.append("Dive distance still lacks a clear DEBUG description")
 		return 0
+	return 1
+
+
+static func _test_debug_panel_expands_for_wide_phone(
+	failures: PackedStringArray,
+) -> int:
+	var wide_size := Vector2(1560.0, 720.0)
+	var router := InputRouter.new()
+	router.install_touch_surface(wide_size)
+	var blocker := router.hud_button(&"DebugPanelBlocker")
+	var last_tab := router.hud_button(&"Category4")
+	var first_plus := router.hud_button(&"gravityPlus")
+	var panel := LabLayout.debug_panel_rect(wide_size)
+	if blocker == null or last_tab == null or first_plus == null:
+		failures.append("wide DEBUG layout did not create its shared hit regions")
+		router.free()
+		return 0
+	if _resolved_rect(blocker, wide_size) != panel or \
+			panel.size.x <= LabLayout.debug_panel_rect().size.x:
+		failures.append("DEBUG panel did not expand across a wide phone viewport")
+		router.free()
+		return 0
+	if _resolved_rect(last_tab, wide_size) != \
+			LabLayout.category_rect(4, wide_size) or \
+			_resolved_rect(first_plus, wide_size) != \
+			LabLayout.parameter_plus_rect(0, wide_size):
+		failures.append("wide DEBUG visuals and native hit targets drifted")
+		router.free()
+		return 0
+	router.free()
 	return 1
 
 

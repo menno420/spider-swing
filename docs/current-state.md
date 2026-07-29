@@ -86,8 +86,8 @@ without a reported regression.
 - `python3 tools/verify.py` — passes. Six steps: architecture self-test,
   architecture scan, Godot discovery and version, headless import, boot smoke
   test, headless test runner.
-- `tests/test_runner.gd` — 62 checks, all passing locally: twenty-nine
-  deterministic physics, fourteen GUI-owned mobile HUD, nine front-end
+- `tests/test_runner.gd` — 63 checks, all passing locally: twenty-nine
+  deterministic physics, fifteen GUI-owned mobile HUD, nine front-end
   navigation/settings/progression, plus bootstrap and exact build-version
   contracts. Physics covers exact 50%/40% pull shares,
   detached targeted Burst, recovery-web interruption, double-tap fallback,

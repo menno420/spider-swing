@@ -61,7 +61,7 @@ graybox course, collectible fly routes, and one temporary Burst boost.
   natural take-up mode/percentage, rail presence/lethality, middle-hazard start,
   boost duration, attach catch, aim forgiveness, range, RELEASE/RETARGET behavior,
   deterministic input recording/replay, and diagnostic export.
-- Twenty-nine deterministic physics tests (62 runtime contracts total),
+- Twenty-nine deterministic physics tests (63 runtime contracts total),
   including interruptible recovery webs, double-tap fallback, explicit
   release/retarget modes, opening-runway pacing, lower anchor coverage, exact
   pull-distance shares, speed-neutral Reel/take-up shortening, rail policy,
