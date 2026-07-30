@@ -183,6 +183,11 @@ static func _base_pattern_for_chunk(
 	)
 	if bool(region["checkpoint"]) and local_chunk == 0:
 		return RECOVERY_PATTERN.duplicate(true)
+	var recovery_interval := 6 \
+		if region_id == CourseRegionCatalog.BRAMBLE_CANOPY else 5
+	if region_id != CourseRegionCatalog.ANCIENT_FOREST and \
+			posmod(local_chunk, recovery_interval) == recovery_interval - 1:
+		return RECOVERY_PATTERN.duplicate(true)
 	if (
 		region_id == CourseRegionCatalog.ANCIENT_FOREST
 		and distance_at_chunk >= MASTERY_START_DISTANCE
@@ -196,11 +201,6 @@ static func _base_pattern_for_chunk(
 			"lane": &"tight",
 			"difficulty": 4,
 		}
-	var recovery_interval := 6 \
-		if region_id == CourseRegionCatalog.BRAMBLE_CANOPY else 5
-	if region_id != CourseRegionCatalog.ANCIENT_FOREST and \
-			posmod(local_chunk, recovery_interval) == recovery_interval - 1:
-		return RECOVERY_PATTERN.duplicate(true)
 	if region_id == CourseRegionCatalog.BRAMBLE_CANOPY and \
 			posmod(local_chunk, 4) == 2:
 		return {

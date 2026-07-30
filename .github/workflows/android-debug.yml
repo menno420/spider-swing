@@ -135,7 +135,7 @@ jobs:
             echo "source_sha=${SOURCE_SHA}"
             echo "workflow_run=${GITHUB_RUN_ID}"
             echo "package=com.menno420.spiderswing.dev"
-            echo "display_name=Spider Swing Reserve Burst (dev)"
+            echo "display_name=Spider Swing Seeded Regions (dev)"
             echo "install_note=Uninstall the previous dev build first; CI debug signing is ephemeral."
           } > build/build-info.txt
 
