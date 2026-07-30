@@ -26,39 +26,62 @@ godot --headless --path . --script res://tools/simulate.gd -- \
 | `--upgrades=N` | 0 | Level 0–20 applied to every track of the spider |
 | `--seed=N` | 1 | Base seed for the bot-imperfection RNG |
 | `--max-seconds=S` | 240 | Simulated-time cap; a capped run reports `timeout` (alive), never a death |
+| `--start-m=N` | 0 | Warp the start N metres into the course at that distance's pace — tests late-game regimes without surviving to them |
+| `--reel-style=` | `adaptive` | `adaptive` · `tap` · `hold` — how the bot spends Reel |
+| `--save-bursts=` | `on` | `on` · `off` — emergency Burst when no web can save it |
+| `--sweep=SPEC` | — | Parameter grid, e.g. `reel_rate:260:440:4,pull_cooldown:1.2:2.4:3` (≤60 points, one skill + spider). Names resolve as TuningCatalog ids first, else raw `SwingConfig` properties (`reel_regeneration_rate`) |
 | `--json=path` | — | Write per-run rows + summaries as JSON |
 
-## The player model
+## The player model (bot v2)
 
 The bot reads only what a player could: its own motion, the fly trail (the
-game's authored route language), and solid geometry through the same
-`nearest_solid_point` forgiveness a real tap receives. It attaches up-forward
-webs when falling or below the route, releases on the rising swing, reels in
-short corrective holds when below the route line, and occasionally Bursts.
-Skill tiers vary only human-imperfection parameters:
+game's authored route language), solid geometry through the same
+`nearest_solid_point` forgiveness a real tap receives, and the pull-safety
+preview the HUD already draws. It attaches up-forward webs when falling or
+below the route, releases on the rising swing, reels when below the route
+line, and Bursts opportunistically — plus an emergency Burst when it is
+falling to its death and no attachable web exists. Skill tiers vary only
+human-imperfection parameters:
 
-| Tier | Decision cadence | Reaction delay | Aim error σ |
-| --- | --- | --- | --- |
-| novice | 10 ticks | 9 ticks (+0–2 jitter) | 46 px |
-| intermediate | 7 ticks | 6 ticks (+0–2 jitter) | 26 px |
-| expert | 4 ticks | 3 ticks (+0–2 jitter) | 10 px |
+| Tier | Decision cadence | Reaction delay | Aim error σ | Checks pull safety |
+| --- | --- | --- | --- | --- |
+| novice | 10 ticks | 9 ticks (+0–2) | 46 px | 40% of Bursts |
+| intermediate | 7 ticks | 6 ticks (+0–2) | 26 px | 75% of Bursts |
+| expert | 4 ticks | 3 ticks (+0–2) | 10 px | 95% of Bursts |
+
+**v2 adapts to the configuration it is handed**, the way a player learns a
+build, so upgrade comparisons measure the tuning rather than a bot's stale
+habits:
+
+- **Reel reserve follows sustainability.** The less the meter regenerates
+  relative to its drain, the larger the fraction the bot keeps in reserve
+  before spending (`hold` style spends to empty; `tap` style keeps the v1
+  fixed reserve).
+- **Reel engagement follows the retraction rate.** A faster reel corrects
+  more per second, so the bot engages it later for the same correction.
+- **Burst aim shortens as the pull fraction grows.** Expected travel stays a
+  controllable hop, and a skill-scaled habit checks the game's own
+  endpoint-safety preview before committing.
 
 The course is deterministic and identical every run; **all** run-to-run
 variation comes from the seeded imperfection model. Identical world, a
 distribution of player behaviour: a tuning change shifts the metrics, not the
-luck. The same seed and options always reproduce the same batch bit-for-bit.
+luck. The same seed and options reproduce a batch bit-for-bit, and summaries
+carry the bot model version because numbers are only comparable within one
+bot model.
 
 ## What it can and cannot answer
 
 **Good questions for the lab** — relative, mechanical, statistical:
 
-- Did this Reel/Burst/course change make runs longer or shorter at equal
-  bot skill?
-- Where do runs die (cause histogram, distance bands) before vs after a
-  change? Does a new pattern band spike deaths?
-- Do spider profiles actually differentiate outcomes? Does an upgrade level
-  move any measurable number?
-- How often does the Reel meter empty under a given usage style?
+- Did this Reel/Burst/course change make runs longer or shorter at equal bot
+  skill — overall, or warped into the late game with `--start-m`?
+- Where do runs die (cause histogram, distance bands, mid-pull deaths)
+  before vs after a change? Where do rescues get spent, and how much
+  distance does a life buy — the pricing input for the planned lives system?
+- Do spider profiles and upgrade levels move any measurable number? How many
+  flies per kilometre does play earn — the other half of economy pricing?
+- How much Reel time and energy does a run actually consume, per usage style?
 
 **Questions it must never be allowed to answer:**
 
@@ -69,27 +92,37 @@ luck. The same seed and options always reproduce the same batch bit-for-bit.
 - Anything about touch handling, GUI, haptics, frame pacing, or rendering —
   the lab runs below the adapter layer by design.
 
-A known interpretation caveat: the bot never adapts its style to the
-configuration it is given. A human with a faster Reel changes how they play;
-the bot just reels the same corrective way, faster. Treat "maxed upgrades
-scored lower" as "this tuning punishes an unadapted style", not "upgrades are
-bad".
+Interpretation caveats, in honesty order: the bot is one player model, not a
+population; its adaptations are simple rules, not learning; and a divergence
+between bot preference and owner device findings (see below) means "different
+regime or bot limitation", never "the device test was wrong".
 
-## First observations (2026-07-30, bot model v1 — not human truth)
+## Observations (2026-07-30, bot model v2 — not human truth)
 
-- Distance scales cleanly with bot skill (Garden, level 0: ≈560 m novice /
-  ≈1 260 m intermediate / ≈1 830 m expert mean over 20 runs), and even the
-  expert bot's deaths concentrate in the post-1 000 m pattern bands.
-- Springtail's impact shell eliminated rail deaths outright in its batch
-  (15/15 deaths were obstacles; every other spider mixes in boundary deaths).
-  The identity mechanic is visible in pure statistics.
-- The 2.0-second Reel meter never emptied under corrective-style reeling at
-  any tier. Silk Reserve's value is invisible to that style; only sustained
-  held reeling drains it. Worth one targeted device look.
-- Maxed-everything Garden scored slightly *below* level 0 for the unadapting
-  intermediate bot (longer Bursts reach further and its pull path sweeps into
-  geometry more often) — see the caveat above before reading this as a
-  balance verdict.
+- The v1 finding that maxed-everything Garden scored *below* level 0 halves
+  under the adaptive bot (≈−13% → ≈−6% mean, medians 1 289 m vs 1 191 m,
+  20 runs) — most of the v1 gap was the unadapting bot, the remainder is
+  consistent with longer Bursts sweeping more geometry and is within noise
+  at this sample size. Worth one targeted device comparison, not a verdict.
+- Both level-0 and maxed intermediate batches share an identical p90 wall at
+  ≈1 571 m — one specific course challenge kills intermediate-grade play
+  there. The fixed course makes such walls findable; that one is worth a
+  look in the Course Lab.
+- The 2.0-second Reel meter never empties under *purposeful* reeling — even
+  the greedy `hold` style, which reels whenever below the route line, holds
+  ~4 s per run in short bouts and never drains it. Meter pressure of the
+  kind the owner wants requires lower capacity, slower regeneration, or a
+  regeneration delay (the last does not exist as a gameplay parameter yet).
+- Early-game runs (start 0) mildly favour *slower* reels (260 px/s scored
+  best at intermediate); warped late-game runs (`--start-m=4000`) flatten
+  the rate differences to noise. This diverges from the owner's device
+  finding that 260 px/s was too weak — different regime, and deliberate
+  height changes at speed are exactly what the bot models least. Trust the
+  device on this one; the lab's contribution is that rate barely moves
+  survival, so Reel speed can be tuned for feel without survival cost.
+- At 4 000 m+ pace, intermediate play survives ≈350 m and burns its rescue
+  almost immediately (mean spend ≈4 150 m); a life is worth ≈150–250 m
+  there. Lives pricing now has its first data.
 
 ## Maintenance
 

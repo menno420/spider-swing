@@ -309,3 +309,19 @@
   Spider. Presentation must express the trade-off without owning collision.
 - provenance: Menno's request for another species-readable production sprite
   and the Anchorite production-art session
+
+## [D-0022] Real money skips grinding, never buys exclusive power
+
+- status: decided
+- date: 2026-07-30
+- verdict: Every gameplay-affecting item — lives, upgrades, spider unlocks,
+  consumables — must be earnable through play; real money may only
+  accelerate that earning or buy cosmetics (skins may later be money- or
+  event-exclusive). Consumable boosts stay dual-currency, remain fair, and
+  keep in-run collectible counterparts like Burst Frenzy.
+- why: The owner confirmed the grind-skip model in the 2026-07-30 review
+  conversation (lives up to 3, Running-Fred-style general upgrades,
+  phase-through / reel-boost consumable ideas). This refines the GDD's
+  no-paid-power pillar into an implementable rule without weakening it:
+  paid exclusivity is limited to cosmetics.
+- provenance: owner review conversation, 2026-07-30 (simulation-lab session)
