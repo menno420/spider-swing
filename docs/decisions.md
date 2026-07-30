@@ -325,3 +325,33 @@
   no-paid-power pillar into an implementable rule without weakening it:
   paid exclusivity is limited to cosmetics.
 - provenance: owner review conversation, 2026-07-30 (simulation-lab session)
+
+## [D-0023] Approve the corrected Reel response band
+
+- status: decided
+- date: 2026-07-30
+- verdict: The corrected Reel build is approved: 320 px/s at level zero over
+  the 2.0-second meter, 416 px/s with maxed Garden Silk Winder. Reel reads
+  as pace-setting arc control on device; Dive and Burst read as save tools.
+- why: The owner played build 0.12.1 on device through 5 094 m with maxed
+  Silk Winder and gave explicit approval ("Yes I approve") after two
+  recorded runs, closing the comparison PR #38/#40 asked for. This clears
+  the gate the deep-progression plan set before any active breakthrough.
+- provenance: owner device recordings and approval, 2026-07-30 review
+  conversation
+
+## [D-0024] Store a second Burst at Anchor Drive level 10 on one serial timer
+
+- status: decided
+- date: 2026-07-30
+- verdict: Burst availability is a charge pool: capacity one at level zero
+  (behaviour unchanged), two from Anchor Drive level 10. A successful Burst
+  alone spends a charge; one serial cooldown refills one charge at a time
+  and never resets when the reserve is spent, preserving the long-run
+  one-Burst-per-cooldown rate. Burst Frenzy pins the pool full.
+- why: Breakthroughs should change a rule, not only a number, and the owner
+  wants Burst to make great saves that upgrading meaningfully deepens. The
+  serial timer keeps the sustained rate identical so the reserve is a
+  stored option, not a throughput increase.
+- provenance: deep-progression plan (deferred item), owner approval D-0023,
+  and the reserve-burst session

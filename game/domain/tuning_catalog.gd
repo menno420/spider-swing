@@ -269,6 +269,17 @@ const PARAMETERS := [
 		"quick": [0.75, 1.0, 1.65, 2.0],
 	},
 	{
+		"id": &"burst_charges",
+		"category": CATEGORY_PULLS,
+		"label": "Stored Bursts",
+		"help": "How many Anchor Bursts can be held ready; the cooldown refills one at a time.",
+		"format": &"number",
+		"minimum": 1.0,
+		"maximum": 3.0,
+		"step": 1.0,
+		"quick": [1.0, 2.0],
+	},
+	{
 		"id": &"dive_pull_pct",
 		"category": CATEGORY_PULLS,
 		"label": "Downward pull distance",

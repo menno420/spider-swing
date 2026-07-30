@@ -1019,7 +1019,7 @@ func _draw_hud(size: Vector2) -> void:
 	var burst_rect := LabLayout.burst_rect(size)
 	var burst_center := burst_rect.get_center()
 	var burst_radius := burst_rect.size.x * 0.44
-	var burst_ready := _snapshot.burst_cooldown <= 0.0 and \
+	var burst_ready := _snapshot.burst_charges > 0 and \
 		_snapshot.web_attached
 	var burst_fill := Color(0.36, 0.19, 0.06, 0.96) if burst_ready \
 		else Color(0.12, 0.1, 0.08, 0.86)
@@ -1042,6 +1042,19 @@ func _draw_hud(size: Vector2) -> void:
 	)
 	_draw_centered_text(
 		burst_center + Vector2(0.0, 7.0), burst_label, 20, WEB)
+	if _snapshot.burst_charge_capacity > 1:
+		# Reserve pips: filled while a stored Burst is ready, hollow while
+		# the serial refill timer is still working on that slot.
+		var pip_span := 22.0
+		var pip_left := burst_center + Vector2(
+			-pip_span * 0.5 * (_snapshot.burst_charge_capacity - 1), 40.0)
+		for pip in range(_snapshot.burst_charge_capacity):
+			var pip_center := pip_left + Vector2(pip_span * pip, 0.0)
+			if pip < _snapshot.burst_charges:
+				draw_circle(pip_center, 6.0, YELLOW)
+			else:
+				draw_arc(pip_center, 6.0, 0.0, TAU, 24,
+					Color(0.54, 0.47, 0.37, 0.8), 2.0)
 
 	if _snapshot.run_state != &"active":
 		draw_rect(Rect2(Vector2.ZERO, size), Color(0.02, 0.04, 0.06, 0.62))

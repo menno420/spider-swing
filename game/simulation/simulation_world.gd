@@ -21,6 +21,7 @@ var fly_positions: PackedVector2Array = PackedVector2Array()
 var boost_positions: PackedVector2Array = PackedVector2Array()
 var run_flies: int = 0
 var burst_cooldown_remaining: float = 0.0
+var burst_charges: int = 1
 var dive_ready: bool = true
 var surface_bounce_ready: bool = false
 var rescue_shield_remaining: float = 0.0
@@ -53,6 +54,7 @@ func reset(active_config: SwingConfig, geometry: CourseGeometry) -> void:
 	_collected_pickups.clear()
 	set_course_geometry(geometry)
 	burst_cooldown_remaining = 0.0
+	burst_charges = config.burst_charge_capacity
 	dive_ready = true
 	surface_bounce_ready = config.surface_bounce_enabled
 	_burst_cooldown_suppressed = false
@@ -88,6 +90,7 @@ func set_burst_cooldown_suppressed(active: bool) -> void:
 	_burst_cooldown_suppressed = active
 	if active:
 		burst_cooldown_remaining = 0.0
+		burst_charges = config.burst_charge_capacity
 
 
 func queue_command(command: InputCommand) -> void:
@@ -99,8 +102,15 @@ func step(delta: float) -> Array[SimulationEvent]:
 	rescue_shield_remaining = maxf(0.0, rescue_shield_remaining - delta)
 	if _burst_cooldown_suppressed:
 		burst_cooldown_remaining = 0.0
-	else:
+		burst_charges = config.burst_charge_capacity
+	elif burst_cooldown_remaining > 0.0:
+		# One serial refill timer: each completion returns one charge, and
+		# the timer restarts only while charges are still missing.
 		burst_cooldown_remaining = maxf(0.0, burst_cooldown_remaining - delta)
+		if burst_cooldown_remaining <= 0.0:
+			burst_charges = mini(config.burst_charge_capacity, burst_charges + 1)
+			if burst_charges < config.burst_charge_capacity:
+				burst_cooldown_remaining = config.burst_cooldown
 	_commands.sort_custom(func(a: InputCommand, b: InputCommand) -> bool:
 		return a.sequence < b.sequence)
 	for command: InputCommand in _commands:
@@ -528,7 +538,7 @@ func _consume_burst(
 	if _is_downward_target(selected_anchor):
 		_try_start_dive(selected_anchor, events)
 		return
-	if burst_cooldown_remaining > 0.0:
+	if burst_charges <= 0:
 		events.append(SimulationEvent.make(
 			SimulationEvent.Kind.BURST_UNAVAILABLE,
 			position,
@@ -545,8 +555,12 @@ func _consume_burst(
 		&"burst",
 		config.burst_minimum_distance,
 	):
-		burst_cooldown_remaining = (
-			0.0 if _burst_cooldown_suppressed else config.burst_cooldown)
+		if not _burst_cooldown_suppressed:
+			# A successful Burst alone spends a charge; an already-running
+			# refill timer keeps its progress instead of resetting.
+			burst_charges = maxi(0, burst_charges - 1)
+			if burst_cooldown_remaining <= 0.0:
+				burst_cooldown_remaining = config.burst_cooldown
 		events.append(_pull_started_event(
 			SimulationEvent.Kind.BURST_STARTED,
 			selected_anchor,
@@ -826,6 +840,7 @@ func rescue_after_death() -> SimulationEvent:
 	web.release()
 	_cancel_pull()
 	burst_cooldown_remaining = 0.0
+	burst_charges = config.burst_charge_capacity
 	dive_ready = true
 	surface_bounce_ready = config.surface_bounce_enabled
 	glide_remaining = config.glide_duration

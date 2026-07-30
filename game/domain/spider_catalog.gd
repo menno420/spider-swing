@@ -140,7 +140,7 @@ const CORE_TRACKS := [
 		"kind": BURST_REACH,
 		"name": "Anchor Drive",
 		"description":
-			"Anchor Burst crosses 0.5% more of the starting distance per tuning step.",
+			"Anchor Burst crosses 0.5% more of the starting distance per tuning step. Level 10 stores a second Burst charge.",
 	},
 	{
 		"suffix": &"burst_floor",
@@ -351,9 +351,8 @@ static func apply_to_config(
 
 	for upgrade_item: Dictionary in upgrades_for(selected):
 		var upgrade_id := StringName(upgrade_item["id"])
-		var steps := float(effective_steps(
-			progress.upgrade_level(upgrade_id),
-		))
+		var level := progress.upgrade_level(upgrade_id)
+		var steps := float(effective_steps(level))
 		match StringName(upgrade_item["kind"]):
 			REEL_SPEED:
 				config.reel_retraction_rate *= 1.0 + 0.0125 * steps
@@ -362,6 +361,11 @@ static func apply_to_config(
 					0.60,
 					config.burst_distance_fraction + 0.005 * steps,
 				)
+				# The level-10 breakthrough is a rule change, not a bigger
+				# number: a second stored Burst on one serial refill timer.
+				if level >= 2 * BREAKTHROUGH_INTERVAL:
+					config.burst_charge_capacity = maxi(
+						config.burst_charge_capacity, 2)
 			BURST_FLOOR:
 				config.burst_minimum_distance += 5.0 * steps
 			REEL_CAPACITY:
