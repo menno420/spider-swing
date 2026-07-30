@@ -492,7 +492,9 @@ func _build_shop() -> void:
 	content.add_child(shop_note)
 	_shop_description = _setting_description(
 		"Five CORE tracks shape every spider consistently; two IDENTITY tracks "
-		+ "reinforce the selected spider's trade-off.")
+		+ "reinforce its trade-off. Levels 5, 10, 15, and 20 apply the listed "
+		+ "increase twice.")
+	_shop_description.name = "ShopProgressionRule"
 	_shop_description.add_theme_font_size_override("font_size", 16)
 	_shop_description.custom_minimum_size.y = 34.0
 	content.add_child(_shop_description)
@@ -529,6 +531,8 @@ func _build_shop() -> void:
 		button.pressed.connect(_on_upgrade.bind(upgrade_id))
 		row_content.add_child(button)
 		var description := _setting_description("")
+		description.name = \
+			"UpgradeDescription%s" % str(upgrade_id).to_pascal_case()
 		description.add_theme_font_size_override("font_size", 16)
 		description.custom_minimum_size.y = 38.0
 		row_content.add_child(description)
@@ -732,7 +736,7 @@ func _render_shop() -> void:
 				SpiderCatalog.MAX_UPGRADE_LEVEL,
 				"MAXIMUM" if maximum else "%d FLIES" % cost,
 				(
-					"  ·  BREAKTHROUGH"
+					"  ·  BREAKTHROUGH ×2"
 					if next_is_breakthrough and not maximum
 					else ""
 				),
@@ -742,9 +746,13 @@ func _render_shop() -> void:
 		description.text = "%s  ·  %s" % [
 			upgrade_item["description"],
 			(
-				"All breakthroughs earned"
+				"%d breakthroughs earned · %d tuning steps total" % [
+					SpiderCatalog.breakthrough_count(level),
+					SpiderCatalog.effective_steps(level),
+				]
 				if maximum
-				else "Next breakthrough: level %d" % next_breakthrough
+				else "Level %d breakthrough grants 2 tuning steps" %
+					next_breakthrough
 			),
 		]
 		milestones.text = "SILK KNOTS  %s" % _breakthrough_knots(level)

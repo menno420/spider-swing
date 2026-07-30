@@ -87,7 +87,7 @@ Run directly:
 godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-89 checks, grouped so one subsystem failure never hides the rest:
+90 checks, grouped so one subsystem failure never hides the rest:
 
 - engine, main-scene, input-action, 60 Hz, renderer/viewport, Android preset,
   inward-dependency, and no-autoload bootstrap contracts;
@@ -124,7 +124,7 @@ godot --headless --path . --script res://tests/test_runner.gd
   growth socket, stump, and three depth layers, custom fixed-snapshot spider
   interpolation, mipmapped moving art, restrained/reduced-motion-safe action
   poses, and world input waits for Godot GUI handling;
-- fourteen front-end contracts proving Home starts before gameplay,
+- fifteen front-end contracts proving Home starts before gameplay,
   Play/Garage/Shop/Tutorial/Course Lab/Settings route correctly, the six tutorial
   steps cover live mechanics, Settings
   is touch-scrollable from every descendant control/card region without focus
@@ -135,7 +135,9 @@ godot --headless --path . --script res://tests/test_runner.gd
   custom body/Silk rails and the Silk preview replace native dropdowns, former
   five-level saves migrate once and
   proportionally, profile upgrades and creator edits persist, milestone unlocks
-  persist, and only a play request mounts the run.
+  persist, every fifth-level Shop purchase is explicitly described as two
+  tuning steps with a derived max summary, and only a play request mounts the
+  run.
 
 The physics group lives in `tests/unit/phase0_physics_tests.gd`, mobile input in
 `tests/unit/mobile_hud_layout_tests.gd`, and the front-end flow in

@@ -17,3 +17,11 @@ This session may change centralized Shop copy, its front-end regression contract
 ## About to happen
 
 Open one ready implementation PR, add compact globally consistent breakthrough wording at both Shop-header and card level, prove levels 4/5/20 render the correct rule, build the Android artifact, then complete this card and remove the claim only after all evidence is green.
+
+## 💡 Idea
+
+Label the four existing silk knots `5`, `10`, `15`, and `20` in a later
+presentation-only pass so each filled knot maps visibly to its earned level
+without adding a tooltip or another touch target.
+
+- **📊 Model:** gpt-5 · high · interface clarification

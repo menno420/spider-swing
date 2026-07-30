@@ -273,8 +273,8 @@ product decisions.
 
 ## Owner device playtest
 
-Install `0.11.2-balanced-flow-copy-test` after uninstalling the previous ephemerally
-signed dev app, then check:
+Install `0.11.3-upgrade-breakthrough-copy-test` after uninstalling the previous
+ephemerally signed dev app, then check:
 
 1. start a run without touching the screen for one second; the ordinary opening
    web should produce a safe useful first swing instead of a free fall;
@@ -326,8 +326,9 @@ signed dev app, then check:
     Springtail's charged moderate rail bounce;
 23. on maxed Balanced Flow, confirm the description says automatic take-up
     keeps less slack and shortens the web; then spend laboratory flies through
-    levels 4→5 on one Shop track, confirm the breakthrough is visible, the
-    resolved value changes, and the level survives restart;
+    levels 4→5 on one Shop track, confirm the button says `BREAKTHROUGH ×2`,
+    the card says that level 5 grants two tuning steps, the resolved value
+    changes twice, the silk knot fills, and the level survives restart;
 24. create a six-piece Course Lab pattern, playtest it after the opening, return
     Home, and confirm the saved pattern remains;
 25. follow fly arcs, collect Burst Frenzy, use multiple Bursts before it expires,
