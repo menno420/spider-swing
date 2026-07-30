@@ -109,7 +109,8 @@ routes, flies, and recovery timing. Later chunks vary:
 - ceiling-hanging seed pods and leaf clusters;
 - broad root passages grown from both rails, with a steerable centre opening;
 - post-2000 m high→low and low→high weave pairs, each with seven flies along a
-  full Classic-sized safe curve between alternating rail growth;
+  full Classic-sized safe curve between shorter alternating rail growth, 420 px
+  of cue spacing, and a separately tested central transition band;
 - compact post-2000 m seed burrs suspended in old silk, with the complete
   collision bounded to the small visible bramble rather than its safe thread;
 - lower rail targets placed before the pattern's key hazard;
@@ -248,7 +249,8 @@ product decisions.
   fly guidance, and obstacles, rail-only late tight routes, lower-anchor
   coverage, independently scaled obstacle polygons, creator-pattern bounds, a
   three-lane Classic-sized steering-envelope sweep through root passages,
-  high↔low weave envelopes, small detached-burr bounds, and a bounded
+  high↔low weave envelopes, minimum cue spacing, a forgiving central transition
+  band, small detached-burr bounds, and a bounded
   seven-chunk window;
 - a one-second safe guided opening that remains interruptible from its first
   tick;
@@ -271,7 +273,7 @@ product decisions.
 
 ## Owner device playtest
 
-Install `0.11.0-forest-web-polish-test` after uninstalling the previous ephemerally
+Install `0.11.1-mobile-route-polish-test` after uninstalling the previous ephemerally
 signed dev app, then check:
 
 1. start a run without touching the screen for one second; the ordinary opening
@@ -338,11 +340,14 @@ signed dev app, then check:
 29. compare the spider at steady speed, during Reel, and during Burst on the
     1040×480 device recording path; confirm it no longer vibrates or leaves the
     attached web behind, and that the restrained poses remain readable.
-30. swipe Shop and Settings from both buttons and empty card space; verify a tap
-    never snaps the list and a drag remains smooth, then compare Classic, Dew,
-    and Ember in the live Silk preview;
-31. after 2000 m, follow both seven-fly weave curves and confirm they ask for a
-    readable high→low or low→high change without clipping either obstacle;
+30. swipe Shop and Settings starting on the purchase button, description text,
+    milestone row, panel edge, toggles, and empty card space; every drag should
+    move one smooth inertial list, while a short tap should still activate only
+    its original control. Then compare Classic, Dew, and Ember in the live Silk
+    preview;
+31. after 2000 m, follow both seven-fly weave curves and confirm the shorter,
+    wider-spaced growth asks for a readable high→low or low→high change without
+    clipping either obstacle or showing a rectangular art cut;
 32. pass the small silk-suspended burr above and below; its visible bramble,
     collision outline, and safe support thread must agree.
 

@@ -102,8 +102,12 @@ skin to every screen, including panels, buttons, disabled/focus states, and
 scrollbars. Settings and Shop use Godot's built-in touch dragging with a
 12-pixel deadzone and 64-pixel wheel/controller step. `follow_focus` is off on
 these touch-first surfaces so tapping an upgrade cannot snap the viewport while
-that same gesture becomes a drag. All actions remain reachable on the 1040×480
-Android viewport from the owner recording and on taller aspect ratios.
+that same gesture becomes a drag. Every descendant control inside those two
+scroll surfaces uses `MOUSE_FILTER_PASS`: buttons retain tap ownership, while a
+gesture that crosses the deadzone bubbles to the one native inertial scroll
+owner even when it begins on a button, label, panel, or empty card region. All
+actions remain reachable on the 1040×480 Android viewport from the owner
+recording and on taller aspect ratios.
 
 ## Ownership
 
@@ -129,7 +133,8 @@ No global manager or autoload is introduced.
   event-consuming Buttons;
 - the tutorial has exactly six steps and covers the live mechanics;
 - Settings owns a vertical scroll surface with readable type and mobile-sized
-  three-card preset/action controls, a touch deadzone, and no focus snapping;
+  three-card preset/action controls, a touch deadzone, no focus snapping, and
+  complete descendant drag bubbling;
 - invalid settings are rejected and valid changes emit once;
 - settings and progression encode/decode and actual atomic filesystem
   persistence round-trips;

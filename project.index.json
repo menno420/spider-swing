@@ -133,7 +133,7 @@
         "a second front-end navigation root — FrontEndView renders the state owned by FrontEndState"
       ],
       "gates": [
-        "Home, six-step animated Tutorial, touch-scrollable Settings, custom Garage body/Silk rails, themed seven-track Shop, and Menu return are implemented through one forest-web UI theme.",
+        "Home, six-step animated Tutorial, touch-scrollable Settings, custom Garage body/Silk rails, themed seven-track Shop, and Menu return are implemented through one forest-web UI theme. Shop and Settings bubble every descendant drag to one native inertial scroll owner.",
         "The code-drawn view consumes snapshots/events and shows continuous ceiling surfaces, natural or graybox obstacle art, Reel and attached-Burst state, tuning controls, and off-by-default collision/web-guide diagnostics.",
         "Custom spider/web rendering interpolates presentation samples only; teleports snap and authoritative simulation/collision remain untouched.",
         "The view and obstacles are test instrumentation, not production art or an approved Phase 1 content pack."
@@ -168,7 +168,7 @@
       ],
       "gates": [
         "CoursePatternCatalog and CourseStream provide a deterministic, distance-banded prototype obstacle vocabulary and one candidate Ancient Forest presentation grammar; this is not an approved production chunk pack.",
-        "Every required route remains bounded by deterministic unupgraded-Garden clearance checks. Authored high↔low weaves and compact silk burrs begin only after 2000 m; the 0–1000 m learning runway remains unchanged.",
+        "Every required route remains bounded by deterministic unupgraded-Garden clearance checks. Authored high↔low weaves use shorter growth, 420 px cue spacing, and a tested central transition band; compact silk burrs begin only after 2000 m and the 0–1000 m learning runway remains unchanged.",
         "Temporary style pickups, spider unlock enforcement, and Challenge mode remain deliberately deferred.",
         "No Git LFS until real large binary assets justify it."
       ],

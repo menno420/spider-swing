@@ -164,3 +164,20 @@ static func configure_touch_scroll(scroll: ScrollContainer) -> void:
 	scroll.scroll_deadzone = 12
 	scroll.scroll_vertical_custom_step = 64.0
 
+
+static func enable_descendant_drag_bubbling(scroll: ScrollContainer) -> void:
+	# ScrollContainer can only claim a touchscreen drag after the GUI event
+	# reaches it. Buttons, labels, panels, and containers default to STOP, which
+	# leaves dead zones whenever a swipe begins on a card instead of bare space.
+	# PASS preserves each child's tap behavior while allowing the existing
+	# ScrollContainer deadzone/inertia policy to become the one gesture owner.
+	for child: Node in scroll.get_children():
+		_set_drag_bubbling_recursive(child)
+
+
+static func _set_drag_bubbling_recursive(node: Node) -> void:
+	var control := node as Control
+	if control != null:
+		control.mouse_filter = Control.MOUSE_FILTER_PASS
+	for child: Node in node.get_children():
+		_set_drag_bubbling_recursive(child)

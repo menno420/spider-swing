@@ -21,6 +21,12 @@ const ROUTE_LOW := &"low"
 const ROUTE_CENTRE := &"centre"
 const ROUTE_TIGHT := &"tight"
 const ROUTE_WEAVE := &"weave"
+const WEAVE_FIRST_OFFSET_X := 400.0
+const WEAVE_SECOND_OFFSET_X := 820.0
+const WEAVE_ROUTE_END_OFFSET_X := 900.0
+const WEAVE_GROWTH_HEIGHT := 235.0
+const WEAVE_FLOOR_WIDTH := 156.0
+const WEAVE_CEILING_WIDTH := 142.0
 
 var _geometry := CourseGeometry.new()
 var _middle_hazard_start_distance: float = 10000.0
@@ -313,7 +319,7 @@ func _route_plan(
 			"lane": ROUTE_WEAVE,
 			"guide_y": CEILING_Y + 135.0,
 			"guide_end_y": FLOOR_Y - 135.0,
-			"guide_end_x": 850.0,
+			"guide_end_x": WEAVE_ROUTE_END_OFFSET_X,
 			"guide_count": 7,
 		}
 	if pattern_id == &"low_high_weave":
@@ -321,7 +327,7 @@ func _route_plan(
 			"lane": ROUTE_WEAVE,
 			"guide_y": FLOOR_Y - 135.0,
 			"guide_end_y": CEILING_Y + 135.0,
-			"guide_end_x": 850.0,
+			"guide_end_x": WEAVE_ROUTE_END_OFFSET_X,
 			"guide_count": 7,
 		}
 	if lane == ROUTE_HIGH:
@@ -441,35 +447,35 @@ func _append_middle_challenge(
 				165.0 * _floating_obstacle_scale * growth,
 			)
 		&"high_low_weave":
-			var floor_x := start_x + 430.0
-			var ceiling_x := start_x + 770.0
+			var floor_x := start_x + WEAVE_FIRST_OFFSET_X
+			var ceiling_x := start_x + WEAVE_SECOND_OFFSET_X
 			_append_root_stump(
 				result,
 				floor_x,
 				_boundary_edge_y_at(
 					start_x, floor_x, floor_y, route_lane, false),
 				false,
-				168.0 * _floating_obstacle_scale * growth,
-				310.0 * _floating_obstacle_scale * growth,
+				WEAVE_FLOOR_WIDTH * _floating_obstacle_scale * growth,
+				WEAVE_GROWTH_HEIGHT * _floating_obstacle_scale * growth,
 			)
 			_append_hanging_seed_pod(
 				result,
 				ceiling_x,
 				_boundary_edge_y_at(
 					start_x, ceiling_x, ceiling_y, route_lane, true),
-				150.0 * _floating_obstacle_scale * growth,
-				310.0 * _floating_obstacle_scale * growth,
+				WEAVE_CEILING_WIDTH * _floating_obstacle_scale * growth,
+				WEAVE_GROWTH_HEIGHT * _floating_obstacle_scale * growth,
 			)
 		&"low_high_weave":
-			var ceiling_x := start_x + 430.0
-			var floor_x := start_x + 770.0
+			var ceiling_x := start_x + WEAVE_FIRST_OFFSET_X
+			var floor_x := start_x + WEAVE_SECOND_OFFSET_X
 			_append_hanging_seed_pod(
 				result,
 				ceiling_x,
 				_boundary_edge_y_at(
 					start_x, ceiling_x, ceiling_y, route_lane, true),
-				150.0 * _floating_obstacle_scale * growth,
-				310.0 * _floating_obstacle_scale * growth,
+				WEAVE_CEILING_WIDTH * _floating_obstacle_scale * growth,
+				WEAVE_GROWTH_HEIGHT * _floating_obstacle_scale * growth,
 			)
 			_append_root_stump(
 				result,
@@ -477,8 +483,8 @@ func _append_middle_challenge(
 				_boundary_edge_y_at(
 					start_x, floor_x, floor_y, route_lane, false),
 				false,
-				168.0 * _floating_obstacle_scale * growth,
-				310.0 * _floating_obstacle_scale * growth,
+				WEAVE_FLOOR_WIDTH * _floating_obstacle_scale * growth,
+				WEAVE_GROWTH_HEIGHT * _floating_obstacle_scale * growth,
 			)
 		&"silk_burr_high", &"silk_burr_low":
 			_append_floating_seed_burr(

@@ -23,8 +23,9 @@ Coordinates the run. Owns lifecycle and sequencing; does not own physics truth.
   hazards grow by at most 16% after the learning runway, paired/staggered
   patterns begin only after 2000 m, and a predictable late squeeze occurs every
   eight chunks instead of appearing in clusters. Two authored weave patterns
-  alternate floor/ceiling growth around a fully validated Classic-sized
-  high↔low fly route; two compact silk-burr patterns add only a small central
+  alternate shorter floor/ceiling growth with 420 px of cue spacing, a
+  Classic-sized high↔low fly route, and a separately asserted central
+  transition band; two compact silk-burr patterns add only a small central
   decision. Fly-advertised root passages
   grow from both rails and expose a verified steering envelope rather than a
   centre-line-only hole. Phase 1 extends this seam with selected authored chunks

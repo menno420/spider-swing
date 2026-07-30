@@ -1342,6 +1342,11 @@ static func _test_authored_weaves_and_small_silk_burrs_are_fair(
 				second = swap
 			var first_bounds := SolidGeometry.bounds(first)
 			var second_bounds := SolidGeometry.bounds(second)
+			if second_bounds.get_center().x - first_bounds.get_center().x < 400.0:
+				failures.append(
+					"%s no longer gives a readable height-change runway" %
+						pattern_id)
+				return 0
 			var high_to_low := pattern_id == &"high_low_weave"
 			var first_is_floor := \
 				first_bounds.end.y >= CourseStream.FLOOR_Y - 0.01
@@ -1350,6 +1355,14 @@ static func _test_authored_weaves_and_small_silk_burrs_are_fair(
 			if first_is_floor != high_to_low or \
 					second_is_floor == high_to_low:
 				failures.append("%s obstacles do not alternate rail height" % pattern_id)
+				return 0
+			var floor_bounds := first_bounds if first_is_floor else second_bounds
+			var ceiling_bounds := second_bounds if first_is_floor else first_bounds
+			if floor_bounds.position.y - ceiling_bounds.end.y < 72.0 or \
+					maxf(first_bounds.size.y, second_bounds.size.y) > 252.0:
+				failures.append(
+					"%s no longer leaves a forgiving central transition band" %
+						pattern_id)
 				return 0
 			var route_delta := route_flies[-1].y - route_flies[0].y
 			if absf(route_delta) < 280.0 or \
@@ -1361,7 +1374,7 @@ static func _test_authored_weaves_and_small_silk_burrs_are_fair(
 				var progress := float(sample_index) / 40.0
 				var eased := progress * progress * (3.0 - 2.0 * progress)
 				var route_sample := Vector2(
-					lerpf(chunk_start + 230.0, chunk_start + 850.0, progress),
+					lerpf(route_flies[0].x, route_flies[-1].x, progress),
 					lerpf(
 						route_flies[0].y,
 						route_flies[-1].y,

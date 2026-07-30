@@ -497,13 +497,17 @@ func _draw_obstacle(
 				bottom_points += 1
 		var hanging := top_points >= bottom_points and not detached
 		var wide := screen_bounds.size.x > screen_bounds.size.y * 1.15
+		var tall_narrow := screen_bounds.size.y > screen_bounds.size.x * 1.35
 		var asset_id := ArtAssetCatalog.FOREST_BRAMBLE
 		var flip_y := false
 		if detached:
 			asset_id = ArtAssetCatalog.FOREST_BRAMBLE
-		elif world_polygon.size() == 6:
+		elif world_polygon.size() == 6 and not tall_narrow:
 			asset_id = ArtAssetCatalog.FOREST_ROOT_STUMP
 			flip_y = hanging
+		elif tall_narrow:
+			asset_id = ArtAssetCatalog.FOREST_HANGING_VINE
+			flip_y = attached_to_floor
 		elif hanging and not wide:
 			asset_id = ArtAssetCatalog.FOREST_HANGING_VINE
 		elif hanging:
@@ -553,11 +557,10 @@ func _draw_obstacle(
 				art_bounds.size.y += FOREST_RAIL_JOIN_OVERLAP
 			elif attached_to_floor:
 				art_bounds.size.y += FOREST_RAIL_JOIN_OVERLAP
-			_draw_texture_cover(
-				texture,
-				art_bounds,
-				flip_y,
-			)
+			if tall_narrow:
+				_draw_texture_uncropped_height(texture, art_bounds, flip_y)
+			else:
+				_draw_texture_cover(texture, art_bounds, flip_y)
 			if not detached:
 				_draw_forest_growth_socket(
 					world_polygon,
@@ -680,6 +683,34 @@ func _draw_texture_cover(
 		texture,
 		Rect2(-bounds.size * 0.5, bounds.size),
 		source,
+	)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+
+func _draw_texture_uncropped_height(
+	texture: Texture2D,
+	bounds: Rect2,
+	flip_y: bool = false,
+) -> void:
+	# Tall growth uses the complete vertical vine asset instead of cover-cropping
+	# its sides into a rectangular cut. A little conservative horizontal
+	# overscan is preferable to invisible lethal geometry; collision remains the
+	# smaller authoritative polygon and DEBUG can still show it exactly.
+	var texture_size := texture.get_size()
+	if texture_size.x <= 0.0 or texture_size.y <= 0.0 or \
+			bounds.size.x <= 0.0 or bounds.size.y <= 0.0:
+		return
+	var natural_width := bounds.size.y * texture_size.x / texture_size.y
+	var draw_size := Vector2(maxf(bounds.size.x, natural_width), bounds.size.y)
+	draw_set_transform(
+		bounds.get_center(),
+		0.0,
+		Vector2(1.0, -1.0 if flip_y else 1.0),
+	)
+	draw_texture_rect(
+		texture,
+		Rect2(-draw_size * 0.5, draw_size),
+		false,
 	)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 

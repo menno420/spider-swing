@@ -27,9 +27,11 @@ without a reported regression.
   silk-like scrollbars. Garage uses explicit three-card body and Silk rails plus
   a live thread preview instead of native dropdowns. Shop adds a fly balance
   badge, CORE/IDENTITY cards, and four visible milestone knots. Settings and
-  Shop retain built-in Godot touch dragging but disable focus following, use a
-  12-pixel drag deadzone, and take 64-pixel wheel/controller steps so taps do
-  not snap the owner's 1040×480 scroll position.
+  Shop retain one built-in Godot touch-drag owner, disable focus following, use
+  a 12-pixel drag deadzone, and take 64-pixel wheel/controller steps. Every
+  descendant button, label, panel, toggle, and container passes GUI gestures to
+  that owner, removing the device-observed dead regions without taking short
+  taps away from their original control.
 - The six-step in-engine Tutorial teaches movement, forgiving solid targets,
   release and momentum, speed-neutral rope-shortening Reel, percentage Burst,
   one-shot downward Dive Pull, shaped obstacles/gaps, restart, Menu, and optional
@@ -86,7 +88,8 @@ without a reported regression.
   one explicit route plan coordinates each challenge's rails and fly trail.
   Most patterns open a high, low, or centre bypass; occasional later inward
   passages are rail-only rather than stacked with a floating obstacle. After
-  2000 m, two authored weave chunks alternate floor/ceiling growth around a
+  2000 m, two authored weave chunks alternate shorter floor/ceiling growth with
+  420 px between cues, a separately tested central transition band, and a
   validated high→low or low→high Classic-sized route. Two more patterns add a
   compact, roughly 95×80-pixel silk-suspended seed burr and advertise a clear
   route above or below it. Small post-runway growth now rises gradually from 8%
@@ -134,9 +137,11 @@ without a reported regression.
   growth around broad rail passages, three low-contrast forest depth layers, a
   finished Classic Garden Spider sprite, and golden forest flies. Finished
   obstacle alpha replaces the prototype filled polygon in normal play.
-  Wall-grown art overlaps a root-and-moss growth socket behind the rail; source
-  regions are cropped without changing aspect ratio. This eliminates
-  transparent joins, missing wood at profile changes, and stretched gate halves.
+  Wall-grown art overlaps a root-and-moss growth socket behind the rail. Broad
+  shapes use aspect-preserving cover crops; tall narrow growth uses the complete
+  vertical vine silhouette with conservative horizontal overscan. This
+  eliminates transparent joins, missing wood at profile changes, stretched gate
+  halves, and the rectangularly sliced weave art seen on the owner's phone.
   Missing assets fall back to textured geometry rather than creating invisible
   collision. Collision outlines and web-target guides both load off and can be
   enabled independently under DEBUG → OVERLAYS. The custom-drawn spider and
@@ -488,19 +493,30 @@ without a reported regression.
 
 ## In flight
 
-Phase 0.23 is in flight through PR #30. The level-zero Garden Spider, targeting
+Phase 0.24 is delivered through PR #32. The level-zero Garden Spider, targeting
 policy, 5000 m speed ramp, 1000 m learning runway, 2000 m inward-rail
-protection, and broad passage remain unchanged. Home, Garage, Shop, and Settings
-now share one forest-web skin; native cosmetic dropdowns are replaced with
-explicit card rails and a live Silk preview; touch lists no longer follow focus.
-After 2000 m, deterministic high↔low weaves and small Silk burrs add readable
-altitude decisions without random placement or hidden collision. All 88
-contracts pass in `game-quality`. Temporary modes, spider locks, paid power, and
-Challenge mode remain deferred until this UI/course rhythm slice is reviewed on
-device.
+protection, broad passage, progression, and save schema remain unchanged.
+Shop/Settings drags now reach their existing native scroller from every card
+region. The newly added weave pair keeps its high↔low requirement with shorter
+growth, 420 px cue spacing, a tested central transition band, and uncropped tall
+forest art. Temporary modes, spider locks, paid power, and Challenge mode remain
+deferred pending device review of the systems already present.
 
 ## Recently shipped (newest first)
 
+- **2026-07-30 — Forest-web interface and course rhythm (PR #30).** Unified
+  Home, Garage, Shop, and Settings under one reusable forest-web theme,
+  replaced native cosmetic dropdowns with body/Silk rails and a live preview,
+  disabled focus-following scroll snaps, and introduced deterministic
+  post-2000 m weave/burr patterns. The device recording then exposed the
+  scrolling and weave regressions corrected by PR #32.
+- **2026-07-29 — Deep progression and stable presentation (PR #28).** Gives
+  every spider five shared core and two identity tracks over 20 levels,
+  proportionally migrates five-level saves, and interpolates only spider/web
+  presentation while preserving level-zero simulation.
+- **2026-07-29 — Living forest course (PR #27).** Adds continuous branch rails,
+  natural obstacle sockets, three depth layers, and a curated distance-banded
+  pattern catalog without changing the protected opening.
 - **2026-07-29 — Environment theme packs (PR #21).** Adds Ancient
   Forest, Mossy Ravine, Overgrown Greenhouse, and Reclaimed Attic runtime
   textures, one presentation-owned catalog, world-space polygon UVs, a large

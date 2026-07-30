@@ -355,6 +355,7 @@ func _build_settings() -> void:
 	scroll_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	scroll_hint.custom_minimum_size.y = 42.0
 	content.add_child(scroll_hint)
+	SpiderUiTheme.enable_descendant_drag_bubbling(scroll)
 
 
 func _build_garage() -> void:
@@ -540,6 +541,7 @@ func _build_shop() -> void:
 		_upgrade_rows[upgrade_id] = row
 		_upgrade_descriptions[upgrade_id] = description
 		_upgrade_milestones[upgrade_id] = milestones
+	SpiderUiTheme.enable_descendant_drag_bubbling(scroll)
 	var garage := _button(&"ShopGarage", "CHANGE SPIDER", CYAN, 58.0)
 	garage.pressed.connect(_on_garage)
 	content.add_child(garage)

@@ -247,3 +247,19 @@
   when deliberately requested and should not be coupled to whether the tuning
   panel is open.
 - provenance: Menno's `0.8.1-split-gate-test` presentation feedback
+
+## [D-0018] Let card gestures reach one scroller and give weaves a transition band
+
+- status: decided
+- date: 2026-07-30
+- verdict: Shop and Settings descendants preserve tap ownership but pass drag
+  gestures to their existing `ScrollContainer`; authored high↔low weaves keep
+  their altitude requirement with shorter growth, 420-pixel cue spacing, and a
+  Classic-sized central transition band.
+- why: The 1040×480 Android recording proved that configuration-only scrolling
+  still left dead regions over card controls. The same device run identified
+  deterministic chunk 30's 310-pixel alternating growths as too abrupt and
+  showed its wide stump texture cropped into visibly vertical edges. Native
+  event bubbling, bounded route relief, and uncropped vertical art repair the
+  observed regressions without changing physics, aim, or the protected runway.
+- provenance: Menno's `0.11.0-forest-web-polish-test` recordings and PR #32
