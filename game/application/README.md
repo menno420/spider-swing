@@ -6,9 +6,9 @@ Coordinates the run. Owns lifecycle and sequencing; does not own physics truth.
 
 ## What belongs here
 
-- **Front-end State** — owns Home/Garage/Shop/Tutorial/Course Lab/Settings
-  navigation, tutorial progression, validated player settings, and the request
-  to begin a run.
+- **Front-end State** — owns
+  Home/Garage/Shop/Tutorial/Course Lab/Region Practice/Settings navigation,
+  tutorial progression, validated player settings, and run requests.
 - **Run State Machine** — countdown, active run, dying, settlement, results,
   restart. Requests exactly one `RunSettlement` after death (GDD § 19.1).
 - **Difficulty Director** — selects curated chunks from speed, entry-state
@@ -19,7 +19,10 @@ Coordinates the run. Owns lifecycle and sequencing; does not own physics truth.
   explicit route plan coordinates boundary shaping, obstacle placement, and fly
   guidance; the first 2000 m forbid inward rails by default, and later inward
   passages remain rail-only. `CoursePatternCatalog` supplies curated,
-  distance-banded natural compositions with a repetition cooldown. Small
+  distance-banded natural compositions with a repetition cooldown. Each run
+  carries a reproducible course seed; 5000 m region pools provide distinct
+  challenge identities, authored entry/recovery chunks bound hard streaks, and
+  individual lethal objects are never randomized. Small
   hazards grow by at most 16% after the learning runway, paired/staggered
   patterns begin only after 2000 m, and a predictable late squeeze occurs every
   eight chunks instead of appearing in clusters. Two authored weave patterns
@@ -32,10 +35,11 @@ Coordinates the run. Owns lifecycle and sequencing; does not own physics truth.
   and pooling.
 - **Effect State** — applies, refreshes, expires, and reports power-ups. Refresh
   does not stack strength unless explicitly specified (GDD § 11.3).
-- **Score and Settlement** — tracks distance and run stats, creates one idempotent
-  settlement.
-- **Progression Service** — applies validated settlements, purchases, unlocks, and
-  mission progress.
+- **Score and Settlement** — tracks distance and run stats, creates one
+  idempotent settlement, and carries explicit reward/record/leaderboard
+  eligibility for non-standard starts.
+- **Progression Service** — applies validated settlements, purchases, unlocks,
+  region checkpoints, and mission progress.
 
 ## Rules
 
@@ -47,9 +51,10 @@ Coordinates the run. Owns lifecycle and sequencing; does not own physics truth.
 
 ## Current contents
 
-`FrontEndState` owns pre-run navigation, Garage/Shop/Course Lab intent, and
-settings intent. `ProgressionService` is the only mutator for fly-funded
-upgrades, selections, and creator slots. Upgrade purchases report whether the
+`FrontEndState` owns pre-run navigation, Garage/Shop/Course Lab/Region Practice
+intent, and settings intent. `ProgressionService` is the only mutator for
+fly-funded upgrades, selections, creator slots, and reached region checkpoints.
+Upgrade purchases report whether the
 new level is a 5/10/15/20 breakthrough so presentation can acknowledge a real
 milestone without owning progression truth.
 `SwingLabSession` owns the active laboratory command buffer, fixed-step order,
@@ -57,6 +62,6 @@ candidate presets, snapshots, recording, replay, independent diagnostic-overlay
 state, and chunk-boundary refreshes. It requests a freshly resolved
 preset/profile/upgrade configuration rather than layering modifiers onto a
 reused instance. `CourseStream` owns the seven-chunk
-deterministic geometry window; `CoursePatternCatalog` owns its curated pattern
-vocabulary and distance bands. Neither imports
+deterministic geometry window; `CoursePatternCatalog` owns its curated seeded
+pattern vocabulary, region pools, and distance bands. Neither imports
 adapters or presentation. See ADR 0002.
