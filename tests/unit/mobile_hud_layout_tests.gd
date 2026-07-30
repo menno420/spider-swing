@@ -268,8 +268,14 @@ static func _test_spider_presentation_is_interpolated_and_mipmapped(
 			not source.contains("TEXTURE_FILTER_LINEAR_WITH_MIPMAPS"):
 		failures.append("spider smoothing is not tied to Godot interpolation and mips")
 		return 0
+	if not source.contains("_draw_finished_spider_sprite") or \
+			not source.contains("ArtAssetCatalog.ANCHORITE_SPIDER"):
+		failures.append(
+			"Anchorite is not routed through the finished spider renderer")
+		return 0
 	for import_path in [
 		"res://assets/runtime/characters/classic-garden-spider.png.import",
+		"res://assets/runtime/characters/anchorite-burrowing-spider.png.import",
 		"res://assets/runtime/collectibles/golden-forest-fly.png.import",
 	]:
 		var import_file := FileAccess.open(import_path, FileAccess.READ)
@@ -278,6 +284,19 @@ static func _test_spider_presentation_is_interpolated_and_mipmapped(
 		):
 			failures.append("minified moving art lacks mipmaps: %s" % import_path)
 			return 0
+	var anchorite_path := ArtAssetCatalog.texture_path(
+		ArtAssetCatalog.ANCHORITE_SPIDER,
+	)
+	var anchorite := load(anchorite_path) as Texture2D
+	if anchorite == null or anchorite.get_size() != Vector2(384.0, 181.0):
+		failures.append("Anchorite sprite lost its 384×181 source contract")
+		return 0
+	var anchorite_image := anchorite.get_image()
+	if anchorite_image == null or \
+			anchorite_image.get_pixel(0, 0).a > 0.01 or \
+			anchorite_image.get_pixel(383, 180).a > 0.01:
+		failures.append("Anchorite sprite does not retain transparent corners")
+		return 0
 	return 1
 
 
@@ -632,8 +651,9 @@ static func _test_environment_theme_packs_are_visual_only(
 			failures.append("environment texture is not a 384 px runtime tile")
 			return 0
 	var art_paths := ArtAssetCatalog.texture_paths()
-	if art_paths.size() != 10:
-		failures.append("finished forest slice does not expose ten active art assets")
+	if art_paths.size() != 11:
+		failures.append(
+			"finished forest slice does not expose eleven active art assets")
 		return 0
 	for path: String in art_paths:
 		if not ResourceLoader.exists(path):

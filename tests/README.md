@@ -41,7 +41,8 @@ equivalent trajectories through
 simulated 30/60/90/120 Hz render loops. The HUD group proves the 228×228 thumb
 targets, event consumption, shared geometry, gesture separation, success
 feedback, independent off-by-default collision/web-guide diagnostics, a
-sprite-only finished forest obstacle policy, and one
+sprite-only finished forest obstacle policy, mipmapped finished Garden and
+Anchorite profile art with procedural fallbacks for unfinished spiders, and one
 authoritative world intent for a touchscreen event plus Godot's emulated mouse
 copy. The front-end group includes actual filesystem
 round-trips for settings and progression plus idempotent settlement application.

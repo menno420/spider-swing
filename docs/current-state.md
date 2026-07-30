@@ -148,7 +148,8 @@ without a reported regression.
   grammar over that same geometry: a world-continuous mossy branch rail, rooted
   brambles, top-anchored thorn vines, broken root stumps, natural upper/lower
   growth around broad rail passages, three low-contrast forest depth layers, a
-  finished Classic Garden Spider sprite, and golden forest flies. Finished
+  finished bright Garden Spider sprite, a finished broad charcoal-and-bronze
+  Anchorite sprite, and golden forest flies. Finished
   obstacle alpha replaces the prototype filled polygon in normal play.
   Wall-grown art overlaps a root-and-moss growth socket behind the rail. Broad
   shapes use aspect-preserving cover crops; tall narrow growth uses the complete
@@ -161,7 +162,9 @@ without a reported regression.
   attached web interpolate between consecutive fixed snapshots using Godot's
   render interpolation fraction; teleports snap, reduced motion disables the
   restrained action poses, and mipmaps improve the heavily downscaled spider
-  and fly without touching physics.
+  and fly without touching physics. Garden and Anchorite share one
+  right-facing 384×181 source contract and finished-sprite path; Anchorite
+  remains sized by its unchanged authoritative profile radius.
 - No autoload singletons exist, and a test fails if one appears.
 
 **Verification**
@@ -553,13 +556,11 @@ without a reported regression.
 
 ## In flight
 
-PR #40 corrects only Reel shortening speed from the isolated 0.12.0 device
-comparison. The level-zero Balanced meter remains 2.0 seconds but rises from
-260 to 320 px/s; maxed Garden Silk Winder rises from 338 to 416 px/s. Targeting,
-automatic take-up, Reel capacity/recovery, Burst/Dive, the 5000 m speed ramp,
-routes, progression levels, save schema, and course geometry remain unchanged.
-Anchor Drive's proposed second stored Burst remains deferred until this
-corrected Reel build is approved.
+PR #44 adds one finished Anchorite presentation asset and routes only Garden
+and Anchorite through the centralized finished-sprite renderer. Collision,
+physics, balance, upgrades, targeting, routes, saves, and the unfinished
+Skitter/Ballooner/Springtail procedural silhouettes remain unchanged. PR #41's
+headless balance lab is independent tooling/documentation work.
 
 ## Recently shipped (newest first)
 
