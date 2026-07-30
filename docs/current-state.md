@@ -8,7 +8,7 @@
 
 ## Stability baseline
 
-As of 2026-07-29, verified against the live surface. Known-good; do not re-audit
+As of 2026-07-30, verified against the live surface. Known-good; do not re-audit
 without a reported regression.
 
 **Engine and project**
@@ -22,6 +22,14 @@ without a reported regression.
 - The app opens on Home before gameplay. `FrontEndState` owns Home, Garage,
   Shop, Tutorial, Course Lab, and Settings navigation; the bootstrap composition
   root alone mounts or unmounts the front end and simulation.
+- `SpiderUiTheme` now gives all front-end routes one Ancient-Forest-aligned
+  bark/moss/silk skin, including panels, buttons, focus/disabled states, and
+  silk-like scrollbars. Garage uses explicit three-card body and Silk rails plus
+  a live thread preview instead of native dropdowns. Shop adds a fly balance
+  badge, CORE/IDENTITY cards, and four visible milestone knots. Settings and
+  Shop retain built-in Godot touch dragging but disable focus following, use a
+  12-pixel drag deadzone, and take 64-pixel wheel/controller steps so taps do
+  not snap the owner's 1040×480 scroll position.
 - The six-step in-engine Tutorial teaches movement, forgiving solid targets,
   release and momentum, speed-neutral rope-shortening Reel, percentage Burst,
   one-shot downward Dive Pull, shaped obstacles/gaps, restart, Menu, and optional
@@ -77,7 +85,13 @@ without a reported regression.
   forks, hanging seed pods, and broad rail-grown root passages. Rails are lethal by default;
   one explicit route plan coordinates each challenge's rails and fly trail.
   Most patterns open a high, low, or centre bypass; occasional later inward
-  passages are rail-only rather than stacked with a floating obstacle. Sparse Burst Frenzy
+  passages are rail-only rather than stacked with a floating obstacle. After
+  2000 m, two authored weave chunks alternate floor/ceiling growth around a
+  validated high→low or low→high Classic-sized route. Two more patterns add a
+  compact, roughly 95×80-pixel silk-suspended seed burr and advertise a clear
+  route above or below it. Small post-runway growth now rises gradually from 8%
+  to at most 16%; the safe opening and root-passage opening do not shrink.
+  Sparse Burst Frenzy
   pickups temporarily suppress cooldown. This remains prototype
   instrumentation, not an authored or approved Phase 1 chunk pack.
 - The default authoritative polygon scales are 94% for rail-grown obstacles and
@@ -148,8 +162,8 @@ without a reported regression.
   [30485134026](https://github.com/menno420/spider-swing/actions/runs/30485134026)
   passes the complete 82-check suite on Godot 4.7.1 at source
   `06a4c65aeb87b4d47a54423f9cd56ce87dcaaba5`.
-- `tests/test_runner.gd` — 86 declared checks: forty-two
-  deterministic physics, twenty-one GUI-owned mobile HUD, thirteen front-end
+- `tests/test_runner.gd` — 88 declared checks: forty-three
+  deterministic physics, twenty-one GUI-owned mobile HUD, fourteen front-end
   navigation/settings/progression, plus bootstrap and exact build-version
   contracts. Physics covers exact 40%/40% pull shares,
   detached targeted Burst, recovery-web interruption, double-tap fallback,
@@ -159,6 +173,7 @@ without a reported regression.
   rescue, spider profiles/glide, the shared seven-track/20-level structure,
   breakthrough steps, level-zero preservation, creator-pattern bounds, a 5000 m pacing curve,
   continuous contoured rails, a deterministic distance-banded pattern catalog,
+  full Classic-sized high↔low weave envelopes, bounded silk-burr geometry,
   upgradeable minimum Burst travel, and bounded Springtail impacts. A three-lane
   route sweep proves a Classic-sized spider
   clears both rail-grown roots across the passage's full width at every
@@ -169,8 +184,9 @@ without a reported regression.
   assets, custom presentation interpolation, moving-art mipmaps, and
   reduced-motion-safe action poses. The front-end group performs real filesystem
   settings and progression round-trips plus settlement idempotency,
-  proportional one-time upgrade migration, a mobile-scrollable seven-track
-  Shop, profile upgrades, and creator edits. The trajectory
+  proportional one-time upgrade migration, one shared forest-web skin,
+  non-snapping touch scroll, custom body/Silk rails, a mobile-scrollable
+  seven-track Shop, profile upgrades, and creator edits. The trajectory
   fixture produces the same final state when driven through simulated 30, 60,
   90, and 120 Hz render loops.
 - `tools/check_architecture.py` — 14 fixtures, all passing, asserting both

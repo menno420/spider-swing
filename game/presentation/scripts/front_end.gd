@@ -420,7 +420,7 @@ func _build_garage() -> void:
 	detail.add_child(style_rail)
 	var style_labels := ["GARDEN", "AMBER", "COMET"]
 	for style_index in range(PlayerProgress.ALL_STYLES.size()):
-		var style := PlayerProgress.ALL_STYLES[style_index]
+		var style: StringName = PlayerProgress.ALL_STYLES[style_index]
 		var style_button := _button(
 			StringName("SpiderStyle%s" % str(style).to_pascal_case()),
 			style_labels[style_index],
@@ -439,7 +439,7 @@ func _build_garage() -> void:
 	detail.add_child(web_rail)
 	var web_labels := ["CLASSIC", "DEW", "EMBER"]
 	for web_index in range(PlayerProgress.ALL_WEB_VARIANTS.size()):
-		var web_variant := PlayerProgress.ALL_WEB_VARIANTS[web_index]
+		var web_variant: StringName = PlayerProgress.ALL_WEB_VARIANTS[web_index]
 		var web_button := _button(
 			StringName("WebVariant%s" % str(web_variant).to_pascal_case()),
 			web_labels[web_index],

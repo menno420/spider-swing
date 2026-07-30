@@ -20,9 +20,12 @@ Coordinates the run. Owns lifecycle and sequencing; does not own physics truth.
   guidance; the first 2000 m forbid inward rails by default, and later inward
   passages remain rail-only. `CoursePatternCatalog` supplies curated,
   distance-banded natural compositions with a repetition cooldown. Small
-  hazards grow by at most 12% after the learning runway, paired/staggered
+  hazards grow by at most 16% after the learning runway, paired/staggered
   patterns begin only after 2000 m, and a predictable late squeeze occurs every
-  eight chunks instead of appearing in clusters. Fly-advertised root passages
+  eight chunks instead of appearing in clusters. Two authored weave patterns
+  alternate floor/ceiling growth around a fully validated Classic-sized
+  high↔low fly route; two compact silk-burr patterns add only a small central
+  decision. Fly-advertised root passages
   grow from both rails and expose a verified steering envelope rather than a
   centre-line-only hole. Phase 1 extends this seam with selected authored chunks
   and pooling.
