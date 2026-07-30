@@ -155,6 +155,17 @@ without a reported regression.
 
 **Verification**
 
+- PR #34 `game-quality` run
+  [30533495192](https://github.com/menno420/spider-swing/actions/runs/30533495192)
+  passes clean import, front-end boot, and all 89 contracts on Godot
+  `4.7.1.stable.official.a13da4feb` at source
+  `748aa12a54430cedf38ca2a3dee555610328f69a`. Its new deterministic contract
+  proves maxed Balanced Flow raises automatic take-up from 85% to 91% and
+  leaves a shorter web for identical inward movement. Android run
+  [30533495206](https://github.com/menno420/spider-swing/actions/runs/30533495206)
+  produced verified
+  [artifact 8755663459](https://github.com/menno420/spider-swing/actions/runs/30533495206/artifacts/8755663459),
+  build `0.11.2-balanced-flow-copy-test`.
 - PR #32 `game-quality` run
   [30531249630](https://github.com/menno420/spider-swing/actions/runs/30531249630)
   passes architecture fixtures/scan, clean import, front-end boot, and all 88

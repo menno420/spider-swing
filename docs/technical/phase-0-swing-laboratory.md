@@ -324,9 +324,10 @@ signed dev app, then check:
 22. compare all five Garage profiles, especially Skitter's smaller collision
     radius, Anchorite's weight, Ballooner's visible bounded glide, and
     Springtail's charged moderate rail bounce;
-23. spend laboratory flies through levels 4→5 on one Shop track, confirm the
-    breakthrough is visible, the resolved value changes, and the level survives
-    restart;
+23. on maxed Balanced Flow, confirm the description says automatic take-up
+    keeps less slack and shortens the web; then spend laboratory flies through
+    levels 4→5 on one Shop track, confirm the breakthrough is visible, the
+    resolved value changes, and the level survives restart;
 24. create a six-piece Course Lab pattern, playtest it after the opening, return
     Home, and confirm the saved pattern remains;
 25. follow fly arcs, collect Burst Frenzy, use multiple Bursts before it expires,
