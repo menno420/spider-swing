@@ -568,12 +568,20 @@ without a reported regression.
 
 ## In flight
 
+The simulation-lab v2 PR upgrades the bot to adapt to the configuration it
+is handed (Reel reserve from meter sustainability, Reel engagement from
+retraction rate, Burst aim from pull fraction with a skill-scaled safety
+check), adds `--reel-style` / `--save-bursts` / `--start-m` late-game warp /
+`--sweep` parameter grids, and reports Reel usage, mid-pull deaths, rescue
+spend distance, and flies-per-km. Tooling and documentation only; the suite
+remains 91 contracts. D-0022 records the owner's monetization direction:
+real money skips grinding, never buys exclusive power.
+
 Owner device review remains for Anchorite's species readability, contrast,
 alpha edge, rotation, and visual/collision agreement, plus PR #40's balance
-questions about whether 320/416 px/s Reel reads as arc control. The headless
-simulation lab from PR #41 is available for statistical balance comparisons.
-Anchor Drive's proposed second stored Burst stays deferred until the corrected
-Reel build is approved.
+questions about whether 320/416 px/s Reel reads as arc control. Anchor
+Drive's proposed second stored Burst stays deferred until the corrected Reel
+build is approved.
 
 ## Recently shipped (newest first)
 
