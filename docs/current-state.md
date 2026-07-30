@@ -573,9 +573,10 @@ without a reported regression.
 ## In flight
 
 The reserve-Burst PR implements the first active breakthrough now that the
-owner has approved the corrected Reel build on device (D-0023): Burst
+owner has approved the corrected Reel build on device (ledger entries in
+`docs/decisions.md`, cited from the deep-progression plan): Burst
 availability becomes a charge pool on one serial cooldown, Anchor Drive
-level 10 stores a second charge (D-0024), level-zero cadence is proven
+level 10 stores a second charge, level-zero cadence is proven
 unchanged, the Burst button gains reserve pips only when capacity exceeds
 one, a `burst_charges` DEBUG value supports comparison, and the suite grows
 to 93 contracts. Build identity: `0.14.0-reserve-burst-test`, Android
