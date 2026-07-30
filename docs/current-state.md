@@ -31,7 +31,10 @@ without a reported regression.
   a 12-pixel drag deadzone, and take 64-pixel wheel/controller steps. Every
   descendant button, label, panel, toggle, and container passes GUI gestures to
   that owner, removing the device-observed dead regions without taking short
-  taps away from their original control.
+  taps away from their original control. Shop explains that levels 5/10/15/20
+  apply the listed increase twice, marks the next milestone
+  `BREAKTHROUGH ×2`, and derives a maxed track's
+  four-breakthrough/24-step summary from the authoritative catalog.
 - The six-step in-engine Tutorial teaches movement, forgiving solid targets,
   release and momentum, speed-neutral rope-shortening Reel, percentage Burst,
   one-shot downward Dive Pull, shaped obstacles/gaps, restart, Menu, and optional
@@ -155,6 +158,17 @@ without a reported regression.
 
 **Verification**
 
+- PR #36 `game-quality` run
+  [30535470384](https://github.com/menno420/spider-swing/actions/runs/30535470384)
+  passes clean import, front-end boot, and all 90 contracts on Godot
+  `4.7.1.stable.official.a13da4feb` at source
+  `3cef05470cfa10bf4a4e339c226ac099554aea58`. Its front-end contract proves
+  level 4 presents the next purchase as `BREAKTHROUGH ×2` and two tuning steps,
+  while a maxed card derives four breakthroughs and 24 total steps. Android run
+  [30535470355](https://github.com/menno420/spider-swing/actions/runs/30535470355)
+  produced verified
+  [artifact 8756471132](https://github.com/menno420/spider-swing/actions/runs/30535470355/artifacts/8756471132),
+  build `0.11.3-upgrade-breakthrough-copy-test`.
 - PR #34 `game-quality` run
   [30533495192](https://github.com/menno420/spider-swing/actions/runs/30533495192)
   passes clean import, front-end boot, and all 89 contracts on Godot
@@ -183,8 +197,8 @@ without a reported regression.
   [30485134026](https://github.com/menno420/spider-swing/actions/runs/30485134026)
   passes the complete 82-check suite on Godot 4.7.1 at source
   `06a4c65aeb87b4d47a54423f9cd56ce87dcaaba5`.
-- `tests/test_runner.gd` — 89 declared checks: forty-four
-  deterministic physics, twenty-one GUI-owned mobile HUD, fourteen front-end
+- `tests/test_runner.gd` — 90 declared checks: forty-four
+  deterministic physics, twenty-one GUI-owned mobile HUD, fifteen front-end
   navigation/settings/progression, plus bootstrap and exact build-version
   contracts. Physics covers exact 40%/40% pull shares,
   detached targeted Burst, recovery-web interruption, double-tap fallback,
@@ -207,7 +221,8 @@ without a reported regression.
   settings and progression round-trips plus settlement idempotency,
   proportional one-time upgrade migration, one shared forest-web skin,
   non-snapping touch scroll, custom body/Silk rails, a mobile-scrollable
-  seven-track Shop, profile upgrades, and creator edits. The trajectory
+  seven-track Shop, explicit two-step breakthrough copy with a derived max
+  summary, profile upgrades, and creator edits. The trajectory
   fixture produces the same final state when driven through simulated 30, 60,
   90, and 120 Hz render loops.
 - `tools/check_architecture.py` — 14 fixtures, all passing, asserting both

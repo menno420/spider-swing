@@ -61,7 +61,11 @@ The Shop gives every profile the same five core tracks plus two identity tracks.
 Each track has 20 small levels. Levels 5, 10, 15, and 20 are visible
 breakthroughs that grant one extra tuning step without adding another input or
 charge. The seven selected-profile rows use one fly-balance badge, CORE/IDENTITY
-accent cards, and four visible silk knots for those milestones.
+accent cards, and four visible silk knots for those milestones. The Shop states
+the rule once above the list, marks an upcoming milestone `BREAKTHROUGH ×2`,
+and says on its card that the purchase grants two tuning steps. A maxed card
+derives its four-breakthrough/24-step summary from `SpiderCatalog`, so
+presentation does not duplicate the progression calculation.
 Purchases spend `spendable_flies` through `ProgressionService` and persist
 atomically through `SaveRepository`. Schema 4 maps each former five-level value
 to the equivalent four-level interval exactly once. There are no real-money

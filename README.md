@@ -42,11 +42,12 @@ Burst boost.
 - A touch-scrollable prototype Shop with one fly-balance badge, themed upgrade
   cards, and visible silk-knot progress. Every spider has the same five core
   tracks and two identity tracks. Each track has 20 small levels and a visible
-  breakthrough at levels 5, 10, 15, and 20. Previous five-level saves migrate
-  proportionally. Buttons, panels, labels, and empty card regions all bubble
-  drag gestures to one native inertial scroll owner, while taps remain owned by
-  their original control. This is a local fly-funded balance lab, not an
-  in-app-purchase implementation.
+  breakthrough at levels 5, 10, 15, and 20; each milestone purchase applies the
+  track's listed increase twice by granting one bonus tuning step. Previous
+  five-level saves migrate proportionally. Buttons, panels, labels, and empty
+  card regions all bubble drag gestures to one native inertial scroll owner,
+  while taps remain owned by their original control. This is a local fly-funded
+  balance lab, not an in-app-purchase implementation.
 - A six-slot Course Lab that cycles deterministic EMPTY/LEAF/POD/VINE/GATE
   pieces, saves the pattern locally, and can playtest it immediately.
 - A data-driven six-step animated tutorial plus an in-game Menu return path.

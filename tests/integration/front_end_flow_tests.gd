@@ -18,6 +18,7 @@ static func run() -> Dictionary:
 	passed += _test_garage_shop_and_creator_are_real_routes(failures)
 	passed += _test_garage_uses_spider_cosmetic_rails(failures)
 	passed += _test_shop_exposes_seven_mobile_readable_tracks(failures)
+	passed += _test_shop_explains_breakthrough_bonuses(failures)
 	passed += _test_upgrades_and_creator_edits_use_progression_service(failures)
 	passed += _test_composition_root_mounts_front_end_first(failures)
 	return {"passed": passed, "failures": failures}
@@ -469,6 +470,64 @@ static func _scroll_descendants_bubble_drag(node: Node) -> bool:
 		if not _scroll_descendants_bubble_drag(child):
 			return false
 	return true
+
+
+static func _test_shop_explains_breakthrough_bonuses(
+	failures: PackedStringArray,
+) -> int:
+	var progress := PlayerProgress.defaults()
+	progress.upgrade_levels["classic_reel"] = 4
+	var state := FrontEndState.new()
+	state.configure(PlayerSettings.defaults(), progress)
+	var view := FrontEndView.new()
+	view.bind_state(state)
+	view.front_end_button(&"Shop").pressed.emit()
+	var rule := view.find_child(
+		"ShopProgressionRule",
+		true,
+		false,
+	) as Label
+	var description := view.find_child(
+		"UpgradeDescriptionClassicReel",
+		true,
+		false,
+	) as Label
+	var button := view.front_end_button(&"UpgradeClassicReel")
+	if rule == null or \
+			not rule.text.contains("Levels 5, 10, 15, and 20") or \
+			not rule.text.contains("listed increase twice") or \
+			description == null or \
+			not description.text.contains(
+				"Level 5 breakthrough grants 2 tuning steps") or \
+			button == null or not button.text.contains("BREAKTHROUGH ×2"):
+		failures.append(
+			"Shop does not explain that every fifth-level purchase applies " +
+			"the listed increase twice")
+		view.free()
+		return 0
+	view.free()
+
+	progress = PlayerProgress.defaults()
+	progress.upgrade_levels["classic_reel"] = SpiderCatalog.MAX_UPGRADE_LEVEL
+	state = FrontEndState.new()
+	state.configure(PlayerSettings.defaults(), progress)
+	view = FrontEndView.new()
+	view.bind_state(state)
+	view.front_end_button(&"Shop").pressed.emit()
+	description = view.find_child(
+		"UpgradeDescriptionClassicReel",
+		true,
+		false,
+	) as Label
+	if description == null or \
+			not description.text.contains(
+				"4 breakthroughs earned · 24 tuning steps total"):
+		failures.append(
+			"maxed Shop card does not summarize its four bonus steps")
+		view.free()
+		return 0
+	view.free()
+	return 1
 
 
 static func _test_upgrades_and_creator_edits_use_progression_service(
