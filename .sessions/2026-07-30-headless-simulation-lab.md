@@ -64,7 +64,7 @@ from it — one shared fair course per day for score comparison, and a
 `--course-seed` sweep flag in the lab so balance conclusions can be tested
 for generalization beyond the single fixed course.
 
-- **📊 Model:** fable-5 · high · tooling build
+- **📊 Model:** fable-5 · high · feature build
 
 ## Capability delta
 
