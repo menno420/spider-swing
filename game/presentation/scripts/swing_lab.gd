@@ -483,6 +483,11 @@ func _draw_obstacle(
 	if _uses_forest_art():
 		var world_bounds := _polygon_bounds(world_polygon)
 		var screen_bounds := _polygon_bounds(polygon)
+		var attached_to_ceiling := \
+			world_bounds.position.y <= CourseStream.CEILING_Y + 2.0
+		var attached_to_floor := \
+			world_bounds.end.y >= CourseStream.FLOOR_Y - 2.0
+		var detached := not attached_to_ceiling and not attached_to_floor
 		var top_points := 0
 		var bottom_points := 0
 		for point: Vector2 in world_polygon:
@@ -490,11 +495,13 @@ func _draw_obstacle(
 				top_points += 1
 			if absf(point.y - world_bounds.end.y) <= 3.0:
 				bottom_points += 1
-		var hanging := top_points >= bottom_points
+		var hanging := top_points >= bottom_points and not detached
 		var wide := screen_bounds.size.x > screen_bounds.size.y * 1.15
 		var asset_id := ArtAssetCatalog.FOREST_BRAMBLE
 		var flip_y := false
-		if world_polygon.size() == 6:
+		if detached:
+			asset_id = ArtAssetCatalog.FOREST_BRAMBLE
+		elif world_polygon.size() == 6:
 			asset_id = ArtAssetCatalog.FOREST_ROOT_STUMP
 			flip_y = hanging
 		elif hanging and not wide:
@@ -514,24 +521,49 @@ func _draw_obstacle(
 				OBSTACLE_DARK,
 			)
 		if texture != null:
+			if detached:
+				var world_center := world_bounds.get_center()
+				var top_left := _world_to_screen(Vector2(
+					world_center.x - 9.0,
+					CourseStream.CEILING_Y,
+				))
+				var top_right := _world_to_screen(Vector2(
+					world_center.x + 9.0,
+					CourseStream.CEILING_Y,
+				))
+				draw_line(
+					top_left,
+					Vector2(screen_bounds.get_center().x - 5.0, screen_bounds.position.y),
+					Color(WEB, 0.30),
+					1.4,
+					true,
+				)
+				draw_line(
+					top_right,
+					Vector2(screen_bounds.get_center().x + 5.0, screen_bounds.position.y),
+					Color(WEB, 0.20),
+					1.2,
+					true,
+				)
 			var art_bounds := screen_bounds.grow(
 				FOREST_OBSTACLE_ART_OVERSCAN,
 			)
-			if world_bounds.position.y <= CourseStream.CEILING_Y + 2.0:
+			if attached_to_ceiling:
 				art_bounds.position.y -= FOREST_RAIL_JOIN_OVERLAP
 				art_bounds.size.y += FOREST_RAIL_JOIN_OVERLAP
-			elif world_bounds.end.y >= CourseStream.FLOOR_Y - 2.0:
+			elif attached_to_floor:
 				art_bounds.size.y += FOREST_RAIL_JOIN_OVERLAP
 			_draw_texture_cover(
 				texture,
 				art_bounds,
 				flip_y,
 			)
-			_draw_forest_growth_socket(
-				world_polygon,
-				polygon,
-				hanging,
-			)
+			if not detached:
+				_draw_forest_growth_socket(
+					world_polygon,
+					polygon,
+					hanging,
+				)
 		if _snapshot.collision_outlines_visible:
 			_draw_closed_polyline(
 				polygon,

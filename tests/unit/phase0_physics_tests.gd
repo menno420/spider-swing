@@ -45,6 +45,7 @@ static func run() -> Dictionary:
 		failures)
 	passed += _test_gate_fly_route_is_traversable(failures)
 	passed += _test_curated_pattern_catalog_is_banded_and_varied(failures)
+	passed += _test_authored_weaves_and_small_silk_burrs_are_fair(failures)
 	passed += _test_contoured_rails_are_continuous_and_varied(failures)
 	passed += _test_obstacle_collision_is_authoritative(failures)
 	passed += _test_boundary_lethality_is_a_toggle(failures)
@@ -1284,6 +1285,112 @@ static func _test_curated_pattern_catalog_is_banded_and_varied(
 	if paired_chunks < 4 or single_chunks < 4:
 		failures.append(
 			"late course lost the intended mix of single and paired challenges")
+		return 0
+	return 1
+
+
+static func _test_authored_weaves_and_small_silk_burrs_are_fair(
+	failures: PackedStringArray,
+) -> int:
+	var pattern_ids := [
+		&"high_low_weave",
+		&"low_high_weave",
+		&"silk_burr_high",
+		&"silk_burr_low",
+	]
+	var stream := CourseStream.new()
+	stream.reset()
+	for chunk_index in range(22):
+		if stream.pattern_id_for_chunk(chunk_index) in pattern_ids:
+			failures.append("height-switch pattern entered the protected opening")
+			return 0
+	var found := {}
+	for chunk_index in range(22, 92):
+		var pattern_id := stream.pattern_id_for_chunk(chunk_index)
+		if pattern_id not in pattern_ids or found.has(pattern_id):
+			continue
+		var chunk_start := float(chunk_index) * CourseStream.CHUNK_WIDTH
+		var chunk_end := chunk_start + CourseStream.CHUNK_WIDTH
+		var geometry := stream.update_for_position(chunk_start + 1.0)
+		var obstacles: Array[PackedVector2Array] = []
+		var route_flies: Array[Vector2] = []
+		for obstacle: PackedVector2Array in geometry.obstacles:
+			var bounds := SolidGeometry.bounds(obstacle)
+			if bounds.get_center().x >= chunk_start and \
+					bounds.get_center().x < chunk_end:
+				obstacles.append(obstacle)
+		for fly: Vector2 in geometry.fly_positions:
+			if fly.x >= chunk_start and fly.x < chunk_end:
+				route_flies.append(fly)
+		for fly: Vector2 in route_flies:
+			for obstacle: PackedVector2Array in obstacles:
+				if SolidGeometry.circle_intersects_polygon(fly, 30.0, obstacle):
+					failures.append(
+						"%s guides its fly route into collision" % pattern_id)
+					return 0
+		if pattern_id == &"high_low_weave" or \
+				pattern_id == &"low_high_weave":
+			if obstacles.size() != 2 or route_flies.size() != 7:
+				failures.append("%s lost its authored two-part cue" % pattern_id)
+				return 0
+			var first := obstacles[0]
+			var second := obstacles[1]
+			if SolidGeometry.bounds(first).get_center().x > \
+					SolidGeometry.bounds(second).get_center().x:
+				var swap := first
+				first = second
+				second = swap
+			var first_bounds := SolidGeometry.bounds(first)
+			var second_bounds := SolidGeometry.bounds(second)
+			var high_to_low := pattern_id == &"high_low_weave"
+			var first_is_floor := \
+				first_bounds.end.y >= CourseStream.FLOOR_Y - 0.01
+			var second_is_floor := \
+				second_bounds.end.y >= CourseStream.FLOOR_Y - 0.01
+			if first_is_floor != high_to_low or \
+					second_is_floor == high_to_low:
+				failures.append("%s obstacles do not alternate rail height" % pattern_id)
+				return 0
+			var route_delta := route_flies[-1].y - route_flies[0].y
+			if absf(route_delta) < 280.0 or \
+					(route_delta > 0.0) != high_to_low:
+				failures.append("%s does not clearly cue the required height change" %
+					pattern_id)
+				return 0
+			for sample_index in range(41):
+				var progress := float(sample_index) / 40.0
+				var eased := progress * progress * (3.0 - 2.0 * progress)
+				var route_sample := Vector2(
+					lerpf(chunk_start + 230.0, chunk_start + 850.0, progress),
+					lerpf(
+						route_flies[0].y,
+						route_flies[-1].y,
+						eased,
+					),
+				)
+				for obstacle: PackedVector2Array in obstacles:
+					if SolidGeometry.circle_intersects_polygon(
+						route_sample,
+						30.0,
+						obstacle,
+					):
+						failures.append(
+							"%s blocks its Classic-sized steering envelope" %
+								pattern_id)
+						return 0
+		else:
+			if obstacles.size() != 1 or route_flies.size() != 5:
+				failures.append("%s lost its single compact burr" % pattern_id)
+				return 0
+			var burr_bounds := SolidGeometry.bounds(obstacles[0])
+			if burr_bounds.size.x > 110.0 or burr_bounds.size.y > 96.0 or \
+					burr_bounds.position.y <= CourseStream.CEILING_Y or \
+					burr_bounds.end.y >= CourseStream.FLOOR_Y:
+				failures.append("%s is no longer a small middle obstacle" % pattern_id)
+				return 0
+		found[pattern_id] = true
+	if found.size() != pattern_ids.size():
+		failures.append("deterministic late course does not expose every new pattern")
 		return 0
 	return 1
 

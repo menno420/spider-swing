@@ -55,10 +55,10 @@
   },
   "review_log": [],
   "session_anchor": {
-    "branch": "claude/debug-lab-dive-reset",
-    "epoch": 1785294796.973232,
-    "head": "577df2b6206ef42ad226ee327d4aa32a2a5d1e3c",
-    "ts": "2026-07-29T03:13:16+00:00"
+    "branch": "claude/ui-course-polish",
+    "epoch": 1785392487.458484,
+    "head": "93c567adcd1eb39ab817189abde6b50cd3d3872d",
+    "ts": "2026-07-30T06:21:27+00:00"
   },
   "session_count": 0,
   "slot_values": {

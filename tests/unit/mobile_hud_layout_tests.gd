@@ -759,6 +759,11 @@ static func _test_forest_obstacles_join_the_rails_without_gate_distortion(
 		failures.append(
 			"forest obstacle art still permits non-uniform texture distortion")
 		return 0
+	if not renderer_source.contains("var detached :=") or \
+			not renderer_source.contains("if not detached:"):
+		failures.append(
+			"small silk burrs still receive wall-growth art while detached")
+		return 0
 	return 1
 
 

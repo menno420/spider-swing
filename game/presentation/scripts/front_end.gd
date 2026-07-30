@@ -2,15 +2,15 @@ extends Control
 class_name FrontEndView
 ## Read-only front-end presentation bound to FrontEndState.
 
-const DEEP := Color("07141d")
-const PANEL := Color("0b202b")
-const PANEL_SOFT := Color("102f3a")
-const INK := Color("d9fbff")
-const MUTED := Color("8ba9b5")
-const CYAN := Color("4de8ee")
-const GREEN := Color("73e0a4")
-const ORANGE := Color("f28c45")
-const YELLOW := Color("ffd166")
+const DEEP := SpiderUiTheme.BACKGROUND
+const PANEL := SpiderUiTheme.PANEL
+const PANEL_SOFT := SpiderUiTheme.PANEL_SOFT
+const INK := SpiderUiTheme.INK
+const MUTED := SpiderUiTheme.MUTED
+const CYAN := SpiderUiTheme.DEW
+const GREEN := SpiderUiTheme.MOSS
+const ORANGE := SpiderUiTheme.SAP
+const YELLOW := SpiderUiTheme.AMBER
 
 var _state: FrontEndState
 var _home: Control
@@ -26,7 +26,7 @@ var _tutorial_body: Label
 var _tutorial_tip: Label
 var _tutorial_progress: Label
 var _tutorial_next: Button
-var _preset_picker: OptionButton
+var _preset_buttons: Dictionary = {}
 var _hints_toggle: CheckButton
 var _motion_toggle: CheckButton
 var _debug_toggle: CheckButton
@@ -35,8 +35,9 @@ var _garage_role: Label
 var _garage_description: Label
 var _garage_tradeoff: Label
 var _garage_stats: Label
-var _garage_style_picker: OptionButton
-var _garage_web_picker: OptionButton
+var _garage_style_buttons: Dictionary = {}
+var _garage_web_buttons: Dictionary = {}
+var _garage_silk_preview: SilkPreview
 var _profile_buttons: Dictionary = {}
 var _shop_flies: Label
 var _shop_title: Label
@@ -44,6 +45,7 @@ var _shop_description: Label
 var _upgrade_buttons: Dictionary = {}
 var _upgrade_rows: Dictionary = {}
 var _upgrade_descriptions: Dictionary = {}
+var _upgrade_milestones: Dictionary = {}
 var _creator_slot_buttons: Array[Button] = []
 var _buttons: Dictionary = {}
 var _interface_ready: bool = false
@@ -73,6 +75,7 @@ func ensure_interface() -> void:
 		return
 	_interface_ready = true
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	theme = SpiderUiTheme.create_theme()
 	_build_home()
 	_build_tutorial()
 	_build_settings()
@@ -97,16 +100,64 @@ func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), DEEP)
 	var drift := 0.0
 	if _state == null or not _state.settings.reduced_motion:
-		drift = sin(_elapsed * 0.22) * 42.0
-	for index in range(7):
+		drift = sin(_elapsed * 0.22) * 28.0
+	for index in range(6):
 		var center := Vector2(
-			size.x * (0.08 + float(index) * 0.17) + drift * float(index % 2),
-			size.y * (0.14 + float(index % 3) * 0.31),
+			size.x * (0.04 + float(index) * 0.20) + drift * float(index % 2),
+			size.y * (0.12 + float(index % 3) * 0.34),
 		)
-		draw_circle(center, 110.0 + float(index % 3) * 46.0,
-			Color(0.12, 0.38, 0.38, 0.13))
-	draw_line(Vector2(0.0, size.y * 0.88),
-		Vector2(size.x, size.y * 0.88), Color(CYAN, 0.16), 2.0)
+		draw_circle(
+			center,
+			120.0 + float(index % 3) * 52.0,
+			Color(0.16, 0.35, 0.20, 0.11),
+		)
+	var floor_y := size.y * 0.91
+	draw_colored_polygon(PackedVector2Array([
+		Vector2(0.0, floor_y),
+		Vector2(size.x * 0.18, floor_y - 14.0),
+		Vector2(size.x * 0.39, floor_y + 5.0),
+		Vector2(size.x * 0.62, floor_y - 18.0),
+		Vector2(size.x * 0.82, floor_y - 4.0),
+		Vector2(size.x, floor_y - 20.0),
+		Vector2(size.x, size.y),
+		Vector2(0.0, size.y),
+	]), Color(SpiderUiTheme.BARK, 0.56))
+	_draw_corner_web(Vector2(size.x - 18.0, 18.0), -1.0, 250.0)
+	_draw_corner_web(Vector2(18.0, size.y - 18.0), 1.0, 150.0, -1.0)
+
+
+func _draw_corner_web(
+	anchor: Vector2,
+	x_direction: float,
+	radius: float,
+	y_direction: float = 1.0,
+) -> void:
+	var directions: Array[Vector2] = []
+	for spoke_index in range(7):
+		var progress := float(spoke_index) / 6.0
+		var direction := Vector2(
+			x_direction * cos(progress * PI * 0.5),
+			y_direction * sin(progress * PI * 0.5),
+		)
+		directions.append(direction)
+		draw_line(
+			anchor,
+			anchor + direction * radius,
+			Color(SpiderUiTheme.SILK, 0.11),
+			1.4,
+			true,
+		)
+	for ring_index in range(1, 5):
+		var ring_radius := radius * float(ring_index) / 5.0
+		var points := PackedVector2Array()
+		for direction: Vector2 in directions:
+			points.append(anchor + direction * ring_radius)
+		draw_polyline(
+			points,
+			Color(SpiderUiTheme.SILK, 0.09 + ring_index * 0.012),
+			1.2,
+			true,
+		)
 
 
 func _build_home() -> void:
@@ -235,9 +286,7 @@ func _build_settings() -> void:
 	_place(card, _settings, 0.16, 0.05, 0.84, 0.96)
 	var scroll := ScrollContainer.new()
 	scroll.name = "SettingsScroll"
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
-	scroll.follow_focus = true
+	SpiderUiTheme.configure_touch_scroll(scroll)
 	_fill_with_margin(scroll, card, 28.0)
 	var content := VBoxContainer.new()
 	content.name = "SettingsContent"
@@ -253,15 +302,22 @@ func _build_settings() -> void:
 		+ "time the game opens.",
 	))
 	content.add_child(_setting_heading("SWING FEEL"))
-	_preset_picker = OptionButton.new()
-	_preset_picker.name = "SwingPreset"
-	_preset_picker.custom_minimum_size.y = 68.0
-	_preset_picker.add_item("Balanced · steady and readable")
-	_preset_picker.add_item("Weighty · heavier momentum")
-	_preset_picker.add_item("Agile · quicker corrections")
-	_preset_picker.item_selected.connect(_on_preset_selected)
-	_style_option_button(_preset_picker)
-	content.add_child(_preset_picker)
+	var preset_rail := HBoxContainer.new()
+	preset_rail.name = "SwingPresetRail"
+	preset_rail.add_theme_constant_override("separation", 10)
+	content.add_child(preset_rail)
+	var preset_labels := ["BALANCED\nSTEADY", "WEIGHTY\nMOMENTUM", "AGILE\nQUICK"]
+	for preset_index in range(preset_labels.size()):
+		var preset_button := _button(
+			StringName("SwingPreset%d" % preset_index),
+			preset_labels[preset_index],
+			ORANGE,
+			68.0,
+		)
+		preset_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		preset_button.pressed.connect(_on_preset_selected.bind(preset_index))
+		preset_rail.add_child(preset_button)
+		_preset_buttons[preset_index] = preset_button
 	content.add_child(_setting_description(
 		"This selects the active Phase 0 candidate when Play starts."))
 
@@ -310,15 +366,15 @@ func _build_garage() -> void:
 	_place(heading, _garage, 0.20, 0.035, 0.58, 0.12)
 
 	var roster_card := _panel(PANEL)
-	_place(roster_card, _garage, 0.04, 0.15, 0.49, 0.93)
+	_place(roster_card, _garage, 0.04, 0.13, 0.49, 0.96)
 	var roster := VBoxContainer.new()
-	roster.add_theme_constant_override("separation", 14)
-	_fill_with_margin(roster, roster_card, 24.0)
+	roster.add_theme_constant_override("separation", 11)
+	_fill_with_margin(roster, roster_card, 20.0)
 	roster.add_child(_section_label("CHOOSE A HANDLING STYLE"))
 	var grid := GridContainer.new()
 	grid.columns = 2
-	grid.add_theme_constant_override("h_separation", 12)
-	grid.add_theme_constant_override("v_separation", 12)
+	grid.add_theme_constant_override("h_separation", 10)
+	grid.add_theme_constant_override("v_separation", 10)
 	roster.add_child(grid)
 	for spider_id: StringName in SpiderCatalog.ALL_IDS:
 		var item := SpiderCatalog.profile(spider_id)
@@ -326,7 +382,7 @@ func _build_garage() -> void:
 			StringName("Spider%s" % str(spider_id).capitalize()),
 			str(item["name"]).to_upper(),
 			YELLOW,
-			76.0,
+			68.0,
 		)
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.pressed.connect(_on_spider_profile.bind(spider_id))
@@ -337,44 +393,68 @@ func _build_garage() -> void:
 		+ "same tested motor through explicit trade-offs."))
 
 	var detail_card := _panel(PANEL)
-	_place(detail_card, _garage, 0.51, 0.15, 0.96, 0.93)
+	_place(detail_card, _garage, 0.51, 0.13, 0.96, 0.96)
 	var detail := VBoxContainer.new()
-	detail.add_theme_constant_override("separation", 10)
-	_fill_with_margin(detail, detail_card, 24.0)
+	detail.add_theme_constant_override("separation", 6)
+	_fill_with_margin(detail, detail_card, 18.0)
 	_garage_role = _section_label("")
 	detail.add_child(_garage_role)
-	_garage_name = _label("", 32, INK)
+	_garage_name = _label("", 29, INK)
 	detail.add_child(_garage_name)
 	_garage_description = _setting_description("")
+	_garage_description.add_theme_font_size_override("font_size", 15)
+	_garage_description.custom_minimum_size.y = 30.0
 	detail.add_child(_garage_description)
 	_garage_tradeoff = _setting_description("")
 	_garage_tradeoff.add_theme_color_override("font_color", YELLOW)
+	_garage_tradeoff.add_theme_font_size_override("font_size", 14)
+	_garage_tradeoff.custom_minimum_size.y = 28.0
 	detail.add_child(_garage_tradeoff)
-	_garage_stats = _label("", 17, CYAN)
-	_garage_stats.custom_minimum_size.y = 72.0
+	_garage_stats = _label("", 14, CYAN)
+	_garage_stats.custom_minimum_size.y = 40.0
 	detail.add_child(_garage_stats)
-	var pickers := HBoxContainer.new()
-	pickers.add_theme_constant_override("separation", 12)
-	detail.add_child(pickers)
-	_garage_style_picker = OptionButton.new()
-	_garage_style_picker.name = "SpiderStylePicker"
-	_garage_style_picker.custom_minimum_size.y = 56.0
-	_garage_style_picker.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	for label: String in ["Garden body", "Amber body", "Comet body"]:
-		_garage_style_picker.add_item(label)
-	_garage_style_picker.item_selected.connect(_on_style_selected)
-	_style_option_button(_garage_style_picker)
-	pickers.add_child(_garage_style_picker)
-	_garage_web_picker = OptionButton.new()
-	_garage_web_picker.name = "WebVariantPicker"
-	_garage_web_picker.custom_minimum_size.y = 56.0
-	_garage_web_picker.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	for label: String in ["Classic silk", "Dew silk", "Ember silk"]:
-		_garage_web_picker.add_item(label)
-	_garage_web_picker.item_selected.connect(_on_web_variant_selected)
-	_style_option_button(_garage_web_picker)
-	pickers.add_child(_garage_web_picker)
-	var play := _button(&"GaragePlay", "PLAY THIS SPIDER", GREEN, 64.0)
+	detail.add_child(_compact_heading("BODY PALETTE"))
+	var style_rail := HBoxContainer.new()
+	style_rail.name = "SpiderStyleRail"
+	style_rail.add_theme_constant_override("separation", 8)
+	detail.add_child(style_rail)
+	var style_labels := ["GARDEN", "AMBER", "COMET"]
+	for style_index in range(PlayerProgress.ALL_STYLES.size()):
+		var style := PlayerProgress.ALL_STYLES[style_index]
+		var style_button := _button(
+			StringName("SpiderStyle%s" % str(style).to_pascal_case()),
+			style_labels[style_index],
+			YELLOW,
+			44.0,
+		)
+		style_button.add_theme_font_size_override("font_size", 15)
+		style_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		style_button.pressed.connect(_on_style_selected.bind(style_index))
+		style_rail.add_child(style_button)
+		_garage_style_buttons[style] = style_button
+	detail.add_child(_compact_heading("SILK TREATMENT"))
+	var web_rail := HBoxContainer.new()
+	web_rail.name = "WebVariantRail"
+	web_rail.add_theme_constant_override("separation", 8)
+	detail.add_child(web_rail)
+	var web_labels := ["CLASSIC", "DEW", "EMBER"]
+	for web_index in range(PlayerProgress.ALL_WEB_VARIANTS.size()):
+		var web_variant := PlayerProgress.ALL_WEB_VARIANTS[web_index]
+		var web_button := _button(
+			StringName("WebVariant%s" % str(web_variant).to_pascal_case()),
+			web_labels[web_index],
+			CYAN,
+			44.0,
+		)
+		web_button.add_theme_font_size_override("font_size", 15)
+		web_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		web_button.pressed.connect(_on_web_variant_selected.bind(web_index))
+		web_rail.add_child(web_button)
+		_garage_web_buttons[web_variant] = web_button
+	_garage_silk_preview = SilkPreview.new()
+	_garage_silk_preview.name = "SilkTreatmentPreview"
+	detail.add_child(_garage_silk_preview)
+	var play := _button(&"GaragePlay", "PLAY THIS SPIDER", GREEN, 54.0)
 	play.pressed.connect(_on_play)
 	detail.add_child(play)
 
@@ -387,28 +467,37 @@ func _build_shop() -> void:
 	var card := _panel(PANEL)
 	_place(card, _shop, 0.14, 0.08, 0.86, 0.94)
 	var content := VBoxContainer.new()
-	content.add_theme_constant_override("separation", 14)
-	_fill_with_margin(content, card, 28.0)
+	content.add_theme_constant_override("separation", 11)
+	_fill_with_margin(content, card, 24.0)
 	var header := HBoxContainer.new()
+	header.add_theme_constant_override("separation", 14)
 	content.add_child(header)
 	_shop_title = _label("", 32, INK)
 	_shop_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(_shop_title)
 	_shop_flies = _label("", 22, YELLOW)
-	header.add_child(_shop_flies)
-	content.add_child(_paragraph(
+	var flies_badge := PanelContainer.new()
+	flies_badge.name = "FlyBalanceBadge"
+	flies_badge.add_theme_stylebox_override(
+		"panel",
+		SpiderUiTheme.badge_style(YELLOW),
+	)
+	flies_badge.add_child(_shop_flies)
+	header.add_child(flies_badge)
+	var shop_note := _paragraph(
 		"Prototype upgrades use flies collected in play. No store purchase or "
-		+ "real-money entitlement is connected in this build."))
+		+ "real-money entitlement is connected in this build.")
+	shop_note.add_theme_font_size_override("font_size", 17)
+	content.add_child(shop_note)
 	_shop_description = _setting_description(
 		"Five CORE tracks shape every spider consistently; two IDENTITY tracks "
 		+ "reinforce the selected spider's trade-off.")
-	_shop_description.custom_minimum_size.y = 42.0
+	_shop_description.add_theme_font_size_override("font_size", 16)
+	_shop_description.custom_minimum_size.y = 34.0
 	content.add_child(_shop_description)
 	var scroll := ScrollContainer.new()
 	scroll.name = "ShopUpgradeScroll"
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
-	scroll.follow_focus = true
+	SpiderUiTheme.configure_touch_scroll(scroll)
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	content.add_child(scroll)
@@ -418,27 +507,39 @@ func _build_shop() -> void:
 	scroll.add_child(upgrades)
 	for upgrade_item: Dictionary in SpiderCatalog.all_upgrades():
 		var upgrade_id := StringName(upgrade_item["id"])
-		var row := VBoxContainer.new()
+		var scope := StringName(upgrade_item["scope"])
+		var row := _panel(
+			Color(PANEL_SOFT, 0.96),
+			16,
+			GREEN if scope == SpiderCatalog.SCOPE_CORE else ORANGE,
+		)
 		row.name = "UpgradeRow%s" % str(upgrade_id).to_pascal_case()
-		row.add_theme_constant_override("separation", 4)
 		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var row_content := VBoxContainer.new()
+		row_content.add_theme_constant_override("separation", 4)
+		_fill_with_margin(row_content, row, 10.0)
 		var button := _button(
 			StringName("Upgrade%s" % str(upgrade_id).to_pascal_case()),
 			"",
-			GREEN,
-			72.0,
+			GREEN if scope == SpiderCatalog.SCOPE_CORE else ORANGE,
+			68.0,
 		)
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.pressed.connect(_on_upgrade.bind(upgrade_id))
-		row.add_child(button)
+		row_content.add_child(button)
 		var description := _setting_description("")
-		description.add_theme_font_size_override("font_size", 15)
-		description.custom_minimum_size.y = 34.0
-		row.add_child(description)
+		description.add_theme_font_size_override("font_size", 16)
+		description.custom_minimum_size.y = 38.0
+		row_content.add_child(description)
+		var milestones := _label("", 15, CYAN)
+		milestones.name = "UpgradeKnots%s" % str(upgrade_id).to_pascal_case()
+		milestones.custom_minimum_size.y = 24.0
+		row_content.add_child(milestones)
 		upgrades.add_child(row)
 		_upgrade_buttons[upgrade_id] = button
 		_upgrade_rows[upgrade_id] = row
 		_upgrade_descriptions[upgrade_id] = description
+		_upgrade_milestones[upgrade_id] = milestones
 	var garage := _button(&"ShopGarage", "CHANGE SPIDER", CYAN, 58.0)
 	garage.pressed.connect(_on_garage)
 	content.add_child(garage)
@@ -521,7 +622,13 @@ func _render() -> void:
 			_state.settings.reduced_motion,
 		)
 	_syncing_settings = true
-	_preset_picker.selected = _preset_index(_state.settings.swing_preset)
+	var selected_preset := _preset_index(_state.settings.swing_preset)
+	for preset_index: int in _preset_buttons:
+		_set_selector_state(
+			_preset_buttons[preset_index] as Button,
+			preset_index == selected_preset,
+			ORANGE,
+		)
 	_hints_toggle.button_pressed = _state.settings.show_control_hints
 	_motion_toggle.button_pressed = _state.settings.reduced_motion
 	_debug_toggle.button_pressed = _state.settings.show_debug_tools
@@ -571,16 +678,25 @@ func _render_garage() -> void:
 				else ""
 			),
 		]
-	_garage_style_picker.selected = PlayerProgress.ALL_STYLES.find(
-		_state.progress.selected_spider_style)
-	for index in range(PlayerProgress.ALL_STYLES.size()):
-		_garage_style_picker.get_popup().set_item_disabled(
-			index,
-			PlayerProgress.ALL_STYLES[index] not in \
-				_state.progress.unlocked_spider_styles,
+	for style: StringName in _garage_style_buttons:
+		var style_button := _garage_style_buttons[style] as Button
+		style_button.disabled = \
+			style not in _state.progress.unlocked_spider_styles
+		_set_selector_state(
+			style_button,
+			style == _state.progress.selected_spider_style,
+			YELLOW,
 		)
-	_garage_web_picker.selected = PlayerProgress.ALL_WEB_VARIANTS.find(
-		_state.progress.selected_web_variant)
+	for web_variant: StringName in _garage_web_buttons:
+		var web_button := _garage_web_buttons[web_variant] as Button
+		web_button.disabled = \
+			web_variant not in _state.progress.unlocked_web_variants
+		_set_selector_state(
+			web_button,
+			web_variant == _state.progress.selected_web_variant,
+			_web_variant_color(web_variant),
+		)
+	_garage_silk_preview.show_variant(_state.progress.selected_web_variant)
 
 
 func _render_shop() -> void:
@@ -595,6 +711,7 @@ func _render_shop() -> void:
 		var button: Button = _upgrade_buttons[upgrade_id]
 		var row: Control = _upgrade_rows[upgrade_id]
 		var description: Label = _upgrade_descriptions[upgrade_id]
+		var milestones: Label = _upgrade_milestones[upgrade_id]
 		var level := _state.progress.upgrade_level(upgrade_id)
 		var maximum := level >= SpiderCatalog.MAX_UPGRADE_LEVEL
 		var cost := SpiderCatalog.cost_for_level(level)
@@ -628,6 +745,7 @@ func _render_shop() -> void:
 				else "Next breakthrough: level %d" % next_breakthrough
 			),
 		]
+		milestones.text = "SILK KNOTS  %s" % _breakthrough_knots(level)
 
 
 func _render_creator() -> void:
@@ -771,6 +889,49 @@ func _preset_index(preset: StringName) -> int:
 			return 0
 
 
+func _set_selector_state(
+	button: Button,
+	selected: bool,
+	accent: Color,
+) -> void:
+	var normal := (
+		SpiderUiTheme.selected_style(accent)
+		if selected
+		else SpiderUiTheme.button_style(PANEL_SOFT, Color(accent, 0.68))
+	)
+	button.add_theme_stylebox_override("normal", normal)
+	button.add_theme_stylebox_override(
+		"hover",
+		SpiderUiTheme.selected_style(accent) if selected else \
+			SpiderUiTheme.button_style(SpiderUiTheme.PANEL_RAISED, accent),
+	)
+	button.add_theme_color_override(
+		"font_color",
+		INK if not selected else SpiderUiTheme.SILK,
+	)
+
+
+func _web_variant_color(web_variant: StringName) -> Color:
+	match web_variant:
+		PlayerProgress.WEB_DEW:
+			return GREEN
+		PlayerProgress.WEB_EMBER:
+			return YELLOW
+		_:
+			return CYAN
+
+
+func _breakthrough_knots(level: int) -> String:
+	var knots := PackedStringArray()
+	for milestone in range(
+		SpiderCatalog.BREAKTHROUGH_INTERVAL,
+		SpiderCatalog.MAX_UPGRADE_LEVEL + 1,
+		SpiderCatalog.BREAKTHROUGH_INTERVAL,
+	):
+		knots.append("●" if level >= milestone else "○")
+	return "  ".join(knots)
+
+
 func _creator_piece_label(piece: StringName) -> String:
 	match piece:
 		&"leaf":
@@ -822,14 +983,16 @@ func _fill_with_margin(node: Control, parent: Control, margin: float) -> void:
 	parent.add_child(node)
 
 
-func _panel(color: Color, radius: int = 22) -> PanelContainer:
+func _panel(
+	color: Color,
+	radius: int = 22,
+	border: Color = Color(GREEN, 0.42),
+) -> PanelContainer:
 	var panel := PanelContainer.new()
-	var style := StyleBoxFlat.new()
-	style.bg_color = color
-	style.border_color = Color(CYAN, 0.28)
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(radius)
-	panel.add_theme_stylebox_override("panel", style)
+	panel.add_theme_stylebox_override(
+		"panel",
+		SpiderUiTheme.panel_style(color, radius, border),
+	)
 	return panel
 
 
@@ -861,6 +1024,12 @@ func _setting_heading(text_value: String) -> Label:
 	return label
 
 
+func _compact_heading(text_value: String) -> Label:
+	var label := _label(text_value, 13, CYAN)
+	label.custom_minimum_size.y = 18.0
+	return label
+
+
 func _setting_description(text_value: String) -> Label:
 	var label := _label(text_value, 18, MUTED)
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -886,11 +1055,11 @@ func _button(
 	button.add_theme_color_override("font_pressed_color", DEEP)
 	button.add_theme_stylebox_override("normal", _button_style(PANEL_SOFT, accent))
 	button.add_theme_stylebox_override(
-		"hover", _button_style(Color(0.08, 0.28, 0.32), accent))
+		"hover", _button_style(SpiderUiTheme.PANEL_RAISED, accent))
 	button.add_theme_stylebox_override("focus", _button_style(PANEL_SOFT, INK, 3))
 	button.add_theme_stylebox_override("pressed", _button_style(accent, accent))
 	button.add_theme_stylebox_override(
-		"disabled", _button_style(Color(0.08, 0.12, 0.15), MUTED))
+		"disabled", _button_style(Color("101812"), Color(MUTED, 0.34)))
 	_buttons[button_name] = button
 	return button
 
@@ -900,14 +1069,7 @@ func _button_style(
 	border: Color,
 	width: int = 2,
 ) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = fill
-	style.border_color = border
-	style.set_border_width_all(width)
-	style.set_corner_radius_all(14)
-	style.content_margin_left = 18.0
-	style.content_margin_right = 18.0
-	return style
+	return SpiderUiTheme.button_style(fill, border, width)
 
 
 func _toggle(text_value: String) -> CheckButton:
@@ -917,10 +1079,3 @@ func _toggle(text_value: String) -> CheckButton:
 	toggle.add_theme_font_size_override("font_size", 23)
 	toggle.add_theme_color_override("font_color", INK)
 	return toggle
-
-
-func _style_option_button(option: OptionButton) -> void:
-	option.add_theme_font_size_override("font_size", 22)
-	option.add_theme_color_override("font_color", INK)
-	option.add_theme_stylebox_override(
-		"normal", _button_style(PANEL_SOFT, ORANGE))
