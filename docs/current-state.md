@@ -165,6 +165,17 @@ without a reported regression.
 
 **Verification**
 
+- PR #38 `game-quality` run
+  [30552161868](https://github.com/menno420/spider-swing/actions/runs/30552161868)
+  passes clean import, front-end boot, and all 91 contracts on Godot
+  `4.7.1.stable.official.a13da4feb` at source
+  `d3c14c95f84aa8a749a5a4694ba4fabd3bdbe389`. Its physics contract proves the
+  2.0-second/520 px base budget, the bounded max-shared-upgrade budget, and
+  idempotent progress resolution. Android run
+  [30552165170](https://github.com/menno420/spider-swing/actions/runs/30552165170)
+  produced verified
+  [artifact 8763246890](https://github.com/menno420/spider-swing/actions/runs/30552165170/artifacts/8763246890),
+  build `0.12.0-reel-resource-test`.
 - PR #36 `game-quality` run
   [30535470384](https://github.com/menno420/spider-swing/actions/runs/30535470384)
   passes clean import, front-end boot, and all 90 contracts on Godot
@@ -529,14 +540,13 @@ without a reported regression.
 
 ## In flight
 
-Phase 0.25 is delivered through PR #38 as one isolated Reel comparison. The
-level-zero Balanced meter now lasts 2.0 seconds at 260 px/s; maxed Silk Winder
-and Silk Reserve reach about 2.48 seconds at 338 px/s. Runtime configuration
-resolves from a fresh preset so modifiers cannot compound during mount/preset
-paths, and DEBUG exposes both Reel speed and full-meter time. Targeting,
-automatic take-up, Burst/Dive, the 5000 m speed ramp, routes, progression levels,
-save schema, and course geometry remain unchanged. Anchor Drive's proposed
-second stored Burst remains deferred until this Reel build is judged on-device.
+No further implementation should start after PR #38 until its isolated Reel
+comparison is judged on-device. The level-zero Balanced meter now lasts 2.0
+seconds at 260 px/s; maxed Silk Winder and Silk Reserve reach about 2.48 seconds
+at 338 px/s. Targeting, automatic take-up, Burst/Dive, the 5000 m speed ramp,
+routes, progression levels, save schema, and course geometry remain unchanged.
+Anchor Drive's proposed second stored Burst remains deferred until this Reel
+build is approved.
 
 ## Recently shipped (newest first)
 
