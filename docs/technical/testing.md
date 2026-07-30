@@ -87,13 +87,14 @@ Run directly:
 godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-88 checks, grouped so one subsystem failure never hides the rest:
+89 checks, grouped so one subsystem failure never hides the rest:
 
 - engine, main-scene, input-action, 60 Hz, renderer/viewport, Android preset,
   inward-dependency, and no-autoload bootstrap contracts;
-- forty-three deterministic physics contracts, including extended arbitrary-point
+- forty-four deterministic physics contracts, including extended arbitrary-point
   solid attachment, larger aim forgiveness, momentum preservation, speed-neutral
-  Reel and automatic take-up, exact Burst/Dive distance shares and minimum
+  Reel and automatic take-up, maxed Balanced Flow producing a shorter web,
+  exact Burst/Dive distance shares and minimum
   Burst travel, recovery-web interruption,
   detached cooldown double-tap fallback, explicit release/retarget behavior,
   polygon anchoring/collision, a 1000 m runway, smooth 5000 m speed ramp, and

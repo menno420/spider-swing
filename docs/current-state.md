@@ -62,8 +62,10 @@ without a reported regression.
   idempotent settlement path.
 - Reel shortens the authoritative rope length (400 px/s in Balanced) and spends
   energy without adding a separate inward acceleration or minimum-speed
-  correction. Natural take-up retains 85% of inward slack by default, also
-  without adding velocity. Anchor Burst crosses 40% of the resolved starting
+  correction. Natural take-up shortens the web by 85% of each inward movement
+  by default, also without adding velocity. Balanced Flow raises that share to
+  91% at maximum level, leaving less slack and a shorter web. Anchor Burst
+  crosses 40% of the resolved starting
   distance with 80 px minimum travel over 0.20 seconds. A lower target becomes
   a one-shot 40% Dive Pull over 0.16 seconds
   and never leaves a rope. Both paths retain bounded tangential carry, use fixed
@@ -153,6 +155,17 @@ without a reported regression.
 
 **Verification**
 
+- PR #34 `game-quality` run
+  [30533495192](https://github.com/menno420/spider-swing/actions/runs/30533495192)
+  passes clean import, front-end boot, and all 89 contracts on Godot
+  `4.7.1.stable.official.a13da4feb` at source
+  `748aa12a54430cedf38ca2a3dee555610328f69a`. Its new deterministic contract
+  proves maxed Balanced Flow raises automatic take-up from 85% to 91% and
+  leaves a shorter web for identical inward movement. Android run
+  [30533495206](https://github.com/menno420/spider-swing/actions/runs/30533495206)
+  produced verified
+  [artifact 8755663459](https://github.com/menno420/spider-swing/actions/runs/30533495206/artifacts/8755663459),
+  build `0.11.2-balanced-flow-copy-test`.
 - PR #32 `game-quality` run
   [30531249630](https://github.com/menno420/spider-swing/actions/runs/30531249630)
   passes architecture fixtures/scan, clean import, front-end boot, and all 88
@@ -170,7 +183,7 @@ without a reported regression.
   [30485134026](https://github.com/menno420/spider-swing/actions/runs/30485134026)
   passes the complete 82-check suite on Godot 4.7.1 at source
   `06a4c65aeb87b4d47a54423f9cd56ce87dcaaba5`.
-- `tests/test_runner.gd` — 88 declared checks: forty-three
+- `tests/test_runner.gd` — 89 declared checks: forty-four
   deterministic physics, twenty-one GUI-owned mobile HUD, fourteen front-end
   navigation/settings/progression, plus bootstrap and exact build-version
   contracts. Physics covers exact 40%/40% pull shares,

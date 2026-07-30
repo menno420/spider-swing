@@ -511,3 +511,21 @@ never edit.
   `build-info.txt` proves version `0.11.1-mobile-route-polish-test`, exact
   source, dev package, and display name `Spider Swing Mobile Route Polish
   (dev)`.
+- 2026-07-30 · capability · `owner-live` · **Balanced Flow's shorter-web
+  direction is explicit and solver-proven through the full Android path** · PR
+  #34 `game-quality` run
+  [30533495192](https://github.com/menno420/spider-swing/actions/runs/30533495192)
+  passed all 89 contracts at source
+  `748aa12a54430cedf38ca2a3dee555610328f69a`; the new outcome contract proves
+  maxed take-up rises from 85% to 91% and leaves less slack for identical inward
+  movement. Android run
+  [30533495206](https://github.com/menno420/spider-swing/actions/runs/30533495206)
+  produced
+  [artifact 8755663459](https://github.com/menno420/spider-swing/actions/runs/30533495206/artifacts/8755663459),
+  61,392,008 bytes with digest
+  `sha256:a58a96b1d40f2079a5fc8ea7cf44c106c89e3e4b7842d4f0c0e35471df6c223f`.
+  The downloaded ZIP matched that digest and passed archive validation. Its
+  61,795,462-byte APK passed archive validation with SHA-256
+  `353c469f360ec34afd69d297c3c1cfb9bba744dfa18c3bb4d6a3f6a0c865d473`;
+  `build-info.txt` proves version `0.11.2-balanced-flow-copy-test`, exact source,
+  dev package, and display name `Spider Swing Balanced Flow Copy (dev)`.
