@@ -109,11 +109,12 @@ Burst boost.
   collision. DEBUG → OVERLAYS
   independently enables exact collision outlines or web-target guides; both
   load off.
-- Base Reel-In is an isolated comparison at 260 px/s with 2.0 seconds of full
-  energy: enough to shorten about 520 px, rather than more than the complete
-  usable web span. Maxing Silk Winder and Silk Reserve reaches about 338 px/s,
-  2.48 seconds, and 838 px of total shortening. Reel still adds no acceleration
-  or forward-speed correction. Burst remains 40% with 80 px minimum useful
+- Base Reel-In is an isolated comparison at 320 px/s with 2.0 seconds of full
+  energy: enough to shorten about 640 px while remaining a finite resource.
+  Maxing Silk Winder reaches 416 px/s inside the owner-tested 400–450 px/s
+  response band; maxing Silk Reserve as well extends the meter to 2.48 seconds.
+  Reel still adds no acceleration or forward-speed correction. Burst remains
+  40% with 80 px minimum useful
   travel. Shared fly upgrades can improve Reel rate, Burst share, minimum Burst
   travel, Reel capacity, and Reel recovery; two identity tracks per spider
   reinforce its existing trade-off.

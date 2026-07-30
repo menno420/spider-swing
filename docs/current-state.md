@@ -63,11 +63,12 @@ without a reported regression.
   collision-checked position with a 0.9-second obstacle shield. The charge is
   visible in the HUD; the next lethal contact follows the ordinary death and
   idempotent settlement path.
-- Reel shortens the authoritative rope length (260 px/s in Balanced) and spends
+- Reel shortens the authoritative rope length (320 px/s in Balanced) and spends
   energy without adding a separate inward acceleration, minimum-speed
   correction, or forward boost. The level-zero meter lasts 2.0 seconds and
-  provides about 520 px total shortening; maxed Silk Winder plus Silk Reserve
-  reaches about 338 px/s, 2.48 seconds, and 838 px. Natural take-up shortens the
+  provides about 640 px total shortening; maxed Garden Silk Winder reaches
+  416 px/s inside the owner-tested 400–450 px/s response band. Maxed Silk
+  Reserve extends that rate to 2.48 seconds. Natural take-up shortens the
   web by 85% of each inward movement
   by default, also without adding velocity. Balanced Flow raises that share to
   91% at maximum level, leaving less slack and a shorter web. Anchor Burst
@@ -165,6 +166,18 @@ without a reported regression.
 
 **Verification**
 
+- PR #40 `game-quality` run
+  [30559186244](https://github.com/menno420/spider-swing/actions/runs/30559186244)
+  passes clean import, front-end boot, and all 91 contracts on Godot
+  `4.7.1.stable.official.a13da4feb` at source
+  `dcd3cee27fad6bb59cca0b03a5b132a09fad9fea`. Its Reel contract proves the
+  2.0-second/640 px level-zero candidate, named-preset ordering, and max Garden
+  Silk Winder's 416 px/s result inside the owner-tested 400–450 px/s band.
+  Android run
+  [30559186273](https://github.com/menno420/spider-swing/actions/runs/30559186273)
+  produced verified
+  [artifact 8766128692](https://github.com/menno420/spider-swing/actions/runs/30559186273/artifacts/8766128692),
+  build `0.12.1-reel-speed-correction-test`.
 - PR #38 `game-quality` run
   [30552161868](https://github.com/menno420/spider-swing/actions/runs/30552161868)
   passes clean import, front-end boot, and all 91 contracts on Godot
@@ -540,16 +553,21 @@ without a reported regression.
 
 ## In flight
 
-No further implementation should start after PR #38 until its isolated Reel
-comparison is judged on-device. The level-zero Balanced meter now lasts 2.0
-seconds at 260 px/s; maxed Silk Winder and Silk Reserve reach about 2.48 seconds
-at 338 px/s. Targeting, automatic take-up, Burst/Dive, the 5000 m speed ramp,
+PR #40 corrects only Reel shortening speed from the isolated 0.12.0 device
+comparison. The level-zero Balanced meter remains 2.0 seconds but rises from
+260 to 320 px/s; maxed Garden Silk Winder rises from 338 to 416 px/s. Targeting,
+automatic take-up, Reel capacity/recovery, Burst/Dive, the 5000 m speed ramp,
 routes, progression levels, save schema, and course geometry remain unchanged.
-Anchor Drive's proposed second stored Burst remains deferred until this Reel
-build is approved.
+Anchor Drive's proposed second stored Burst remains deferred until this
+corrected Reel build is approved.
 
 ## Recently shipped (newest first)
 
+- **2026-07-30 — Device-led Reel speed correction (PR #40).** Keeps the
+  finite two-second level-zero resource from PR #38 but raises Balanced Reel
+  from 260 to 320 px/s and max Garden Silk Winder from 338 to 416 px/s. Named
+  debug presets, direct tuning values, deterministic contracts, and the Android
+  build agree; all unrelated movement and progression systems remain unchanged.
 - **2026-07-30 — Bounded Reel resource comparison (PR #38).** Reduces the
   level-zero shortening budget from about 1,333 px to 520 px, gives maxed shared
   Reel tracks meaningful bounded headroom to about 838 px, prevents repeated

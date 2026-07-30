@@ -278,3 +278,17 @@
   change improved or harmed control.
 - provenance: Menno's progression/Reel direction and the Reel resource
   rebaseline session
+
+## [D-0020] Correct Reel response without restoring unlimited capacity
+
+- status: decided
+- date: 2026-07-30
+- verdict: Raise level-zero Balanced Reel from 260 to 320 px/s while retaining
+  the 2.0-second meter. Maxed Garden Silk Winder resolves to 416 px/s, inside
+  the owner-tested 400–450 px/s response band.
+- why: The isolated 0.12.0 device comparison proved that rates below 400 px/s
+  make late-course height changes nearly impossible and that 260 px/s leaves
+  the unupgraded spider too weak. Correcting rate alone preserves the useful
+  capacity limit and keeps the result attributable; restoring the former
+  3.33-second meter would reintroduce the unlimited-resource problem.
+- provenance: Menno's 0.12.0 device playtest after PR #38

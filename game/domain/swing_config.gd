@@ -10,7 +10,7 @@ const SCHEMA_VERSION := 10
 const PRESET_BALANCED := &"balanced_candidate"
 const PRESET_WEIGHTY := &"weighty_candidate"
 const PRESET_AGILE := &"agile_candidate"
-const BASE_REEL_RETRACTION_RATE := 260.0
+const BASE_REEL_RETRACTION_RATE := 320.0
 const BASE_REEL_ENERGY_CAPACITY := 60.0
 const BASE_REEL_DRAIN_RATE := 30.0
 const BASE_REEL_REGENERATION_RATE := 18.0
@@ -150,7 +150,7 @@ func apply_preset(name: StringName) -> void:
 			air_drag = 0.04
 			rope_elasticity_allowance = 7.0
 			rope_damping = 0.025
-			reel_retraction_rate = 275.0
+			reel_retraction_rate = 335.0
 			reel_drain_rate = 32.0
 		PRESET_AGILE:
 			gravity = 980.0
@@ -161,7 +161,7 @@ func apply_preset(name: StringName) -> void:
 			air_drag = 0.07
 			rope_elasticity_allowance = 13.0
 			rope_damping = 0.05
-			reel_retraction_rate = 290.0
+			reel_retraction_rate = 350.0
 			reel_drain_rate = 35.0
 		_:
 			preset_name = PRESET_BALANCED

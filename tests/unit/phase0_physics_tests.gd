@@ -72,7 +72,7 @@ static func _test_presets(failures: PackedStringArray) -> int:
 	var balanced := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 	if not is_equal_approx(balanced.gravity, 1120.0) or \
 			not is_equal_approx(balanced.dive_distance_fraction, 0.40) or \
-			not is_equal_approx(balanced.reel_retraction_rate, 260.0) or \
+			not is_equal_approx(balanced.reel_retraction_rate, 320.0) or \
 			not is_equal_approx(balanced.reel_energy_capacity, 60.0) or \
 			not is_equal_approx(balanced.burst_distance_fraction, 0.40) or \
 			not is_equal_approx(balanced.burst_minimum_distance, 80.0) or \
@@ -93,9 +93,17 @@ static func _test_reel_resource_baseline_and_resolution(
 	var base_seconds := base.reel_energy_capacity / base.reel_drain_rate
 	var base_shortening_budget := base_seconds * base.reel_retraction_rate
 	if not is_equal_approx(base_seconds, 2.0) or \
-			not is_equal_approx(base_shortening_budget, 520.0):
+			not is_equal_approx(base_shortening_budget, 640.0):
 		failures.append(
-			"level-zero Reel is not the bounded 2.0 s / 520 px baseline")
+			"level-zero Reel is not the corrected 2.0 s / 640 px baseline")
+		return 0
+
+	var weighty := SwingConfig.from_preset(SwingConfig.PRESET_WEIGHTY)
+	var agile := SwingConfig.from_preset(SwingConfig.PRESET_AGILE)
+	if not is_equal_approx(weighty.reel_retraction_rate, 335.0) or \
+			not is_equal_approx(agile.reel_retraction_rate, 350.0):
+		failures.append(
+			"named Reel presets lost their response ordering after correction")
 		return 0
 
 	var progress := PlayerProgress.defaults()
@@ -113,12 +121,13 @@ static func _test_reel_resource_baseline_and_resolution(
 		resolved.reel_energy_capacity / resolved.reel_drain_rate)
 	var max_shortening_budget := (
 		max_seconds * resolved.reel_retraction_rate)
-	if not is_equal_approx(resolved.reel_retraction_rate, 338.0) or \
+	if not is_equal_approx(resolved.reel_retraction_rate, 416.0) or \
 			not is_equal_approx(max_seconds, 2.48) or \
-			absf(max_shortening_budget - 838.24) > 0.01 or \
-			resolved.reel_retraction_rate >= 400.0:
+			absf(max_shortening_budget - 1031.68) > 0.01 or \
+			resolved.reel_retraction_rate < 400.0 or \
+			resolved.reel_retraction_rate > 450.0:
 		failures.append(
-			"maxed Reel does not provide the intended bounded upgrade headroom")
+			"maxed Garden Reel is outside the owner-tested 400–450 px/s band")
 		return 0
 
 	var reused := SpiderCatalog.resolved_config(

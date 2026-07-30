@@ -4,9 +4,9 @@ extends SceneTree
 const MAIN_SCENE_PATH := "res://game/bootstrap/main.tscn"
 const EXPORT_PRESETS_PATH := "res://export_presets.cfg"
 const ANDROID_WORKFLOW_PATH := "res://.github/workflows/android-debug.yml"
-const BUILD_VERSION := "0.12.0-reel-resource-test"
-const ANDROID_VERSION_CODE := 27
-const ANDROID_APP_NAME := "Spider Swing Reel Resource (dev)"
+const BUILD_VERSION := "0.12.1-reel-speed-correction-test"
+const ANDROID_VERSION_CODE := 28
+const ANDROID_APP_NAME := "Spider Swing Reel Speed Correction (dev)"
 const EXPECTED_CHECK_COUNT := 91
 const REQUIRED_INPUT_ACTIONS := [
 	"web_action", "reel_in", "burst_action", "pause", "restart_run",

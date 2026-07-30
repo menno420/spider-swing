@@ -47,18 +47,20 @@ new level 4, and old level 5 becomes new level 20. Unknown track IDs are ignored
 The total fly cost of a full track remains close to the previous prototype while
 individual purchases become much smaller.
 
-The shared Reel cap is deliberately bounded below the former maximized Garden
-Spider track. Reel does not inject velocity, but faster radius shortening can
-still feel like a large speed gain around the arc. This is a reversible balance
-decision that needs an owner device comparison with a migrated near-max save.
+The shared Reel duration remains deliberately bounded below the former
+3.33-second base meter. Reel does not inject velocity, but faster radius
+shortening can still feel like a large speed gain around the arc. The isolated
+0.12.0 device comparison proved that 260 px/s was too weak; the corrected
+comparison raises Garden from 320 px/s at level zero to 416 px/s with maxed
+Silk Winder while preserving the finite 2.0–2.48-second duration range.
 
 ## Structured order after this build
 
 1. **Device-balance the foundation.** Build
-   `0.12.0-reel-resource-test` isolates the first comparison: level-zero Reel
-   falls from 400 px/s and 3.33 seconds to 260 px/s and 2.0 seconds, while maxed
-   Silk Winder + Silk Reserve reaches about 338 px/s and 2.48 seconds. It also
-   resolves every preset/profile/upgrade combination from a fresh base so
+   `0.12.1-reel-speed-correction-test` applies the first comparison's evidence:
+   level-zero Reel uses 320 px/s for 2.0 seconds, while maxed Garden Silk Winder
+   reaches 416 px/s and maxed Silk Reserve extends the meter to 2.48 seconds.
+   Every preset/profile/upgrade combination still resolves from a fresh base so
    repeated mount paths cannot compound capacity or recovery. Compare level 0,
    migrated mid-level, and migrated max Garden Spider before adding a mechanic-
    changing breakthrough.
