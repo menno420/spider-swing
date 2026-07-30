@@ -1,0 +1,1 @@
+- `claude/reel-resource-rebaseline` · **rebaseline Reel resource and deterministic upgrade application** · game/domain + game/simulation + tests + balance docs · 2026-07-30
