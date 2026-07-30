@@ -156,7 +156,7 @@ const PARAMETERS := [
 		"minimum": 80.0,
 		"maximum": 720.0,
 		"step": 20.0,
-		"quick": [220.0, 260.0, 340.0, 400.0],
+		"quick": [260.0, 320.0, 400.0, 440.0],
 	},
 	{
 		"id": &"reel_capacity_seconds",

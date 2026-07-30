@@ -48,11 +48,11 @@ velocity. That `RELEASE` behavior remains the default. DEBUG can switch to
 `RETARGET`, where tapping another valid upper solid atomically replaces the web;
 an empty-world tap still releases.
 
-Reel immediately shortens the authoritative rope length at 260 px/s in the
+Reel immediately shortens the authoritative rope length at 320 px/s in the
 Balanced candidate while energy is available. A full level-zero meter lasts
-2.0 seconds and can therefore remove about 520 px. Maxing Silk Winder and Silk
-Reserve raises those comparison values to about 338 px/s, 2.48 seconds, and
-838 px. The constraint removes outward motion and applies capped position
+2.0 seconds and can therefore remove about 640 px. Maxing Silk Winder raises
+the Garden response to 416 px/s; maxing Silk Reserve as well extends that rate
+to 2.48 seconds. The constraint removes outward motion and applies capped position
 correction as the rope tightens; Reel does not add radial acceleration, a
 minimum inward speed, or a forward boost. That keeps its job distinct: change
 the swing radius without replacing manual swing timing.
@@ -277,7 +277,7 @@ product decisions.
 
 ## Owner device playtest
 
-Install `0.12.0-reel-resource-test` after uninstalling the previous
+Install `0.12.1-reel-speed-correction-test` after uninstalling the previous
 ephemerally signed dev app, then check:
 
 1. start a run without touching the screen for one second; the ordinary opening
@@ -299,66 +299,68 @@ ephemerally signed dev app, then check:
 9. use DEBUG `TAP RELEASE`, then `TAP RETARGET`, and decide whether deliberate
    two-tap release/attach or atomic one-tap replacement feels more natural;
 10. use level-zero Garden, hold Reel continuously, and confirm its full ring
-    lasts about two seconds, shortens roughly half a maximum-length web, and
-    changes height/arc without a separate forward shove;
-11. compare several starting web lengths and confirm base Burst covers roughly
+    lasts about two seconds, responds at 320 px/s, and changes height/arc
+    without a separate forward shove;
+11. max Silk Winder and confirm the Garage/DEBUG value resolves to 416 px/s and
+    supplies enough deliberate high↔low correction near 5000 m;
+12. compare several starting web lengths and confirm base Burst covers roughly
     40% while a close valid target still provides its visible minimum travel;
-12. use a lower rail target twice without attaching above between attempts; the
+13. use a lower rail target twice without attaching above between attempts; the
     second must say that an upper web is required, not display a timer;
-13. attach a ceiling or upper obstacle, then immediately Dive during an active
+14. attach a ceiling or upper obstacle, then immediately Dive during an active
     Burst cooldown; confirm the downward pull works and spends its charge;
-14. deliberately Burst toward a badly timed obstacle and confirm the control
+15. deliberately Burst toward a badly timed obstacle and confirm the control
     remains powerful but unsafe;
-15. use each DEBUG section to change range, Burst cooldown, Burst %, Dive %, both
+16. use each DEBUG section to change range, Burst cooldown, Burst %, Dive %, both
     durations, Reel speed, and Full Reel time; confirm no setting requires
     carousel searching;
-16. compare `Keep shortened rope` off/on and several retained percentages; when the spider moves
+17. compare `Keep shortened rope` off/on and several retained percentages; when the spider moves
     toward the anchor, the shorter web should mostly remain short without a speed
     spike;
-17. compare rails off, rails safe, and rails lethal; verify continuous shaped
+18. compare rails off, rails safe, and rails lethal; verify continuous shaped
     rails open usable high/low bypasses and only occasionally close into a small
     gap;
-18. confirm no large middle-lane challenge appears before roughly 1000 m, then
+19. confirm no large middle-lane challenge appears before roughly 1000 m, then
     judge whether later leaf, vine, seed-pod, and root patterns remain readable;
-19. compare floating obstacle sizes around 85%, 90%, and 95%, then vary gate
+20. compare floating obstacle sizes around 85%, 90%, and 95%, then vary gate
     opening size; every root passage must remain steerable and its collision
     edges must remain aligned with the silhouettes;
-20. open DEBUG → OVERLAYS and verify collision outlines and web-target guides
+21. open DEBUG → OVERLAYS and verify collision outlines and web-target guides
     begin off, can be enabled independently, and return off in a new run;
-21. deliberately hit a lethal obstacle once and verify `RESCUE READY` becomes
+22. deliberately hit a lethal obstacle once and verify `RESCUE READY` becomes
     `RESCUE SPENT`; the next lethal hit must end the run;
-22. compare all five Garage profiles, especially Skitter's smaller collision
+23. compare all five Garage profiles, especially Skitter's smaller collision
     radius, Anchorite's weight, Ballooner's visible bounded glide, and
     Springtail's charged moderate rail bounce;
-23. on maxed Balanced Flow, confirm the description says automatic take-up
+24. on maxed Balanced Flow, confirm the description says automatic take-up
     keeps less slack and shortens the web; then spend laboratory flies through
     levels 4→5 on one Shop track, confirm the button says `BREAKTHROUGH ×2`,
     the card says that level 5 grants two tuning steps, the resolved value
     changes twice, the silk knot fills, and the level survives restart;
-24. create a six-piece Course Lab pattern, playtest it after the opening, return
+25. create a six-piece Course Lab pattern, playtest it after the opening, return
     Home, and confirm the saved pattern remains;
-25. follow fly arcs, collect Burst Frenzy, use multiple Bursts before it expires,
+26. follow fly arcs, collect Burst Frenzy, use multiple Bursts before it expires,
     and confirm it does not bypass the upper-web requirement for another Dive.
-26. compare full-speed distances around 3000/5000/6500 m and confirm the default
+27. compare full-speed distances around 3000/5000/6500 m and confirm the default
     no longer feels near maximum during the opening kilometre;
-27. spend Springtail's shell on a moderate rail hit, confirm a second hit kills,
+28. spend Springtail's shell on a moderate rail hit, confirm a second hit kills,
     then attach an upper web and verify the shell becomes ready again;
-28. verify Springtail still dies to obstacles, an excessive rail impact, or
+29. verify Springtail still dies to obstacles, an excessive rail impact, or
     contact caused by a Burst/Dive pull.
-29. compare the spider at steady speed, during Reel, and during Burst on the
+30. compare the spider at steady speed, during Reel, and during Burst on the
     1040×480 device recording path; confirm it no longer vibrates or leaves the
     attached web behind, and that the restrained poses remain readable.
-30. swipe Shop and Settings starting on the purchase button, description text,
+31. swipe Shop and Settings starting on the purchase button, description text,
     milestone row, panel edge, toggles, and empty card space; every drag should
     move one smooth inertial list, while a short tap should still activate only
     its original control. Then compare Classic, Dew, and Ember in the live Silk
     preview;
-31. after 2000 m, follow both seven-fly weave curves and confirm the shorter,
+32. after 2000 m, follow both seven-fly weave curves and confirm the shorter,
     wider-spaced growth asks for a readable high→low or low→high change without
     clipping either obstacle or showing a rectangular art cut;
-32. pass the small silk-suspended burr above and below; its visible bramble,
+33. pass the small silk-suspended burr above and below; its visible bramble,
     collision outline, and safe support thread must agree.
-33. compare level-zero Garden against maxed Silk Winder + Silk Reserve. The
+34. compare level-zero Garden against maxed Silk Winder + Silk Reserve. The
     maxed version should offer clearly stronger and longer arc correction, but
     neither version should feel mandatory for every ordinary route.
 

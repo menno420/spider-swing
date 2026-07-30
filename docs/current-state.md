@@ -63,11 +63,12 @@ without a reported regression.
   collision-checked position with a 0.9-second obstacle shield. The charge is
   visible in the HUD; the next lethal contact follows the ordinary death and
   idempotent settlement path.
-- Reel shortens the authoritative rope length (260 px/s in Balanced) and spends
+- Reel shortens the authoritative rope length (320 px/s in Balanced) and spends
   energy without adding a separate inward acceleration, minimum-speed
   correction, or forward boost. The level-zero meter lasts 2.0 seconds and
-  provides about 520 px total shortening; maxed Silk Winder plus Silk Reserve
-  reaches about 338 px/s, 2.48 seconds, and 838 px. Natural take-up shortens the
+  provides about 640 px total shortening; maxed Garden Silk Winder reaches
+  416 px/s inside the owner-tested 400–450 px/s response band. Maxed Silk
+  Reserve extends that rate to 2.48 seconds. Natural take-up shortens the
   web by 85% of each inward movement
   by default, also without adding velocity. Balanced Flow raises that share to
   91% at maximum level, leaving less slack and a shorter web. Anchor Burst
@@ -540,13 +541,13 @@ without a reported regression.
 
 ## In flight
 
-No further implementation should start after PR #38 until its isolated Reel
-comparison is judged on-device. The level-zero Balanced meter now lasts 2.0
-seconds at 260 px/s; maxed Silk Winder and Silk Reserve reach about 2.48 seconds
-at 338 px/s. Targeting, automatic take-up, Burst/Dive, the 5000 m speed ramp,
+PR #40 corrects only Reel shortening speed from the isolated 0.12.0 device
+comparison. The level-zero Balanced meter remains 2.0 seconds but rises from
+260 to 320 px/s; maxed Garden Silk Winder rises from 338 to 416 px/s. Targeting,
+automatic take-up, Reel capacity/recovery, Burst/Dive, the 5000 m speed ramp,
 routes, progression levels, save schema, and course geometry remain unchanged.
-Anchor Drive's proposed second stored Burst remains deferred until this Reel
-build is approved.
+Anchor Drive's proposed second stored Burst remains deferred until this
+corrected Reel build is approved.
 
 ## Recently shipped (newest first)
 
