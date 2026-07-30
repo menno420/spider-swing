@@ -14,6 +14,8 @@ static func run() -> Dictionary:
 	passed += _test_settings_codec_round_trip(failures)
 	passed += _test_settings_repository_round_trip(failures)
 	passed += _test_progression_is_idempotent_and_persistent(failures)
+	passed += _test_checkpoint_migration_and_practice_are_noncompetitive(
+		failures)
 	passed += _test_legacy_upgrade_levels_migrate_proportionally(failures)
 	passed += _test_garage_shop_and_creator_are_real_routes(failures)
 	passed += _test_garage_uses_spider_cosmetic_rails(failures)
@@ -46,7 +48,8 @@ static func _test_primary_routes_are_real_buttons(
 	var view := FrontEndView.new()
 	view.bind_state(state)
 	for button_name: StringName in [
-		&"Play", &"Garage", &"Shop", &"Tutorial", &"Creator", &"Settings",
+		&"Play", &"Garage", &"Shop", &"Tutorial", &"Creator", &"Practice",
+		&"Settings",
 	]:
 		var button := view.front_end_button(button_name)
 		if button == null or button.mouse_filter != Control.MOUSE_FILTER_STOP:
@@ -302,6 +305,81 @@ static func _test_progression_is_idempotent_and_persistent(
 	if restored.to_dictionary() != progress.to_dictionary():
 		failures.append("SaveRepository did not restore progression")
 		return 0
+	return 1
+
+
+static func _test_checkpoint_migration_and_practice_are_noncompetitive(
+	failures: PackedStringArray,
+) -> int:
+	var migrated := PlayerProgress.from_dictionary({
+		"schema_version": 4,
+		"best_distance_pixels":
+			CourseRegionCatalog.REGION_LENGTH_PIXELS + 10.0,
+		"total_flies": 12,
+		"spendable_flies": 12,
+		"upgrade_levels": {"classic_reel": 5},
+	})
+	if not migrated.has_region_checkpoint(
+		CourseRegionCatalog.BRAMBLE_CANOPY) or \
+			migrated.has_region_checkpoint(CourseRegionCatalog.SILK_HOLLOW) or \
+			migrated.upgrade_level(&"classic_reel") != 5:
+		failures.append(
+			"schema-4 checkpoint migration changed an existing upgrade level")
+		return 0
+	var restored := PlayerProgress.from_dictionary(migrated.to_dictionary())
+	if restored.to_dictionary() != migrated.to_dictionary():
+		failures.append("schema-5 checkpoint identity did not round-trip")
+		return 0
+
+	var service := ProgressionService.new()
+	var before := migrated.to_dictionary()
+	var practice := RunSettlement.create(
+		"practice-settlement",
+		CourseRegionCatalog.REGION_LENGTH_PIXELS * 3.0,
+		99,
+		&"obstacle",
+		SwingLabSession.RUN_PRACTICE,
+		CourseRegionCatalog.REGION_LENGTH_PIXELS,
+		false,
+		77,
+	)
+	var result := service.apply_settlement(migrated, practice)
+	var after := migrated.to_dictionary()
+	if not bool(result["applied"]) or \
+			int(result["flies_granted"]) != 0 or \
+			after["total_flies"] != before["total_flies"] or \
+			after["spendable_flies"] != before["spendable_flies"] or \
+			after["best_distance_pixels"] != before["best_distance_pixels"]:
+		failures.append("practice settlement changed economy or records")
+		return 0
+
+	var state := FrontEndState.new()
+	state.configure(PlayerSettings.defaults(), migrated)
+	var requests: Array[StringName] = []
+	state.practice_play_requested.connect(func(
+		_settings: PlayerSettings,
+		region_id: StringName,
+		_start_distance: float,
+	) -> void:
+		requests.append(region_id))
+	var view := FrontEndView.new()
+	view.bind_state(state)
+	view.front_end_button(&"Practice").pressed.emit()
+	var bramble := view.front_end_button(&"PracticeBrambleCanopy")
+	var hollow := view.front_end_button(&"PracticeSilkHollow")
+	if state.screen != FrontEndState.Screen.PRACTICE or \
+			bramble == null or hollow == null or \
+			bramble.disabled or not hollow.disabled:
+		failures.append("practice route does not expose reached and locked regions")
+		view.free()
+		return 0
+	bramble.pressed.emit()
+	hollow.pressed.emit()
+	if requests != [CourseRegionCatalog.BRAMBLE_CANOPY]:
+		failures.append("locked checkpoint emitted a practice start")
+		view.free()
+		return 0
+	view.free()
 	return 1
 
 

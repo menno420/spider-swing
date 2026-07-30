@@ -38,6 +38,7 @@ var _corridor_contours_enabled: bool = true
 var _corridor_clearance_scale: float = 1.0
 var _corridor_tight_gap_scale: float = 1.0
 var _tight_corridor_start_distance: float = 20000.0
+var _course_seed: int = 0
 
 
 func reset(
@@ -50,6 +51,8 @@ func reset(
 	corridor_clearance_scale: float = 1.0,
 	corridor_tight_gap_scale: float = 1.0,
 	tight_corridor_start_distance: float = 20000.0,
+	course_seed: int = 0,
+	initial_world_x: float = SimulationWorld.START_POSITION.x,
 ) -> void:
 	_middle_hazard_start_distance = middle_hazard_start_distance
 	_edge_obstacle_scale = edge_obstacle_scale
@@ -60,8 +63,9 @@ func reset(
 	_corridor_clearance_scale = corridor_clearance_scale
 	_corridor_tight_gap_scale = corridor_tight_gap_scale
 	_tight_corridor_start_distance = tight_corridor_start_distance
+	_course_seed = course_seed
 	_geometry = CourseGeometry.new()
-	update_for_position(SimulationWorld.START_POSITION.x)
+	update_for_position(initial_world_x)
 
 
 func update_for_position(
@@ -182,6 +186,7 @@ func pattern_id_for_chunk(chunk_index: int) -> StringName:
 	return CoursePatternCatalog.pattern_id_for_chunk(
 		chunk_index,
 		distance_at_chunk,
+		_course_seed,
 	)
 
 
@@ -302,6 +307,7 @@ func _route_plan(
 	var pattern := CoursePatternCatalog.pattern_for_chunk(
 		chunk_index,
 		maxf(0.0, float(chunk_index) * CHUNK_WIDTH - START_X),
+		_course_seed,
 	)
 	var lane := StringName(pattern.get("lane", ROUTE_CENTRE))
 	if pattern_id == &"tight_rail" and allow_tight_corridor:

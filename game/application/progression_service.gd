@@ -17,19 +17,42 @@ func apply_settlement(
 	progress.applied_settlement_ids.append(settlement.settlement_id)
 	while progress.applied_settlement_ids.size() > SETTLEMENT_HISTORY_LIMIT:
 		progress.applied_settlement_ids.remove_at(0)
-	var collected := maxi(0, settlement.flies_collected)
+	var collected := (
+		maxi(0, settlement.flies_collected)
+		if settlement.rewards_eligible
+		else 0
+	)
 	progress.total_flies += collected
 	progress.spendable_flies += collected
-	progress.best_distance_pixels = maxf(
-		progress.best_distance_pixels,
-		settlement.distance_pixels,
-	)
+	if settlement.records_eligible:
+		progress.best_distance_pixels = maxf(
+			progress.best_distance_pixels,
+			settlement.distance_pixels,
+		)
 	var unlocked := PackedStringArray()
 	if progress.total_flies >= AMBER_FLY_REQUIREMENT:
 		_unlock(progress, PlayerProgress.STYLE_AMBER, unlocked)
 	if progress.best_distance_pixels >= COMET_DISTANCE_REQUIREMENT:
 		_unlock(progress, PlayerProgress.STYLE_COMET, unlocked)
-	return {"applied": true, "unlocked": unlocked}
+	return {
+		"applied": true,
+		"unlocked": unlocked,
+		"flies_granted": collected,
+		"records_eligible": settlement.records_eligible,
+	}
+
+
+func unlock_region_checkpoint(
+	progress: PlayerProgress,
+	region_id: StringName,
+	reached_distance_pixels: float,
+) -> bool:
+	var required := CourseRegionCatalog.checkpoint_start(region_id)
+	if required <= 0.0 or reached_distance_pixels + 0.001 < required or \
+			region_id in progress.unlocked_region_checkpoints:
+		return false
+	progress.unlocked_region_checkpoints.append(region_id)
+	return true
 
 
 func select_spider(progress: PlayerProgress, style: StringName) -> bool:

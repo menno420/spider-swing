@@ -155,8 +155,11 @@ four configurable seconds; it does not grant extra Dive Pull charges. Death
 creates one idempotent settlement through `ProgressionService`;
 `SaveRepository` atomically persists lifetime and spendable fly totals,
 profile-specific upgrade levels, selections, the local creator pattern, and
-cosmetic milestones. Schema 4 proportionally migrates former five-level tracks
-into the 20-level catalog. The current fly costs are comparison values only.
+cosmetic milestones. Schema 5 retains the proportional former-five-level
+migration, records reached 5000 m region checkpoints, and infers existing
+schema-4 checkpoint access from standard best distance exactly once. Practice
+settlements grant no flies and cannot update records. The current fly costs are
+comparison values only.
 
 ## Debug tuning
 

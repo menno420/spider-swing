@@ -1,1 +1,0 @@
-- `claude/seeded-region-practice` · **seeded 5000 m regions and non-record checkpoint practice** · course catalogs/stream, session/snapshot/settlement, progression/save, front end/HUD, simulator, tests/docs · 2026-07-30

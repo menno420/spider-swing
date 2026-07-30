@@ -7,6 +7,11 @@ class_name FrontEndState
 
 signal changed
 signal play_requested(settings: PlayerSettings)
+signal practice_play_requested(
+	settings: PlayerSettings,
+	region_id: StringName,
+	start_distance_pixels: float,
+)
 signal creator_play_requested(settings: PlayerSettings, pattern: Array[StringName])
 signal settings_changed(settings: PlayerSettings)
 signal spider_profile_requested(spider_id: StringName)
@@ -23,6 +28,7 @@ enum Screen {
 	GARAGE,
 	SHOP,
 	CREATOR,
+	PRACTICE,
 }
 
 const TUTORIAL_STEPS := [
@@ -137,6 +143,11 @@ func show_creator() -> void:
 	changed.emit()
 
 
+func show_practice() -> void:
+	screen = Screen.PRACTICE
+	changed.emit()
+
+
 func configure_progress(updated_progress: PlayerProgress) -> void:
 	progress = updated_progress.copy()
 	changed.emit()
@@ -163,6 +174,19 @@ func request_creator_play() -> void:
 	creator_play_requested.emit(
 		settings.copy(),
 		progress.creator_pattern.duplicate(),
+	)
+
+
+func request_practice(region_id: StringName) -> void:
+	if not progress.has_region_checkpoint(region_id):
+		return
+	var start_distance := CourseRegionCatalog.checkpoint_start(region_id)
+	if start_distance <= 0.0:
+		return
+	practice_play_requested.emit(
+		settings.copy(),
+		region_id,
+		start_distance,
 	)
 
 

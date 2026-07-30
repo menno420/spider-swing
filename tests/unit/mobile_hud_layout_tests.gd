@@ -22,6 +22,8 @@ static func run() -> Dictionary:
 	passed += _test_debug_controls_are_large_and_direct(failures)
 	passed += _test_debug_catalog_uses_plain_language(failures)
 	passed += _test_environment_theme_packs_are_visual_only(failures)
+	passed += _test_region_ambience_and_practice_status_are_presentation_only(
+		failures)
 	passed += _test_finished_forest_has_no_legacy_obstacle_backing(failures)
 	passed += _test_forest_obstacles_join_the_rails_without_gate_distortion(
 		failures,
@@ -714,6 +716,82 @@ static func _test_environment_theme_packs_are_visual_only(
 			before.obstacles != after.obstacles or \
 			before.aim_guides != after.aim_guides:
 		failures.append("visual theme selection mutated course geometry")
+		return 0
+	return 1
+
+
+static func _test_region_ambience_and_practice_status_are_presentation_only(
+	failures: PackedStringArray,
+) -> int:
+	var stream := CourseStream.new()
+	stream.reset()
+	var before := stream.geometry().duplicate_geometry()
+	var view := SwingLabView.new()
+	var canopy := SimulationSnapshot.new()
+	canopy.tick = 1
+	canopy.position = Vector2(50080.0, 300.0)
+	canopy.furthest_x = canopy.position.x
+	canopy.distance_pixels = 50080.0
+	canopy.region_id = CourseRegionCatalog.BRAMBLE_CANOPY
+	canopy.region_name = "BRAMBLE CANOPY"
+	canopy.region_focus = "Height control"
+	canopy.region_visual_profile = CourseRegionCatalog.VISUAL_CANOPY
+	canopy.run_mode = SwingLabSession.RUN_PRACTICE
+	canopy.records_eligible = false
+	view.present(canopy)
+	if view._region_banner_name != "BRAMBLE CANOPY" or \
+			view._region_banner_focus != "Height control" or \
+			view._region_banner_remaining != SwingLabView.REGION_BANNER_DURATION:
+		failures.append("region entry did not arm its presentation-only banner")
+		view.free()
+		return 0
+	view._region_banner_remaining = 0.5
+	var same_region := canopy
+	same_region.tick = 2
+	same_region.position.x += 20.0
+	view.present(same_region)
+	if not is_equal_approx(view._region_banner_remaining, 0.5):
+		failures.append("region banner restarts every frame instead of on entry")
+		view.free()
+		return 0
+	var hollow := SimulationSnapshot.new()
+	hollow.tick = 3
+	hollow.position = Vector2(100080.0, 300.0)
+	hollow.furthest_x = hollow.position.x
+	hollow.distance_pixels = 100080.0
+	hollow.region_id = CourseRegionCatalog.SILK_HOLLOW
+	hollow.region_name = "SILK HOLLOW"
+	hollow.region_focus = "Precision"
+	hollow.region_visual_profile = CourseRegionCatalog.VISUAL_HOLLOW
+	hollow.run_mode = SwingLabSession.RUN_PRACTICE
+	hollow.records_eligible = false
+	view.present(hollow)
+	if view._region_banner_name != "SILK HOLLOW" or \
+			view._region_banner_focus != "Precision":
+		failures.append("later region presentation did not replace the banner")
+		view.free()
+		return 0
+	view.free()
+
+	var after := stream.geometry()
+	if before.boundary_surfaces != after.boundary_surfaces or \
+			before.obstacles != after.obstacles or \
+			before.aim_guides != after.aim_guides:
+		failures.append("region presentation mutated authoritative geometry")
+		return 0
+	var renderer := FileAccess.open(
+		"res://game/presentation/scripts/swing_lab.gd",
+		FileAccess.READ,
+	)
+	if renderer == null:
+		failures.append("region presentation source cannot be inspected")
+		return 0
+	var source := renderer.get_as_text()
+	if not source.contains("_draw_region_ambience") or \
+			not source.contains("PRACTICE · NO FLIES OR RECORDS") or \
+			not source.contains("if _reduced_motion"):
+		failures.append(
+			"region ambience, practice status, or reduced-motion guard is missing")
 		return 0
 	return 1
 

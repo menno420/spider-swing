@@ -20,8 +20,9 @@ without a reported regression.
 - Compatibility renderer, landscape, 1280×720 reference viewport with
   `canvas_items`/`expand` stretch, **60 Hz** fixed tick, 4 max catch-up steps.
 - The app opens on Home before gameplay. `FrontEndState` owns Home, Garage,
-  Shop, Tutorial, Course Lab, and Settings navigation; the bootstrap composition
-  root alone mounts or unmounts the front end and simulation.
+  Shop, Tutorial, Course Lab, Region Practice, and Settings navigation; the
+  bootstrap composition root alone mounts or unmounts the front end and
+  simulation.
 - `SpiderUiTheme` now gives all front-end routes one Ancient-Forest-aligned
   bark/moss/silk skin, including panels, buttons, focus/disabled states, and
   silk-like scrollbars. Garage uses explicit three-card body and Silk rails plus
@@ -42,7 +43,8 @@ without a reported regression.
 - `SaveRepository` exclusively owns versioned local settings and progression
   writes. Swing options survive relaunch; idempotent run settlements persist
   lifetime/spendable fly totals, best distance, selected profile/cosmetics,
-  profile upgrades, the creator pattern, and cosmetic milestone unlocks.
+  profile upgrades, the creator pattern, reached region checkpoints, and
+  cosmetic milestone unlocks.
 - Six input actions are consumed through `InputRouter`: `web_action`, `reel_in`,
   `burst_action`, `pause`, `restart_run`, and `toggle_debug`. Large left-thumb
   Reel, right-thumb Burst, DEBUG, Menu, and debug-panel hit regions are real Godot
@@ -56,6 +58,23 @@ without a reported regression.
   aim-forgiveness band, manual release, an 8% gentle attach catch, three named
   presets, camera/world boundaries, and a bounded deterministic seven-chunk
   geometry window that continues past 10,000 m.
+- Validated challenge chunks now use a reproducible course seed. Seed variation
+  changes curated pattern order only; it never places individual hazards or
+  mutates geometry randomly. The final two resolved chunks cannot repeat,
+  authored recovery pockets bound hard-pattern streaks, and the active course
+  seed/region/pattern are exposed to diagnostics and the headless simulator.
+- The endless course changes identity every 5000 m. Ancient Forest teaches mixed
+  fundamentals; Bramble Canopy emphasizes rapid high↔low decisions and a
+  regular weave cue; Silk Hollow emphasizes suspended seed burrs and precise
+  rail openings. Each checkpoint begins with an open guided-web chunk at the
+  correct distance-dependent pace. Subtle green hanging silk/motes and cool
+  hollow webs/dew distinguish later regions without changing collision or
+  targeting, and reduced motion freezes their decorative movement.
+- Reaching 5000 m or 10000 m in a standard run persists that checkpoint. Region
+  Practice starts there with the same physics and upgrades but an authoritative
+  non-competitive settlement: no flies, no best-distance updates, no later
+  checkpoint unlocks, and no future leaderboard eligibility. Schema 5 migrates
+  already-reached checkpoints once from schema-4 standard best distance.
 - A run begins on a real ceiling web through the ordinary constraint and follows
   a deterministic safe first-second trajectory. It never locks input: any valid
   early command can replace or release the opening web immediately.
@@ -117,8 +136,9 @@ without a reported regression.
   bounded-glide Ballooner, plus Springtail's one-charge moderate rail bounce.
   Each exposes an explicit trade-off, the same five core fly-funded tracks, and
   two identity tracks. Every track has 20 small levels; levels 5/10/15/20 grant
-  one extra deterministic tuning step. Schema 4 migrates former five-level
-  progress proportionally and exactly once. Every runtime configuration now
+  one extra deterministic tuning step. Schema 5 retains the proportional
+  former-five-level migration and adds explicit reached checkpoints. Every
+  runtime configuration now
   resolves once from a fresh named preset before applying profile and upgrade
   modifiers, so repeated mount/preset paths cannot compound Reel capacity,
   recovery, or lockout. All spiders remain unlocked during Phase 0 so
@@ -172,6 +192,18 @@ without a reported regression.
 
 **Verification**
 
+- PR #48 `game-quality` run
+  [30575710624](https://github.com/menno420/spider-swing/actions/runs/30575710624)
+  passes clean import, front-end boot, and all 97 contracts on Godot
+  `4.7.1.stable.official.a13da4feb` at exact seeded-region implementation
+  source `a2124776f6d494d6872eb1c59524202114d78769`. Its contracts cover seeded
+  determinism and variation, region pools, recovery spacing, route envelopes,
+  checkpoint migration, safe late starts, noncompetitive settlement, practice
+  UI, and presentation ownership. Android run
+  [30575710564](https://github.com/menno420/spider-swing/actions/runs/30575710564)
+  produced verified
+  [artifact 8772613930](https://github.com/menno420/spider-swing/actions/runs/30575710564/artifacts/8772613930),
+  build `0.15.0-seeded-regions-test`.
 - PR #44 `game-quality` run
   [30566614922](https://github.com/menno420/spider-swing/actions/runs/30566614922)
   passes clean import, front-end boot, and all 91 contracts on Godot
@@ -246,8 +278,8 @@ without a reported regression.
   [30485134026](https://github.com/menno420/spider-swing/actions/runs/30485134026)
   passes the complete 82-check suite on Godot 4.7.1 at source
   `06a4c65aeb87b4d47a54423f9cd56ce87dcaaba5`.
-- `tests/test_runner.gd` — 93 declared checks: forty-seven
-  deterministic physics, twenty-one GUI-owned mobile HUD, fifteen front-end
+- `tests/test_runner.gd` — 97 declared checks: forty-nine
+  deterministic physics, twenty-two GUI-owned mobile HUD, sixteen front-end
   navigation/settings/progression, plus bootstrap and exact build-version
   contracts. Physics covers exact 40%/40% pull shares, the unchanged
   level-zero Burst cadence and the level-10 serial reserve Burst,
@@ -257,7 +289,8 @@ without a reported regression.
   paced bounded streaming, scaled authoritative geometry, guided opening,
   rescue, spider profiles/glide, the shared seven-track/20-level structure,
   breakthrough steps, level-zero preservation, creator-pattern bounds, a 5000 m pacing curve,
-  continuous contoured rails, a deterministic distance-banded pattern catalog,
+  continuous contoured rails, seeded 5000 m region catalogs with fixed recovery
+  cadence and non-record checkpoint starts, a deterministic distance-banded pattern catalog,
   full Classic-sized high↔low weave envelopes, bounded silk-burr geometry,
   upgradeable minimum Burst travel, and bounded Springtail impacts. A three-lane
   route sweep proves a Classic-sized spider
@@ -272,7 +305,8 @@ without a reported regression.
   proportional one-time upgrade migration, one shared forest-web skin,
   non-snapping touch scroll, custom body/Silk rails, a mobile-scrollable
   seven-track Shop, explicit two-step breakthrough copy with a derived max
-  summary, profile upgrades, and creator edits. The trajectory
+  summary, profile upgrades, creator edits, checkpoint migration, and locked
+  practice routes. The trajectory
   fixture produces the same final state when driven through simulated 30, 60,
   90, and 120 Hz render loops.
 - `tools/check_architecture.py` — 14 fixtures, all passing, asserting both
@@ -572,19 +606,26 @@ without a reported regression.
 
 ## In flight
 
-The reserve-Burst PR implements the first active breakthrough now that the
-owner has approved the corrected Reel build on device (ledger entries in
-`docs/decisions.md`, cited from the deep-progression plan): Burst
-availability becomes a charge pool on one serial cooldown, Anchor Drive
-level 10 stores a second charge, level-zero cadence is proven
-unchanged, the Burst button gains reserve pips only when capacity exceeds
-one, a `burst_charges` DEBUG value supports comparison, and the suite grows
-to 93 contracts. Build identity: `0.14.0-reserve-burst-test`, Android
-version code 30. The reserve's feel on device is the next owner review,
-alongside Anchorite's species readability items.
+No implementation session remains in flight after PR #48 closeout. The next
+owner evidence should cover seeded-region identity and checkpoint-practice
+integrity, reserve-Burst feel, and Anchorite species readability.
 
 ## Recently shipped (newest first)
 
+- **2026-07-30 — Seeded regions and checkpoint practice (PR #48).** Divides
+  the endless course into three reproducible 5,000 m identities with distinct
+  curated pools and bounded recovery cadence, adds presentation-owned region
+  atmosphere and transition feedback, and unlocks explicitly noncompetitive
+  practice starts at 5,000 m and 10,000 m. Practice cannot award flies, update
+  records, unlock later checkpoints, or enter future leaderboards.
+- **2026-07-30 — Reserve Burst breakthrough (PR #47).** Turns Burst
+  availability into a serially recharging charge pool and gives Anchor Drive
+  level 10 one stored second Burst without changing level-zero cadence,
+  long-run refill throughput, pull physics, or the rest of progression.
+- **2026-07-30 — Adaptive simulation lab v2 (PR #45).** Makes Claude's bot
+  route-aware, adds late-course starts and parameter sweeps, and expands
+  resource/economy metrics while remaining diagnostic tooling rather than a
+  gameplay or CI authority.
 - **2026-07-30 — Anchorite production spider (PR #44).** Adds a broad,
   low, charcoal-and-bronze burrowing-spider sprite at the same finished
   384×181 source contract as Garden, routes both profiles through one

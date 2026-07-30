@@ -49,6 +49,10 @@ static func run() -> Dictionary:
 		failures)
 	passed += _test_gate_fly_route_is_traversable(failures)
 	passed += _test_curated_pattern_catalog_is_banded_and_varied(failures)
+	passed += _test_course_regions_are_seeded_distinct_and_recoverable(
+		failures)
+	passed += _test_checkpoint_practice_starts_safe_and_is_non_record(
+		failures)
 	passed += _test_authored_weaves_and_small_silk_burrs_are_fair(failures)
 	passed += _test_contoured_rails_are_continuous_and_varied(failures)
 	passed += _test_obstacle_collision_is_authoritative(failures)
@@ -1542,6 +1546,165 @@ static func _test_curated_pattern_catalog_is_banded_and_varied(
 		failures.append(
 			"late course lost the intended mix of single and paired challenges")
 		return 0
+	return 1
+
+
+static func _test_course_regions_are_seeded_distinct_and_recoverable(
+	failures: PackedStringArray,
+) -> int:
+	var same_a: Array[StringName] = []
+	var same_b: Array[StringName] = []
+	var different: Array[StringName] = []
+	var differences := 0
+	var previous := &""
+	var hard_streak := 0
+	var maximum_hard_streak := 0
+	var bramble_ids := {}
+	var hollow_ids := {}
+	var first_checkpoint_pattern := &""
+	for chunk_index in range(11, 130):
+		var distance := maxf(
+			0.0,
+			float(chunk_index) * CourseStream.CHUNK_WIDTH
+				- CourseStream.START_X,
+		)
+		var first := CoursePatternCatalog.pattern_id_for_chunk(
+			chunk_index, distance, 77)
+		var repeated := CoursePatternCatalog.pattern_id_for_chunk(
+			chunk_index, distance, 77)
+		var alternate := CoursePatternCatalog.pattern_id_for_chunk(
+			chunk_index, distance, 91)
+		same_a.append(first)
+		same_b.append(repeated)
+		different.append(alternate)
+		if first != alternate:
+			differences += 1
+		if first == previous:
+			failures.append(
+				"seeded director repeated %s in adjacent chunks" % first)
+			return 0
+		previous = first
+		var region := CourseRegionCatalog.region_for_distance(
+			distance + CourseStream.CHUNK_WIDTH * 0.5)
+		var region_id := StringName(region["id"])
+		if bool(region["checkpoint"]) and first_checkpoint_pattern.is_empty():
+			first_checkpoint_pattern = first
+		if region_id == CourseRegionCatalog.BRAMBLE_CANOPY:
+			bramble_ids[first] = true
+		elif region_id == CourseRegionCatalog.SILK_HOLLOW:
+			hollow_ids[first] = true
+		if first == &"open_recovery":
+			maximum_hard_streak = maxi(maximum_hard_streak, hard_streak)
+			hard_streak = 0
+		elif region_id != CourseRegionCatalog.ANCIENT_FOREST:
+			hard_streak += 1
+	maximum_hard_streak = maxi(maximum_hard_streak, hard_streak)
+	if same_a != same_b or differences < 12:
+		failures.append(
+			"course seeds are not reproducible or do not vary enough chunks")
+		return 0
+	if first_checkpoint_pattern != &"open_recovery" or \
+			maximum_hard_streak > 5:
+		failures.append(
+			"checkpoint entry or later-region recovery cadence is unsafe")
+		return 0
+	if not bramble_ids.has(&"high_low_weave") or \
+			not bramble_ids.has(&"low_high_weave") or \
+			bramble_ids.has(&"rooted_gate"):
+		failures.append(
+			"Bramble Canopy lost its high↔low identity")
+		return 0
+	if not hollow_ids.has(&"rooted_gate") or \
+			not (
+				hollow_ids.has(&"silk_burr_high")
+				or hollow_ids.has(&"silk_burr_low")
+			) or \
+			not hollow_ids.has(&"tight_rail"):
+		failures.append(
+			"Silk Hollow lost its gate/burr/tight-gap precision identity: %s" %
+				[hollow_ids.keys()])
+		return 0
+
+	var classic := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	var route_radius := classic.player_collision_radius + 8.0
+	for seed in [7, 77, 707]:
+		var stream := CourseStream.new()
+		stream.reset(
+			10000.0, 0.94, 0.90, 1.12, [], true, 1.0, 1.0,
+			20000.0, seed,
+		)
+		for chunk_index in range(52, 66):
+			var chunk_start := float(chunk_index) * CourseStream.CHUNK_WIDTH
+			var chunk_end := chunk_start + CourseStream.CHUNK_WIDTH
+			var geometry := stream.update_for_position(chunk_start + 1.0)
+			for fly: Vector2 in geometry.fly_positions:
+				if fly.x < chunk_start or fly.x >= chunk_end:
+					continue
+				for obstacle: PackedVector2Array in geometry.obstacles:
+					var bounds := SolidGeometry.bounds(obstacle)
+					if bounds.get_center().x < chunk_start or \
+							bounds.get_center().x >= chunk_end:
+						continue
+					if SolidGeometry.circle_intersects_polygon(
+						fly,
+						route_radius,
+						obstacle,
+					):
+						failures.append(
+							"seed %d guides region route into a hazard" % seed)
+						return 0
+	return 1
+
+
+static func _test_checkpoint_practice_starts_safe_and_is_non_record(
+	failures: PackedStringArray,
+) -> int:
+	var start := CourseRegionCatalog.checkpoint_start(
+		CourseRegionCatalog.BRAMBLE_CANOPY)
+	var session := SwingLabSession.new()
+	session.configure_run(SwingLabSession.RUN_PRACTICE, start, 77)
+	session._reset_run()
+	var snapshot := session.current_snapshot()
+	if not is_equal_approx(snapshot.distance_pixels, start) or \
+			snapshot.run_mode != SwingLabSession.RUN_PRACTICE or \
+			snapshot.records_eligible or \
+			snapshot.region_id != CourseRegionCatalog.BRAMBLE_CANOPY or \
+			not session._world.web.attached or \
+			session._world._collides_with_obstacle(session._world.position):
+		failures.append(
+			"practice checkpoint did not start safely in its named region")
+		session.free()
+		return 0
+	var settlements: Array[RunSettlement] = []
+	session.settlement_created.connect(func(value: RunSettlement) -> void:
+		settlements.append(value))
+	session._emit_settlement(&"test")
+	if settlements.size() != 1 or \
+			settlements[0].rewards_eligible or \
+			settlements[0].records_eligible or \
+			settlements[0].leaderboards_eligible or \
+			settlements[0].run_mode != SwingLabSession.RUN_PRACTICE:
+		failures.append("practice settlement remained progression or record eligible")
+		session.free()
+		return 0
+
+	var standard := SwingLabSession.new()
+	standard.configure_run(SwingLabSession.RUN_STANDARD, 0.0, 77)
+	standard._reset_run()
+	var reached: Array[StringName] = []
+	standard.checkpoint_reached.connect(
+		func(region_id: StringName, _distance: float) -> void:
+			reached.append(region_id))
+	standard._world.distance_pixels = start
+	standard._update_region_progress()
+	standard._update_region_progress()
+	if reached != [CourseRegionCatalog.BRAMBLE_CANOPY]:
+		failures.append("standard checkpoint did not emit exactly once")
+		session.free()
+		standard.free()
+		return 0
+	session.free()
+	standard.free()
 	return 1
 
 

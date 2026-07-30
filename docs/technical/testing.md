@@ -87,11 +87,11 @@ Run directly:
 godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-93 checks, grouped so one subsystem failure never hides the rest:
+97 checks, grouped so one subsystem failure never hides the rest:
 
 - engine, main-scene, input-action, 60 Hz, renderer/viewport, Android preset,
   inward-dependency, and no-autoload bootstrap contracts;
-- forty-seven deterministic physics contracts, including extended arbitrary-point
+- forty-nine deterministic physics contracts, including extended arbitrary-point
   solid attachment, larger aim forgiveness, momentum preservation, speed-neutral
   Reel and automatic take-up, a bounded 2.0-second/520-pixel base Reel budget,
   deterministic non-compounding Reel upgrade resolution, runtime full-meter
@@ -105,6 +105,8 @@ godot --headless --path . --script res://tests/test_runner.gd
   coverage, independent rail lethality, authoritative obstacle scaling, a
   deterministic distance-banded pattern catalog with repetition protection and
   both single/paired natural compositions, authored high↔low weave envelopes,
+  seeded 5000 m region identities, bounded recovery cadence, route-clear
+  seed variation, and safe non-record checkpoint starts,
   minimum weave cue spacing and a forgiving central transition band,
   compact silk-burr bounds, a
   three-lane Classic-sized steering-envelope sweep through every root-passage
@@ -116,7 +118,7 @@ godot --headless --path . --script res://tests/test_runner.gd
   pickups, runtime pull tuning, and
   identical trajectories from
   simulated 30/60/90/120 Hz render loops;
-- twenty-one mobile HUD contracts proving large separated Reel and Burst controls,
+- twenty-two mobile HUD contracts proving large separated Reel and Burst controls,
   DEBUG, and Menu are event-consuming
   Buttons, GUI geometry shares one layout source, accepted actions drive visual
   and haptic feedback, UI actions do not leak into web input, debug tools can be
@@ -126,9 +128,11 @@ godot --headless --path . --script res://tests/test_runner.gd
   gate halves, active Ancient Forest art includes a world-anchored rail tile,
   growth socket, stump, and three depth layers, custom fixed-snapshot spider
   interpolation, mipmapped moving art, restrained/reduced-motion-safe action
-  poses, and world input waits for Godot GUI handling;
-- fifteen front-end contracts proving Home starts before gameplay,
-  Play/Garage/Shop/Tutorial/Course Lab/Settings route correctly, the six tutorial
+  poses, region ambience and persistent practice status remain presentation-only,
+  and world input waits for Godot GUI handling;
+- sixteen front-end contracts proving Home starts before gameplay,
+  Play/Garage/Shop/Tutorial/Course Lab/Region Practice/Settings route correctly,
+  the six tutorial
   steps cover live mechanics, Settings
   is touch-scrollable from every descendant control/card region without focus
   snapping and remains mobile-readable, options
@@ -140,7 +144,8 @@ godot --headless --path . --script res://tests/test_runner.gd
   proportionally, profile upgrades and creator edits persist, milestone unlocks
   persist, every fifth-level Shop purchase is explicitly described as two
   tuning steps with a derived max summary, and only a play request mounts the
-  run.
+  run. Checkpoint migration and practice settlement tests prove reached regions
+  round-trip while practice grants no flies and cannot update best distance.
 
 The physics group lives in `tests/unit/phase0_physics_tests.gd`, mobile input in
 `tests/unit/mobile_hud_layout_tests.gd`, and the front-end flow in

@@ -9,9 +9,11 @@ class_name SwingLabSession
 signal snapshot_published(snapshot: SimulationSnapshot)
 signal event_published(event: SimulationEvent)
 signal settlement_created(settlement: RunSettlement)
+signal checkpoint_reached(region_id: StringName, distance_pixels: float)
 
 const FIXED_DELTA := 1.0 / 60.0
-const COURSE_SEED := 1337
+const RUN_STANDARD := &"standard"
+const RUN_PRACTICE := &"practice"
 static var TUNING_PARAMETERS: Array[StringName] = TuningCatalog.parameter_ids()
 
 var _config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
@@ -22,6 +24,13 @@ var _run := RunStateMachine.new()
 var _effects := EffectState.new()
 var _progress := PlayerProgress.defaults()
 var _creator_pattern: Array[StringName] = []
+var _run_mode: StringName = RUN_STANDARD
+var _start_distance_pixels: float = 0.0
+var _course_seed: int = 1337
+var _course_seed_override: int = -1
+var _recording_seed: int = 1337
+var _last_region_id: StringName = CourseRegionCatalog.ANCIENT_FOREST
+var _reached_checkpoint_ids: Array[StringName] = []
 var _rescue_available: bool = true
 var _command_buffer: Array[InputCommand] = []
 var _sequence: int = 0
@@ -60,6 +69,20 @@ func configure_progress(progress: PlayerProgress) -> void:
 
 func configure_creator_pattern(pattern: Array[StringName]) -> void:
 	_creator_pattern = pattern.duplicate()
+
+
+func configure_run(
+	mode: StringName = RUN_STANDARD,
+	start_distance_pixels: float = 0.0,
+	course_seed_override: int = -1,
+) -> void:
+	_run_mode = RUN_PRACTICE if mode == RUN_PRACTICE else RUN_STANDARD
+	_start_distance_pixels = (
+		maxf(0.0, start_distance_pixels)
+		if _run_mode == RUN_PRACTICE
+		else 0.0
+	)
+	_course_seed_override = course_seed_override
 
 
 func _physics_process(_delta: float) -> void:
@@ -240,6 +263,7 @@ func toggle_recording() -> void:
 	_recording = not _recording
 	if _recording:
 		_recorded_commands.clear()
+		_recording_seed = _course_seed
 	event_published.emit(SimulationEvent.make(
 		SimulationEvent.Kind.RECORDING_CHANGED,
 		_world.position,
@@ -260,7 +284,8 @@ func replay_recording() -> void:
 	_replay_commands = _recorded_commands.duplicate(true)
 	_replay_cursor = 0
 	_replaying = true
-	_reset_run(false)
+	_course_seed = _recording_seed
+	_reset_run(false, false)
 	event_published.emit(SimulationEvent.make(
 		SimulationEvent.Kind.REPLAY_STARTED,
 		_world.position,
@@ -272,8 +297,12 @@ func export_diagnostic() -> void:
 	var geometry := _course_stream.geometry()
 	var payload := {
 		"format": "spider-swing-phase0-diagnostic",
-		"version": 1,
-		"seed": COURSE_SEED,
+		"version": 2,
+		"seed": _course_seed,
+		"run_mode": str(_run_mode),
+		"start_distance_pixels": _start_distance_pixels,
+		"records_eligible": _run_mode == RUN_STANDARD,
+		"region": str(_last_region_id),
 		"preset": str(_config.preset_name),
 		"tick": _world.tick,
 		"position": [_world.position.x, _world.position.y],
@@ -370,6 +399,7 @@ func _step_once() -> void:
 					_config.middle_hazard_start_distance,
 				))
 		var events := _world.step(FIXED_DELTA)
+		_update_region_progress()
 		for event: SimulationEvent in events:
 			if event.kind == SimulationEvent.Kind.BOOST_COLLECTED:
 				_effects.activate(
@@ -422,15 +452,28 @@ func _discard_expired_commands(commands: Array[InputCommand]) -> Array[InputComm
 	return kept
 
 
-func _reset_run(clear_replay: bool = true) -> void:
+func _reset_run(
+	clear_replay: bool = true,
+	rotate_course_seed: bool = true,
+) -> void:
 	_run.reset()
 	_run_sequence += 1
+	if rotate_course_seed:
+		_course_seed = _next_course_seed()
 	_settlement_emitted = false
 	_effects.reset()
 	_rescue_available = _config.rescue_life_enabled
+	_reached_checkpoint_ids.clear()
 	_reset_course_stream()
-	_world.reset(_config, _course_stream.geometry())
+	_world.reset(
+		_config,
+		_course_stream.geometry(),
+		_start_distance_pixels,
+	)
 	var guided := _world.begin_guided_opening()
+	var region := CourseRegionCatalog.region_for_distance(
+		_world.distance_pixels)
+	_last_region_id = StringName(region["id"])
 	_course_chunk_index = maxi(
 		0, floori(_world.position.x / CourseStream.CHUNK_WIDTH))
 	_command_buffer.clear()
@@ -441,7 +484,20 @@ func _reset_run(clear_replay: bool = true) -> void:
 	event_published.emit(SimulationEvent.make(
 		SimulationEvent.Kind.RUN_RESTARTED,
 		_world.position,
-		"Opening web ready" if guided else "Swing Laboratory ready",
+		(
+			"%s practice · no records or rewards" % region["name"]
+			if _run_mode == RUN_PRACTICE
+			else (
+				"Opening web ready"
+				if guided
+				else "%s ready" % region["name"]
+			)
+		),
+		{
+			"course_seed": _course_seed,
+			"run_mode": _run_mode,
+			"region_id": _last_region_id,
+		},
 	))
 	_publish_snapshot()
 
@@ -520,7 +576,16 @@ func _make_snapshot() -> SimulationSnapshot:
 		snapshot.tuning_values[parameter] = _config.value_for(parameter)
 	snapshot.selected_parameter = TUNING_PARAMETERS[_selected_parameter_index]
 	snapshot.selected_parameter_value = _config.value_for(snapshot.selected_parameter)
-	snapshot.seed = COURSE_SEED
+	snapshot.seed = _course_seed
+	snapshot.run_mode = _run_mode
+	snapshot.start_distance_pixels = _start_distance_pixels
+	snapshot.records_eligible = _run_mode == RUN_STANDARD
+	var region := CourseRegionCatalog.region_for_distance(
+		_world.distance_pixels)
+	snapshot.region_id = StringName(region["id"])
+	snapshot.region_name = str(region["name"])
+	snapshot.region_focus = str(region["focus"])
+	snapshot.region_visual_profile = StringName(region["visual_profile"])
 	snapshot.camera_follow_strength = _config.camera_follow_strength
 	snapshot.camera_look_ahead = _config.camera_look_ahead
 	return snapshot
@@ -562,6 +627,10 @@ func _emit_settlement(cause: StringName) -> void:
 		_world.distance_pixels,
 		_world.run_flies,
 		cause,
+		_run_mode,
+		_start_distance_pixels,
+		_run_mode == RUN_STANDARD,
+		_course_seed,
 	))
 
 
@@ -580,6 +649,50 @@ func _reset_course_stream() -> void:
 		_config.corridor_clearance_scale,
 		_config.corridor_tight_gap_scale,
 		_config.tight_corridor_start_distance,
+		_course_seed,
+		SimulationWorld.START_POSITION.x + _start_distance_pixels,
+	)
+
+
+func _update_region_progress() -> void:
+	var region := CourseRegionCatalog.region_for_distance(
+		_world.distance_pixels)
+	var region_id := StringName(region["id"])
+	if region_id != _last_region_id:
+		_last_region_id = region_id
+		event_published.emit(SimulationEvent.make(
+			SimulationEvent.Kind.REGION_ENTERED,
+			_world.position,
+			"%s · %s" % [region["name"], region["focus"]],
+			{
+				"region_id": region_id,
+				"visual_profile": region["visual_profile"],
+			},
+		))
+	if _run_mode != RUN_STANDARD:
+		return
+	for checkpoint_id: StringName in \
+			CourseRegionCatalog.checkpoint_ids_reached(
+				_world.distance_pixels):
+		if checkpoint_id in _reached_checkpoint_ids:
+			continue
+		_reached_checkpoint_ids.append(checkpoint_id)
+		var checkpoint := CourseRegionCatalog.region_for_id(checkpoint_id)
+		checkpoint_reached.emit(checkpoint_id, _world.distance_pixels)
+		event_published.emit(SimulationEvent.make(
+			SimulationEvent.Kind.CHECKPOINT_REACHED,
+			_world.position,
+			"Checkpoint unlocked · %s" % checkpoint["name"],
+			{"region_id": checkpoint_id},
+		))
+
+
+func _next_course_seed() -> int:
+	if _course_seed_override >= 0:
+		return _course_seed_override
+	return posmod(
+		hash("%s:%d" % [_session_id, _run_sequence]),
+		2147483647,
 	)
 
 

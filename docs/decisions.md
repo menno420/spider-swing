@@ -355,3 +355,26 @@
   stored option, not a throughput increase.
 - provenance: deep-progression plan (deferred item), owner approval D-0023,
   and the reserve-burst session
+
+## [D-0025] Change endless-course identity every 5000 m and keep practice non-competitive
+
+- status: decided
+- date: 2026-07-30
+- verdict: Standard runs use deterministic seeded ordering of validated
+  patterns within 5000 m regions. Ancient Forest teaches mixed fundamentals;
+  Bramble Canopy emphasizes rapid high↔low choices; Silk Hollow emphasizes
+  suspended hazards and precise rail openings. Every later region begins with
+  an authored open chunk and has a fixed recovery cadence. Reaching 5000 m or
+  10000 m in a standard run unlocks that region for checkpoint practice.
+  Practice starts at full distance-appropriate pace but grants no flies, cannot
+  update records or unlock checkpoints, and is ineligible for future
+  leaderboards.
+- why: The owner-approved swing is already skillful at maximum course speed, so
+  variety should come from readable challenge identity and order rather than
+  faster physics or arbitrary hazard placement. A 5000 m boundary coincides
+  with the existing full-speed point and with demonstrated player reach;
+  10000 m alone would hide the first meaningful scenery change. Explicit
+  settlement eligibility prevents checkpoint convenience from contaminating
+  competitive records later.
+- provenance: Menno's 2026-07-30 gameplay-versatility, region, randomness, and
+  checkpoint-practice direction

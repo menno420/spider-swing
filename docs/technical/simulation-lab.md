@@ -25,6 +25,8 @@ godot --headless --path . --script res://tools/simulate.gd -- \
 | `--preset=` | `balanced_candidate` | Named `SwingConfig` preset |
 | `--upgrades=N` | 0 | Level 0–20 applied to every track of the spider |
 | `--seed=N` | 1 | Base seed for the bot-imperfection RNG |
+| `--course-seed=N` | 1337 | First production course-order seed |
+| `--course-seeds=N` | 1 | Consecutive course seeds rotated independently across runs |
 | `--max-seconds=S` | 240 | Simulated-time cap; a capped run reports `timeout` (alive), never a death |
 | `--start-m=N` | 0 | Warp the start N metres into the course at that distance's pace — tests late-game regimes without surviving to them |
 | `--reel-style=` | `adaptive` | `adaptive` · `tap` · `hold` — how the bot spends Reel |
@@ -63,25 +65,35 @@ habits:
   controllable hop, and a skill-scaled habit checks the game's own
   endpoint-safety preview before committing.
 
-The course is deterministic and identical every run; **all** run-to-run
-variation comes from the seeded imperfection model. Identical world, a
-distribution of player behaviour: a tuning change shifts the metrics, not the
-luck. The same seed and options reproduce a batch bit-for-bit, and summaries
-carry the bot model version because numbers are only comparable within one
-bot model.
+The course is deterministic for a given course seed. By default it is identical
+every run, while `--course-seeds` can rotate a known seed range independently
+from bot-imperfection seeds. This separates “different player reaction” from
+“different curated pattern order” in the resulting rows. The same seeds and
+options reproduce a batch bit-for-bit, and summaries carry the bot model
+version because numbers are only comparable within one bot model.
+
+Each row records its course seed, death region, and active pattern. Summaries
+include death-region and death-pattern histograms. Late-game `--start-m` runs
+now use the same safe start-distance reset and guided opening as production
+checkpoint practice. The delayed command queue also permits only one pending
+web or Burst intent at a time, preventing repeated pre-delivery decisions from
+turning an accepted attachment into a stale release.
 
 ## What it can and cannot answer
 
 **Good questions for the lab** — relative, mechanical, statistical:
 
 - Did this Reel/Burst/course change make runs longer or shorter at equal bot
-  skill — overall, or warped into the late game with `--start-m`?
+  skill and course seed — overall, or warped into the late game with
+  `--start-m`?
 - Where do runs die (cause histogram, distance bands, mid-pull deaths)
   before vs after a change? Where do rescues get spent, and how much
   distance does a life buy — the pricing input for the planned lives system?
 - Do spider profiles and upgrade levels move any measurable number? How many
   flies per kilometre does play earn — the other half of economy pricing?
 - How much Reel time and energy does a run actually consume, per usage style?
+- Which region and curated pattern account for a death wall, and does it remain
+  when the course-order seed changes?
 
 **Questions it must never be allowed to answer:**
 
