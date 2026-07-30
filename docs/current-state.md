@@ -192,6 +192,18 @@ without a reported regression.
 
 **Verification**
 
+- PR #48 `game-quality` run
+  [30575710624](https://github.com/menno420/spider-swing/actions/runs/30575710624)
+  passes clean import, front-end boot, and all 97 contracts on Godot
+  `4.7.1.stable.official.a13da4feb` at exact seeded-region implementation
+  source `a2124776f6d494d6872eb1c59524202114d78769`. Its contracts cover seeded
+  determinism and variation, region pools, recovery spacing, route envelopes,
+  checkpoint migration, safe late starts, noncompetitive settlement, practice
+  UI, and presentation ownership. Android run
+  [30575710564](https://github.com/menno420/spider-swing/actions/runs/30575710564)
+  produced verified
+  [artifact 8772613930](https://github.com/menno420/spider-swing/actions/runs/30575710564/artifacts/8772613930),
+  build `0.15.0-seeded-regions-test`.
 - PR #44 `game-quality` run
   [30566614922](https://github.com/menno420/spider-swing/actions/runs/30566614922)
   passes clean import, front-end boot, and all 91 contracts on Godot
@@ -594,19 +606,26 @@ without a reported regression.
 
 ## In flight
 
-The reserve-Burst PR implements the first active breakthrough now that the
-owner has approved the corrected Reel build on device (ledger entries in
-`docs/decisions.md`, cited from the deep-progression plan): Burst
-availability becomes a charge pool on one serial cooldown, Anchor Drive
-level 10 stores a second charge, level-zero cadence is proven
-unchanged, the Burst button gains reserve pips only when capacity exceeds
-one, a `burst_charges` DEBUG value supports comparison, and the suite grows
-to 93 contracts. Build identity: `0.14.0-reserve-burst-test`, Android
-version code 30. The reserve's feel on device is the next owner review,
-alongside Anchorite's species readability items.
+No implementation session remains in flight after PR #48 closeout. The next
+owner evidence should cover seeded-region identity and checkpoint-practice
+integrity, reserve-Burst feel, and Anchorite species readability.
 
 ## Recently shipped (newest first)
 
+- **2026-07-30 — Seeded regions and checkpoint practice (PR #48).** Divides
+  the endless course into three reproducible 5,000 m identities with distinct
+  curated pools and bounded recovery cadence, adds presentation-owned region
+  atmosphere and transition feedback, and unlocks explicitly noncompetitive
+  practice starts at 5,000 m and 10,000 m. Practice cannot award flies, update
+  records, unlock later checkpoints, or enter future leaderboards.
+- **2026-07-30 — Reserve Burst breakthrough (PR #47).** Turns Burst
+  availability into a serially recharging charge pool and gives Anchor Drive
+  level 10 one stored second Burst without changing level-zero cadence,
+  long-run refill throughput, pull physics, or the rest of progression.
+- **2026-07-30 — Adaptive simulation lab v2 (PR #45).** Makes Claude's bot
+  route-aware, adds late-course starts and parameter sweeps, and expands
+  resource/economy metrics while remaining diagnostic tooling rather than a
+  gameplay or CI authority.
 - **2026-07-30 — Anchorite production spider (PR #44).** Adds a broad,
   low, charcoal-and-bronze burrowing-spider sprite at the same finished
   384×181 source contract as Garden, routes both profiles through one
