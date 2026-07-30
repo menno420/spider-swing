@@ -169,6 +169,18 @@ without a reported regression.
 
 **Verification**
 
+- PR #44 `game-quality` run
+  [30566614922](https://github.com/menno420/spider-swing/actions/runs/30566614922)
+  passes clean import, front-end boot, and all 91 contracts on Godot
+  `4.7.1.stable.official.a13da4feb` at exact implementation source
+  `9f82310e52d5925a92d2b4e6d8d78c1ddfa2ed09`. Its presentation contract
+  proves Anchorite routes through the finished renderer with a mipmapped
+  384×181 texture, transparent corners, and the unchanged authoritative
+  profile scale. Android run
+  [30566616021](https://github.com/menno420/spider-swing/actions/runs/30566616021)
+  produced verified
+  [artifact 8769099561](https://github.com/menno420/spider-swing/actions/runs/30566616021/artifacts/8769099561),
+  build `0.13.0-anchorite-art-test`.
 - PR #40 `game-quality` run
   [30559186244](https://github.com/menno420/spider-swing/actions/runs/30559186244)
   passes clean import, front-end boot, and all 91 contracts on Godot
@@ -556,14 +568,25 @@ without a reported regression.
 
 ## In flight
 
-PR #44 adds one finished Anchorite presentation asset and routes only Garden
-and Anchorite through the centralized finished-sprite renderer. Collision,
-physics, balance, upgrades, targeting, routes, saves, and the unfinished
-Skitter/Ballooner/Springtail procedural silhouettes remain unchanged. PR #41's
-headless balance lab is independent tooling/documentation work.
+Owner device review remains for Anchorite's species readability, contrast,
+alpha edge, rotation, and visual/collision agreement, plus PR #40's balance
+questions about whether 320/416 px/s Reel reads as arc control. The headless
+simulation lab from PR #41 is available for statistical balance comparisons.
+Anchor Drive's proposed second stored Burst stays deferred until the corrected
+Reel build is approved.
 
 ## Recently shipped (newest first)
 
+- **2026-07-30 — Anchorite production spider (PR #44).** Adds a broad,
+  low, charcoal-and-bronze burrowing-spider sprite at the same finished
+  384×181 source contract as Garden, routes both profiles through one
+  presentation renderer, preserves authoritative Anchorite size/collision,
+  and leaves the other three procedural spider silhouettes unchanged.
+- **2026-07-30 — Headless simulation lab (PR #41).** Batch-runs the
+  authoritative simulation through a seeded imperfect-player model and reports
+  distance, death cause, and resource statistics by spider, skill tier,
+  preset, and upgrade level. It is diagnostic tooling rather than a CI gate
+  and changes no gameplay value.
 - **2026-07-30 — Device-led Reel speed correction (PR #40).** Keeps the
   finite two-second level-zero resource from PR #38 but raises Balanced Reel
   from 260 to 320 px/s and max Garden Silk Winder from 338 to 416 px/s. Named
