@@ -33,3 +33,25 @@ Rebaseline only the Reel resource, prove that preset/profile application is
 idempotent and Reel remains velocity-neutral, publish and inspect the exact
 Android artifact, then complete this card and remove the claim only after all
 required checks are green.
+
+## Decisions flagged
+
+- Use a 2.0-second, 260 px/s level-zero Balanced Reel comparison. Its 520 px
+  shortening budget remains useful but cannot consume the full maximum web.
+- Keep drain, regeneration, empty lockout, take-up, aim, reach, Burst/Dive,
+  course speed, and route geometry unchanged so the device comparison has one
+  balance cause.
+- Resolve each active configuration from a fresh preset before applying one
+  profile and its upgrades. Do not make mutating modifier application itself a
+  reusable configuration lifecycle.
+- Specify Anchor Drive's reserve Burst in the progression direction, but keep
+  it out of this build until Reel feel is judged independently.
+
+## 💡 Idea
+
+Use the eventual two-pip Anchor Drive display as a reusable serial-charge
+presentation component, but keep the authoritative charge owner inside fixed
+simulation so future visuals and accessibility variants cannot alter recharge
+truth.
+
+- **📊 Model:** gpt-5.6-sol · xhigh · gameplay balance and architecture

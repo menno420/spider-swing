@@ -48,11 +48,14 @@ velocity. That `RELEASE` behavior remains the default. DEBUG can switch to
 `RETARGET`, where tapping another valid upper solid atomically replaces the web;
 an empty-world tap still releases.
 
-Reel immediately shortens the authoritative rope length at 400 px/s in the
-Balanced candidate while energy is available. The constraint removes outward
-motion and applies capped position correction as the rope tightens; Reel does not
-also add a radial acceleration or minimum inward speed. That keeps its job
-distinct: change the swing radius without becoming a hidden speed boost.
+Reel immediately shortens the authoritative rope length at 260 px/s in the
+Balanced candidate while energy is available. A full level-zero meter lasts
+2.0 seconds and can therefore remove about 520 px. Maxing Silk Winder and Silk
+Reserve raises those comparison values to about 338 px/s, 2.48 seconds, and
+838 px. The constraint removes outward motion and applies capped position
+correction as the rope tightens; Reel does not add radial acceleration, a
+minimum inward speed, or a forward boost. That keeps its job distinct: change
+the swing radius without replacing manual swing timing.
 Natural inward movement now creates slack take-up as a separate, speed-neutral
 rule: Balanced retains 85% of each new inward movement, leaving 15% elastic give.
 Static slack is not repeatedly consumed. DEBUG can disable the behavior or tune
@@ -185,6 +188,7 @@ collision outlines and web-target guides.
 | `Aim forgiveness` | accepted distance from a tap to the nearest solid edge | 10 / 80–320 px |
 | `Attach catch-up` | rope-length reduction on normal attach | 1% / 0–20% |
 | `Reel-In speed` | rope shortening speed | 20 / 80–720 px/s |
+| `Full Reel time` | continuous hold time from a full meter | 0.2 / 0.8–4.0 s |
 | `Keep shortened rope` | retain natural inward slack | off / on |
 | `Shortening retained` | share of natural slack retained | 5% / 0–100% |
 | `Anchor Burst distance` | Burst share of starting anchor distance | 5% / 10–80% |
@@ -273,7 +277,7 @@ product decisions.
 
 ## Owner device playtest
 
-Install `0.11.3-upgrade-breakthrough-copy-test` after uninstalling the previous
+Install `0.12.0-reel-resource-test` after uninstalling the previous
 ephemerally signed dev app, then check:
 
 1. start a run without touching the screen for one second; the ordinary opening
@@ -294,8 +298,9 @@ ephemerally signed dev app, then check:
    `Pull already active` while the spider remains detached;
 9. use DEBUG `TAP RELEASE`, then `TAP RETARGET`, and decide whether deliberate
    two-tap release/attach or atomic one-tap replacement feels more natural;
-10. hold Reel during a downward arc and judge whether height becomes manageable
-   without the previous runaway speed gain;
+10. use level-zero Garden, hold Reel continuously, and confirm its full ring
+    lasts about two seconds, shortens roughly half a maximum-length web, and
+    changes height/arc without a separate forward shove;
 11. compare several starting web lengths and confirm base Burst covers roughly
     40% while a close valid target still provides its visible minimum travel;
 12. use a lower rail target twice without attaching above between attempts; the
@@ -305,7 +310,8 @@ ephemerally signed dev app, then check:
 14. deliberately Burst toward a badly timed obstacle and confirm the control
     remains powerful but unsafe;
 15. use each DEBUG section to change range, Burst cooldown, Burst %, Dive %, both
-    durations, and Reel speed; confirm no setting requires carousel searching;
+    durations, Reel speed, and Full Reel time; confirm no setting requires
+    carousel searching;
 16. compare `Keep shortened rope` off/on and several retained percentages; when the spider moves
     toward the anchor, the shorter web should mostly remain short without a speed
     spike;
@@ -352,5 +358,8 @@ ephemerally signed dev app, then check:
     clipping either obstacle or showing a rectangular art cut;
 32. pass the small silk-suspended burr above and below; its visible bramble,
     collision outline, and safe support thread must agree.
+33. compare level-zero Garden against maxed Silk Winder + Silk Reserve. The
+    maxed version should offer clearly stronger and longer arc correction, but
+    neither version should feel mandatory for every ordinary route.
 
 Phase 1 remains gated on an explicitly approved movement baseline.

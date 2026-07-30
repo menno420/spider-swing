@@ -6,10 +6,15 @@ class_name SwingConfig
 ## are deliberately not called "baseline": only the owner can approve that
 ## label after real-device playtesting.
 
-const SCHEMA_VERSION := 9
+const SCHEMA_VERSION := 10
 const PRESET_BALANCED := &"balanced_candidate"
 const PRESET_WEIGHTY := &"weighty_candidate"
 const PRESET_AGILE := &"agile_candidate"
+const BASE_REEL_RETRACTION_RATE := 260.0
+const BASE_REEL_ENERGY_CAPACITY := 60.0
+const BASE_REEL_DRAIN_RATE := 30.0
+const BASE_REEL_REGENERATION_RATE := 18.0
+const BASE_REEL_EMPTY_LOCKOUT := 0.75
 
 @export var schema_version: int = SCHEMA_VERSION
 @export var preset_name: StringName = PRESET_BALANCED
@@ -30,11 +35,11 @@ const PRESET_AGILE := &"agile_candidate"
 @export var attachment_catch_fraction: float = 0.08
 @export var rope_elasticity_allowance: float = 10.0
 @export var rope_damping: float = 0.035
-@export var reel_retraction_rate: float = 400.0
-@export var reel_energy_capacity: float = 100.0
-@export var reel_drain_rate: float = 30.0
-@export var reel_regeneration_rate: float = 18.0
-@export var reel_empty_lockout: float = 0.75
+@export var reel_retraction_rate: float = BASE_REEL_RETRACTION_RATE
+@export var reel_energy_capacity: float = BASE_REEL_ENERGY_CAPACITY
+@export var reel_drain_rate: float = BASE_REEL_DRAIN_RATE
+@export var reel_regeneration_rate: float = BASE_REEL_REGENERATION_RATE
+@export var reel_empty_lockout: float = BASE_REEL_EMPTY_LOCKOUT
 @export var automatic_take_up_enabled: bool = true
 @export var automatic_take_up_retention: float = 0.85
 @export var burst_distance_fraction: float = 0.40
@@ -96,6 +101,9 @@ func apply_preset(name: StringName) -> void:
 	player_collision_radius = 18.0
 	web_tap_retargets_when_attached = false
 	attachment_catch_fraction = 0.08
+	reel_energy_capacity = BASE_REEL_ENERGY_CAPACITY
+	reel_regeneration_rate = BASE_REEL_REGENERATION_RATE
+	reel_empty_lockout = BASE_REEL_EMPTY_LOCKOUT
 	automatic_take_up_enabled = true
 	automatic_take_up_retention = 0.85
 	burst_distance_fraction = 0.40
@@ -142,7 +150,7 @@ func apply_preset(name: StringName) -> void:
 			air_drag = 0.04
 			rope_elasticity_allowance = 7.0
 			rope_damping = 0.025
-			reel_retraction_rate = 420.0
+			reel_retraction_rate = 275.0
 			reel_drain_rate = 32.0
 		PRESET_AGILE:
 			gravity = 980.0
@@ -153,7 +161,7 @@ func apply_preset(name: StringName) -> void:
 			air_drag = 0.07
 			rope_elasticity_allowance = 13.0
 			rope_damping = 0.05
-			reel_retraction_rate = 440.0
+			reel_retraction_rate = 290.0
 			reel_drain_rate = 35.0
 		_:
 			preset_name = PRESET_BALANCED
@@ -165,8 +173,8 @@ func apply_preset(name: StringName) -> void:
 			air_drag = 0.055
 			rope_elasticity_allowance = 10.0
 			rope_damping = 0.035
-			reel_retraction_rate = 400.0
-			reel_drain_rate = 30.0
+			reel_retraction_rate = BASE_REEL_RETRACTION_RATE
+			reel_drain_rate = BASE_REEL_DRAIN_RATE
 
 
 func target_speed_at(distance_pixels: float) -> float:
@@ -218,6 +226,9 @@ func set_tuning_value(parameter: StringName, value: float) -> float:
 		&"reel_rate":
 			reel_retraction_rate = safe_value
 			return reel_retraction_rate
+		&"reel_capacity_seconds":
+			reel_energy_capacity = safe_value * reel_drain_rate
+			return reel_energy_capacity / reel_drain_rate
 		&"auto_take_up":
 			automatic_take_up_enabled = safe_value >= 0.5
 			return 1.0 if automatic_take_up_enabled else 0.0
@@ -320,6 +331,8 @@ func value_for(parameter: StringName) -> float:
 			return 1.0 if web_tap_retargets_when_attached else 0.0
 		&"reel_rate":
 			return reel_retraction_rate
+		&"reel_capacity_seconds":
+			return reel_energy_capacity / reel_drain_rate
 		&"auto_take_up":
 			return 1.0 if automatic_take_up_enabled else 0.0
 		&"take_up_pct":
@@ -389,8 +402,9 @@ func validate() -> PackedStringArray:
 		failures.append("speed progression values are invalid")
 	if web_minimum_length <= 0.0 or web_maximum_length <= web_minimum_length:
 		failures.append("web length range is invalid")
-	if reel_energy_capacity <= 0.0:
-		failures.append("Reel energy capacity must be positive")
+	if reel_energy_capacity <= 0.0 or reel_drain_rate <= 0.0 or \
+			reel_regeneration_rate <= 0.0 or reel_empty_lockout < 0.0:
+		failures.append("Reel resource values are invalid")
 	if reel_retraction_rate <= 0.0:
 		failures.append("Reel response values are invalid")
 	if automatic_take_up_retention < 0.0 or automatic_take_up_retention > 1.0:

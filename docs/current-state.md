@@ -63,9 +63,12 @@ without a reported regression.
   collision-checked position with a 0.9-second obstacle shield. The charge is
   visible in the HUD; the next lethal contact follows the ordinary death and
   idempotent settlement path.
-- Reel shortens the authoritative rope length (400 px/s in Balanced) and spends
-  energy without adding a separate inward acceleration or minimum-speed
-  correction. Natural take-up shortens the web by 85% of each inward movement
+- Reel shortens the authoritative rope length (260 px/s in Balanced) and spends
+  energy without adding a separate inward acceleration, minimum-speed
+  correction, or forward boost. The level-zero meter lasts 2.0 seconds and
+  provides about 520 px total shortening; maxed Silk Winder plus Silk Reserve
+  reaches about 338 px/s, 2.48 seconds, and 838 px. Natural take-up shortens the
+  web by 85% of each inward movement
   by default, also without adding velocity. Balanced Flow raises that share to
   91% at maximum level, leaving less slack and a shorter web. Anchor Burst
   crosses 40% of the resolved starting
@@ -111,8 +114,11 @@ without a reported regression.
   Each exposes an explicit trade-off, the same five core fly-funded tracks, and
   two identity tracks. Every track has 20 small levels; levels 5/10/15/20 grant
   one extra deterministic tuning step. Schema 4 migrates former five-level
-  progress proportionally and exactly once. All spiders remain unlocked during
-  Phase 0 so progression cannot hide a feel candidate.
+  progress proportionally and exactly once. Every runtime configuration now
+  resolves once from a fresh named preset before applying profile and upgrade
+  modifiers, so repeated mount/preset paths cannot compound Reel capacity,
+  recovery, or lockout. All spiders remain unlocked during Phase 0 so
+  progression cannot hide a feel candidate.
 - Garage owns profile, palette, and web-treatment selection; Shop spends
   collected flies through `ProgressionService`; Course Lab saves six
   EMPTY/LEAF/POD/VINE/GATE slots and substitutes the post-opening course during
@@ -122,7 +128,8 @@ without a reported regression.
   descriptions, direct
   comparison values, and `−` / `+` controls for gravity, forward drive,
   500–1400 px range, default RELEASE vs optional atomic RETARGET tap behavior,
-  aim forgiveness, attach catch, Reel shortening speed, automatic take-up and
+  aim forgiveness, attach catch, Reel shortening speed, full-meter Reel time,
+  automatic take-up and
   retained percentage, Burst cooldown, Burst/Dive percentages and durations,
   rope damping, rail presence/lethality, edge/floating/gate geometry sizes,
   starting/maximum speed and exact full-speed distance, shaped-route clearance,
@@ -197,7 +204,7 @@ without a reported regression.
   [30485134026](https://github.com/menno420/spider-swing/actions/runs/30485134026)
   passes the complete 82-check suite on Godot 4.7.1 at source
   `06a4c65aeb87b4d47a54423f9cd56ce87dcaaba5`.
-- `tests/test_runner.gd` — 90 declared checks: forty-four
+- `tests/test_runner.gd` — 91 declared checks: forty-five
   deterministic physics, twenty-one GUI-owned mobile HUD, fifteen front-end
   navigation/settings/progression, plus bootstrap and exact build-version
   contracts. Physics covers exact 40%/40% pull shares,
@@ -522,17 +529,23 @@ without a reported regression.
 
 ## In flight
 
-Phase 0.24 is delivered through PR #32. The level-zero Garden Spider, targeting
-policy, 5000 m speed ramp, 1000 m learning runway, 2000 m inward-rail
-protection, broad passage, progression, and save schema remain unchanged.
-Shop/Settings drags now reach their existing native scroller from every card
-region. The newly added weave pair keeps its high↔low requirement with shorter
-growth, 420 px cue spacing, a tested central transition band, and uncropped tall
-forest art. Temporary modes, spider locks, paid power, and Challenge mode remain
-deferred pending device review of the systems already present.
+Phase 0.25 is delivered through PR #38 as one isolated Reel comparison. The
+level-zero Balanced meter now lasts 2.0 seconds at 260 px/s; maxed Silk Winder
+and Silk Reserve reach about 2.48 seconds at 338 px/s. Runtime configuration
+resolves from a fresh preset so modifiers cannot compound during mount/preset
+paths, and DEBUG exposes both Reel speed and full-meter time. Targeting,
+automatic take-up, Burst/Dive, the 5000 m speed ramp, routes, progression levels,
+save schema, and course geometry remain unchanged. Anchor Drive's proposed
+second stored Burst remains deferred until this Reel build is judged on-device.
 
 ## Recently shipped (newest first)
 
+- **2026-07-30 — Bounded Reel resource comparison (PR #38).** Reduces the
+  level-zero shortening budget from about 1,333 px to 520 px, gives maxed shared
+  Reel tracks meaningful bounded headroom to about 838 px, prevents repeated
+  configuration paths from compounding upgrades, and adds direct full-meter
+  time tuning without changing velocity, aim, Burst, course pace, routes, or
+  saves.
 - **2026-07-30 — Forest-web interface and course rhythm (PR #30).** Unified
   Home, Garage, Shop, and Settings under one reusable forest-web theme,
   replaced native cosmetic dropdowns with body/Silk rails and a live preview,

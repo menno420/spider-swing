@@ -19,13 +19,16 @@ expected; importing `game/simulation/`, `game/application/`, `game/adapters/`, o
   scene names or display text.
 - Versioned gameplay configuration contracts — the tunable-parameter set in
   GDD § 6.6, including shared web range and the authoritative Reel/Burst pull
-  strengths, minimum response speeds, and Burst tangential retention.
+  strengths, Reel hold time, minimum response speeds, and Burst tangential
+  retention.
 - `RunSettlement` and its identity, so idempotent settlement is expressible in one
   place (GDD § 15.1, § 20).
 - `SpiderCatalog` profile and upgrade definitions. Profiles are modifiers over
   one `SwingConfig`; they do not fork the physics implementation. Every profile
   instantiates one canonical five-track core plus two identity tracks, with 20
-  levels and deterministic breakthroughs at 5/10/15/20.
+  levels and deterministic breakthroughs at 5/10/15/20. `resolved_config()`
+  always begins from a fresh named preset before applying one profile and its
+  upgrades, preventing repeated mount paths from compounding modifiers.
 - Versioned `PlayerProgress`, including spendable/lifetime flies, selections,
   capped upgrade levels, proportional migration from the former five-level
   schema, and the local creator pattern.

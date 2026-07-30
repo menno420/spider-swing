@@ -54,10 +54,14 @@ decision that needs an owner device comparison with a migrated near-max save.
 
 ## Structured order after this build
 
-1. **Device-balance the foundation.** Compare level 0, migrated mid-level, and
-   migrated max Garden Spider. Check Reel controllability, Burst usefulness,
-   breakthrough value, fly prices, and whether any upgrade fights the intended
-   line. Tune numbers before adding progression layers.
+1. **Device-balance the foundation.** Build
+   `0.12.0-reel-resource-test` isolates the first comparison: level-zero Reel
+   falls from 400 px/s and 3.33 seconds to 260 px/s and 2.0 seconds, while maxed
+   Silk Winder + Silk Reserve reaches about 338 px/s and 2.48 seconds. It also
+   resolves every preset/profile/upgrade combination from a fresh base so
+   repeated mount paths cannot compound capacity or recovery. Compare level 0,
+   migrated mid-level, and migrated max Garden Spider before adding a mechanic-
+   changing breakthrough.
 2. **Finish spider motion readability.** The current build interpolates the
    custom-drawn spider/web between fixed snapshots, enables mipmapped minification
    for the moving spider and fly, and adds restrained action poses. A later art
@@ -84,7 +88,12 @@ decision that needs an owner device comparison with a migrated near-max save.
 
 ## Explicitly deferred
 
-- Extra consecutive Burst charges: high control and balance impact.
+- Anchor Drive's proposed level-10 reserve Burst remains the next isolated
+  active-breakthrough prototype after Reel approval: capacity rises from one to
+  two, successful Bursts alone spend a pip, and one serial timer begins after
+  the first spend without resetting when the reserve is used. This preserves
+  the long-run one-Burst-per-cooldown rate. It is specified here, not yet
+  implemented.
 - Generic “web stability”: settling changes can fight player intent and need a
   precise measurable design before becoming progression.
 - Multiple simultaneous temporary modes or stacking strength.

@@ -661,16 +661,19 @@ func _render_garage() -> void:
 	_garage_name.text = str(item["name"])
 	_garage_description.text = str(item["description"])
 	_garage_tradeoff.text = "TRADE-OFF · %s" % item["tradeoff"]
-	var preview := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
-	SpiderCatalog.apply_to_config(preview, _state.progress)
+	var preview := SpiderCatalog.resolved_config(
+		SwingConfig.PRESET_BALANCED,
+		_state.progress,
+	)
 	var stats_format := (
-		"HITBOX %.1f px  ·  GRAVITY %.0f  ·  REEL %.0f px/s%s\n"
+		"HITBOX %.1f px  ·  GRAVITY %.0f  ·  REEL %.0f px/s · %.2f s%s\n"
 		+ "BURST %.0f%%  ·  MINIMUM %.0f px%s"
 	)
 	_garage_stats.text = stats_format % [
 			preview.player_collision_radius,
 			preview.gravity,
 			preview.reel_retraction_rate,
+			preview.reel_energy_capacity / preview.reel_drain_rate,
 			(
 				"  ·  GLIDE %.2f s" % preview.glide_duration
 				if preview.glide_duration > 0.0

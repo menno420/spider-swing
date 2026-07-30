@@ -12,9 +12,9 @@ The authoritative simulation. Advances at a fixed 60 Hz independent of render ra
   The forward drive moves horizontal velocity *toward* a target pace; it must not
   overwrite velocity every step (GDD § 4.2).
 - **Web Constraint** — the maximum-length rope with a small tunable elastic
-  allowance, plus Reel-In and Burst decomposition. Reel guarantees a minimum
-  inward speed on its first tick, then applies sustained radial acceleration while
-  its authoritative energy/shortening rules continue. Burst removes opposing
+  allowance, plus Reel-In and Burst decomposition. Reel shortens the
+  authoritative maximum rope length while its continuous energy lasts; it adds
+  no inward acceleration, minimum-speed correction, or forward boost. Burst removes opposing
   radial motion, guarantees an anchor-directed launch, retains a configured share
   of tangential movement, and never caps away faster natural inward motion. The
   constraint removes only velocity that would extend the rope past its allowed
