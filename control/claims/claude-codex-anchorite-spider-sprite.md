@@ -1,0 +1,1 @@
+- `claude/codex-anchorite-spider-sprite` · **Anchorite production sprite and presentation integration** · assets/runtime/characters, game/presentation/scripts, tests, art documentation · 2026-07-30
