@@ -16,7 +16,7 @@ The product *is* the swinging. Everything else exists to support it.
 > `com.menno420.spiderswing.dev` are all development identifiers and are all
 > expected to change.
 
-## Current phase: Phase 0.22 deep progression foundation
+## Current phase: Phase 0.23 forest-web interface and course rhythm
 
 **The first playable traversal test is implemented.** The project opens on a
 player-facing Home screen with Play, Garage, Shop, a six-step Tutorial, Course
@@ -30,18 +30,21 @@ Burst boost.
 ### What exists
 
 - A responsive starting screen with Play, Garage, Shop, Tutorial, Course Lab,
-  and Settings; settings persist the swing candidate, control hints, reduced
-  motion, and debug-tool visibility.
+  and Settings. One forest-web skin supplies the bark/moss/silk palette,
+  natural web backdrop, controls, panels, focus states, and silk-like
+  scrollbars across every screen; settings persist the swing candidate,
+  control hints, reduced motion, and debug-tool visibility.
 - A data-defined Garage with five comparison spiders—balanced, small/agile,
   heavy, gliding, and one-charge rail recovery—plus three web treatments and
   palette selection. Every
   profile modifies the same authoritative `SwingConfig`, and its trade-off is
   visible before Play.
-- A mobile-scrollable prototype Shop with the same five core tracks and two
-  identity tracks for every spider. Each track has 20 small levels and a
-  visible breakthrough at levels 5, 10, 15, and 20. Previous five-level saves
-  migrate proportionally. This is a local fly-funded balance lab, not an
-  in-app-purchase implementation.
+- A touch-scrollable prototype Shop with one fly-balance badge, themed upgrade
+  cards, and visible silk-knot progress. Every spider has the same five core
+  tracks and two identity tracks. Each track has 20 small levels and a visible
+  breakthrough at levels 5, 10, 15, and 20. Previous five-level saves migrate
+  proportionally. This is a local fly-funded balance lab, not an in-app-purchase
+  implementation.
 - A six-slot Course Lab that cycles deterministic EMPTY/LEAF/POD/VINE/GATE
   pieces, saves the pattern locally, and can playtest it immediately.
 - A data-driven six-step animated tutorial plus an in-game Menu return path.
@@ -64,14 +67,17 @@ Burst boost.
   shapes the rails and fly trail around each challenge. A curated,
   distance-banded pattern catalog prevents immediate repeats, introduces
   paired/staggered compositions only after 2000 m, and reserves predictable
-  later tight gaps for rail-only challenges. Leaf clusters, vine forks, hanging
-  seed pods, broken root stumps, broad rail-grown root passages, fly route arcs,
-  and lower anchors appear in distinct rhythms. Base Burst crosses 40% of the
+  later tight gaps for rail-only challenges. Authored weave chunks then cue and
+  clear a full Classic-sized route from high to low or low to high; compact
+  silk-suspended seed burrs add a small middle decision without creating a large
+  floating wall. Leaf clusters, vine forks, hanging seed pods, broken root
+  stumps, broad rail-grown root passages, fly route arcs, and lower anchors
+  appear in distinct rhythms. Base Burst crosses 40% of the
   selected web distance; downward taps make a one-shot 40% Dive Pull. Both are
   collision-checked, but only Burst uses a timer. Dive rearms after the next
   successful upper/obstacle web attachment. Either pull can be cancelled
   immediately by a recovery-web tap.
-- Small post-runway hazards gain only 6–12% size across later distance bands,
+- Small post-runway hazards gain only 8–16% size across later distance bands,
   with independent DEBUG controls for edge obstacle size, floating obstacle
   size, and gate opening size. The broad passage is not narrowed. Collision and
   presentation always consume the same scaled polygons.
@@ -121,16 +127,18 @@ Burst boost.
   catch, aim forgiveness, range, RELEASE/RETARGET behavior,
   deterministic input recording/replay, visual-theme comparison, independent
   opt-in overlays, and diagnostic export.
-- Forty-two deterministic physics tests (86 runtime contracts total),
+- Forty-three deterministic physics tests (88 runtime contracts total),
   including interruptible recovery webs, double-tap fallback, explicit
   release/retarget modes, opening-runway pacing, lower anchor coverage, exact
   pull-distance shares, speed-neutral Reel/take-up shortening, rail policy,
   swept pickups, idempotent progression, polygon anchors/collisions, and
   creator-pattern bounds, a three-lane Classic-sized steering-envelope sweep
-  through every root passage,
+  through every root passage, full-route clearance for both authored height
+  weaves, bounded middle-burr geometry,
   the guided opening trajectory, seven-track spider progression and
   breakthroughs, level-zero preservation, spider profiles/glide,
-  rescue consumption, presentation interpolation, proportional save migration,
+  rescue consumption, presentation interpolation, custom cosmetic rails,
+  touch-scroll stability, proportional save migration,
   and identical results from simulated 30/60/90/120 Hz render loops. Adapter tests
   prove that raw Android touch owns world intent while its emulated mouse copy
   is ignored, so one physical tap cannot attach and immediately release.

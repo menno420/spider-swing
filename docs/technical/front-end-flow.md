@@ -52,11 +52,16 @@ progression obscuring the feel test.
 The selected profile resolves into the same `SwingConfig` consumed by
 simulation. Presentation only shows those resolved values.
 
+Body palettes and Silk treatments use three-card button rails rather than
+platform-native dropdowns. `SilkPreview` draws the selected Classic, Dew, or
+Ember thread treatment in place, so the visual choice is readable before Play
+without owning web physics or attachment rules.
+
 The Shop gives every profile the same five core tracks plus two identity tracks.
 Each track has 20 small levels. Levels 5, 10, 15, and 20 are visible
 breakthroughs that grant one extra tuning step without adding another input or
-charge. The seven selected-profile rows live in a focus-following vertical
-`ScrollContainer` so they remain reachable at 1040×480.
+charge. The seven selected-profile rows use one fly-balance badge, CORE/IDENTITY
+accent cards, and four visible silk knots for those milestones.
 Purchases spend `spendable_flies` through `ProgressionService` and persist
 atomically through `SaveRepository`. Schema 4 maps each former five-level value
 to the equivalent four-level interval exactly once. There are no real-money
@@ -92,10 +97,13 @@ profile upgrades, palettes, web variants, and the saved creator pattern.
 `SaveRepository` is the exclusive persistent writer and performs a recoverable
 temp → primary rotation for both records.
 Settings survive app restarts; invalid or corrupt values fall back safely.
-The Settings and Shop cards use vertical `ScrollContainer` surfaces with larger
-text, mobile-sized controls, and focus-follow behavior. All actions remain
-reachable on the 1040×480 Android viewport from the owner recording and on
-taller aspect ratios.
+`SpiderUiTheme` supplies one Ancient-Forest-aligned bark, moss, sap, and silk
+skin to every screen, including panels, buttons, disabled/focus states, and
+scrollbars. Settings and Shop use Godot's built-in touch dragging with a
+12-pixel deadzone and 64-pixel wheel/controller step. `follow_focus` is off on
+these touch-first surfaces so tapping an upgrade cannot snap the viewport while
+that same gesture becomes a drag. All actions remain reachable on the 1040×480
+Android viewport from the owner recording and on taller aspect ratios.
 
 ## Ownership
 
@@ -121,14 +129,14 @@ No global manager or autoload is introduced.
   event-consuming Buttons;
 - the tutorial has exactly six steps and covers the live mechanics;
 - Settings owns a vertical scroll surface with readable type and mobile-sized
-  picker/action controls;
+  three-card preset/action controls, a touch deadzone, and no focus snapping;
 - invalid settings are rejected and valid changes emit once;
 - settings and progression encode/decode and actual atomic filesystem
   persistence round-trips;
 - duplicate settlement rejection, the five-core/two-identity Shop structure,
   20-level caps and breakthroughs, proportional one-time migration,
-  fly-funded upgrades, creator edits, selections, and fly/distance cosmetic
-  milestones;
+  fly-funded upgrades, creator edits, custom body/Silk rails and preview,
+  themed progress knots, selections, and fly/distance cosmetic milestones;
 - the composition root enters gameplay only through the Play request;
 - Menu emits one return request without leaking into a web action;
 - disabling debug tools removes their touch surface.

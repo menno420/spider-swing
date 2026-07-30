@@ -25,6 +25,10 @@ const CONTROL_PATTERNS := [
 const MASTERY_PATTERNS := [
 	{"id": &"floor_vine", "lane": &"high", "difficulty": 2},
 	{"id": &"canopy_pod", "lane": &"low", "difficulty": 2},
+	{"id": &"high_low_weave", "lane": &"weave", "difficulty": 3},
+	{"id": &"low_high_weave", "lane": &"weave", "difficulty": 3},
+	{"id": &"silk_burr_high", "lane": &"high", "difficulty": 3},
+	{"id": &"silk_burr_low", "lane": &"low", "difficulty": 3},
 	{"id": &"staggered_s", "lane": &"centre", "difficulty": 3},
 	{"id": &"rooted_gate", "lane": &"centre", "difficulty": 3},
 	{"id": &"tall_vine", "lane": &"high", "difficulty": 3},
@@ -39,6 +43,10 @@ const MASTERY_PATTERNS := [
 const DEEP_FOREST_PATTERNS := [
 	{"id": &"floor_vine", "lane": &"high", "difficulty": 3},
 	{"id": &"canopy_pod", "lane": &"low", "difficulty": 3},
+	{"id": &"high_low_weave", "lane": &"weave", "difficulty": 4},
+	{"id": &"low_high_weave", "lane": &"weave", "difficulty": 4},
+	{"id": &"silk_burr_high", "lane": &"high", "difficulty": 4},
+	{"id": &"silk_burr_low", "lane": &"low", "difficulty": 4},
 	{"id": &"staggered_s", "lane": &"centre", "difficulty": 4},
 	{"id": &"rooted_gate", "lane": &"centre", "difficulty": 4},
 	{"id": &"tall_vine", "lane": &"high", "difficulty": 4},
@@ -73,7 +81,7 @@ static func pattern_for_chunk(
 	if patterns.is_empty():
 		return {}
 	var band_seed := _band_index(distance_at_chunk) * 3
-	var preferred := posmod(chunk_index * 5 + band_seed, patterns.size())
+	var preferred := posmod(chunk_index * 7 + band_seed, patterns.size())
 	var recent := _recent_raw_ids(chunk_index, distance_at_chunk)
 	for offset in range(patterns.size()):
 		var candidate: Dictionary = patterns[posmod(
@@ -131,7 +139,7 @@ static func _recent_raw_ids(
 			continue
 		var band_seed := _band_index(previous_distance) * 3
 		var preferred := posmod(
-			previous_chunk * 5 + band_seed,
+			previous_chunk * 7 + band_seed,
 			patterns.size(),
 		)
 		recent.append(StringName(

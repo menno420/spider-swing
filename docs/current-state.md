@@ -8,7 +8,7 @@
 
 ## Stability baseline
 
-As of 2026-07-29, verified against the live surface. Known-good; do not re-audit
+As of 2026-07-30, verified against the live surface. Known-good; do not re-audit
 without a reported regression.
 
 **Engine and project**
@@ -22,6 +22,14 @@ without a reported regression.
 - The app opens on Home before gameplay. `FrontEndState` owns Home, Garage,
   Shop, Tutorial, Course Lab, and Settings navigation; the bootstrap composition
   root alone mounts or unmounts the front end and simulation.
+- `SpiderUiTheme` now gives all front-end routes one Ancient-Forest-aligned
+  bark/moss/silk skin, including panels, buttons, focus/disabled states, and
+  silk-like scrollbars. Garage uses explicit three-card body and Silk rails plus
+  a live thread preview instead of native dropdowns. Shop adds a fly balance
+  badge, CORE/IDENTITY cards, and four visible milestone knots. Settings and
+  Shop retain built-in Godot touch dragging but disable focus following, use a
+  12-pixel drag deadzone, and take 64-pixel wheel/controller steps so taps do
+  not snap the owner's 1040×480 scroll position.
 - The six-step in-engine Tutorial teaches movement, forgiving solid targets,
   release and momentum, speed-neutral rope-shortening Reel, percentage Burst,
   one-shot downward Dive Pull, shaped obstacles/gaps, restart, Menu, and optional
@@ -77,7 +85,13 @@ without a reported regression.
   forks, hanging seed pods, and broad rail-grown root passages. Rails are lethal by default;
   one explicit route plan coordinates each challenge's rails and fly trail.
   Most patterns open a high, low, or centre bypass; occasional later inward
-  passages are rail-only rather than stacked with a floating obstacle. Sparse Burst Frenzy
+  passages are rail-only rather than stacked with a floating obstacle. After
+  2000 m, two authored weave chunks alternate floor/ceiling growth around a
+  validated high→low or low→high Classic-sized route. Two more patterns add a
+  compact, roughly 95×80-pixel silk-suspended seed burr and advertise a clear
+  route above or below it. Small post-runway growth now rises gradually from 8%
+  to at most 16%; the safe opening and root-passage opening do not shrink.
+  Sparse Burst Frenzy
   pickups temporarily suppress cooldown. This remains prototype
   instrumentation, not an authored or approved Phase 1 chunk pack.
 - The default authoritative polygon scales are 94% for rail-grown obstacles and
@@ -134,22 +148,24 @@ without a reported regression.
 
 **Verification**
 
-- `python3 tools/verify.py --require-godot` — passes locally on Godot
-  `4.7.1.stable.official.a13da4feb`: architecture fixtures/scan, clean import,
-  front-end boot, and all 86 headless contracts.
-- PR #28 `game-quality` run
-  [30489461720](https://github.com/menno420/spider-swing/actions/runs/30489461720)
-  passes the same 86 contracts at source
-  `c8d093109860d4a0716aa2e3ddd7b6d163c82a70`. Android run
-  [30489461754](https://github.com/menno420/spider-swing/actions/runs/30489461754)
+- PR #30 `game-quality` run
+  [30520782041](https://github.com/menno420/spider-swing/actions/runs/30520782041)
+  passes architecture fixtures/scan, clean import, front-end boot, and all 88
+  contracts on Godot `4.7.1.stable.official.a13da4feb` at source
+  `e8faca0762bd7184115a913cf9dc5e9cbb90b29e`. Android run
+  [30520782029](https://github.com/menno420/spider-swing/actions/runs/30520782029)
   produced the verified `spider-swing-android-debug` artifact
-  [8739088355](https://github.com/menno420/spider-swing/actions/runs/30489461754/artifacts/8739088355).
+  [8750656978](https://github.com/menno420/spider-swing/actions/runs/30520782029/artifacts/8750656978).
+- The previous progression baseline remains PR #28. Its `game-quality` run
+  [30489461720](https://github.com/menno420/spider-swing/actions/runs/30489461720)
+  passed 86 contracts at source
+  `c8d093109860d4a0716aa2e3ddd7b6d163c82a70`.
 - The last merged baseline is PR #27. Its final `game-quality` run
   [30485134026](https://github.com/menno420/spider-swing/actions/runs/30485134026)
   passes the complete 82-check suite on Godot 4.7.1 at source
   `06a4c65aeb87b4d47a54423f9cd56ce87dcaaba5`.
-- `tests/test_runner.gd` — 86 declared checks: forty-two
-  deterministic physics, twenty-one GUI-owned mobile HUD, thirteen front-end
+- `tests/test_runner.gd` — 88 declared checks: forty-three
+  deterministic physics, twenty-one GUI-owned mobile HUD, fourteen front-end
   navigation/settings/progression, plus bootstrap and exact build-version
   contracts. Physics covers exact 40%/40% pull shares,
   detached targeted Burst, recovery-web interruption, double-tap fallback,
@@ -159,6 +175,7 @@ without a reported regression.
   rescue, spider profiles/glide, the shared seven-track/20-level structure,
   breakthrough steps, level-zero preservation, creator-pattern bounds, a 5000 m pacing curve,
   continuous contoured rails, a deterministic distance-banded pattern catalog,
+  full Classic-sized high↔low weave envelopes, bounded silk-burr geometry,
   upgradeable minimum Burst travel, and bounded Springtail impacts. A three-lane
   route sweep proves a Classic-sized spider
   clears both rail-grown roots across the passage's full width at every
@@ -169,8 +186,9 @@ without a reported regression.
   assets, custom presentation interpolation, moving-art mipmaps, and
   reduced-motion-safe action poses. The front-end group performs real filesystem
   settings and progression round-trips plus settlement idempotency,
-  proportional one-time upgrade migration, a mobile-scrollable seven-track
-  Shop, profile upgrades, and creator edits. The trajectory
+  proportional one-time upgrade migration, one shared forest-web skin,
+  non-snapping touch scroll, custom body/Silk rails, a mobile-scrollable
+  seven-track Shop, profile upgrades, and creator edits. The trajectory
   fixture produces the same final state when driven through simulated 30, 60,
   90, and 120 Hz render loops.
 - `tools/check_architecture.py` — 14 fixtures, all passing, asserting both
@@ -254,6 +272,20 @@ without a reported regression.
   `e01113d1a8d8f919125fd1630a42dad421589007`. The added presentation contract
   proves finished Ancient Forest obstacles request no geometry backing and the
   legacy dark-shadow draw path is absent.
+- PR #30 `game-quality` run
+  [30520782041](https://github.com/menno420/spider-swing/actions/runs/30520782041)
+  passes all 88 contracts on Godot 4.7.1 at source
+  `e8faca0762bd7184115a913cf9dc5e9cbb90b29e`. Android run
+  [30520782029](https://github.com/menno420/spider-swing/actions/runs/30520782029)
+  produced artifact
+  [`8750656978`](https://github.com/menno420/spider-swing/actions/runs/30520782029/artifacts/8750656978),
+  61,387,799 bytes with digest
+  `sha256:f0845b3e6fa8391adc068aeff37719076518fb17180ef2279cc92d933de90c6c`.
+  The downloaded ZIP matched that digest and passed archive validation. Its
+  61,791,366-byte APK passed archive validation with SHA-256
+  `2f9b820a7773a49ffbee1a74c1176ae660e0d2d3750ded9734667d55a37202a0`;
+  `build-info.txt` proves version `0.11.0-forest-web-polish-test`, exact source,
+  dev package, and display name `Spider Swing Forest Web Polish (dev)`.
 - `substrate-gate` — kit-owned. A born-red session card deliberately holds a PR
   until close-out; it must be green on the completed card before merge.
 - `android-debug` — **green on `main`, APK proven.** Run #1 produced artifact
@@ -456,16 +488,16 @@ without a reported regression.
 
 ## In flight
 
-Phase 0.22 is in flight through PR #28. The level-zero Garden Spider, targeting
-policy, course geometry, 5000 m speed ramp, 1000 m learning runway, 2000 m
-inward-rail protection, and broad passage remain unchanged. The Shop now exposes
-five shared core tracks and two identity tracks per spider over 20 small levels,
-with visible 5/10/15/20 breakthroughs and proportional schema migration. Custom
-presentation interpolation and mipmapped minification target the reported
-spider shimmer without changing authoritative positions. All 86 local contracts
-pass. Temporary modes, spider locks, paid power, Challenge mode, and additional
-course difficulty remain deferred until the progression and clarity slice is
-reviewed on device.
+Phase 0.23 is in flight through PR #30. The level-zero Garden Spider, targeting
+policy, 5000 m speed ramp, 1000 m learning runway, 2000 m inward-rail
+protection, and broad passage remain unchanged. Home, Garage, Shop, and Settings
+now share one forest-web skin; native cosmetic dropdowns are replaced with
+explicit card rails and a live Silk preview; touch lists no longer follow focus.
+After 2000 m, deterministic high↔low weaves and small Silk burrs add readable
+altitude decisions without random placement or hidden collision. All 88
+contracts pass in `game-quality`. Temporary modes, spider locks, paid power, and
+Challenge mode remain deferred until this UI/course rhythm slice is reviewed on
+device.
 
 ## Recently shipped (newest first)
 

@@ -16,6 +16,7 @@ static func run() -> Dictionary:
 	passed += _test_progression_is_idempotent_and_persistent(failures)
 	passed += _test_legacy_upgrade_levels_migrate_proportionally(failures)
 	passed += _test_garage_shop_and_creator_are_real_routes(failures)
+	passed += _test_garage_uses_spider_cosmetic_rails(failures)
 	passed += _test_shop_exposes_seven_mobile_readable_tracks(failures)
 	passed += _test_upgrades_and_creator_edits_use_progression_service(failures)
 	passed += _test_composition_root_mounts_front_end_first(failures)
@@ -132,7 +133,11 @@ static func _test_settings_are_scrollable_and_mobile_readable(
 	view.bind_state(state)
 	var scroll := view.find_child("SettingsScroll", true, false) as ScrollContainer
 	var content := view.find_child("SettingsContent", true, false) as VBoxContainer
-	var picker := view.find_child("SwingPreset", true, false) as OptionButton
+	var preset_rail := view.find_child(
+		"SwingPresetRail",
+		true,
+		false,
+	) as HBoxContainer
 	var reset := view.front_end_button(&"ResetSettings")
 	var play := view.front_end_button(&"SettingsPlay")
 	if scroll == null or content == null:
@@ -144,15 +149,24 @@ static func _test_settings_are_scrollable_and_mobile_readable(
 		failures.append("Settings scroll direction is not mobile-safe")
 		view.free()
 		return 0
-	if not scroll.follow_focus:
-		failures.append("Settings does not follow keyboard/controller focus")
+	if scroll.follow_focus or scroll.scroll_deadzone < 10 or \
+			scroll.scroll_vertical_custom_step < 48.0:
+		failures.append("Settings touch scrolling can still snap or feel twitchy")
 		view.free()
 		return 0
-	if picker == null or picker.custom_minimum_size.y < 64.0 or \
-			picker.get_theme_font_size("font_size") < 20:
-		failures.append("swing preset picker remains too small to read or tap")
+	if preset_rail == null or preset_rail.get_child_count() != 3:
+		failures.append("swing presets are not a consistent three-card selector")
 		view.free()
 		return 0
+	for preset_index in range(3):
+		var preset := view.front_end_button(
+			StringName("SwingPreset%d" % preset_index),
+		)
+		if preset == null or preset.custom_minimum_size.y < 64.0 or \
+				preset.get_theme_font_size("font_size") < 20:
+			failures.append("swing preset cards remain too small to read or tap")
+			view.free()
+			return 0
 	if reset.custom_minimum_size.y < 64.0 or \
 			play.custom_minimum_size.y < 64.0:
 		failures.append("Settings action buttons remain too small for mobile")
@@ -317,6 +331,61 @@ static func _test_garage_shop_and_creator_are_real_routes(
 	return 1
 
 
+static func _test_garage_uses_spider_cosmetic_rails(
+	failures: PackedStringArray,
+) -> int:
+	var state := FrontEndState.new()
+	state.configure(PlayerSettings.defaults(), PlayerProgress.defaults())
+	var requested_webs: Array[StringName] = []
+	state.web_variant_requested.connect(func(web_variant: StringName) -> void:
+		requested_webs.append(web_variant))
+	var view := FrontEndView.new()
+	view.bind_state(state)
+	view.front_end_button(&"Garage").pressed.emit()
+	var style_rail := view.find_child(
+		"SpiderStyleRail",
+		true,
+		false,
+	) as HBoxContainer
+	var web_rail := view.find_child(
+		"WebVariantRail",
+		true,
+		false,
+	) as HBoxContainer
+	var silk_preview := view.find_child(
+		"SilkTreatmentPreview",
+		true,
+		false,
+	) as SilkPreview
+	if style_rail == null or web_rail == null or silk_preview == null or \
+			style_rail.get_child_count() != 3 or web_rail.get_child_count() != 3:
+		failures.append("Garage cosmetics are not one themed body-and-silk rail")
+		view.free()
+		return 0
+	if view.find_child("SpiderStylePicker", true, false) != null or \
+			view.find_child("WebVariantPicker", true, false) != null:
+		failures.append("Garage still exposes a native dropdown beside themed UI")
+		view.free()
+		return 0
+	var dew := view.front_end_button(&"WebVariantDewSilk")
+	if dew == null or dew.custom_minimum_size.y < 44.0:
+		failures.append("Silk cards are too small for the mobile Garage")
+		view.free()
+		return 0
+	dew.pressed.emit()
+	if requested_webs != [PlayerProgress.WEB_DEW]:
+		failures.append("the custom Silk rail does not emit the selected treatment")
+		view.free()
+		return 0
+	if view.theme == null or \
+			view.theme.get_stylebox(&"grabber", &"VScrollBar") == null:
+		failures.append("front-end widgets do not share the central spider theme")
+		view.free()
+		return 0
+	view.free()
+	return 1
+
+
 static func _test_shop_exposes_seven_mobile_readable_tracks(
 	failures: PackedStringArray,
 ) -> int:
@@ -333,7 +402,8 @@ static func _test_shop_exposes_seven_mobile_readable_tracks(
 	if scroll == null or \
 			scroll.vertical_scroll_mode != ScrollContainer.SCROLL_MODE_AUTO or \
 			scroll.horizontal_scroll_mode != ScrollContainer.SCROLL_MODE_DISABLED or \
-			not scroll.follow_focus:
+			scroll.follow_focus or scroll.scroll_deadzone < 10 or \
+			scroll.scroll_vertical_custom_step < 48.0:
 		failures.append("Shop upgrades are not in a mobile-safe scrolling region")
 		view.free()
 		return 0
@@ -346,6 +416,20 @@ static func _test_shop_exposes_seven_mobile_readable_tracks(
 			not identity.text.contains("IDENTITY") or \
 			not core.text.contains("LEVEL 0/20"):
 		failures.append("Shop does not clearly present core and identity progression")
+		view.free()
+		return 0
+	var knots := view.find_child(
+		"UpgradeKnotsClassicReel",
+		true,
+		false,
+	) as Label
+	var balance := view.find_child(
+		"FlyBalanceBadge",
+		true,
+		false,
+	) as PanelContainer
+	if knots == null or not knots.text.contains("SILK KNOTS") or balance == null:
+		failures.append("Shop lacks its spider-themed progress and fly balance cues")
 		view.free()
 		return 0
 	var visible_tracks := 0

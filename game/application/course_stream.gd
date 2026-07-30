@@ -20,6 +20,7 @@ const ROUTE_HIGH := &"high"
 const ROUTE_LOW := &"low"
 const ROUTE_CENTRE := &"centre"
 const ROUTE_TIGHT := &"tight"
+const ROUTE_WEAVE := &"weave"
 
 var _geometry := CourseGeometry.new()
 var _middle_hazard_start_distance: float = 10000.0
@@ -127,9 +128,7 @@ func _append_chunk(result: CourseGeometry, chunk_index: int) -> void:
 	_append_route_flies(
 		result,
 		start_x,
-		float(route["guide_y"]),
-		StringName(route["lane"]),
-		float(route.get("guide_end_x", 710.0)),
+		route,
 	)
 
 	if not creator_piece.is_empty():
@@ -309,6 +308,22 @@ func _route_plan(
 			"guide_y": 370.0,
 			"guide_end_x": 690.0,
 		}
+	if pattern_id == &"high_low_weave":
+		return {
+			"lane": ROUTE_WEAVE,
+			"guide_y": CEILING_Y + 135.0,
+			"guide_end_y": FLOOR_Y - 135.0,
+			"guide_end_x": 850.0,
+			"guide_count": 7,
+		}
+	if pattern_id == &"low_high_weave":
+		return {
+			"lane": ROUTE_WEAVE,
+			"guide_y": FLOOR_Y - 135.0,
+			"guide_end_y": CEILING_Y + 135.0,
+			"guide_end_x": 850.0,
+			"guide_count": 7,
+		}
 	if lane == ROUTE_HIGH:
 		return {"lane": lane, "guide_y": CEILING_Y + 160.0}
 	if lane == ROUTE_LOW:
@@ -363,7 +378,7 @@ func _append_middle_challenge(
 ) -> void:
 	# Every challenge keeps a usable lower or upper rail before the hazard. Its
 	# fly trail communicates the intended route without making it mandatory.
-	# Small hazards grow by at most 12%; the broad passage opening never shrinks.
+	# Small hazards grow by at most 16%; the broad passage opening never shrinks.
 	var growth := _obstacle_growth_scale(distance_at_chunk)
 	match pattern_id:
 		&"floor_vine":
@@ -424,6 +439,54 @@ func _append_middle_challenge(
 					start_x, ceiling_x, ceiling_y, route_lane, true),
 				105.0 * _floating_obstacle_scale * growth,
 				165.0 * _floating_obstacle_scale * growth,
+			)
+		&"high_low_weave":
+			var floor_x := start_x + 430.0
+			var ceiling_x := start_x + 770.0
+			_append_root_stump(
+				result,
+				floor_x,
+				_boundary_edge_y_at(
+					start_x, floor_x, floor_y, route_lane, false),
+				false,
+				168.0 * _floating_obstacle_scale * growth,
+				310.0 * _floating_obstacle_scale * growth,
+			)
+			_append_hanging_seed_pod(
+				result,
+				ceiling_x,
+				_boundary_edge_y_at(
+					start_x, ceiling_x, ceiling_y, route_lane, true),
+				150.0 * _floating_obstacle_scale * growth,
+				310.0 * _floating_obstacle_scale * growth,
+			)
+		&"low_high_weave":
+			var ceiling_x := start_x + 430.0
+			var floor_x := start_x + 770.0
+			_append_hanging_seed_pod(
+				result,
+				ceiling_x,
+				_boundary_edge_y_at(
+					start_x, ceiling_x, ceiling_y, route_lane, true),
+				150.0 * _floating_obstacle_scale * growth,
+				310.0 * _floating_obstacle_scale * growth,
+			)
+			_append_root_stump(
+				result,
+				floor_x,
+				_boundary_edge_y_at(
+					start_x, floor_x, floor_y, route_lane, false),
+				false,
+				168.0 * _floating_obstacle_scale * growth,
+				310.0 * _floating_obstacle_scale * growth,
+			)
+		&"silk_burr_high", &"silk_burr_low":
+			_append_floating_seed_burr(
+				result,
+				Vector2(start_x + 650.0, 398.0),
+				92.0,
+				78.0,
+				_floating_obstacle_scale * growth,
 			)
 		&"rooted_gate":
 			var x := start_x + 690.0
@@ -546,10 +609,10 @@ func _obstacle_growth_scale(distance_at_chunk: float) -> float:
 	if distance_at_chunk < CoursePatternCatalog.CONTROL_START_DISTANCE:
 		return 1.0
 	if distance_at_chunk < CoursePatternCatalog.MASTERY_START_DISTANCE:
-		return 1.06
+		return 1.08
 	if distance_at_chunk < CoursePatternCatalog.DEEP_FOREST_START_DISTANCE:
-		return 1.10
-	return 1.12
+		return 1.14
+	return 1.16
 
 
 func _append_creator_challenge(
@@ -687,20 +750,25 @@ func _append_guides(
 func _append_route_flies(
 	result: CourseGeometry,
 	start_x: float,
-	guide_y: float,
-	route_lane: StringName,
-	guide_end_x: float,
+	route: Dictionary,
 ) -> void:
+	var guide_y := float(route["guide_y"])
+	var guide_end_y := float(route.get("guide_end_y", guide_y))
+	var guide_end_x := float(route.get("guide_end_x", 710.0))
+	var route_lane := StringName(route["lane"])
+	var guide_count := maxi(2, int(route.get("guide_count", 5)))
 	var arc := 0.0
-	if route_lane == ROUTE_HIGH:
+	if is_equal_approx(guide_y, guide_end_y) and route_lane == ROUTE_HIGH:
 		arc = 46.0
-	elif route_lane == ROUTE_LOW:
+	elif is_equal_approx(guide_y, guide_end_y) and route_lane == ROUTE_LOW:
 		arc = -46.0
-	for index in range(5):
-		var progress := float(index) / 4.0
+	for index in range(guide_count):
+		var progress := float(index) / float(guide_count - 1)
+		var eased_progress := progress * progress * (3.0 - 2.0 * progress)
 		result.fly_positions.append(Vector2(
 			lerpf(start_x + 230.0, start_x + guide_end_x, progress),
-			guide_y + sin(progress * PI) * arc,
+			lerpf(guide_y, guide_end_y, eased_progress) + \
+				sin(progress * PI) * arc,
 		))
 
 
@@ -785,6 +853,31 @@ func _append_hanging_seed_pod(
 		Vector2(center_x - width * 0.20, ceiling_y + height * 0.82),
 		Vector2(center_x - width * 0.40, ceiling_y + height * 0.43),
 	]))
+
+
+func _append_floating_seed_burr(
+	result: CourseGeometry,
+	center: Vector2,
+	width: float,
+	height: float,
+	scale: float,
+) -> void:
+	# A small bramble seed caught in old silk. It is an authored challenge,
+	# never an individually random spawn; the pale support thread is
+	# presentation-only and the compact burr polygon is the complete collision.
+	var half_width := width * 0.5
+	var half_height := height * 0.5
+	var polygon := PackedVector2Array([
+		center + Vector2(-half_width, -half_height * 0.18),
+		center + Vector2(-half_width * 0.58, -half_height * 0.82),
+		center + Vector2(-half_width * 0.08, -half_height),
+		center + Vector2(half_width * 0.58, -half_height * 0.72),
+		center + Vector2(half_width, -half_height * 0.06),
+		center + Vector2(half_width * 0.54, half_height * 0.76),
+		center + Vector2(0.0, half_height),
+		center + Vector2(-half_width * 0.70, half_height * 0.62),
+	])
+	result.obstacles.append(_scaled_polygon(polygon, center, scale))
 
 
 func _append_split_root_gate(

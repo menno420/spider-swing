@@ -87,11 +87,11 @@ Run directly:
 godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-86 checks, grouped so one subsystem failure never hides the rest:
+88 checks, grouped so one subsystem failure never hides the rest:
 
 - engine, main-scene, input-action, 60 Hz, renderer/viewport, Android preset,
   inward-dependency, and no-autoload bootstrap contracts;
-- forty-two deterministic physics contracts, including extended arbitrary-point
+- forty-three deterministic physics contracts, including extended arbitrary-point
   solid attachment, larger aim forgiveness, momentum preservation, speed-neutral
   Reel and automatic take-up, exact Burst/Dive distance shares and minimum
   Burst travel, recovery-web interruption,
@@ -100,7 +100,8 @@ godot --headless --path . --script res://tests/test_runner.gd
   bounded organic streaming with continuous contoured rails, lower rail
   coverage, independent rail lethality, authoritative obstacle scaling, a
   deterministic distance-banded pattern catalog with repetition protection and
-  both single/paired natural compositions, a
+  both single/paired natural compositions, authored high↔low weave envelopes,
+  compact silk-burr bounds, a
   three-lane Classic-sized steering-envelope sweep through every root-passage
   fly route, the guided opening
   trajectory, one-run rescue, five spider profiles, the shared
@@ -121,13 +122,15 @@ godot --headless --path . --script res://tests/test_runner.gd
   growth socket, stump, and three depth layers, custom fixed-snapshot spider
   interpolation, mipmapped moving art, restrained/reduced-motion-safe action
   poses, and world input waits for Godot GUI handling;
-- thirteen front-end contracts proving Home starts before gameplay,
+- fourteen front-end contracts proving Home starts before gameplay,
   Play/Garage/Shop/Tutorial/Course Lab/Settings route correctly, the six tutorial
   steps cover live mechanics, Settings
-  is scrollable and mobile-readable, options
+  is touch-scrollable without focus snapping and mobile-readable, options
   validate and emit once, serialization is stable, atomic filesystem persistence
   round-trips, progression settlements remain idempotent, the seven-track Shop
-  remains mobile-scrollable, former five-level saves migrate once and
+  remains mobile-scrollable, one central forest-web theme skins every screen,
+  custom body/Silk rails and the Silk preview replace native dropdowns, former
+  five-level saves migrate once and
   proportionally, profile upgrades and creator edits persist, milestone unlocks
   persist, and only a play request mounts the run.
 

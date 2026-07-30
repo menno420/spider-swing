@@ -22,7 +22,12 @@ endpoints; it does not drive physics (GDD § 17.2).
 
 - `front_end.tscn` + `front_end.gd` — responsive Home, Garage, mobile-scrollable
   seven-track Shop, Tutorial, Course Lab, and Settings surfaces bound to
-  application-owned state.
+  application-owned state. The forest-web background and all selectors use
+  presentation state only.
+- `spider_ui_theme.gd` — one Ancient-Forest-aligned theme for panels, buttons,
+  focus/disabled states, touch scroll configuration, and silk-like scrollbars.
+- `silk_preview.gd` — compact visual-only Classic/Dew/Ember thread preview for
+  the Garage's custom Silk card rail.
 - `tutorial_preview.gd` — reduced-motion-aware in-engine mechanics animation.
 - `swing_lab.tscn` + `swing_lab.gd` — Phase 0 camera, anchors, spider, web,
   HUD, Reel energy, opening/rescue/profile feedback,
@@ -37,6 +42,9 @@ endpoints; it does not drive physics (GDD § 17.2).
   every ceiling/floor profile, including profile changes and chunk seams.
   Wall-grown art overlaps a mossy growth socket behind that rail, which is drawn
   over the join, and texture regions are cropped without changing aspect ratio.
+  Compact middle burrs use the bramble grammar but skip wall-growth sockets and
+  hang from thin presentation-only silk; their small polygon remains the whole
+  collision.
   The broad passage uses the same rail-grown bramble/vine grammar instead of a
   stretched circular gate sprite. Three independently scrolling, mirrored
   forest-depth layers replace the abstract circle/tree backdrop at deliberately

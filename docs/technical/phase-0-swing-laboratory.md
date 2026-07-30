@@ -108,6 +108,10 @@ routes, flies, and recovery timing. Later chunks vary:
 - floor-grown leaf clusters and vine forks;
 - ceiling-hanging seed pods and leaf clusters;
 - broad root passages grown from both rails, with a steerable centre opening;
+- post-2000 m high→low and low→high weave pairs, each with seven flies along a
+  full Classic-sized safe curve between alternating rail growth;
+- compact post-2000 m seed burrs suspended in old silk, with the complete
+  collision bounded to the small visible bramble rather than its safe thread;
 - lower rail targets placed before the pattern's key hazard;
 - five-fly trails placed from the same route plan that shapes the rails and
   selected obstacle;
@@ -135,9 +139,11 @@ production balancing, and final art for the other spider profiles remain
 deferred.
 
 The default floating-hazard scale is 90%, edge-grown obstacles use 94%, and gate
-openings use 112%. These are independent DEBUG values. `CourseStream` scales the
-authoritative polygons before either simulation or presentation receives them,
-so a smaller drawing can never retain an invisible old collision shape.
+openings use 112%. Small hazards receive a gradual 8–16% post-runway growth
+factor; the wide root opening never shrinks. These are independent DEBUG values.
+`CourseStream` scales the authoritative polygons before either simulation or
+presentation receives them, so a smaller drawing can never retain an invisible
+old collision shape.
 
 Fly and Burst Frenzy pickups are collected with swept tests, so a fast spider
 cannot tunnel through them. Burst Frenzy suppresses Anchor Burst cooldown for
@@ -241,8 +247,9 @@ product decisions.
   deterministic organic geometry after it, one shared route plan for rails,
   fly guidance, and obstacles, rail-only late tight routes, lower-anchor
   coverage, independently scaled obstacle polygons, creator-pattern bounds, a
-  three-lane Classic-sized steering-envelope sweep through root passages, and a bounded seven-chunk
-  window;
+  three-lane Classic-sized steering-envelope sweep through root passages,
+  high↔low weave envelopes, small detached-burr bounds, and a bounded
+  seven-chunk window;
 - a one-second safe guided opening that remains interruptible from its first
   tick;
 - one authoritative rescue followed by normal death on the next lethal contact;
@@ -264,7 +271,7 @@ product decisions.
 
 ## Owner device playtest
 
-Install `0.6.1-fair-corridor-test` after uninstalling the previous ephemerally
+Install `0.11.0-forest-web-polish-test` after uninstalling the previous ephemerally
 signed dev app, then check:
 
 1. start a run without touching the screen for one second; the ordinary opening
@@ -331,5 +338,12 @@ signed dev app, then check:
 29. compare the spider at steady speed, during Reel, and during Burst on the
     1040×480 device recording path; confirm it no longer vibrates or leaves the
     attached web behind, and that the restrained poses remain readable.
+30. swipe Shop and Settings from both buttons and empty card space; verify a tap
+    never snaps the list and a drag remains smooth, then compare Classic, Dew,
+    and Ember in the live Silk preview;
+31. after 2000 m, follow both seven-fly weave curves and confirm they ask for a
+    readable high→low or low→high change without clipping either obstacle;
+32. pass the small silk-suspended burr above and below; its visible bramble,
+    collision outline, and safe support thread must agree.
 
 Phase 1 remains gated on an explicitly approved movement baseline.

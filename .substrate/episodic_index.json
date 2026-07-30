@@ -328,7 +328,7 @@
       "\ud83d\udca1",
       "\ud83d\udcca"
     ],
-    "summary": "> **Status:** `in-progress`"
+    "summary": "> **Status:** `complete`"
   },
   {
     "slug": "remove-legacy-obstacle-backing",
@@ -357,5 +357,19 @@
       "\ud83d\udcca"
     ],
     "summary": "> **Status:** `complete`"
+  },
+  {
+    "slug": "forest-web-interface",
+    "date": "2026-07-30",
+    "tags": [
+      "forest-web",
+      "interface",
+      "course",
+      "rhythm",
+      "session",
+      "\ud83d\udca1",
+      "\ud83d\udcca"
+    ],
+    "summary": "> **Status:** `in-progress`"
   }
 ]
