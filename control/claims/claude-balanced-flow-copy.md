@@ -1,0 +1,1 @@
+- `claude/balanced-flow-copy` · **Clarify Balanced Flow automatic take-up direction** · control/claims · 2026-07-30
