@@ -292,3 +292,20 @@
   capacity limit and keeps the result attributable; restoring the former
   3.33-second meter would reintroduce the unlimited-resource problem.
 - provenance: Menno's 0.12.0 device playtest after PR #38
+
+## [D-0021] Give Anchorite a heavy burrowing-spider silhouette
+
+- status: decided
+- date: 2026-07-30
+- verdict: Anchorite uses a broad, low, tarantula-like burrowing-spider body
+  with a compact eye cluster, heavy chelicerae, thick legs, and an earthy
+  charcoal/bronze palette. It shares Garden's right-facing 384×181 source and
+  finished-sprite renderer but remains scaled by Anchorite's authoritative
+  profile radius.
+- why: Anchorite's gameplay identity is heavy, powerful Reel-In with stable
+  momentum. A distinct mygalomorph silhouette communicates that mass at the
+  96×46 gameplay footprint, while the former generic procedural body and an
+  oversized jumping-spider face would make it look like a recolored Garden
+  Spider. Presentation must express the trade-off without owning collision.
+- provenance: Menno's request for another species-readable production sprite
+  and the Anchorite production-art session

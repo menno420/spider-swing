@@ -807,7 +807,7 @@ func _draw_spider() -> void:
 		SpiderCatalog.SPRINGTAIL:
 			body = body.lerp(Color("435b67"), 0.42)
 			accent = accent.lerp(GREEN, 0.45)
-	var finished_sprite := _draw_classic_spider_sprite(
+	var finished_sprite := _draw_finished_spider_sprite(
 		center,
 		rotation,
 		scale,
@@ -893,15 +893,21 @@ func _draw_spider() -> void:
 		draw_line(center, center + render_velocity * 0.12, YELLOW, 2.0)
 
 
-func _draw_classic_spider_sprite(
+func _draw_finished_spider_sprite(
 	center: Vector2,
 	rotation: float,
 	scale: float,
 	pose_scale: Vector2,
 ) -> bool:
-	if _snapshot.spider_id != SpiderCatalog.CLASSIC:
-		return false
-	var texture := _art_texture(ArtAssetCatalog.CLASSIC_SPIDER)
+	var asset_id := ArtAssetCatalog.CLASSIC_SPIDER
+	match _snapshot.spider_id:
+		SpiderCatalog.CLASSIC:
+			asset_id = ArtAssetCatalog.CLASSIC_SPIDER
+		SpiderCatalog.ANCHORITE:
+			asset_id = ArtAssetCatalog.ANCHORITE_SPIDER
+		_:
+			return false
+	var texture := _art_texture(asset_id)
 	if texture == null:
 		return false
 	var tint := Color.WHITE

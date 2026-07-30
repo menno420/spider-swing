@@ -16,6 +16,7 @@ const FOREST_BACKDROP_FAR := &"forest_backdrop_far"
 const FOREST_BACKDROP_MID := &"forest_backdrop_mid"
 const FOREST_BACKDROP_NEAR := &"forest_backdrop_near"
 const CLASSIC_SPIDER := &"classic_spider"
+const ANCHORITE_SPIDER := &"anchorite_spider"
 const GOLDEN_FLY := &"golden_fly"
 
 const ASSETS := {
@@ -37,6 +38,8 @@ const ASSETS := {
 		"res://assets/runtime/forest-biome/forest-backdrop-near.png",
 	CLASSIC_SPIDER:
 		"res://assets/runtime/characters/classic-garden-spider.png",
+	ANCHORITE_SPIDER:
+		"res://assets/runtime/characters/anchorite-burrowing-spider.png",
 	GOLDEN_FLY:
 		"res://assets/runtime/collectibles/golden-forest-fly.png",
 }

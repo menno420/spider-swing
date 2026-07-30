@@ -115,6 +115,22 @@ as venue `any`.)
 kit-owned — they refresh at upgrade between the fence markers; local
 findings go here, below the fence.)
 
+- 2026-07-30 · capability · `owner-live` · **Generated character art can be
+  converted into a production Godot sprite and proven through Android** · the
+  built-in image generator plus one precise facial edit produced an
+  Anchorite source on a flat chroma key; local key removal, alpha inspection,
+  and 96×46 comparison yielded a transparent 384×181 PNG with SHA-256
+  `9f1de7799ca0a3e78aebe5317418106aba61c4d9c02a2e6cd88c832166763175`.
+  PR #44 `game-quality` run
+  [30566614922](https://github.com/menno420/spider-swing/actions/runs/30566614922)
+  passed 91/91 on pinned Godot and Android run
+  [30566616021](https://github.com/menno420/spider-swing/actions/runs/30566616021)
+  embedded the imported texture in artifact
+  [8769099561](https://github.com/menno420/spider-swing/actions/runs/30566616021/artifacts/8769099561)
+  from exact source `9f82310e52d5925a92d2b4e6d8d78c1ddfa2ed09` · retain a
+  high-contrast disposable background during generation, then key it to alpha
+  locally and inspect both source and gameplay sizes before integration.
+
 - 2026-07-30 · capability · `owner-live` · **The headless simulation lab
   batch-runs the authoritative simulation in this container** · a fresh
   official `Godot_v4.7.1-stable_linux.x86_64` download (re-verifying the

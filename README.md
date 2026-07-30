@@ -91,7 +91,8 @@ Burst boost.
   Forest is the default and now adds a cohesive finished-art candidate:
   world-continuous mossy branch rails, rooted brambles, hanging thorn vines,
   broken root stumps, a broad root passage, three layered forest depths, the
-  Classic Garden Spider, and golden forest flies. Its transparent obstacle
+  bright Classic Garden Spider, the broad charcoal-and-bronze Anchorite, and
+  golden forest flies. Its transparent obstacle
   sprites replace the prototype polygon backing instead of layering over it;
   root-and-moss growth sockets join every wall-grown hazard behind the rail.
   Broad growth uses aspect-preserving crops; tall narrow growth uses the full
@@ -102,7 +103,8 @@ Burst boost.
   rates and stay lower contrast than gameplay.
   Custom presentation interpolation now blends the spider and attached web
   between authoritative 60 Hz snapshots. Mipmapped minification keeps the
-  high-resolution spider and fly art readable at their small gameplay size,
+  high-resolution Garden, Anchorite, and fly art readable at their small
+  gameplay size,
   while restrained Reel, pull, glide, and speed poses add motion without
   changing collision or simulation.
   DEBUG → LOOK swaps visual treatment without changing a course polygon or

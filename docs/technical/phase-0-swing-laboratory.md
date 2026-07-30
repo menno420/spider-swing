@@ -270,14 +270,14 @@ product decisions.
 - one gameplay intent for each Android touchscreen press even though the
   Control-based HUD keeps Godot touch-to-mouse emulation enabled;
 - fixed-rate trajectory equivalence at simulated 30/60/90/120 Hz render rates.
-- all six finished-art runtime textures load through one presentation-owned
+- all eleven finished-art runtime textures load through one presentation-owned
   catalog without changing authoritative course geometry.
 - custom spider/web presentation interpolates fixed snapshots, snaps teleports,
   honors reduced motion, and uses mipmaps for heavily minified moving art.
 
 ## Owner device playtest
 
-Install `0.12.1-reel-speed-correction-test` after uninstalling the previous
+Install `0.13.0-anchorite-art-test` after uninstalling the previous
 ephemerally signed dev app, then check:
 
 1. start a run without touching the screen for one second; the ordinary opening
@@ -363,5 +363,9 @@ ephemerally signed dev app, then check:
 34. compare level-zero Garden against maxed Silk Winder + Silk Reserve. The
     maxed version should offer clearly stronger and longer arc correction, but
     neither version should feel mandatory for every ordinary route.
+35. switch repeatedly between Garden and Anchorite in the Garage and in play.
+    Anchorite should read as a broad, low, heavy burrowing spider at gameplay
+    size, retain clean alpha without a magenta fringe, rotate and pose smoothly,
+    and remain aligned with the unchanged collision outline.
 
 Phase 1 remains gated on an explicitly approved movement baseline.
