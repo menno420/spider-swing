@@ -156,7 +156,18 @@ const PARAMETERS := [
 		"minimum": 80.0,
 		"maximum": 720.0,
 		"step": 20.0,
-		"quick": [400.0, 480.0, 560.0, 640.0],
+		"quick": [220.0, 260.0, 340.0, 400.0],
+	},
+	{
+		"id": &"reel_capacity_seconds",
+		"category": CATEGORY_ROPE,
+		"label": "Full Reel time",
+		"help": "Continuous hold time available from a full Reel meter.",
+		"format": &"seconds",
+		"minimum": 0.8,
+		"maximum": 4.0,
+		"step": 0.2,
+		"quick": [1.0, 1.5, 2.0, 3.33],
 	},
 	{
 		"id": &"auto_take_up",
@@ -182,7 +193,7 @@ const PARAMETERS := [
 	},
 	{
 		"id": &"attach_catch_pct",
-		"category": CATEGORY_ROPE,
+		"category": CATEGORY_MOVEMENT,
 		"label": "Attach catch-up",
 		"help": "Immediate rope shortening allowed when a web first connects.",
 		"format": &"percent",

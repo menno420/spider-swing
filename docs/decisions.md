@@ -263,3 +263,18 @@
   event bubbling, bounded route relief, and uncropped vertical art repair the
   observed regressions without changing physics, aim, or the protected runway.
 - provenance: Menno's `0.11.0-forest-web-polish-test` recordings and PR #32
+
+## [D-0019] Bound Reel before adding an active breakthrough
+
+- status: decided
+- date: 2026-07-30
+- verdict: Level-zero Balanced Reel provides 260 px/s shortening for 2.0
+  continuous seconds; active breakthrough mechanics remain isolated from this
+  base-feel comparison.
+- why: The former 400 px/s, 3.33-second meter could shorten about 1,333 px—more
+  than the complete usable web span—so capacity progression rarely mattered.
+  Resolving upgrades once from a fresh preset removes accidental compounding;
+  testing Reel separately keeps a later reserve Burst from obscuring which
+  change improved or harmed control.
+- provenance: Menno's progression/Reel direction and the Reel resource
+  rebaseline session

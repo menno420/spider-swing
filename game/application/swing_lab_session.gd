@@ -53,9 +53,9 @@ func _ready() -> void:
 
 func configure_progress(progress: PlayerProgress) -> void:
 	_progress = progress.copy()
-	if not is_inside_tree():
-		_config.apply_preset(_config.preset_name)
-		SpiderCatalog.apply_to_config(_config, _progress)
+	_config = SpiderCatalog.resolved_config(_config.preset_name, _progress)
+	if is_inside_tree():
+		_world.config = _config
 
 
 func configure_creator_pattern(pattern: Array[StringName]) -> void:
@@ -153,8 +153,7 @@ func toggle_slow_motion() -> void:
 
 
 func apply_preset(name: StringName) -> void:
-	_config.apply_preset(name)
-	SpiderCatalog.apply_to_config(_config, _progress)
+	_config = SpiderCatalog.resolved_config(name, _progress)
 	_world.config = _config
 	_world.surface_bounce_ready = _config.surface_bounce_enabled
 	_reset_course_stream()
@@ -226,6 +225,11 @@ func _after_tuning_change(parameter: StringName) -> void:
 	elif parameter == &"course_rails" and \
 			not _config.course_boundaries_enabled:
 		_world.web.release()
+	elif parameter == &"reel_capacity_seconds":
+		_world.web.reel_energy = minf(
+			_world.web.reel_energy,
+			_config.reel_energy_capacity,
+		)
 	elif parameter == &"impact_shell":
 		_world.surface_bounce_ready = _config.surface_bounce_enabled
 

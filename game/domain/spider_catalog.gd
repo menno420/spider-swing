@@ -319,6 +319,15 @@ static func next_breakthrough_level(level: int) -> int:
 	)
 
 
+static func resolved_config(
+	preset_name: StringName,
+	progress: PlayerProgress,
+) -> SwingConfig:
+	var config := SwingConfig.from_preset(preset_name)
+	apply_to_config(config, progress)
+	return config
+
+
 static func apply_to_config(
 	config: SwingConfig,
 	progress: PlayerProgress,

@@ -109,10 +109,14 @@ Burst boost.
   collision. DEBUG → OVERLAYS
   independently enables exact collision outlines or web-target guides; both
   load off.
-- Base Reel-In remains 400 px/s and Burst remains 40% with 80 px minimum useful
+- Base Reel-In is an isolated comparison at 260 px/s with 2.0 seconds of full
+  energy: enough to shorten about 520 px, rather than more than the complete
+  usable web span. Maxing Silk Winder and Silk Reserve reaches about 338 px/s,
+  2.48 seconds, and 838 px of total shortening. Reel still adds no acceleration
+  or forward-speed correction. Burst remains 40% with 80 px minimum useful
   travel. Shared fly upgrades can improve Reel rate, Burst share, minimum Burst
   travel, Reel capacity, and Reel recovery; two identity tracks per spider
-  reinforce its existing trade-off. Level-zero handling is unchanged.
+  reinforce its existing trade-off.
 - Automatic rope take-up retains 85% of natural inward slack by default without
   adding speed. DEBUG can compare it off/on, alter the retained percentage, hide
   the course rails, or make visible rails lethal.
@@ -126,7 +130,7 @@ Burst boost.
 - A presentation view with camera follow, 228-pixel thumb targets,
   action flashes/haptics, pause/frame-step/slow-motion, and a ten-section,
   touch-first DEBUG panel with direct values for Burst/Dive percentages and
-  durations, Burst cooldown, Reel shortening speed,
+  durations, Burst cooldown, Reel shortening speed and full-meter hold time,
   natural take-up mode/percentage, rail presence/lethality, obstacle sizes,
   pace endpoints and full-speed distance, shaped-route clearance, the
   inward-rail start distance, and tight gaps,
@@ -134,7 +138,7 @@ Burst boost.
   catch, aim forgiveness, range, RELEASE/RETARGET behavior,
   deterministic input recording/replay, visual-theme comparison, independent
   opt-in overlays, and diagnostic export.
-- Forty-three deterministic physics tests (88 runtime contracts total),
+- Forty-five deterministic physics tests (91 runtime contracts total),
   including interruptible recovery webs, double-tap fallback, explicit
   release/retarget modes, opening-runway pacing, lower anchor coverage, exact
   pull-distance shares, speed-neutral Reel/take-up shortening, rail policy,
@@ -155,9 +159,9 @@ Burst boost.
 
 No authored Phase 1 chunk pack, moving hazards, finalized currency/economy,
 missions, production monetization, or approved production art. Temporary
-spider-style modes, ability-bearing spider locks, extra Burst charges, and
+spider-style modes, ability-bearing spider locks, a second stored Burst, and
 fixed-stat Challenge runs are deliberately deferred until the new progression
-foundation is device-balanced. The generated environment tiles, fly-funded upgrades,
+foundation and the isolated Reel rebaseline are device-balanced. The generated environment tiles, fly-funded upgrades,
 temporary boost, one-run rescue, spider profiles, and local Course Lab are
 deliberately small architecture-proving slices—not approved balance or
 production content. There is no Google Play Billing SDK, real-money catalogue,

@@ -27,10 +27,11 @@ failure never hides the rest.
 
 ## What exists now
 
-79 runtime contracts: ten bootstrap/build checks plus forty deterministic
-physics, eighteen mobile HUD, and eleven front-end checks. The physics group proves continuous
+91 runtime contracts: ten bootstrap/build checks plus forty-five deterministic
+physics, twenty-one mobile HUD, and fifteen front-end checks. The physics group proves continuous
 solid targeting, larger aim forgiveness, momentum-preserving release,
-speed-neutral Reel and automatic take-up, exact percentage Burst/Dive Pull travel,
+speed-neutral Reel and automatic take-up, the bounded base/max Reel resource
+budgets, non-compounding config resolution, exact percentage Burst/Dive Pull travel,
 recovery-web interruption, detached cooldown double-tap fallback, explicit
 release/retarget behavior, a paced bounded organic course with lower rail routes,
 independent rail lethality, swept pickups, authoritative polygon collisions, a

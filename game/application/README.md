@@ -54,7 +54,9 @@ new level is a 5/10/15/20 breakthrough so presentation can acknowledge a real
 milestone without owning progression truth.
 `SwingLabSession` owns the active laboratory command buffer, fixed-step order,
 candidate presets, snapshots, recording, replay, independent diagnostic-overlay
-state, and chunk-boundary refreshes. `CourseStream` owns the seven-chunk
+state, and chunk-boundary refreshes. It requests a freshly resolved
+preset/profile/upgrade configuration rather than layering modifiers onto a
+reused instance. `CourseStream` owns the seven-chunk
 deterministic geometry window; `CoursePatternCatalog` owns its curated pattern
 vocabulary and distance bands. Neither imports
 adapters or presentation. See ADR 0002.

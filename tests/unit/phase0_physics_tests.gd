@@ -11,6 +11,7 @@ static func run() -> Dictionary:
 	var passed := 0
 
 	passed += _test_presets(failures)
+	passed += _test_reel_resource_baseline_and_resolution(failures)
 	passed += _test_gradual_speed_curve_reaches_full_pace_at_five_kilometres(
 		failures)
 	passed += _test_release_preserves_velocity(failures)
@@ -71,7 +72,8 @@ static func _test_presets(failures: PackedStringArray) -> int:
 	var balanced := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 	if not is_equal_approx(balanced.gravity, 1120.0) or \
 			not is_equal_approx(balanced.dive_distance_fraction, 0.40) or \
-			not is_equal_approx(balanced.reel_retraction_rate, 400.0) or \
+			not is_equal_approx(balanced.reel_retraction_rate, 260.0) or \
+			not is_equal_approx(balanced.reel_energy_capacity, 60.0) or \
 			not is_equal_approx(balanced.burst_distance_fraction, 0.40) or \
 			not is_equal_approx(balanced.burst_minimum_distance, 80.0) or \
 			not is_equal_approx(balanced.speed_curve_distance, 50000.0) or \
@@ -80,6 +82,70 @@ static func _test_presets(failures: PackedStringArray) -> int:
 			not balanced.course_boundaries_lethal:
 		failures.append(
 			"balanced candidate lost its weaker base, pacing, or rail defaults")
+		return 0
+	return 1
+
+
+static func _test_reel_resource_baseline_and_resolution(
+	failures: PackedStringArray,
+) -> int:
+	var base := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	var base_seconds := base.reel_energy_capacity / base.reel_drain_rate
+	var base_shortening_budget := base_seconds * base.reel_retraction_rate
+	if not is_equal_approx(base_seconds, 2.0) or \
+			not is_equal_approx(base_shortening_budget, 520.0):
+		failures.append(
+			"level-zero Reel is not the bounded 2.0 s / 520 px baseline")
+		return 0
+
+	var progress := PlayerProgress.defaults()
+	for upgrade_id: String in [
+		"classic_reel",
+		"classic_reel_capacity",
+		"classic_reel_recovery",
+	]:
+		progress.upgrade_levels[upgrade_id] = SpiderCatalog.MAX_UPGRADE_LEVEL
+	var resolved := SpiderCatalog.resolved_config(
+		SwingConfig.PRESET_BALANCED,
+		progress,
+	)
+	var max_seconds := (
+		resolved.reel_energy_capacity / resolved.reel_drain_rate)
+	var max_shortening_budget := (
+		max_seconds * resolved.reel_retraction_rate)
+	if not is_equal_approx(resolved.reel_retraction_rate, 338.0) or \
+			not is_equal_approx(max_seconds, 2.48) or \
+			absf(max_shortening_budget - 838.24) > 0.01 or \
+			resolved.reel_retraction_rate >= 400.0:
+		failures.append(
+			"maxed Reel does not provide the intended bounded upgrade headroom")
+		return 0
+
+	var reused := SpiderCatalog.resolved_config(
+		SwingConfig.PRESET_BALANCED,
+		progress,
+	)
+	reused.apply_preset(SwingConfig.PRESET_BALANCED)
+	SpiderCatalog.apply_to_config(reused, progress)
+	if not is_equal_approx(
+			reused.reel_energy_capacity,
+			resolved.reel_energy_capacity,
+	) or not is_equal_approx(
+			reused.reel_regeneration_rate,
+			resolved.reel_regeneration_rate,
+	) or not is_equal_approx(
+			reused.reel_empty_lockout,
+			resolved.reel_empty_lockout,
+	):
+		failures.append("preset reapplication compounded Reel upgrade modifiers")
+		return 0
+
+	base.set_tuning_value(&"reel_capacity_seconds", 1.4)
+	if not is_equal_approx(
+			base.value_for(&"reel_capacity_seconds"),
+			1.4,
+	) or not is_equal_approx(base.reel_energy_capacity, 42.0):
+		failures.append("Full Reel time debug tuning is not authoritative")
 		return 0
 	return 1
 
@@ -1561,7 +1627,7 @@ static func _test_spider_profiles_and_glide_share_one_config(
 		failures.append("Skitter lost its smaller, more agile profile")
 		return 0
 	if heavy.player_collision_radius <= 18.0 or heavy.gravity <= 1120.0 or \
-			heavy.reel_retraction_rate <= 400.0:
+			heavy.reel_retraction_rate <= SwingConfig.BASE_REEL_RETRACTION_RATE:
 		failures.append("Anchorite lost its heavy Reel-In trade-off")
 		return 0
 	if glider.glide_duration <= 1.0 or glider.detached_gravity_scale >= 0.60:
