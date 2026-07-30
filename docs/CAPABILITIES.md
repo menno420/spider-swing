@@ -115,6 +115,23 @@ as venue `any`.)
 kit-owned — they refresh at upgrade between the fence markers; local
 findings go here, below the fence.)
 
+- 2026-07-30 · capability · `owner-live` · **The forest-web interface and
+  authored height-weave slice survives the complete Godot and Android path** ·
+  PR #30 `game-quality` run
+  [30520782041](https://github.com/menno420/spider-swing/actions/runs/30520782041)
+  passed all 88 contracts on Godot 4.7.1 at source
+  `e8faca0762bd7184115a913cf9dc5e9cbb90b29e`; Android run
+  [30520782029](https://github.com/menno420/spider-swing/actions/runs/30520782029)
+  produced artifact
+  [`8750656978`](https://github.com/menno420/spider-swing/actions/runs/30520782029/artifacts/8750656978),
+  61,387,799 bytes with digest
+  `sha256:f0845b3e6fa8391adc068aeff37719076518fb17180ef2279cc92d933de90c6c`.
+  The downloaded ZIP matched that digest and passed archive validation. Its
+  61,791,366-byte APK passed archive validation with SHA-256
+  `2f9b820a7773a49ffbee1a74c1176ae660e0d2d3750ded9734667d55a37202a0`;
+  `build-info.txt` proves version `0.11.0-forest-web-polish-test`, exact source,
+  development package, and display name `Spider Swing Forest Web Polish (dev)`.
+
 - 2026-07-29 · capability · `owner-live` · **The deep-progression and stable
   presentation slice survives the complete Godot and Android path** · PR #28
   `game-quality` run

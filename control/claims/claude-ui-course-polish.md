@@ -1,1 +1,0 @@
-- `claude/ui-course-polish` · **Polish forest-web menus, touch scrolling, Silk selection, and authored high-low route patterns** · game/presentation, game/application/course_*, tests, docs · 2026-07-30
