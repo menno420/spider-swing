@@ -168,6 +168,13 @@ It is a deterministic static text scan with a known limit: a dynamic
 `load(some_variable)` is not resolvable statically. That gap is covered by review,
 not by pretending the scan is total.
 
+## Simulation lab (not a gate)
+
+`tools/simulate.gd` batch-runs the authoritative simulation headlessly with an
+imperfect scripted player and reports distance/death/resource statistics for
+balance work. It asserts nothing and is never run by CI — the two gates above
+remain the only gates. See [simulation-lab.md](simulation-lab.md).
+
 ## CI
 
 | Workflow | Trigger | Required? | Proves |
