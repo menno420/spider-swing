@@ -553,12 +553,14 @@ without a reported regression.
 
 ## In flight
 
-PR #40 corrects only Reel shortening speed from the isolated 0.12.0 device
-comparison. The level-zero Balanced meter remains 2.0 seconds but rises from
-260 to 320 px/s; maxed Garden Silk Winder rises from 338 to 416 px/s. Targeting,
-automatic take-up, Reel capacity/recovery, Burst/Dive, the 5000 m speed ramp,
-routes, progression levels, save schema, and course geometry remain unchanged.
-Anchor Drive's proposed second stored Burst remains deferred until this
+PR #41 adds the headless simulation lab: `tools/simulate.gd` batch-runs the
+authoritative simulation with a seeded imperfect player model and reports
+distance, death-cause, and resource statistics per spider, preset, skill
+tier, and upgrade level (`docs/technical/simulation-lab.md`). Tooling and
+documentation only — no gameplay value, contract, build identity, or gate
+changed, and the declared suite remains 91 contracts. PR #40's device-review
+questions (whether 320/416 px/s Reel reads as arc control) remain with the
+owner; Anchor Drive's proposed second stored Burst stays deferred until that
 corrected Reel build is approved.
 
 ## Recently shipped (newest first)
