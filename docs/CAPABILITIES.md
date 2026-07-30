@@ -115,6 +115,16 @@ as venue `any`.)
 kit-owned — they refresh at upgrade between the fence markers; local
 findings go here, below the fence.)
 
+- 2026-07-30 · capability · `owner-live` · **The headless simulation lab
+  batch-runs the authoritative simulation in this container** · a fresh
+  official `Godot_v4.7.1-stable_linux.x86_64` download (re-verifying the
+  2026-07-28 in-container Godot entry) ran `tools/simulate.gd` end-to-end:
+  a 20-run batch completes in about one second, and the reported metrics
+  discriminate skill tiers (≈560/1 264/1 829 m Garden means), spider
+  profiles (Springtail's shell removed rail deaths), and upgrade levels ·
+  `python3 tools/verify.py --require-godot` passed 91/91 twice the same
+  session, so the lab script survives the import/parse gate.
+
 - 2026-07-30 · capability · `owner-live` · **The forest-web interface and
   authored height-weave slice survives the complete Godot and Android path** ·
   PR #30 `game-quality` run
