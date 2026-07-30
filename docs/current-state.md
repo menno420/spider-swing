@@ -158,6 +158,17 @@ without a reported regression.
 
 **Verification**
 
+- PR #36 `game-quality` run
+  [30535470384](https://github.com/menno420/spider-swing/actions/runs/30535470384)
+  passes clean import, front-end boot, and all 90 contracts on Godot
+  `4.7.1.stable.official.a13da4feb` at source
+  `3cef05470cfa10bf4a4e339c226ac099554aea58`. Its front-end contract proves
+  level 4 presents the next purchase as `BREAKTHROUGH ×2` and two tuning steps,
+  while a maxed card derives four breakthroughs and 24 total steps. Android run
+  [30535470355](https://github.com/menno420/spider-swing/actions/runs/30535470355)
+  produced verified
+  [artifact 8756471132](https://github.com/menno420/spider-swing/actions/runs/30535470355/artifacts/8756471132),
+  build `0.11.3-upgrade-breakthrough-copy-test`.
 - PR #34 `game-quality` run
   [30533495192](https://github.com/menno420/spider-swing/actions/runs/30533495192)
   passes clean import, front-end boot, and all 89 contracts on Godot

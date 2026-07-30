@@ -1,1 +1,0 @@
-- `claude/upgrade-breakthrough-copy` · **clarify every fifth upgrade's exact bonus** · game/presentation/scripts/front_end.gd, tests/integration/front_end_flow_tests.gd, docs, .sessions · 2026-07-30
