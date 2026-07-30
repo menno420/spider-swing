@@ -32,6 +32,7 @@ func _ready() -> void:
 	_progress = _save_repository.load_progress()
 	_front_end_state = FRONT_END_STATE_SCRIPT.new() as FrontEndState
 	_front_end_state.play_requested.connect(_start_game)
+	_front_end_state.practice_play_requested.connect(_start_practice_game)
 	_front_end_state.creator_play_requested.connect(_start_creator_game)
 	_front_end_state.settings_changed.connect(_save_settings)
 	_front_end_state.spider_profile_requested.connect(_select_spider_profile)
@@ -105,9 +106,37 @@ func _start_creator_game(
 	_mount_front_end()
 
 
+func _start_practice_game(
+	settings: PlayerSettings,
+	region_id: StringName,
+	start_distance_pixels: float,
+) -> void:
+	if not _progress.has_region_checkpoint(region_id) or \
+			not is_equal_approx(
+				start_distance_pixels,
+				CourseRegionCatalog.checkpoint_start(region_id),
+			):
+		return
+	_unmount_front_end()
+	var failures := _mount_swing_lab(
+		settings,
+		[],
+		SwingLabSession.RUN_PRACTICE,
+		start_distance_pixels,
+	)
+	if failures.is_empty():
+		return
+	for failure: String in failures:
+		printerr("[spider-swing] practice start failed — %s" % failure)
+	_unmount_swing_lab()
+	_mount_front_end()
+
+
 func _mount_swing_lab(
 	settings: PlayerSettings,
 	creator_pattern: Array[StringName] = [],
+	run_mode: StringName = SwingLabSession.RUN_STANDARD,
+	start_distance_pixels: float = 0.0,
 ) -> PackedStringArray:
 	var failures := PackedStringArray()
 	if not ResourceLoader.exists(SWING_LAB_SCENE_PATH):
@@ -136,8 +165,10 @@ func _mount_swing_lab(
 	_session.event_published.connect(_view.present_event)
 	_session.event_published.connect(_input_router.present_simulation_event)
 	_session.settlement_created.connect(_apply_settlement)
+	_session.checkpoint_reached.connect(_unlock_region_checkpoint)
 	_session.configure_progress(_progress)
 	_session.configure_creator_pattern(creator_pattern)
+	_session.configure_run(run_mode, start_distance_pixels)
 	_input_router.web_tapped.connect(_on_web_tapped)
 	_input_router.reel_changed.connect(_session.set_reel_active)
 	_input_router.burst_requested.connect(_session.request_burst)
@@ -239,6 +270,19 @@ func _apply_settlement(settlement: RunSettlement) -> void:
 			"Unlocked spider: %s" % unlocked[0],
 			{"unlocked": unlocked},
 		))
+
+
+func _unlock_region_checkpoint(
+	region_id: StringName,
+	distance_pixels: float,
+) -> void:
+	if not _progression_service.unlock_region_checkpoint(
+		_progress,
+		region_id,
+		distance_pixels,
+	):
+		return
+	_save_progress_and_refresh()
 
 
 func _select_spider_profile(spider_id: StringName) -> void:

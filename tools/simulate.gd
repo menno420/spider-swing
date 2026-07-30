@@ -17,6 +17,8 @@ extends SceneTree
 ##   --preset=balanced_candidate  named SwingConfig preset
 ##   --upgrades=0         0..20, applied to EVERY track of the selected spider
 ##   --seed=1             base seed for the bot-imperfection RNG
+##   --course-seed=1337   first production course seed
+##   --course-seeds=1     number of consecutive course seeds to rotate through
 ##   --max-seconds=240    per-run simulated-time cap (reported as `timeout`,
 ##                        which means "still alive", not a death)
 ##   --start-m=0          warp the run start this many metres into the course
@@ -39,7 +41,8 @@ extends SceneTree
 ## skill-scaled habit of checking the game's own pull-safety preview before
 ## committing. The course is deterministic; all run-to-run variation comes
 ## from the seeded imperfection model, so a tuning change shifts the
-## metrics, not the luck.
+## metrics. `--course-seeds` deliberately sweeps curated course order
+## separately from modeled player imperfection.
 
 const BOT_MODEL_VERSION := 2
 const FIXED_DELTA := 1.0 / 60.0
@@ -106,9 +109,11 @@ func _initialize() -> void:
 		quit(2)
 		return
 
-	print("[simulate] bot model v%d · preset=%s upgrades=%d runs=%d seed=%d cap=%ds reel-style=%s save-bursts=%s" % [
+	print("[simulate] bot model v%d · preset=%s upgrades=%d runs=%d seed=%d course=%d..%d cap=%ds reel-style=%s save-bursts=%s" % [
 		BOT_MODEL_VERSION, options["preset"], options["upgrades"],
-		options["runs"], options["seed"], options["max_seconds"],
+		options["runs"], options["seed"], options["course_seed"],
+		int(options["course_seed"]) + int(options["course_seeds"]) - 1,
+		options["max_seconds"],
 		options["reel_style"], "on" if bool(options["save_bursts"]) else "off",
 	])
 
@@ -194,6 +199,8 @@ func _run_batch(
 	var runs := int(options["runs"])
 	var max_ticks := int(options["max_seconds"]) * 60
 	for run_index in range(runs):
+		var course_seed := int(options["course_seed"]) + \
+			posmod(run_index, int(options["course_seeds"]))
 		var driver := RunDriver.new()
 		driver.setup(
 			config,
@@ -202,6 +209,7 @@ func _run_batch(
 			StringName(options["reel_style"]),
 			bool(options["save_bursts"]),
 			float(int(options["start_m"])) * PIXELS_PER_METRE,
+			course_seed,
 		)
 		var row := driver.run(max_ticks)
 		row["spider"] = str(spider)
@@ -224,6 +232,8 @@ func _summarize(
 	var distances: Array[float] = []
 	var causes: Dictionary = {}
 	var bands: Dictionary = {}
+	var regions: Dictionary = {}
+	var patterns: Dictionary = {}
 	var totals := {
 		"flies": 0.0, "reel_empties": 0.0, "bursts": 0.0, "dives": 0.0,
 		"attaches": 0.0, "seconds": 0.0, "reel_time_s": 0.0,
@@ -240,6 +250,10 @@ func _summarize(
 		if cause != "timeout":
 			var band := _band_label(distance)
 			bands[band] = int(bands.get(band, 0)) + 1
+			var region := str(row["region"])
+			var pattern := str(row["pattern"])
+			regions[region] = int(regions.get(region, 0)) + 1
+			patterns[pattern] = int(patterns.get(pattern, 0)) + 1
 		for key: String in totals:
 			totals[key] = float(totals[key]) + float(row[key])
 		if bool(row["rescue_used"]):
@@ -280,6 +294,8 @@ func _summarize(
 		"pull_death_runs": pull_deaths,
 		"death_causes": causes,
 		"death_distance_bands": bands,
+		"death_regions": regions,
+		"death_patterns": patterns,
 	}
 
 
@@ -308,6 +324,8 @@ func _print_summary(summary: Dictionary) -> void:
 		summary["pull_death_runs"]])
 	print("  deaths      %s" % _histogram_text(summary["death_causes"]))
 	print("  death bands %s" % _histogram_text(summary["death_distance_bands"]))
+	print("  regions     %s" % _histogram_text(summary["death_regions"]))
+	print("  patterns    %s" % _histogram_text(summary["death_patterns"]))
 
 
 func _point_text(point: Dictionary) -> String:
@@ -413,6 +431,8 @@ func _parse_options(arguments: PackedStringArray) -> Dictionary:
 		"preset": "balanced_candidate",
 		"upgrades": 0,
 		"seed": 1,
+		"course_seed": 1337,
+		"course_seeds": 1,
 		"max_seconds": 240,
 		"start_m": 0,
 		"reel_style": "adaptive",
@@ -439,6 +459,10 @@ func _parse_options(arguments: PackedStringArray) -> Dictionary:
 					int(value), 0, SpiderCatalog.MAX_UPGRADE_LEVEL)
 			"seed":
 				options["seed"] = int(value)
+			"course-seed":
+				options["course_seed"] = int(value)
+			"course-seeds":
+				options["course_seeds"] = maxi(1, int(value))
 			"max-seconds":
 				options["max_seconds"] = maxi(10, int(value))
 			"start-m":
@@ -513,6 +537,7 @@ class RunDriver:
 	var reel_reserve := 0.2
 	var reel_band_scale := 1.0
 	var burst_reach := 460.0
+	var course_seed := 1337
 
 	func setup(
 		active_config: SwingConfig,
@@ -521,12 +546,14 @@ class RunDriver:
 		style: StringName,
 		defensive_bursts: bool,
 		start_offset_px: float = 0.0,
+		course_seed_value: int = 1337,
 	) -> void:
 		config = active_config
 		profile = skill_profile
 		rng.seed = seed_value
 		reel_style = style
 		save_bursts_enabled = defensive_bursts
+		course_seed = course_seed_value
 		_derive_adaptations()
 		stream.reset(
 			config.middle_hazard_start_distance,
@@ -538,21 +565,13 @@ class RunDriver:
 			config.corridor_clearance_scale,
 			config.corridor_tight_gap_scale,
 			config.tight_corridor_start_distance,
+			course_seed,
+			SimulationWorld.START_POSITION.x + start_offset_px,
 		)
-		world.reset(config, stream.geometry())
-		if start_offset_px > 0.0:
-			# Late-game warp: begin mid-corridor at the pace the distance
-			# curve prescribes, exactly as a surviving run would arrive.
-			world.position.x += start_offset_px
-			world.furthest_x = world.position.x
-			world.velocity = Vector2(
-				config.target_speed_at(start_offset_px), -30.0)
-			world.set_course_geometry(stream.update_for_position(
-				world.position.x,
-				config.middle_hazard_start_distance,
-			))
-		else:
-			world.begin_guided_opening()
+		world.reset(config, stream.geometry(), start_offset_px)
+		# Late-game warp uses the same checkpoint-safe world reset and ordinary
+		# guided web as production practice mode.
+		world.begin_guided_opening()
 		rescue_available = config.rescue_life_enabled
 		chunk_index = maxi(
 			0, floori(world.position.x / CourseStream.CHUNK_WIDTH))
@@ -647,8 +666,11 @@ class RunDriver:
 		return _result(cause, false)
 
 	func _result(cause: StringName, died_during_pull: bool) -> Dictionary:
+		var region := CourseRegionCatalog.region_for_distance(
+			world.distance_pixels)
 		return {
 			"seed": int(rng.seed),
+			"course_seed": course_seed,
 			"distance_m": world.distance_pixels / PIXELS_PER_METRE,
 			"seconds": world.tick * FIXED_DELTA,
 			"cause": str(cause),
@@ -664,6 +686,8 @@ class RunDriver:
 			"rescue_used": rescue_used,
 			"rescue_distance_m": rescue_distance_m,
 			"death_during_pull": died_during_pull,
+			"region": str(region["id"]),
+			"pattern": str(stream.pattern_id_for_chunk(chunk_index)),
 		}
 
 	## The whole player model. It reads only what a player could see: its own
@@ -806,6 +830,15 @@ class RunDriver:
 		_schedule(InputCommand.reel(active, _next_sequence(), world.tick))
 
 	func _schedule(command: InputCommand) -> void:
+		var family := _command_family(command)
+		if family != &"other":
+			for entry: Dictionary in pending:
+				var existing: InputCommand = entry["command"]
+				if _command_family(existing) == family:
+					# The bot reasons again before delayed input lands. Keeping
+					# one pending web/Burst intent prevents a successful attach
+					# from being undone by a stale duplicate tap.
+					return
 		pending.append({
 			"deliver_tick": world.tick +
 				int(profile["reaction_delay_ticks"]) + rng.randi_range(0, 2),
@@ -822,6 +855,14 @@ class RunDriver:
 			else:
 				kept.append(entry)
 		pending = kept
+
+	func _command_family(command: InputCommand) -> StringName:
+		match command.kind:
+			InputCommand.Kind.ATTACH, InputCommand.Kind.RELEASE:
+				return &"web"
+			InputCommand.Kind.BURST:
+				return &"burst"
+		return &"other"
 
 	func _next_sequence() -> int:
 		sequence += 1

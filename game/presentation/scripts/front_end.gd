@@ -19,6 +19,7 @@ var _settings: Control
 var _garage: Control
 var _shop: Control
 var _creator: Control
+var _practice: Control
 var _tutorial_preview: TutorialPreview
 var _tutorial_kicker: Label
 var _tutorial_title: Label
@@ -47,6 +48,7 @@ var _upgrade_rows: Dictionary = {}
 var _upgrade_descriptions: Dictionary = {}
 var _upgrade_milestones: Dictionary = {}
 var _creator_slot_buttons: Array[Button] = []
+var _practice_buttons: Dictionary = {}
 var _buttons: Dictionary = {}
 var _interface_ready: bool = false
 var _syncing_settings: bool = false
@@ -82,6 +84,7 @@ func ensure_interface() -> void:
 	_build_garage()
 	_build_shop()
 	_build_creator()
+	_build_practice()
 
 
 func front_end_button(button_name: StringName) -> Button:
@@ -217,9 +220,14 @@ func _build_home() -> void:
 	creator.pressed.connect(_on_creator)
 	creator.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	routes.add_child(creator)
+	var practice := _button(&"Practice", "REGION PRACTICE", CYAN, 54.0)
+	practice.pressed.connect(_on_practice)
+	practice.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	routes.add_child(practice)
 	var settings := _button(&"Settings", "SETTINGS", ORANGE, 54.0)
 	settings.pressed.connect(_on_settings)
-	menu.add_child(settings)
+	settings.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	routes.add_child(settings)
 	var note := _label("Your choices save automatically.", 14, MUTED)
 	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	menu.add_child(note)
@@ -597,6 +605,51 @@ func _build_creator() -> void:
 		+ "online level browser remain later work after the swing is approved."))
 
 
+func _build_practice() -> void:
+	_practice = _full_screen(&"Practice")
+	var back := _button(&"PracticeBack", "‹  HOME", CYAN, 50.0)
+	back.pressed.connect(_on_home)
+	_place(back, _practice, 0.025, 0.035, 0.16, 0.11)
+
+	var heading := _label("REGION PRACTICE", 38, INK)
+	_place(heading, _practice, 0.19, 0.04, 0.62, 0.13)
+	var explanation := _label(
+		"Reached checkpoints let you train later sections immediately. "
+		+ "Practice runs award no flies, records, checkpoint unlocks, or "
+		+ "leaderboard eligibility.",
+		19,
+		MUTED,
+	)
+	explanation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_place(explanation, _practice, 0.19, 0.13, 0.92, 0.24)
+
+	var card := _panel(PANEL)
+	_place(card, _practice, 0.17, 0.25, 0.83, 0.92)
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 12)
+	_fill_with_margin(content, card, 22.0)
+	content.add_child(_section_label("CHOOSE A REACHED REGION"))
+	for region: Dictionary in CourseRegionCatalog.practice_regions():
+		var region_id := StringName(region["id"])
+		var button := _button(
+			_practice_button_name(region_id),
+			"",
+			CYAN,
+			80.0,
+		)
+		button.pressed.connect(_on_practice_region.bind(region_id))
+		content.add_child(button)
+		_practice_buttons[region_id] = button
+	var note := _label(
+		"Standard PLAY always starts at 0 m with a fresh deterministic course seed.",
+		16,
+		YELLOW,
+	)
+	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	content.add_child(note)
+
+
 func _render() -> void:
 	if _state == null:
 		return
@@ -606,6 +659,7 @@ func _render() -> void:
 	_garage.visible = _state.screen == FrontEndState.Screen.GARAGE
 	_shop.visible = _state.screen == FrontEndState.Screen.SHOP
 	_creator.visible = _state.screen == FrontEndState.Screen.CREATOR
+	_practice.visible = _state.screen == FrontEndState.Screen.PRACTICE
 	if _tutorial.visible:
 		var step := _state.current_tutorial_step()
 		_tutorial_kicker.text = str(step.get("kicker", ""))
@@ -643,6 +697,7 @@ func _render() -> void:
 	_render_garage()
 	_render_shop()
 	_render_creator()
+	_render_practice()
 	_syncing_progress = false
 	queue_redraw()
 
@@ -770,6 +825,22 @@ func _render_creator() -> void:
 		]
 
 
+func _render_practice() -> void:
+	for region: Dictionary in CourseRegionCatalog.practice_regions():
+		var region_id := StringName(region["id"])
+		var button := _practice_buttons[region_id] as Button
+		var unlocked := _state.progress.has_region_checkpoint(region_id)
+		var start_metres := float(region["start_distance"]) / \
+			CourseRegionCatalog.PIXELS_PER_METRE
+		button.disabled = not unlocked
+		button.text = "%s  ·  %.0f m\n%s  ·  %s" % [
+			"UNLOCKED" if unlocked else "LOCKED",
+			start_metres,
+			region["name"],
+			region["focus"],
+		]
+
+
 func _on_play() -> void:
 	if _state != null:
 		_state.request_play()
@@ -805,9 +876,28 @@ func _on_creator() -> void:
 		_state.show_creator()
 
 
+func _on_practice() -> void:
+	if _state != null:
+		_state.show_practice()
+
+
+func _on_practice_region(region_id: StringName) -> void:
+	if _state != null:
+		_state.request_practice(region_id)
+
+
 func _on_spider_profile(spider_id: StringName) -> void:
 	if _state != null:
 		_state.request_spider_profile(spider_id)
+
+
+func _practice_button_name(region_id: StringName) -> StringName:
+	match region_id:
+		CourseRegionCatalog.BRAMBLE_CANOPY:
+			return &"PracticeBrambleCanopy"
+		CourseRegionCatalog.SILK_HOLLOW:
+			return &"PracticeSilkHollow"
+	return &"PracticeRegion"
 
 
 func _on_style_selected(index: int) -> void:

@@ -25,6 +25,7 @@ const FOREST_RAIL_JOIN_OVERLAP := 28.0
 const FOREST_RAIL_WORLD_REPEAT := 768.0
 const FOREST_RAIL_SEGMENT_OVERLAP := 38.0
 const MOTION_TELEPORT_THRESHOLD := 240.0
+const REGION_BANNER_DURATION := 2.8
 
 var _snapshot: SimulationSnapshot
 var _previous_spider_position := Vector2.ZERO
@@ -50,6 +51,9 @@ var _burst_feedback_direction: Vector2 = Vector2.ZERO
 var _environment_theme_index: int = EnvironmentThemeCatalog.default_index()
 var _environment_textures: Dictionary = {}
 var _art_textures: Dictionary = {}
+var _region_banner_remaining: float = 0.0
+var _region_banner_name: String = ""
+var _region_banner_focus: String = ""
 
 
 func _ready() -> void:
@@ -74,6 +78,8 @@ func configure_player_options(
 
 
 func present(snapshot: SimulationSnapshot) -> void:
+	var region_changed := _snapshot == null or \
+		_snapshot.region_id != snapshot.region_id
 	if _snapshot == null or snapshot.tick < _motion_tick or \
 			_current_spider_position.distance_to(snapshot.position) > \
 				MOTION_TELEPORT_THRESHOLD:
@@ -91,6 +97,10 @@ func present(snapshot: SimulationSnapshot) -> void:
 		_current_spider_velocity = snapshot.velocity
 	_motion_tick = snapshot.tick
 	_snapshot = snapshot
+	if region_changed:
+		_region_banner_name = snapshot.region_name
+		_region_banner_focus = snapshot.region_focus
+		_region_banner_remaining = REGION_BANNER_DURATION
 	queue_redraw()
 
 
@@ -153,6 +163,14 @@ func present_event(event: SimulationEvent) -> void:
 			_feedback_color = GREEN
 		SimulationEvent.Kind.SURFACE_BOUNCED:
 			_feedback_color = CYAN
+		SimulationEvent.Kind.REGION_ENTERED:
+			_region_banner_name = str(event.message).get_slice(" · ", 0)
+			_region_banner_focus = str(event.message).trim_prefix(
+				"%s · " % _region_banner_name)
+			_region_banner_remaining = REGION_BANNER_DURATION
+			_feedback_color = CYAN
+		SimulationEvent.Kind.CHECKPOINT_REACHED:
+			_feedback_color = YELLOW
 		_:
 			_feedback_color = GREEN
 	queue_redraw()
@@ -165,6 +183,10 @@ func screen_to_world(screen_position: Vector2) -> Vector2:
 func _process(delta: float) -> void:
 	_reel_feedback_remaining = maxf(0.0, _reel_feedback_remaining - delta)
 	_burst_feedback_remaining = maxf(0.0, _burst_feedback_remaining - delta)
+	_region_banner_remaining = maxf(
+		0.0,
+		_region_banner_remaining - delta,
+	)
 	if _snapshot == null:
 		return
 	if not _reduced_motion:
@@ -237,6 +259,7 @@ func _draw_parallax(size: Vector2) -> void:
 			0.22,
 			Color(0.52, 0.62, 0.48, 0.24),
 		)
+		_draw_region_ambience(size, parallax_x)
 		return
 	var far_offset := fposmod(-parallax_x * 0.08, 240.0)
 	for index in range(-1, 8):
@@ -297,6 +320,64 @@ func _draw_forest_backdrop_layer(
 			modulate,
 		)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+
+func _draw_region_ambience(size: Vector2, parallax_x: float) -> void:
+	if _snapshot == null:
+		return
+	var profile := _snapshot.region_visual_profile
+	if profile == CourseRegionCatalog.VISUAL_OLD_GROWTH:
+		return
+	var motion := 0.0 if _reduced_motion else _motion_time
+	if profile == CourseRegionCatalog.VISUAL_CANOPY:
+		draw_rect(
+			Rect2(Vector2.ZERO, size),
+			Color(0.03, 0.20, 0.12, 0.13),
+		)
+		var offset := fposmod(-parallax_x * 0.16, 190.0)
+		for index in range(-1, 9):
+			var x := offset + float(index) * 190.0
+			var thread_end := 110.0 + float(posmod(index, 4)) * 42.0
+			draw_line(
+				Vector2(x, 0.0),
+				Vector2(x + sin(motion * 0.7 + index) * 8.0, thread_end),
+				Color(WEB, 0.13),
+				1.2,
+				true,
+			)
+			draw_circle(
+				Vector2(x + 34.0, 90.0 + float(posmod(index, 3)) * 86.0),
+				5.0 + float(posmod(index, 2)) * 2.0,
+				Color(0.60, 0.88, 0.55, 0.16),
+			)
+		return
+	draw_rect(
+		Rect2(Vector2.ZERO, size),
+		Color(0.04, 0.09, 0.19, 0.23),
+	)
+	var offset := fposmod(-parallax_x * 0.11, 250.0)
+	for index in range(-1, 7):
+		var center := Vector2(
+			offset + float(index) * 250.0,
+			130.0 + float(posmod(index, 3)) * 120.0,
+		)
+		var pulse := 0.0 if _reduced_motion else \
+			sin(motion * 0.8 + float(index)) * 2.5
+		draw_arc(
+			center,
+			76.0 + pulse,
+			0.1,
+			PI - 0.1,
+			24,
+			Color(WEB, 0.10),
+			1.3,
+			true,
+		)
+		draw_circle(
+			center + Vector2(0.0, -76.0 - pulse),
+			5.0,
+			Color(0.62, 0.88, 0.96, 0.23),
+		)
 
 
 func _draw_course(size: Vector2) -> void:
@@ -942,6 +1023,12 @@ func _draw_hud(size: Vector2) -> void:
 	var distance_metres := _snapshot.distance_pixels / 10.0
 	_draw_text(Vector2(142.0, 48.0), "%05.1f m" % distance_metres, 28, WEB)
 	_draw_text(
+		Vector2(142.0, 72.0),
+		_snapshot.region_name,
+		14,
+		CYAN,
+	)
+	_draw_text(
 		Vector2(size.x - 280.0, 48.0),
 		"FLIES %d  ·  TOTAL %d" % [_snapshot.run_flies, _snapshot.total_flies],
 		20,
@@ -978,9 +1065,36 @@ func _draw_hud(size: Vector2) -> void:
 		)
 	_draw_button(LabLayout.menu_rect(size), "MENU", false)
 	if _show_control_hints:
-		_draw_text(Vector2(142.0, 76.0),
+		_draw_text(Vector2(142.0, 96.0),
 			"Tap solid above to web · tap solid below to Dive Pull", 16, MUTED)
-		_draw_text(Vector2(142.0, 99.0), _feedback_message, 17, _feedback_color)
+		_draw_text(Vector2(142.0, 119.0), _feedback_message, 17, _feedback_color)
+	if _snapshot.run_mode == SwingLabSession.RUN_PRACTICE:
+		_draw_centered_text(
+			Vector2(size.x * 0.5, 42.0),
+			"PRACTICE · NO FLIES OR RECORDS",
+			17,
+			YELLOW,
+		)
+	if _region_banner_remaining > 0.0:
+		var alpha := clampf(_region_banner_remaining, 0.0, 1.0)
+		var banner := Rect2(
+			Vector2(size.x * 0.25, size.y * 0.19),
+			Vector2(size.x * 0.5, 90.0),
+		)
+		draw_rect(banner, Color(0.02, 0.07, 0.08, 0.78 * alpha))
+		draw_rect(banner, Color(CYAN, 0.72 * alpha), false, 2.0)
+		_draw_centered_text(
+			Vector2(size.x * 0.5, banner.position.y + 37.0),
+			_region_banner_name,
+			24,
+			Color(WEB, alpha),
+		)
+		_draw_centered_text(
+			Vector2(size.x * 0.5, banner.position.y + 65.0),
+			_region_banner_focus,
+			15,
+			Color(CYAN, alpha),
+		)
 	_draw_text(
 		Vector2(30.0, size.y - 18.0),
 		"BUILD %s" % ProjectSettings.get_setting(

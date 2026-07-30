@@ -5,6 +5,7 @@ class_name SimulationWorld
 const START_POSITION := Vector2(220.0, 390.0)
 const START_VELOCITY := Vector2(360.0, -30.0)
 const PULL_CLEARANCE := 10.0
+const GUIDED_ANCHOR_Y := 112.0
 
 var config: SwingConfig
 var position: Vector2 = START_POSITION
@@ -40,15 +41,22 @@ var _pull_exit_speed: float = 0.0
 var _commands: Array[InputCommand] = []
 var _collected_pickups: Dictionary = {}
 var _burst_cooldown_suppressed: bool = false
+var _run_start_x: float = START_POSITION.x
 
 
-func reset(active_config: SwingConfig, geometry: CourseGeometry) -> void:
+func reset(
+	active_config: SwingConfig,
+	geometry: CourseGeometry,
+	start_distance_pixels: float = 0.0,
+) -> void:
 	config = active_config
-	position = START_POSITION
-	velocity = START_VELOCITY
-	target_speed = config.starting_target_speed
-	distance_pixels = 0.0
-	furthest_x = START_POSITION.x
+	var start_distance := maxf(0.0, start_distance_pixels)
+	_run_start_x = START_POSITION.x + start_distance
+	position = Vector2(_run_start_x, START_POSITION.y)
+	target_speed = config.target_speed_at(start_distance)
+	velocity = Vector2(target_speed, START_VELOCITY.y)
+	distance_pixels = start_distance
+	furthest_x = _run_start_x
 	tick = 0
 	run_flies = 0
 	_collected_pickups.clear()
@@ -861,31 +869,31 @@ func rescue_after_death() -> SimulationEvent:
 
 
 func _find_rescue_position() -> Vector2:
-	var base_x := maxf(START_POSITION.x, position.x - 150.0)
+	var base_x := maxf(_run_start_x, position.x - 150.0)
 	var candidates := [
 		Vector2(base_x, 390.0),
 		Vector2(base_x - 90.0, 330.0),
 		Vector2(base_x + 90.0, 330.0),
 		Vector2(base_x - 90.0, 470.0),
 		Vector2(base_x + 90.0, 470.0),
-		Vector2(maxf(START_POSITION.x, base_x - 180.0), 390.0),
+		Vector2(maxf(_run_start_x, base_x - 180.0), 390.0),
 	]
 	for candidate: Vector2 in candidates:
 		if not _collides_with_obstacle(candidate):
 			return candidate
-	return START_POSITION
+	return Vector2(_run_start_x, START_POSITION.y)
 
 
 func begin_guided_opening() -> bool:
 	if not config.guided_start_enabled or \
 			not config.course_boundaries_enabled:
 		return false
-	var target := Vector2(500.0, 112.0)
+	var target := Vector2(position.x + 280.0, GUIDED_ANCHOR_Y)
 	var nearest := nearest_solid_point(target)
 	if not bool(nearest["found"]) or StringName(nearest["kind"]) != &"boundary":
 		return false
 	if web.try_attach(position, nearest["anchor"], config) == \
 			WebConstraint.AttachResult.ATTACHED:
-		velocity = Vector2(config.starting_target_speed, -40.0)
+		velocity = Vector2(config.target_speed_at(distance_pixels), -40.0)
 		return true
 	return false

@@ -2,7 +2,9 @@ extends RefCounted
 class_name PlayerProgress
 ## Versioned player progression value object.
 
-const SCHEMA_VERSION := 4
+const SCHEMA_VERSION := 5
+const TWENTY_LEVEL_SCHEMA_VERSION := 4
+const REGION_CHECKPOINT_SCHEMA_VERSION := 5
 const STYLE_GARDEN := &"garden"
 const STYLE_AMBER := &"amber"
 const STYLE_COMET := &"comet"
@@ -37,6 +39,7 @@ var selected_web_variant: StringName = WEB_CLASSIC
 var creator_pattern: Array[StringName] = [
 	&"leaf", &"empty", &"pod", &"vine", &"empty", &"gate",
 ]
+var unlocked_region_checkpoints: Array[StringName] = []
 var applied_settlement_ids: PackedStringArray = PackedStringArray()
 
 
@@ -93,7 +96,7 @@ static func from_dictionary(data: Dictionary) -> PlayerProgress:
 			if SpiderCatalog.upgrade(upgrade_id).is_empty():
 				continue
 			var saved_level := int((raw_upgrades as Dictionary)[raw_key])
-			if source_schema < SCHEMA_VERSION:
+			if source_schema < TWENTY_LEVEL_SCHEMA_VERSION:
 				saved_level *= SpiderCatalog.LEGACY_LEVEL_MULTIPLIER
 			progress.upgrade_levels[str(upgrade_id)] = clampi(
 				saved_level,
@@ -130,6 +133,20 @@ static func from_dictionary(data: Dictionary) -> PlayerProgress:
 		progress.creator_pattern.append(&"empty")
 	if progress.creator_pattern.size() > DEFAULT_CREATOR_PATTERN.size():
 		progress.creator_pattern.resize(DEFAULT_CREATOR_PATTERN.size())
+	progress.unlocked_region_checkpoints.clear()
+	for raw_region: Variant in data.get("unlocked_region_checkpoints", []):
+		var region_id := StringName(str(raw_region))
+		if CourseRegionCatalog.is_checkpoint(region_id) and \
+				region_id not in progress.unlocked_region_checkpoints:
+			progress.unlocked_region_checkpoints.append(region_id)
+	# Schema 5 makes reached checkpoint identity explicit. Older saves infer
+	# the same unlocks from their authoritative standard best exactly once.
+	if source_schema < REGION_CHECKPOINT_SCHEMA_VERSION:
+		for region_id: StringName in \
+				CourseRegionCatalog.checkpoint_ids_reached(
+					progress.best_distance_pixels):
+			if region_id not in progress.unlocked_region_checkpoints:
+				progress.unlocked_region_checkpoints.append(region_id)
 	for raw_id: Variant in data.get("applied_settlement_ids", []):
 		var settlement_id := str(raw_id)
 		if not settlement_id.is_empty():
@@ -154,6 +171,9 @@ func to_dictionary() -> Dictionary:
 	var pattern: Array[String] = []
 	for piece: StringName in creator_pattern:
 		pattern.append(str(piece))
+	var checkpoints: Array[String] = []
+	for region_id: StringName in unlocked_region_checkpoints:
+		checkpoints.append(str(region_id))
 	return {
 		"schema_version": SCHEMA_VERSION,
 		"total_flies": total_flies,
@@ -167,6 +187,7 @@ func to_dictionary() -> Dictionary:
 		"unlocked_web_variants": web_variants,
 		"selected_web_variant": str(selected_web_variant),
 		"creator_pattern": pattern,
+		"unlocked_region_checkpoints": checkpoints,
 		"applied_settlement_ids": Array(applied_settlement_ids),
 	}
 
@@ -177,3 +198,7 @@ func upgrade_level(upgrade_id: StringName) -> int:
 		0,
 		SpiderCatalog.MAX_UPGRADE_LEVEL,
 	)
+
+
+func has_region_checkpoint(region_id: StringName) -> bool:
+	return region_id in unlocked_region_checkpoints

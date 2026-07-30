@@ -17,6 +17,8 @@ The first visible screen presents these real routes:
 - **Shop** — spends laboratory flies on shared core and profile-identity tracks;
 - **Tutorial** — opens the six-step animated mechanics guide;
 - **Course Lab** — edits and playtests a six-piece local deterministic pattern;
+- **Region Practice** — starts at a reached 5000 m checkpoint without rewards
+  or record eligibility;
 - **Settings** — edits real, persisted player options.
 
 The simulation, input router, and gameplay view are not mounted until Play is
@@ -79,6 +81,22 @@ playtest. This is deliberately a local deterministic foundation: sharing,
 discovery, moderation, validation tooling, and a full spatial editor remain
 future work.
 
+### Region Practice
+
+Standard runs unlock Bramble Canopy at 5000 m and Silk Hollow at 10000 m as
+soon as the player reaches those distances. Region Practice starts on the
+ordinary guided web inside an authored open checkpoint chunk at the correct
+late-game pace. It uses a newly seeded curated course order, but the same
+physics, collision, upgrades, route geometry, and input path as a standard run.
+
+Practice is deliberately non-competitive. Its persistent screen and in-run HUD
+state that it grants no flies, cannot update best distance, cannot unlock later
+checkpoints, and is ineligible for any eventual leaderboard. `RunSettlement`
+carries those eligibility flags as authoritative data rather than relying on
+presentation copy. Reaching a checkpoint in a standard run persists it through
+`ProgressionService`; schema-4 saves infer already-reached checkpoints once from
+their standard best distance.
+
 ### Settings
 
 The current options all affect runtime behavior:
@@ -97,7 +115,8 @@ course geometry, targeting, or collision.
 
 `PlayerSettings` validates and versions these values. `PlayerProgress` separately
 versions lifetime/spendable flies, distance milestones, selected spider,
-profile upgrades, palettes, web variants, and the saved creator pattern.
+profile upgrades, palettes, web variants, the saved creator pattern, and reached
+region checkpoints.
 `SaveRepository` is the exclusive persistent writer and performs a recoverable
 temp → primary rotation for both records.
 Settings survive app restarts; invalid or corrupt values fall back safely.
@@ -116,7 +135,7 @@ recording and on taller aspect ratios.
 ## Ownership
 
 - `FrontEndState` owns navigation, tutorial progress, settings validation,
-  Garage/Shop/Course Lab intent, and the Play request.
+  Garage/Shop/Course Lab/Region Practice intent, and run requests.
 - `FrontEndView` renders state and forwards button intent.
 - `TutorialPreview` renders illustration only.
 - `ProgressionService` applies each run settlement once and owns fly-funded
@@ -133,7 +152,7 @@ No global manager or autoload is introduced.
 `python3 tools/verify.py --require-godot` verifies:
 
 - startup mounts Home without creating gameplay;
-- Play, Garage, Shop, Tutorial, Course Lab, and Settings are real
+- Play, Garage, Shop, Tutorial, Course Lab, Region Practice, and Settings are real
   event-consuming Buttons;
 - the tutorial has exactly six steps and covers the live mechanics;
 - Settings owns a vertical scroll surface with readable type and mobile-sized
@@ -146,6 +165,8 @@ No global manager or autoload is introduced.
   20-level caps and breakthroughs, proportional one-time migration,
   fly-funded upgrades, creator edits, custom body/Silk rails and preview,
   themed progress knots, selections, and fly/distance cosmetic milestones;
+- schema-4 checkpoint migration, locked/unlocked practice cards, and practice
+  settlements that cannot alter flies or best distance;
 - the composition root enters gameplay only through the Play request;
 - Menu emits one return request without leaking into a web action;
 - disabling debug tools removes their touch surface.

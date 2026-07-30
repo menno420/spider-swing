@@ -41,7 +41,7 @@ env:
   GODOT_VERSION: 4.7.1
   APK_PATH: build/spider-swing-debug.apk
   ARTIFACT_NAME: spider-swing-android-debug
-  BUILD_VERSION: 0.14.0-reserve-burst-test
+  BUILD_VERSION: 0.15.0-seeded-regions-test
   SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
 jobs:
@@ -101,8 +101,8 @@ jobs:
           set -euo pipefail
           grep -F "config/version=\"${BUILD_VERSION}\"" project.godot
           grep -F "version/name=\"${BUILD_VERSION}\"" export_presets.cfg
-          grep -F 'version/code=30' export_presets.cfg
-          grep -F 'package/name="Spider Swing Reserve Burst (dev)"' export_presets.cfg
+          grep -F 'version/code=31' export_presets.cfg
+          grep -F 'package/name="Spider Swing Seeded Regions (dev)"' export_presets.cfg
           echo "build identity: ${BUILD_VERSION} @ ${SOURCE_SHA}"
 
       - name: Generate an ephemeral debug keystore
