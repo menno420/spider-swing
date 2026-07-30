@@ -1,1 +1,0 @@
-- `claude/reel-speed-playtest-correction` · **Reel speed playtest correction** · game/domain, tests, build identity, balance docs · 2026-07-30

@@ -166,6 +166,18 @@ without a reported regression.
 
 **Verification**
 
+- PR #40 `game-quality` run
+  [30559186244](https://github.com/menno420/spider-swing/actions/runs/30559186244)
+  passes clean import, front-end boot, and all 91 contracts on Godot
+  `4.7.1.stable.official.a13da4feb` at source
+  `dcd3cee27fad6bb59cca0b03a5b132a09fad9fea`. Its Reel contract proves the
+  2.0-second/640 px level-zero candidate, named-preset ordering, and max Garden
+  Silk Winder's 416 px/s result inside the owner-tested 400–450 px/s band.
+  Android run
+  [30559186273](https://github.com/menno420/spider-swing/actions/runs/30559186273)
+  produced verified
+  [artifact 8766128692](https://github.com/menno420/spider-swing/actions/runs/30559186273/artifacts/8766128692),
+  build `0.12.1-reel-speed-correction-test`.
 - PR #38 `game-quality` run
   [30552161868](https://github.com/menno420/spider-swing/actions/runs/30552161868)
   passes clean import, front-end boot, and all 91 contracts on Godot
@@ -551,6 +563,11 @@ corrected Reel build is approved.
 
 ## Recently shipped (newest first)
 
+- **2026-07-30 — Device-led Reel speed correction (PR #40).** Keeps the
+  finite two-second level-zero resource from PR #38 but raises Balanced Reel
+  from 260 to 320 px/s and max Garden Silk Winder from 338 to 416 px/s. Named
+  debug presets, direct tuning values, deterministic contracts, and the Android
+  build agree; all unrelated movement and progression systems remain unchanged.
 - **2026-07-30 — Bounded Reel resource comparison (PR #38).** Reduces the
   level-zero shortening budget from about 1,333 px to 520 px, gives maxed shared
   Reel tracks meaningful bounded headroom to about 838 px, prevents repeated
