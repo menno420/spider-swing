@@ -76,9 +76,12 @@ without a reported regression.
   distance with 80 px minimum travel over 0.20 seconds. A lower target becomes
   a one-shot 40% Dive Pull over 0.16 seconds
   and never leaves a rope. Both paths retain bounded tangential carry, use fixed
-  exit speeds, and sweep against lethal polygon geometry. Burst uses the timed
-  cooldown; Dive instead rearms only after a successful upper/obstacle web
-  attachment.
+  exit speeds, and sweep against lethal polygon geometry. Burst availability is
+  a charge pool on one serial cooldown: capacity one at level zero (identical
+  cadence to the former bare cooldown), two from Anchor Drive level 10, where a
+  successful Burst alone spends a charge, the running refill never resets, and
+  the Burst button shows reserve pips only when capacity exceeds one. Dive
+  instead rearms only after a successful upper/obstacle web attachment.
 - Double-tap carries a target in the authoritative command, so Burst works
   atomically even when the first tap has not attached yet. Ceiling pieces,
   hanging/floor branches, obstacles, and rail-grown root passages all resolve through one
@@ -243,10 +246,11 @@ without a reported regression.
   [30485134026](https://github.com/menno420/spider-swing/actions/runs/30485134026)
   passes the complete 82-check suite on Godot 4.7.1 at source
   `06a4c65aeb87b4d47a54423f9cd56ce87dcaaba5`.
-- `tests/test_runner.gd` — 91 declared checks: forty-five
+- `tests/test_runner.gd` — 93 declared checks: forty-seven
   deterministic physics, twenty-one GUI-owned mobile HUD, fifteen front-end
   navigation/settings/progression, plus bootstrap and exact build-version
-  contracts. Physics covers exact 40%/40% pull shares,
+  contracts. Physics covers exact 40%/40% pull shares, the unchanged
+  level-zero Burst cadence and the level-10 serial reserve Burst,
   detached targeted Burst, recovery-web interruption, double-tap fallback,
   release/retarget modes, speed-neutral Reel shortening, solid polygon
   targeting/collision, take-up, rail toggles, swept pickups, tuning controls, and
@@ -568,20 +572,15 @@ without a reported regression.
 
 ## In flight
 
-The simulation-lab v2 PR upgrades the bot to adapt to the configuration it
-is handed (Reel reserve from meter sustainability, Reel engagement from
-retraction rate, Burst aim from pull fraction with a skill-scaled safety
-check), adds `--reel-style` / `--save-bursts` / `--start-m` late-game warp /
-`--sweep` parameter grids, and reports Reel usage, mid-pull deaths, rescue
-spend distance, and flies-per-km. Tooling and documentation only; the suite
-remains 91 contracts. D-0022 records the owner's monetization direction:
-real money skips grinding, never buys exclusive power.
-
-Owner device review remains for Anchorite's species readability, contrast,
-alpha edge, rotation, and visual/collision agreement, plus PR #40's balance
-questions about whether 320/416 px/s Reel reads as arc control. Anchor
-Drive's proposed second stored Burst stays deferred until the corrected Reel
-build is approved.
+The reserve-Burst PR implements the first active breakthrough now that the
+owner has approved the corrected Reel build on device (D-0023): Burst
+availability becomes a charge pool on one serial cooldown, Anchor Drive
+level 10 stores a second charge (D-0024), level-zero cadence is proven
+unchanged, the Burst button gains reserve pips only when capacity exceeds
+one, a `burst_charges` DEBUG value supports comparison, and the suite grows
+to 93 contracts. Build identity: `0.14.0-reserve-burst-test`, Android
+version code 30. The reserve's feel on device is the next owner review,
+alongside Anchorite's species readability items.
 
 ## Recently shipped (newest first)
 

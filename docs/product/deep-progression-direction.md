@@ -90,12 +90,13 @@ Silk Winder while preserving the finite 2.0–2.48-second duration range.
 
 ## Explicitly deferred
 
-- Anchor Drive's proposed level-10 reserve Burst remains the next isolated
-  active-breakthrough prototype after Reel approval: capacity rises from one to
-  two, successful Bursts alone spend a pip, and one serial timer begins after
-  the first spend without resetting when the reserve is used. This preserves
-  the long-run one-Burst-per-cooldown rate. It is specified here, not yet
-  implemented.
+- ~~Anchor Drive's proposed level-10 reserve Burst~~ — **implemented** as the
+  first active breakthrough (D-0024) after the owner approved the corrected
+  Reel build on device (D-0023): capacity rises from one to two at level 10,
+  successful Bursts alone spend a pip, and one serial timer refills one pip
+  at a time without resetting when the reserve is used, preserving the
+  long-run one-Burst-per-cooldown rate. Its own device evaluation is the
+  next feel gate.
 - Generic “web stability”: settling changes can fight player intent and need a
   precise measurable design before becoming progression.
 - Multiple simultaneous temporary modes or stacking strength.

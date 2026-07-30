@@ -48,6 +48,7 @@ const BASE_REEL_EMPTY_LOCKOUT := 0.75
 @export var burst_exit_speed: float = 420.0
 @export var burst_tangential_retention: float = 0.62
 @export var burst_cooldown: float = 1.65
+@export var burst_charge_capacity: int = 1
 @export var dive_distance_fraction: float = 0.40
 @export var dive_pull_duration: float = 0.16
 @export var dive_exit_speed: float = 280.0
@@ -112,6 +113,7 @@ func apply_preset(name: StringName) -> void:
 	burst_exit_speed = 420.0
 	burst_tangential_retention = 0.62
 	burst_cooldown = 1.65
+	burst_charge_capacity = 1
 	dive_distance_fraction = 0.40
 	dive_pull_duration = 0.16
 	dive_exit_speed = 280.0
@@ -253,6 +255,9 @@ func set_tuning_value(parameter: StringName, value: float) -> float:
 		&"pull_cooldown":
 			burst_cooldown = safe_value
 			return burst_cooldown
+		&"burst_charges":
+			burst_charge_capacity = roundi(safe_value)
+			return float(burst_charge_capacity)
 		&"dive_pull_pct":
 			dive_distance_fraction = safe_value
 			return dive_distance_fraction
@@ -349,6 +354,8 @@ func value_for(parameter: StringName) -> float:
 			return burst_pull_duration
 		&"pull_cooldown":
 			return burst_cooldown
+		&"burst_charges":
+			return float(burst_charge_capacity)
 		&"dive_pull_pct":
 			return dive_distance_fraction
 		&"dive_duration":
@@ -413,7 +420,8 @@ func validate() -> PackedStringArray:
 			burst_minimum_distance < 0.0 or \
 			burst_pull_duration <= 0.0 or burst_exit_speed < 0.0 or \
 			burst_tangential_retention < 0.0 or \
-			burst_tangential_retention > 1.0 or burst_cooldown <= 0.0:
+			burst_tangential_retention > 1.0 or burst_cooldown <= 0.0 or \
+			burst_charge_capacity < 1 or burst_charge_capacity > 3:
 		failures.append("Burst response values are invalid")
 	if dive_distance_fraction <= 0.0 or dive_distance_fraction >= 1.0 or \
 			dive_pull_duration <= 0.0 or dive_exit_speed < 0.0 or \

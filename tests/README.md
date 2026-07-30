@@ -27,7 +27,7 @@ failure never hides the rest.
 
 ## What exists now
 
-91 runtime contracts: ten bootstrap/build checks plus forty-five deterministic
+93 runtime contracts: ten bootstrap/build checks plus forty-seven deterministic
 physics, twenty-one mobile HUD, and fifteen front-end checks. The physics group proves continuous
 solid targeting, larger aim forgiveness, momentum-preserving release,
 speed-neutral Reel and automatic take-up, the two-second base resource plus the

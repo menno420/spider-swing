@@ -97,11 +97,11 @@ func request_burst_from_gesture(world_target: Vector2) -> void:
 	if _run.state != RunStateMachine.State.ACTIVE:
 		return
 	# A platform-classified double tap must never swallow the ordinary web that
-	# can recover from a pull. While a pull owns motion, or while its cooldown
-	# leaves a detached spider unable to Burst, reinterpret the target as the
-	# immediately useful web intent.
+	# can recover from a pull. While a pull owns motion, or while an empty
+	# charge pool leaves a detached spider unable to Burst, reinterpret the
+	# target as the immediately useful web intent.
 	if _world.pull_active or (
-		not _world.web.attached and _world.burst_cooldown_remaining > 0.0
+		not _world.web.attached and _world.burst_charges <= 0
 	):
 		_buffer(InputCommand.attach(
 			world_target,
@@ -465,6 +465,8 @@ func _make_snapshot() -> SimulationSnapshot:
 	snapshot.reel_lockout = _world.web.reel_lockout_remaining
 	snapshot.burst_cooldown = _world.burst_cooldown_remaining
 	snapshot.burst_cooldown_capacity = _config.burst_cooldown
+	snapshot.burst_charges = _world.burst_charges
+	snapshot.burst_charge_capacity = _config.burst_charge_capacity
 	snapshot.dive_ready = _world.dive_ready
 	snapshot.surface_bounce_enabled = _config.surface_bounce_enabled
 	snapshot.surface_bounce_ready = _world.surface_bounce_ready

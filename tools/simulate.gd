@@ -709,7 +709,7 @@ class RunDriver:
 		var below_route := world.position.y > target_y + band
 		var floor_danger := world.position.y > 600.0
 		if not (falling_fast or below_route or floor_danger):
-			if world.burst_cooldown_remaining <= 0.0 and \
+			if world.burst_charges > 0 and \
 					rng.randf() < float(profile["burst_chance"]):
 				var burst_tap := _find_tap(Vector2(1.0, -0.35), burst_reach)
 				if burst_tap != Vector2.INF and _pull_looks_safe(burst_tap):
@@ -721,7 +721,7 @@ class RunDriver:
 			_schedule(InputCommand.attach(tap, _next_sequence(), world.tick))
 			return
 		if save_bursts_enabled and (falling_fast or floor_danger) and \
-				world.burst_cooldown_remaining <= 0.0:
+				world.burst_charges > 0:
 			var rescue_tap := _find_emergency_tap()
 			if rescue_tap != Vector2.INF:
 				save_bursts += 1

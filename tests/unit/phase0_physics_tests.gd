@@ -25,6 +25,8 @@ static func run() -> Dictionary:
 	passed += _test_aim_forgiveness_extends_beyond_old_band(failures)
 	passed += _test_extended_web_reach(failures)
 	passed += _test_burst_crosses_configured_fraction(failures)
+	passed += _test_level_zero_burst_cadence_is_unchanged(failures)
+	passed += _test_reserve_burst_stores_and_refills_serially(failures)
 	passed += _test_minimum_burst_travel_is_real_and_upgradeable(failures)
 	passed += _test_upgrade_catalog_has_shared_core_and_breakthroughs(
 		failures)
@@ -736,6 +738,133 @@ static func _test_pull_can_be_interrupted_by_recovery_web(
 	return 1
 
 
+static func _test_level_zero_burst_cadence_is_unchanged(
+	failures: PackedStringArray,
+) -> int:
+	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	config.gravity = 0.0001
+	config.horizontal_drive_acceleration = 0.0001
+	config.air_drag = 0.0
+	if config.burst_charge_capacity != 1:
+		failures.append("level-zero Burst capacity is no longer one charge")
+		return 0
+	var world := SimulationWorld.new()
+	world.reset(config, _test_geometry())
+	if world.burst_charges != 1 or world.burst_cooldown_remaining > 0.0:
+		failures.append("a fresh run did not start with one idle Burst charge")
+		return 0
+	world.queue_command(InputCommand.burst_at(Vector2(640.0, 150.0), 1, 0))
+	var events := world.step(FIXED_DELTA)
+	if not _contains_event(events, SimulationEvent.Kind.BURST_STARTED) or \
+			world.burst_charges != 0:
+		failures.append("level-zero Burst did not spend its only charge")
+		return 0
+	var guard := 0
+	while world.pull_active and guard < 120:
+		world.step(FIXED_DELTA)
+		guard += 1
+	world.velocity = Vector2.ZERO
+	world.queue_command(InputCommand.burst_at(Vector2(1080.0, 150.0), 2, world.tick))
+	events = world.step(FIXED_DELTA)
+	if not _contains_event(events, SimulationEvent.Kind.BURST_UNAVAILABLE):
+		failures.append("a spent level-zero Burst was not gated by the cooldown")
+		return 0
+	guard = 0
+	while world.burst_charges < 1 and guard < 200:
+		world.step(FIXED_DELTA)
+		guard += 1
+	world.velocity = Vector2.ZERO
+	if world.burst_charges != 1 or world.burst_cooldown_remaining > 0.0:
+		failures.append(
+			"the level-zero charge did not return exactly once, with an idle timer")
+		return 0
+	world.queue_command(InputCommand.burst_at(Vector2(1080.0, 150.0), 3, world.tick))
+	events = world.step(FIXED_DELTA)
+	if not _contains_event(events, SimulationEvent.Kind.BURST_STARTED):
+		failures.append("the refilled level-zero Burst was not usable again")
+		return 0
+	return 1
+
+
+static func _test_reserve_burst_stores_and_refills_serially(
+	failures: PackedStringArray,
+) -> int:
+	var progress := PlayerProgress.defaults()
+	progress.upgrade_levels[&"classic_burst"] = 9
+	var below := SpiderCatalog.resolved_config(
+		SwingConfig.PRESET_BALANCED, progress)
+	if below.burst_charge_capacity != 1:
+		failures.append("Anchor Drive level 9 must not grant the reserve Burst")
+		return 0
+	progress.upgrade_levels[&"classic_burst"] = 10
+	var config := SpiderCatalog.resolved_config(
+		SwingConfig.PRESET_BALANCED, progress)
+	if config.burst_charge_capacity != 2:
+		failures.append("Anchor Drive level 10 did not store a second Burst")
+		return 0
+	config.gravity = 0.0001
+	config.horizontal_drive_acceleration = 0.0001
+	config.air_drag = 0.0
+	var world := SimulationWorld.new()
+	world.reset(config, _test_geometry())
+	world.queue_command(InputCommand.burst_at(Vector2(640.0, 150.0), 1, 0))
+	var events := world.step(FIXED_DELTA)
+	if not _contains_event(events, SimulationEvent.Kind.BURST_STARTED) or \
+			world.burst_charges != 1 or world.burst_cooldown_remaining <= 0.0:
+		failures.append("the first Burst did not leave one stored charge refilling")
+		return 0
+	var guard := 0
+	while world.pull_active and guard < 120:
+		world.step(FIXED_DELTA)
+		guard += 1
+	world.velocity = Vector2.ZERO
+	var timer_before := world.burst_cooldown_remaining
+	world.queue_command(InputCommand.burst_at(Vector2(1080.0, 150.0), 2, world.tick))
+	events = world.step(FIXED_DELTA)
+	if not _contains_event(events, SimulationEvent.Kind.BURST_STARTED) or \
+			world.burst_charges != 0:
+		failures.append("the stored Burst was not immediately spendable")
+		return 0
+	if world.burst_cooldown_remaining > timer_before:
+		failures.append("spending the reserve reset the serial refill timer")
+		return 0
+	guard = 0
+	while world.pull_active and guard < 120:
+		world.step(FIXED_DELTA)
+		guard += 1
+	world.velocity = Vector2.ZERO
+	guard = 0
+	while world.burst_charges < 1 and guard < 200:
+		world.step(FIXED_DELTA)
+		guard += 1
+	world.velocity = Vector2.ZERO
+	if world.burst_charges != 1 or \
+			world.burst_cooldown_remaining < config.burst_cooldown - 0.05:
+		failures.append(
+			"the first refilled charge did not restart one full serial window")
+		return 0
+	guard = 0
+	while world.burst_charges < 2 and guard < 200:
+		world.step(FIXED_DELTA)
+		guard += 1
+	world.velocity = Vector2.ZERO
+	if world.burst_charges != 2 or world.burst_cooldown_remaining > 0.0:
+		failures.append("the reserve did not refill serially to an idle full pool")
+		return 0
+	world.queue_command(InputCommand.burst_at(Vector2(1080.0, 150.0), 3, world.tick))
+	events = world.step(FIXED_DELTA)
+	if not _contains_event(events, SimulationEvent.Kind.BURST_STARTED):
+		failures.append("the refilled reserve pool was not spendable again")
+		return 0
+	world.set_burst_cooldown_suppressed(true)
+	world.step(FIXED_DELTA)
+	if world.burst_charges != 2 or world.burst_cooldown_remaining > 0.0:
+		failures.append("Burst Frenzy did not pin the stored charges full")
+		return 0
+	world.set_burst_cooldown_suppressed(false)
+	return 1
+
+
 static func _test_double_tap_falls_back_to_recovery_web(
 	failures: PackedStringArray,
 ) -> int:
@@ -751,6 +880,7 @@ static func _test_double_tap_falls_back_to_recovery_web(
 	session._command_buffer.clear()
 	session._world.pull_active = false
 	session._world.web.release()
+	session._world.burst_charges = 0
 	session._world.burst_cooldown_remaining = 1.0
 	session.request_burst_from_gesture(Vector2(720.0, 150.0))
 	if session._command_buffer.size() != 1 or \
@@ -760,6 +890,7 @@ static func _test_double_tap_falls_back_to_recovery_web(
 		session.free()
 		return 0
 	session._command_buffer.clear()
+	session._world.burst_charges = 1
 	session._world.burst_cooldown_remaining = 0.0
 	session.request_burst_from_gesture(Vector2(720.0, 150.0))
 	if session._command_buffer.size() != 1 or \
