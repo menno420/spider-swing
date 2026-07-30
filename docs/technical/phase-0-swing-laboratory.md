@@ -273,7 +273,7 @@ product decisions.
 
 ## Owner device playtest
 
-Install `0.11.1-mobile-route-polish-test` after uninstalling the previous ephemerally
+Install `0.11.2-balanced-flow-copy-test` after uninstalling the previous ephemerally
 signed dev app, then check:
 
 1. start a run without touching the screen for one second; the ordinary opening

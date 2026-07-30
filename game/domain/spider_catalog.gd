@@ -172,7 +172,7 @@ const UNIQUE_TRACKS := {
 			"kind": TAKE_UP_RETENTION,
 			"name": "Balanced Flow",
 			"description":
-				"Natural silk take-up retains 0.25% more slack per tuning step.",
+				"Automatic take-up keeps 0.25% less slack per tuning step, shortening the web.",
 		},
 		{
 			"suffix": &"rhythm",

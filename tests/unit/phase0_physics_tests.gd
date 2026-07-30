@@ -17,6 +17,7 @@ static func run() -> Dictionary:
 	passed += _test_reel_shortens_without_teleport(failures)
 	passed += _test_reel_does_not_add_speed(failures)
 	passed += _test_automatic_take_up_ratchets_slack_without_speed(failures)
+	passed += _test_balanced_flow_shortens_web_more_at_max_level(failures)
 	passed += _test_detached_reel_reports_unavailable(failures)
 	passed += _test_invalid_target_is_inert(failures)
 	passed += _test_continuous_surface_attachment(failures)
@@ -260,6 +261,55 @@ static func _test_automatic_take_up_ratchets_slack_without_speed(
 	web.solve(position, velocity, FIXED_DELTA, config)
 	if absf(web.rope_length - 500.0) > 0.001:
 		failures.append("automatic take-up OFF still changed rope length")
+		return 0
+	return 1
+
+
+static func _test_balanced_flow_shortens_web_more_at_max_level(
+	failures: PackedStringArray,
+) -> int:
+	var upgrade := SpiderCatalog.upgrade(&"classic_flow")
+	var description := str(upgrade.get("description", "")).to_lower()
+	if not description.contains("less slack") or \
+			not description.contains("shortening the web"):
+		failures.append(
+			"Balanced Flow copy does not explain its shorter-web direction")
+		return 0
+
+	var base_config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	var progress := PlayerProgress.defaults()
+	progress.upgrade_levels["classic_flow"] = SpiderCatalog.MAX_UPGRADE_LEVEL
+	var max_config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	SpiderCatalog.apply_to_config(max_config, progress)
+	if not is_equal_approx(base_config.automatic_take_up_retention, 0.85) or \
+			not is_equal_approx(max_config.automatic_take_up_retention, 0.91):
+		failures.append("Balanced Flow retention no longer scales from 85% to 91%")
+		return 0
+
+	var base_web := WebConstraint.new()
+	var max_web := WebConstraint.new()
+	base_web.reset(base_config)
+	max_web.reset(max_config)
+	var anchor := Vector2(600.0, 140.0)
+	var position := Vector2(220.0, 390.0)
+	if base_web.try_attach(position, anchor, base_config) != \
+			WebConstraint.AttachResult.ATTACHED or \
+			max_web.try_attach(position, anchor, max_config) != \
+			WebConstraint.AttachResult.ATTACHED:
+		failures.append("Balanced Flow take-up fixture could not attach")
+		return 0
+	var attached_distance := position.distance_to(anchor)
+	base_web.rope_length = 500.0
+	max_web.rope_length = 500.0
+	var direction := (position - anchor).normalized()
+	var inward_position := anchor + direction * (attached_distance - 20.0)
+	base_web.solve(inward_position, Vector2.ZERO, FIXED_DELTA, base_config)
+	max_web.solve(inward_position, Vector2.ZERO, FIXED_DELTA, max_config)
+	if max_web.rope_length >= base_web.rope_length or \
+			not is_equal_approx(base_web.rope_length, 483.0) or \
+			not is_equal_approx(max_web.rope_length, 481.8):
+		failures.append(
+			"maxed Balanced Flow did not leave a shorter web than level zero")
 		return 0
 	return 1
 

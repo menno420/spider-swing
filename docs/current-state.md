@@ -62,8 +62,10 @@ without a reported regression.
   idempotent settlement path.
 - Reel shortens the authoritative rope length (400 px/s in Balanced) and spends
   energy without adding a separate inward acceleration or minimum-speed
-  correction. Natural take-up retains 85% of inward slack by default, also
-  without adding velocity. Anchor Burst crosses 40% of the resolved starting
+  correction. Natural take-up shortens the web by 85% of each inward movement
+  by default, also without adding velocity. Balanced Flow raises that share to
+  91% at maximum level, leaving less slack and a shorter web. Anchor Burst
+  crosses 40% of the resolved starting
   distance with 80 px minimum travel over 0.20 seconds. A lower target becomes
   a one-shot 40% Dive Pull over 0.16 seconds
   and never leaves a rope. Both paths retain bounded tangential carry, use fixed
@@ -170,7 +172,7 @@ without a reported regression.
   [30485134026](https://github.com/menno420/spider-swing/actions/runs/30485134026)
   passes the complete 82-check suite on Godot 4.7.1 at source
   `06a4c65aeb87b4d47a54423f9cd56ce87dcaaba5`.
-- `tests/test_runner.gd` — 88 declared checks: forty-three
+- `tests/test_runner.gd` — 89 declared checks: forty-four
   deterministic physics, twenty-one GUI-owned mobile HUD, fourteen front-end
   navigation/settings/progression, plus bootstrap and exact build-version
   contracts. Physics covers exact 40%/40% pull shares,
