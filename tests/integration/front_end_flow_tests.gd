@@ -154,6 +154,11 @@ static func _test_settings_are_scrollable_and_mobile_readable(
 		failures.append("Settings touch scrolling can still snap or feel twitchy")
 		view.free()
 		return 0
+	if not _scroll_descendants_bubble_drag(scroll):
+		failures.append(
+			"Settings still blocks swipes that begin on a control or card")
+		view.free()
+		return 0
 	if preset_rail == null or preset_rail.get_child_count() != 3:
 		failures.append("swing presets are not a consistent three-card selector")
 		view.free()
@@ -407,6 +412,11 @@ static func _test_shop_exposes_seven_mobile_readable_tracks(
 		failures.append("Shop upgrades are not in a mobile-safe scrolling region")
 		view.free()
 		return 0
+	if not _scroll_descendants_bubble_drag(scroll):
+		failures.append(
+			"Shop still blocks swipes that begin on an upgrade card")
+		view.free()
+		return 0
 	var core := view.front_end_button(&"UpgradeClassicReel")
 	var identity := view.front_end_button(&"UpgradeClassicFlow")
 	if core == null or identity == null or \
@@ -448,6 +458,17 @@ static func _test_shop_exposes_seven_mobile_readable_tracks(
 		return 0
 	view.free()
 	return 1
+
+
+static func _scroll_descendants_bubble_drag(node: Node) -> bool:
+	for child: Node in node.get_children():
+		var control := child as Control
+		if control != null and \
+				control.mouse_filter != Control.MOUSE_FILTER_PASS:
+			return false
+		if not _scroll_descendants_bubble_drag(child):
+			return false
+	return true
 
 
 static func _test_upgrades_and_creator_edits_use_progression_service(

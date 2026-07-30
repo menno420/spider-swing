@@ -101,6 +101,7 @@ godot --headless --path . --script res://tests/test_runner.gd
   coverage, independent rail lethality, authoritative obstacle scaling, a
   deterministic distance-banded pattern catalog with repetition protection and
   both single/paired natural compositions, authored high↔low weave envelopes,
+  minimum weave cue spacing and a forgiving central transition band,
   compact silk-burr bounds, a
   three-lane Classic-sized steering-envelope sweep through every root-passage
   fly route, the guided opening
@@ -125,7 +126,8 @@ godot --headless --path . --script res://tests/test_runner.gd
 - fourteen front-end contracts proving Home starts before gameplay,
   Play/Garage/Shop/Tutorial/Course Lab/Settings route correctly, the six tutorial
   steps cover live mechanics, Settings
-  is touch-scrollable without focus snapping and mobile-readable, options
+  is touch-scrollable from every descendant control/card region without focus
+  snapping and remains mobile-readable, options
   validate and emit once, serialization is stable, atomic filesystem persistence
   round-trips, progression settlements remain idempotent, the seven-track Shop
   remains mobile-scrollable, one central forest-web theme skins every screen,

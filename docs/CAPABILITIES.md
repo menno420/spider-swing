@@ -491,3 +491,23 @@ never edit.
   `670e78776eb7596a5c81328722ea08be655ed592d637de6df18f236a51ac0527`,
   and `build-info.txt` proved version `0.8.1-split-gate-test`, exact gameplay
   source, dev package, and display name `Spider Swing Split Gate (dev)`.
+- 2026-07-30 · capability · `owner-live` · **Card-wide native scrolling and
+  relaxed post-2000 m weaves survive the full Android path** · PR #32
+  `game-quality` run
+  [30531249630](https://github.com/menno420/spider-swing/actions/runs/30531249630)
+  passed all 88 contracts at source
+  `e4788245d7618238404e5058023dcde8433e265a`. The strengthened contracts prove
+  that every nested Shop/Settings control passes drag gestures to one native
+  scroller, and that both weave directions retain at least 400 pixels between
+  cues, a 72-pixel central transition band, and bounded growth. Android run
+  [30531250200](https://github.com/menno420/spider-swing/actions/runs/30531250200)
+  produced
+  [artifact 8754781683](https://github.com/menno420/spider-swing/actions/runs/30531250200/artifacts/8754781683),
+  61,390,731 bytes with digest
+  `sha256:c4186c880efa9267dd8f4072e3df2d67914ffeaa0f577e63a6aab0963a986b1b`.
+  The downloaded ZIP matched that digest and passed archive validation. Its
+  61,791,366-byte APK passed archive validation with SHA-256
+  `4c870f628d8de16f1802fad60d06d00d5864982dd552752991ddabd57b374f3d`;
+  `build-info.txt` proves version `0.11.1-mobile-route-polish-test`, exact
+  source, dev package, and display name `Spider Swing Mobile Route Polish
+  (dev)`.

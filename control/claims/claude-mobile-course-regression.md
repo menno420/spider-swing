@@ -1,1 +1,0 @@
-- `claude/mobile-course-regression` · **repair touch scrolling and post-2000 m weave presentation/fairness** · front-end presentation, course stream, rendering, tests, docs · 2026-07-30

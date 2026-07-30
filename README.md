@@ -16,7 +16,7 @@ The product *is* the swinging. Everything else exists to support it.
 > `com.menno420.spiderswing.dev` are all development identifiers and are all
 > expected to change.
 
-## Current phase: Phase 0.23 forest-web interface and course rhythm
+## Current phase: Phase 0.24 mobile route polish
 
 **The first playable traversal test is implemented.** The project opens on a
 player-facing Home screen with Play, Garage, Shop, a six-step Tutorial, Course
@@ -43,8 +43,10 @@ Burst boost.
   cards, and visible silk-knot progress. Every spider has the same five core
   tracks and two identity tracks. Each track has 20 small levels and a visible
   breakthrough at levels 5, 10, 15, and 20. Previous five-level saves migrate
-  proportionally. This is a local fly-funded balance lab, not an in-app-purchase
-  implementation.
+  proportionally. Buttons, panels, labels, and empty card regions all bubble
+  drag gestures to one native inertial scroll owner, while taps remain owned by
+  their original control. This is a local fly-funded balance lab, not an
+  in-app-purchase implementation.
 - A six-slot Course Lab that cycles deterministic EMPTY/LEAF/POD/VINE/GATE
   pieces, saves the pattern locally, and can playtest it immediately.
 - A data-driven six-step animated tutorial plus an in-game Menu return path.
@@ -67,8 +69,10 @@ Burst boost.
   shapes the rails and fly trail around each challenge. A curated,
   distance-banded pattern catalog prevents immediate repeats, introduces
   paired/staggered compositions only after 2000 m, and reserves predictable
-  later tight gaps for rail-only challenges. Authored weave chunks then cue and
-  clear a full Classic-sized route from high to low or low to high; compact
+  later tight gaps for rail-only challenges. Authored weave chunks cue and
+  clear a full Classic-sized route from high to low or low to high, with 420 px
+  between shorter alternating growths and a tested central transition band;
+  compact
   silk-suspended seed burrs add a small middle decision without creating a large
   floating wall. Leaf clusters, vine forks, hanging seed pods, broken root
   stumps, broad rail-grown root passages, fly route arcs, and lower anchors
@@ -88,8 +92,10 @@ Burst boost.
   broken root stumps, a broad root passage, three layered forest depths, the
   Classic Garden Spider, and golden forest flies. Its transparent obstacle
   sprites replace the prototype polygon backing instead of layering over it;
-  root-and-moss growth sockets join every wall-grown hazard behind the rail,
-  while aspect-preserving crops keep differently sized hazards from distorting.
+  root-and-moss growth sockets join every wall-grown hazard behind the rail.
+  Broad growth uses aspect-preserving crops; tall narrow growth uses the full
+  vertical vine silhouette with conservative overscan, avoiding the rectangular
+  cut edges exposed by the 1040×480 device recording.
   The broad passage uses the same natural upper/lower growth instead of
   stretched circular halves. Background layers scroll at restrained independent
   rates and stay lower contrast than gameplay.

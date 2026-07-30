@@ -764,6 +764,13 @@ static func _test_forest_obstacles_join_the_rails_without_gate_distortion(
 		failures.append(
 			"small silk burrs still receive wall-growth art while detached")
 		return 0
+	if not renderer_source.contains("var tall_narrow :=") or \
+			not renderer_source.contains(
+				"world_polygon.size() == 6 and not tall_narrow") or \
+			not renderer_source.contains("_draw_texture_uncropped_height"):
+		failures.append(
+			"tall forest growth can still be forced through a cropped stump box")
+		return 0
 	return 1
 
 

@@ -25,7 +25,8 @@ endpoints; it does not drive physics (GDD § 17.2).
   application-owned state. The forest-web background and all selectors use
   presentation state only.
 - `spider_ui_theme.gd` — one Ancient-Forest-aligned theme for panels, buttons,
-  focus/disabled states, touch scroll configuration, and silk-like scrollbars.
+  focus/disabled states, touch scroll configuration, descendant gesture
+  bubbling, and silk-like scrollbars.
 - `silk_preview.gd` — compact visual-only Classic/Dew/Ember thread preview for
   the Garage's custom Silk card rail.
 - `tutorial_preview.gd` — reduced-motion-aware in-engine mechanics animation.
@@ -41,7 +42,9 @@ endpoints; it does not drive physics (GDD § 17.2).
   overlay and as a missing-asset fallback. One world-anchored bark texture spans
   every ceiling/floor profile, including profile changes and chunk seams.
   Wall-grown art overlaps a mossy growth socket behind that rail, which is drawn
-  over the join, and texture regions are cropped without changing aspect ratio.
+  over the join. Broad shapes use aspect-preserving cover crops; tall narrow
+  growth uses the complete vertical vine texture at its natural aspect with
+  conservative horizontal overscan, so art never ends on a sliced source edge.
   Compact middle burrs use the bramble grammar but skip wall-growth sockets and
   hang from thin presentation-only silk; their small polygon remains the whole
   collision.
