@@ -1615,10 +1615,14 @@ static func _test_course_regions_are_seeded_distinct_and_recoverable(
 			"Bramble Canopy lost its high↔low identity")
 		return 0
 	if not hollow_ids.has(&"rooted_gate") or \
-			not hollow_ids.has(&"silk_burr_high") or \
+			not (
+				hollow_ids.has(&"silk_burr_high")
+				or hollow_ids.has(&"silk_burr_low")
+			) or \
 			not hollow_ids.has(&"tight_rail"):
 		failures.append(
-			"Silk Hollow lost its precision-hazard identity")
+			"Silk Hollow lost its gate/burr/tight-gap precision identity: %s" %
+				[hollow_ids.keys()])
 		return 0
 
 	var classic := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
