@@ -153,14 +153,15 @@ without a reported regression.
 
 **Verification**
 
-- PR #30 `game-quality` run
-  [30520782041](https://github.com/menno420/spider-swing/actions/runs/30520782041)
+- PR #32 `game-quality` run
+  [30531249630](https://github.com/menno420/spider-swing/actions/runs/30531249630)
   passes architecture fixtures/scan, clean import, front-end boot, and all 88
   contracts on Godot `4.7.1.stable.official.a13da4feb` at source
-  `e8faca0762bd7184115a913cf9dc5e9cbb90b29e`. Android run
-  [30520782029](https://github.com/menno420/spider-swing/actions/runs/30520782029)
-  produced the verified `spider-swing-android-debug` artifact
-  [8750656978](https://github.com/menno420/spider-swing/actions/runs/30520782029/artifacts/8750656978).
+  `e4788245d7618238404e5058023dcde8433e265a`. Android run
+  [30531250200](https://github.com/menno420/spider-swing/actions/runs/30531250200)
+  produced verified `spider-swing-android-debug` artifact
+  [8754781683](https://github.com/menno420/spider-swing/actions/runs/30531250200/artifacts/8754781683),
+  build `0.11.1-mobile-route-polish-test`.
 - The previous progression baseline remains PR #28. Its `game-quality` run
   [30489461720](https://github.com/menno420/spider-swing/actions/runs/30489461720)
   passed 86 contracts at source
