@@ -113,8 +113,15 @@ the bounce is fiction and the art must not argue for it.
 
 ## What already failed (do not repeat)
 
-- External Grok renders (2026-07-31): unusable output despite a good
-  reference brief; the owner explicitly gave up on that route.
+- External Grok renders (2026-07-31): the owner supplied **the approved
+  finished sprite itself** as a reference image, not merely a written brief.
+  Grok returned the same sprite recoloured rather than a new spider. The
+  documented mechanism is image-to-image *influence weight*: held high, the
+  source is treated as the thing to edit and the prompt becomes a style or
+  texture overlay. If that route is ever retried — for skins or cosmetics —
+  lower the influence so the reference guides structure only, or supply it as a
+  style reference in text rather than as an img2img source. The owner gave up on
+  the route after this.
 - Procedural code-drawn painting (same day, this repo's review session):
   one honest attempt could not approach the painterly fur bar set by the
   finished pair — fine for placeholders, not for production identity art.

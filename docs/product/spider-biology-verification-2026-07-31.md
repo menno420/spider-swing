@@ -14,6 +14,16 @@
 >
 > Verified 2026-07-31. Two uploads were byte-identical (md5 `b40daf36…`) — one
 > document, not two.
+>
+> **Both reports came from ChatGPT Deep Research**, which is a genuinely strong
+> tool — report 1 is the proof, with a complete §19 register of 31 working URLs.
+> That is the point worth keeping: the failure was not a weak tool, it was a
+> **rewrite that dropped the bibliography while keeping the inline citation
+> keys**. The longer version looks like a pure upgrade in every visible respect,
+> so nothing prompts you to check, and every claim in it silently becomes
+> unverifiable while still appearing sourced. When a research document is
+> regenerated longer or restructured, confirm the sources survived before
+> trusting any of it.
 
 ## 1. Does the second report change the five approved mappings?
 
