@@ -473,3 +473,33 @@
   unchecked claim that looks checked is the failure this entry prevents.
 - provenance: Menno's 2026-07-31 request to verify the second report's claims
   as far as possible and document what is valuable
+
+## [D-0030] Prioritise real spiders, and ship generated or unencumbered art
+
+- status: decided
+- date: 2026-07-31
+- verdict: Real spiders come first. If a spider is real and has a usable name,
+  the profile uses the real name. Claim strengths are considered in order —
+  `species`, then `composite` for a deliberate blend, then `behaviour` where no
+  species can own the trait, and `fictional` only where nothing real fits. A
+  fictional mechanic does not by itself justify a fictional name: Garden Spider
+  carries real naming with an entirely invented grappling system. Shipped art is
+  generated in-house, public-domain/CC0 verified per file, or owner-produced;
+  anything requiring attribution, share-alike, or per-use permission is avoided
+  rather than negotiated. Reference images consulted while drawing are still
+  recorded in the manifest. Agents verify important claims against trustworthy
+  sources — WSC, peer-reviewed work, museums, health authorities — and that
+  verification is sufficient; no separate human approval gate is required before
+  a claim ships.
+- why: The owner's product is a real-spider game that invents only where reality
+  has no candidate. The previous framing (D-0028) made invented spiders
+  first-class without ranking them against real ones, which read as licence to
+  invent whenever it was convenient; this entry restores the order without
+  losing the disclosure machinery that makes invention safe. The art rule keeps
+  the pipeline free of licence bookkeeping nobody is staffed to maintain, and
+  matches how all five current sprites were actually produced. Naming
+  verification authority as "agents, against trustworthy sources" closes the
+  content-authority question the research report raised, at the level of
+  ceremony the project can sustain.
+- provenance: Menno's 2026-07-31 direction on real-name priority, field-guide
+  value, source verification, and image licensing

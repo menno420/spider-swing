@@ -34,11 +34,38 @@ build if one goes missing.
   this level may state an accepted binomial.
 - `composite` — several relatives blended; no species-level claim.
 - `behaviour` — a behaviour recorded across many families, not a taxon.
-- `fictional` — an invented animal. Welcome here (see §3); real biology may
-  still guide the art, and the disclosure must say the spider itself is
-  invented, not merely that a stat is tuned.
+- `fictional` — an invented animal. **The last resort, not the default** (§3):
+  used only when no real spider fits. Real biology may still guide the art, and
+  the disclosure must say the spider itself is invented, not merely that a stat
+  is tuned.
 
 ## 2. Approved mappings
+
+### Re-audit against the real-first priority (2026-07-31)
+
+D-0030 changes the order in which claim strengths are considered, so every
+profile was re-checked against it. Two names are now open questions for the
+owner; three are settled.
+
+| Profile | Does a real spider with a usable name fit? | Verdict |
+|---|---|---|
+| **Garden Spider** | Yes, and it already uses one — garden orb-weaver | **Settled.** Real naming already |
+| **Skitter** | Yes — *Lyssomanes viridis*, the **magnolia green jumper** | **Open.** "Skitter" is invented where a usable real name exists |
+| **Anchorite** | No single one; a deliberate blend of burrowing mygalomorphs | **Settled** as `composite`, which D-0030 explicitly permits |
+| **Ballooner** | No — ballooning is shared across families, so no species can own it | **Settled** as `behaviour` |
+| **Buckler** | Yes — ***Cyclocosmia***, whose abdomen genuinely is an armoured disc | **Open.** Invented name where a real armoured spider exists |
+
+The two open ones are branding, so they are the owner's call and are recorded in
+`docs/owner-questions.md` rather than guessed at. The reasoning either way:
+
+- A fictional *mechanic* never forced a fictional *name* — Garden Spider proves
+  that. Under D-0030, Buckler's rebound being invented is **not** sufficient
+  grounds for an invented name when *Cyclocosmia* exists and is genuinely
+  armoured.
+- Against renaming: "Skitter" and "Buckler" are short, readable, and already
+  shipped; real common names are longer and *Cyclocosmia* has no settled English
+  common name a player would recognise.
+
 
 ### Garden Spider — `composite`
 
@@ -137,21 +164,34 @@ build if one goes missing.
   persisted id stays `springtail` because it keys saved progression; no player
   ever sees it.
 
-## 3. Designing fictional spiders
+## 3. Real first — and how to invent for the gaps
 
-**Invented spiders belong in this game.** The product is fun first and
-educational second, and `fictional` is a first-class claim strength, not a
-grudging exception. Read the rest of this folio as *how to invent well*, never
-as *only real species allowed*.
+**Owner directive, 2026-07-31 (D-0030): prioritise real spiders wherever
+possible.** If a spider is real and has a usable name, use the real name. Invent
+only where no actual spider fits, or where the honest answer is a deliberate
+combination of species.
 
-The reasoning is worth stating plainly, because it is the opposite of the
-intuition: **fiction is not what costs an educational game its credibility —
-undisclosed fiction is.** A wholly invented spider is the *safest* content the
-game can ship, because there is no real animal a player can walk away holding a
-wrong fact about. The genuinely risky content is a half-accurate real species,
-which is why Garden Spider and Anchorite are composites rather than named
-species. A labelled invention costs a player nothing and teaches by contrast:
-knowing which one is made up is what makes the real ones land.
+That gives a priority order, checked in this sequence before any profile name is
+chosen:
+
+| Order | Claim strength | Use when |
+|---:|---|---|
+| 1 | `species` | One real spider fits the identity **and** has a name a player can read and say. Use that name. |
+| 2 | `composite` | Several relatives fit and no single one is diagnostic — a deliberate blend. Name it honestly as a blend; claim no binomial. |
+| 3 | `behaviour` | The identity is a behaviour many spiders share, so no species can own it. |
+| 4 | `fictional` | **Only when nothing real fits.** The mechanic has no animal behind it at all, or every candidate name is unusable. |
+
+A fictional *mechanic* does not force a fictional *name*. Garden Spider carries
+real-spider naming and an entirely invented grappling system, and that is fine —
+the disclosure does the work. Reach for `fictional` when there is no real animal
+to point at, not merely because the ability is invented.
+
+### Inventing well, when you have to
+
+Invention is not a failure state and undisclosed invention is the only real
+problem: a wholly invented spider is *safer* than a half-accurate real one,
+because there is no real animal a player can walk away misremembering. But it is
+the fourth option, not the first.
 
 ### The four rules
 
@@ -225,10 +265,26 @@ folio adds the identity rules that outlive any single brief:
 - Choose one sex explicitly when dimorphism changes the silhouette.
 - **Never combine diagnostic markings from several species and then label the
   result as one species.** That is exactly what `composite` exists to prevent.
-- Every reference image needs a manifest entry: URL, creator, licence, access
-  date, permitted transformations, attribution text. Wikimedia licences are
-  per-file. Museum imagery is not automatically reusable. Figures in open-access
-  papers can still be separately copyrighted.
+### Image sourcing — owner directive, 2026-07-31 (D-0030)
+
+Shipped art is **generated, or unencumbered**. In order of preference:
+
+1. **Generated** in-house from a written brief — the route that produced all
+   five current sprites.
+2. **Public domain / CC0**, verified per file, not per site.
+3. Owner-produced photography.
+
+Anything needing attribution, a share-alike term, or a per-use permission is
+avoided rather than negotiated. That keeps the art pipeline free of licence
+bookkeeping the project has no one to maintain.
+
+**Reference images consulted while drawing are still recorded** in
+`assets/runtime/characters/REFERENCE-MANIFEST.md` — source, permitted
+transformations, and whether anything is embedded. Looking at a photograph to
+get anatomy right is fine; shipping pixels derived from it is what the manifest
+exists to rule out. Wikimedia licences are per-file, museum imagery is not
+automatically reusable, and figures in open-access papers can still be
+separately copyrighted — which is exactly why generated art is the default.
 
 ## 6. Parked candidates — ideas, not scope
 

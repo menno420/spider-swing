@@ -642,6 +642,17 @@ reasoning.
 
 ## Recently shipped (newest first)
 
+- **2026-07-31 — Real-spider-first policy and image sourcing.** Sets
+  the priority order for profile identity — `species`, then `composite`, then
+  `behaviour`, and `fictional` only where nothing real fits — so an invented
+  mechanic no longer implies an invented name. Shipped art is generated,
+  public-domain/CC0 verified per file, or owner-produced; anything needing
+  attribution or per-use permission is avoided rather than negotiated. Agent
+  verification against trustworthy sources is the sufficient standard for a
+  claim, with no separate approval gate. Re-audited the five profiles against
+  the new order: Garden Spider, Anchorite, and Ballooner settled; Skitter and
+  Buckler now open owner questions in `docs/owner-questions.md`.
+
 - **2026-07-31 — Second research report verified and folded in.** The owner's
   longer report reproduced all five approved mappings independently, but ships
   84 citation keys with no register defining them. Nine of its claims were
