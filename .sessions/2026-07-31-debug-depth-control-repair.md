@@ -1,6 +1,6 @@
 # Debug depth control repair session
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 
@@ -91,8 +91,8 @@ called services, so they did not cover the owner workflow end to end.
   `cb9cb31d…`; the intact 62,202,652-byte APK has SHA-256 `7a9aa69d…`, embeds
   source `34b8d5d1…`, and reports certificate SHA-256 `83ff0bc2…`, exactly the
   pinned stable debug signer.
-- `python3 bootstrap.py check --strict` reports only the designed hold while
-  this card remains `in-progress`; the final flip removes it before merge.
+- Final `python3 bootstrap.py check --strict` passes with this card complete and
+  the session claim removed.
 
 ## Decide-and-flag
 
@@ -113,9 +113,9 @@ device traversal/feel judgment remains the product gate.
 
 ## PR
 
-[PR #60](https://github.com/menno420/spider-swing/pull/60) is ready and green
-for implementation/Android proof; its only red check is the deliberate
-`in-progress` lifecycle hold. Terminal state is recorded after the final flip.
+[PR #60](https://github.com/menno420/spider-swing/pull/60) is ready for its
+final-head checks and squash merge. The handoff probes its terminal state
+against the checked head rather than relying on this pre-merge card snapshot.
 
 ## 💡 Idea
 
@@ -124,4 +124,4 @@ If either grows another numeric field, extract a shared locale-aware parsing and
 formatting policy so comma decimals, focus loss, `GO`, and field synchronization
 cannot drift while each adapter keeps ownership of its native Godot controls.
 
-- **📊 Model:** gpt-5 · high · bug fix
+- **📊 Model:** gpt-5 · high · runtime bugfix

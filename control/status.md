@@ -2,8 +2,8 @@
 updated: 2026-07-31T19:00:00Z
 phase: Phase 0.25 depth setup verified — owner device traversal/feel gate remains next
 health: green
-kit: v1.20.2 · check: green except deliberate active-session hold · engaged: yes
-last-shipped: PR #54 merged; PR #60 pre-run depth-control candidate verified
+kit: v1.20.2 · check: green · engaged: yes
+last-shipped: PR #54 merged; PR #60 pre-run depth-control candidate merge-ready
 blockers: Phase 1 and further numeric tuning remain product-gated on issue #2 device playtesting
 orders: acked= done=
 ⚑ needs-owner: 1 ask — install the stable-key repair and evaluate pre-run depth setup plus traversal feel
