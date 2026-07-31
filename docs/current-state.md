@@ -636,7 +636,7 @@ release roster uses fictional names throughout or promotes species names.
 
 ## Recently shipped (newest first)
 
-- **2026-07-31 — Five-spider production-art roster (PR #52, in flight).**
+- **2026-07-31 — Five-spider production-art roster (PR #52).**
   Corrects Garden to the owner-approved six-visible-leg side-profile convention,
   adds owner-approved Skitter, Ballooner, and Springtail production sprites,
   and routes all five profiles through one presentation-owned renderer without
