@@ -33,6 +33,16 @@
 | [`technical/repository-layout.md`](technical/repository-layout.md) | What lives where, and what is committed vs generated. |
 | [`technical/testing.md`](technical/testing.md) | The two gates, how to run them locally, what CI enforces. |
 | [`technical/substrate-kit-provenance.md`](technical/substrate-kit-provenance.md) | How the vendored Substrate Kit got here; how to re-verify the pin. |
+| [`technical/simulation-lab.md`](technical/simulation-lab.md) | The headless batch-run lab — what it can and cannot answer, and how to measure a difficulty curve with it. |
+
+## Measurements
+
+Dated, reproducible instrumentation output. Diagnostic, never a gate; re-measure
+and diff rather than trusting a number forever.
+
+| Document | What it is |
+| --- | --- |
+| [`measurements/2026-08-01-difficulty-curve.md`](measurements/2026-08-01-difficulty-curve.md) | Deaths per kilometre, survival, death causes and resource pressure across 0–20 km and three skill tiers — the baseline difficulty modes, the upgrade audit and economy tuning are judged against. |
 
 ### Architecture decisions
 
