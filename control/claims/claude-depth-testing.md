@@ -1,0 +1,1 @@
+- `claude/depth-testing` · **debug depth testing** · Android workflow, debug run access, progression overlay, front-end/HUD, tests, docs · 2026-07-31
