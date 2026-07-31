@@ -1,1 +1,0 @@
-- `claude/bramble-canopy-region` · **5000 m Bramble Canopy visual and route identity** · region catalog/presentation assets/course patterns/contracts/docs · 2026-07-31

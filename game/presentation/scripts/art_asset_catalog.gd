@@ -15,6 +15,12 @@ const FOREST_ROOT_STUMP := &"forest_root_stump"
 const FOREST_BACKDROP_FAR := &"forest_backdrop_far"
 const FOREST_BACKDROP_MID := &"forest_backdrop_mid"
 const FOREST_BACKDROP_NEAR := &"forest_backdrop_near"
+const CANOPY_RAIL_TILE := &"canopy_rail_tile"
+const CANOPY_GROWTH_SOCKET := &"canopy_growth_socket"
+const CANOPY_BRAMBLE := &"canopy_bramble"
+const CANOPY_SEED_POD := &"canopy_seed_pod"
+const CANOPY_BACKDROP_FAR := &"canopy_backdrop_far"
+const CANOPY_BACKDROP_MID := &"canopy_backdrop_mid"
 const CLASSIC_SPIDER := &"classic_spider"
 const SKITTER_SPIDER := &"skitter_spider"
 const ANCHORITE_SPIDER := &"anchorite_spider"
@@ -41,6 +47,18 @@ const ASSETS := {
 		"res://assets/runtime/forest-biome/forest-backdrop-mid.png",
 	FOREST_BACKDROP_NEAR:
 		"res://assets/runtime/forest-biome/forest-backdrop-near.png",
+	CANOPY_RAIL_TILE:
+		"res://assets/runtime/bramble-canopy/canopy-vine-rail-tile.png",
+	CANOPY_GROWTH_SOCKET:
+		"res://assets/runtime/bramble-canopy/canopy-growth-socket.png",
+	CANOPY_BRAMBLE:
+		"res://assets/runtime/bramble-canopy/canopy-thorn-bramble.png",
+	CANOPY_SEED_POD:
+		"res://assets/runtime/bramble-canopy/canopy-seed-pod-vine.png",
+	CANOPY_BACKDROP_FAR:
+		"res://assets/runtime/bramble-canopy/bramble-backdrop-far.webp",
+	CANOPY_BACKDROP_MID:
+		"res://assets/runtime/bramble-canopy/bramble-backdrop-mid.png",
 	CLASSIC_SPIDER:
 		"res://assets/runtime/characters/classic-garden-spider.png",
 	SKITTER_SPIDER:

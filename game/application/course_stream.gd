@@ -25,6 +25,7 @@ const WEAVE_FIRST_OFFSET_X := 400.0
 const WEAVE_SECOND_OFFSET_X := 820.0
 const WEAVE_ROUTE_END_OFFSET_X := 900.0
 const WEAVE_GROWTH_HEIGHT := 235.0
+const CANOPY_WEAVE_GROWTH_HEIGHT := 315.0
 const WEAVE_FLOOR_WIDTH := 156.0
 const WEAVE_CEILING_WIDTH := 142.0
 
@@ -320,7 +321,8 @@ func _route_plan(
 			"guide_y": 370.0,
 			"guide_end_x": 690.0,
 		}
-	if pattern_id == &"high_low_weave":
+	if pattern_id == &"high_low_weave" or \
+			pattern_id == &"canopy_high_low":
 		return {
 			"lane": ROUTE_WEAVE,
 			"guide_y": CEILING_Y + 135.0,
@@ -328,7 +330,8 @@ func _route_plan(
 			"guide_end_x": WEAVE_ROUTE_END_OFFSET_X,
 			"guide_count": 7,
 		}
-	if pattern_id == &"low_high_weave":
+	if pattern_id == &"low_high_weave" or \
+			pattern_id == &"canopy_low_high":
 		return {
 			"lane": ROUTE_WEAVE,
 			"guide_y": FLOOR_Y - 135.0,
@@ -452,9 +455,12 @@ func _append_middle_challenge(
 				105.0 * _floating_obstacle_scale * growth,
 				165.0 * _floating_obstacle_scale * growth,
 			)
-		&"high_low_weave":
+		&"high_low_weave", &"canopy_high_low":
 			var floor_x := start_x + WEAVE_FIRST_OFFSET_X
 			var ceiling_x := start_x + WEAVE_SECOND_OFFSET_X
+			var growth_height := CANOPY_WEAVE_GROWTH_HEIGHT \
+				if pattern_id == &"canopy_high_low" \
+				else WEAVE_GROWTH_HEIGHT
 			_append_root_stump(
 				result,
 				floor_x,
@@ -462,7 +468,7 @@ func _append_middle_challenge(
 					start_x, floor_x, floor_y, route_lane, false),
 				false,
 				WEAVE_FLOOR_WIDTH * _floating_obstacle_scale * growth,
-				WEAVE_GROWTH_HEIGHT * _floating_obstacle_scale * growth,
+				growth_height * _floating_obstacle_scale * growth,
 			)
 			_append_hanging_seed_pod(
 				result,
@@ -470,18 +476,21 @@ func _append_middle_challenge(
 				_boundary_edge_y_at(
 					start_x, ceiling_x, ceiling_y, route_lane, true),
 				WEAVE_CEILING_WIDTH * _floating_obstacle_scale * growth,
-				WEAVE_GROWTH_HEIGHT * _floating_obstacle_scale * growth,
+				growth_height * _floating_obstacle_scale * growth,
 			)
-		&"low_high_weave":
+		&"low_high_weave", &"canopy_low_high":
 			var ceiling_x := start_x + WEAVE_FIRST_OFFSET_X
 			var floor_x := start_x + WEAVE_SECOND_OFFSET_X
+			var growth_height := CANOPY_WEAVE_GROWTH_HEIGHT \
+				if pattern_id == &"canopy_low_high" \
+				else WEAVE_GROWTH_HEIGHT
 			_append_hanging_seed_pod(
 				result,
 				ceiling_x,
 				_boundary_edge_y_at(
 					start_x, ceiling_x, ceiling_y, route_lane, true),
 				WEAVE_CEILING_WIDTH * _floating_obstacle_scale * growth,
-				WEAVE_GROWTH_HEIGHT * _floating_obstacle_scale * growth,
+				growth_height * _floating_obstacle_scale * growth,
 			)
 			_append_root_stump(
 				result,
@@ -490,7 +499,16 @@ func _append_middle_challenge(
 					start_x, floor_x, floor_y, route_lane, false),
 				false,
 				WEAVE_FLOOR_WIDTH * _floating_obstacle_scale * growth,
-				WEAVE_GROWTH_HEIGHT * _floating_obstacle_scale * growth,
+				growth_height * _floating_obstacle_scale * growth,
+			)
+		&"canopy_thorn_high", &"canopy_thorn_low":
+			var high_route := pattern_id == &"canopy_thorn_high"
+			_append_floating_seed_burr(
+				result,
+				Vector2(start_x + 650.0, 510.0 if high_route else 286.0),
+				88.0,
+				68.0,
+				_floating_obstacle_scale * growth,
 			)
 		&"silk_burr_high", &"silk_burr_low":
 			_append_floating_seed_burr(
