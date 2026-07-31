@@ -531,3 +531,21 @@
 - provenance: Menno's 2026-07-31 direction on inventing names only where needed,
   explaining the scientific names in the field guide, and combining several real
   spiders into one
+
+## [D-0032] Give the Field Guide its own Home route
+
+- status: decided
+- date: 2026-07-31
+- verdict: The Field Guide is a first-class Home route, not only a Garage
+  detail. It remains reachable from the Garage beside the spider it describes,
+  and records which screen opened it so BACK returns there rather than always
+  landing in the Garage. Home's intro paragraph gives up height to make room:
+  eight routes leave 62 px of headroom on the card, measured at the 1280×720
+  reference rather than assumed.
+- why: An educational surface nobody finds teaches nobody, and the Garage is a
+  detour a player only takes when changing spider. The owner asked for
+  discoverability directly. Tracking the origin costs one integer and removes
+  the only real objection to a second entry point — a back button that lies
+  about where it goes.
+- provenance: Menno's 2026-07-31 direction to make the Field Guide a separate
+  Home button for discoverability

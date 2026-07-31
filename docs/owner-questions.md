@@ -12,15 +12,16 @@
 
 ## Open
 
-### OQ-2 · Should the Field Guide also be reachable from Home?
-
-It ships reachable from the Garage, next to the spider it describes, which keeps
-it contextual. Home currently has seven routes and an eighth would crowd the
-card.
-
-**Current default:** Garage-only.
+_None. Every recorded fork has an answer below._
 
 ## Answered
+
+### OQ-2 · Should the Field Guide be reachable from Home? — *answered 2026-07-31*
+
+**Yes — its own button on Home, for discoverability.** It stays reachable from
+the Garage too, and now remembers which route the player took so BACK returns
+there instead of always landing in a Garage they never opened.
+
 
 ### OQ-1 · Should Skitter and Buckler take real spider names? — *answered 2026-07-31*
 

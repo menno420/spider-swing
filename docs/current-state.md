@@ -647,7 +647,9 @@ reasoning.
   claim strength, real trait, an explicit statement of what the game invents,
   a myth correction, and cited sources — sharing no key with `SpiderCatalog`, so
   taxonomy can be corrected without touching a tuned number or saved
-  progression. A scrollable FIELD GUIDE route off the Garage renders it, keeping
+  progression. A scrollable FIELD GUIDE route renders it — its own Home button
+  for discoverability plus the Garage entry beside the spider it describes,
+  returning to whichever route the player took — keeping
   game identity, inspiration, real biology and game adaptation on separate
   lines. **Naming rule:** a real spider with a usable name always wins; where
   none exists the name is invented and `drawn_from` must then list every real

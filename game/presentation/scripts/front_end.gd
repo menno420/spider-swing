@@ -21,6 +21,7 @@ var _shop: Control
 var _creator: Control
 var _practice: Control
 var _field_guide: Control
+var _field_guide_back: Button
 var _tutorial_preview: TutorialPreview
 var _tutorial_kicker: Label
 var _tutorial_title: Label
@@ -197,10 +198,12 @@ func _build_home() -> void:
 	menu.add_theme_constant_override("separation", 10)
 	_fill_with_margin(menu, card, 24.0)
 	menu.add_child(_section_label("READY TO SWING?"))
-	menu.add_child(_paragraph(
-		"Learn the controls, choose your swing feel, then take the laboratory "
-		+ "as far as you can.",
-	))
+	# Eight routes leave this card tight; the intro carries the least weight,
+	# so it gives up the height rather than the buttons shrinking.
+	var intro := _paragraph(
+		"Learn the controls, pick your swing feel, then go as far as you can.")
+	intro.add_theme_font_size_override("font_size", 18)
+	menu.add_child(intro)
 	var play := _button(&"Play", "PLAY", GREEN, 68.0)
 	play.pressed.connect(_on_play)
 	menu.add_child(play)
@@ -233,6 +236,10 @@ func _build_home() -> void:
 	settings.pressed.connect(_on_settings)
 	settings.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	routes.add_child(settings)
+	var field_guide := _button(&"FieldGuide", "FIELD GUIDE", YELLOW, 54.0)
+	field_guide.pressed.connect(_on_field_guide.bind(FrontEndState.Screen.HOME))
+	field_guide.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	routes.add_child(field_guide)
 	var note := _label("Your choices save automatically.", 14, MUTED)
 	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	menu.add_child(note)
@@ -447,7 +454,7 @@ func _build_garage() -> void:
 	detail.add_child(_garage_inspiration)
 	var field_guide := _button(&"GarageFieldGuide", "FIELD GUIDE", ORANGE, 42.0)
 	field_guide.add_theme_font_size_override("font_size", 16)
-	field_guide.pressed.connect(_on_field_guide)
+	field_guide.pressed.connect(_on_field_guide.bind(FrontEndState.Screen.GARAGE))
 	detail.add_child(field_guide)
 	detail.add_child(_compact_heading("BODY PALETTE"))
 	var style_rail := HBoxContainer.new()
@@ -684,9 +691,9 @@ func _build_practice() -> void:
 
 func _build_field_guide() -> void:
 	_field_guide = _full_screen(&"FieldGuide")
-	var back := _button(&"FieldGuideBack", "‹  GARAGE", CYAN, 50.0)
-	back.pressed.connect(_on_garage)
-	_place(back, _field_guide, 0.025, 0.035, 0.18, 0.11)
+	_field_guide_back = _button(&"FieldGuideBack", "‹  BACK", CYAN, 50.0)
+	_field_guide_back.pressed.connect(_on_leave_field_guide)
+	_place(_field_guide_back, _field_guide, 0.025, 0.035, 0.18, 0.11)
 	var card := _panel(PANEL)
 	_place(card, _field_guide, 0.14, 0.08, 0.86, 0.94)
 	var content := VBoxContainer.new()
@@ -801,6 +808,12 @@ func _render() -> void:
 	_creator.visible = _state.screen == FrontEndState.Screen.CREATOR
 	_practice.visible = _state.screen == FrontEndState.Screen.PRACTICE
 	_field_guide.visible = _state.screen == FrontEndState.Screen.FIELD_GUIDE
+	if _field_guide.visible:
+		_field_guide_back.text = (
+			"‹  GARAGE"
+			if _state.field_guide_return_screen == FrontEndState.Screen.GARAGE
+			else "‹  HOME"
+		)
 	if _tutorial.visible:
 		var step := _state.current_tutorial_step()
 		_tutorial_kicker.text = str(step.get("kicker", ""))
@@ -1015,9 +1028,14 @@ func _on_shop() -> void:
 		_state.show_shop()
 
 
-func _on_field_guide() -> void:
+func _on_field_guide(return_to: int) -> void:
 	if _state != null:
-		_state.show_field_guide()
+		_state.show_field_guide(return_to)
+
+
+func _on_leave_field_guide() -> void:
+	if _state != null:
+		_state.leave_field_guide()
 
 
 func _on_creator() -> void:

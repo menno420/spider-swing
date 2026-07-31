@@ -91,3 +91,26 @@ one name. That is the clearest possible statement of the rule, and it needs no
 new data — only art for the animals already named.
 
 - **📊 Model:** opus-5 · high · feature build
+
+## Addendum — Field Guide promoted to a Home route (D-0032)
+
+The owner answered the last open question: make the Field Guide its own Home
+button for discoverability. An educational surface nobody finds teaches nobody,
+and the Garage is a detour a player only takes when changing spider.
+
+It stays reachable from the Garage as well, so `FrontEndState` now records which
+screen opened it and BACK returns there — one integer, and it removes the only
+real objection to a second entry point: a back button that lies about where it
+goes.
+
+Two things measured rather than assumed:
+
+- The eighth Home route left only **21.4 px** of headroom on the card. The intro
+  paragraph gave up the height (shorter copy, font 21 → 18) rather than shrinking
+  the buttons: **62.4 px** now.
+- "FIELD GUIDE" is 120 px in a 206 px button — comfortable.
+
+The route contract now walks both paths and asserts the BACK label follows the
+origin, so a future change cannot silently reintroduce the wrong return.
+
+`docs/owner-questions.md` has no open entries left.

@@ -50,7 +50,7 @@ static func _test_primary_routes_are_real_buttons(
 	view.bind_state(state)
 	for button_name: StringName in [
 		&"Play", &"Garage", &"Shop", &"Tutorial", &"Creator", &"Practice",
-		&"Settings",
+		&"Settings", &"FieldGuide",
 	]:
 		var button := view.front_end_button(button_name)
 		if button == null or button.mouse_filter != Control.MOUSE_FILTER_STOP:
@@ -474,11 +474,34 @@ static func _test_field_guide_separates_biology_from_game(
 				failures.append("%s entry has no %s line" % [spider_id, marker])
 				view.free()
 				return 0
-	view.front_end_button(&"FieldGuideBack").pressed.emit()
+	# The guide is entered from two places, so back must follow the route the
+	# player actually took rather than always landing in the Garage.
+	var guide_back := view.front_end_button(&"FieldGuideBack")
+	if not guide_back.text.contains("GARAGE"):
+		failures.append("the Field Guide back route does not name the Garage")
+		view.free()
+		return 0
+	guide_back.pressed.emit()
 	if state.screen != FrontEndState.Screen.GARAGE:
 		failures.append("the Field Guide does not return to the Garage")
 		view.free()
 		return 0
+	state.show_home()
+	view.front_end_button(&"FieldGuide").pressed.emit()
+	if state.screen != FrontEndState.Screen.FIELD_GUIDE:
+		failures.append("Home does not route to the Field Guide")
+		view.free()
+		return 0
+	if not guide_back.text.contains("HOME"):
+		failures.append("the Field Guide back route does not follow its origin")
+		view.free()
+		return 0
+	guide_back.pressed.emit()
+	if state.screen != FrontEndState.Screen.HOME:
+		failures.append("the Field Guide does not return to Home")
+		view.free()
+		return 0
+	view.front_end_button(&"Garage").pressed.emit()
 	view.front_end_button(&"GarageBack").pressed.emit()
 	view.front_end_button(&"Shop").pressed.emit()
 	var shop_preview := view.find_child(
