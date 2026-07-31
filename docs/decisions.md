@@ -550,7 +550,36 @@
 - provenance: Menno's 2026-07-31 direction to make the Field Guide a separate
   Home button for discoverability
 
-## [D-0033] Commit one public debug signer for reproducible Android updates
+## [D-0033] Settle campaign shape, difficulty records, campaign rewards, and audio sourcing
+
+- status: decided
+- date: 2026-07-31
+- verdict: **Campaign** levels serve both purposes in stages — early levels each
+  teach one mechanic, later levels combine them into challenges — and the
+  teaching tier is built first. **Difficulty modes** keep a separate best
+  distance per mode, and only Standard is eligible for a future leaderboard;
+  difficulty changes which content the stream may serve and how much recovery
+  the player gets, never the physics, so the one approved preset stays
+  authoritative. **Campaign rewards** are cosmetics and stars only, never flies.
+  **Audio** is generated for spider and web effects, CC0 for ambience and music,
+  with every sourced file's licence verified individually and recorded in the
+  reference manifest.
+- why: These four were the open forks blocking difficulty and campaign work, and
+  guessing any of them would have cost a rebuild. Campaign as a teaching ladder
+  fills a real gap — the tutorial explains Reel, Burst and Dive across six
+  static steps and then never asks the player to perform any of them — while the
+  staged approach leaves room to escalate without committing to challenge design
+  before the teaching tier feels right. Separate bests per difficulty keep
+  Relaxed rewarding without letting non-lethal rails set a record that reads as
+  equivalent to a Harsh one; Region Practice already established the
+  non-competitive-settlement precedent this reuses. Cosmetic-only campaign
+  rewards keep fixed-seed repeatable levels from becoming the optimal farm.
+  Mixed audio sourcing follows D-0030's generated-or-unencumbered rule while
+  admitting that music is the one category synthesis handles worst.
+- provenance: Menno's 2026-07-31 answers on campaign purpose, difficulty
+  records, campaign rewards, and audio sourcing
+
+## [D-0034] Commit one public debug signer for reproducible Android updates
 
 - status: decided
 - date: 2026-07-31
@@ -571,7 +600,7 @@
 - provenance: Menno's 2026-07-31 approval to choose a stable Android debug
   signer, including explicit acceptance of the conventional committed key
 
-## [D-0034] Route every debug advantage through noncompetitive resolution
+## [D-0035] Route every debug advantage through noncompetitive resolution
 
 - status: decided
 - date: 2026-07-31
