@@ -12,6 +12,11 @@ signal practice_play_requested(
 	region_id: StringName,
 	start_distance_pixels: float,
 )
+signal debug_play_requested(
+	settings: PlayerSettings,
+	start_distance_pixels: float,
+	upgrade_level: int,
+)
 signal creator_play_requested(settings: PlayerSettings, pattern: Array[StringName])
 signal settings_changed(settings: PlayerSettings)
 signal spider_profile_requested(spider_id: StringName)
@@ -30,6 +35,7 @@ enum Screen {
 	CREATOR,
 	PRACTICE,
 	FIELD_GUIDE,
+	DEBUG_RUN_SETUP,
 }
 
 const TUTORIAL_STEPS := [
@@ -97,6 +103,9 @@ var field_guide_return_screen: int = Screen.HOME
 var tutorial_index: int = 0
 var settings: PlayerSettings = PlayerSettings.defaults()
 var progress: PlayerProgress = PlayerProgress.defaults()
+var debug_run_distance_pixels: float = 0.0
+var debug_run_upgrade_level: int = \
+	ProgressionService.DEBUG_UPGRADE_OVERLAY_DISABLED
 var _progression_service := ProgressionService.new()
 
 
@@ -172,6 +181,13 @@ func show_practice() -> void:
 	changed.emit()
 
 
+func show_debug_run_setup() -> void:
+	if not settings.show_debug_tools:
+		return
+	screen = Screen.DEBUG_RUN_SETUP
+	changed.emit()
+
+
 func configure_progress(updated_progress: PlayerProgress) -> void:
 	progress = updated_progress.copy()
 	changed.emit()
@@ -207,10 +223,12 @@ func previous_tutorial_step() -> void:
 
 
 func request_play() -> void:
+	_clear_debug_overlay_for_normal_run()
 	play_requested.emit(settings.copy())
 
 
 func request_creator_play() -> void:
+	_clear_debug_overlay_for_normal_run()
 	creator_play_requested.emit(
 		settings.copy(),
 		progress.creator_pattern.duplicate(),
@@ -223,11 +241,81 @@ func request_practice(region_id: StringName) -> void:
 	var start_distance := CourseRegionCatalog.checkpoint_start(region_id)
 	if start_distance <= 0.0:
 		return
+	_clear_debug_overlay_for_normal_run()
 	practice_play_requested.emit(
 		settings.copy(),
 		region_id,
 		start_distance,
 	)
+
+
+func set_debug_run_distance_pixels(value: float) -> void:
+	if not settings.show_debug_tools:
+		return
+	var safe_value := TuningCatalog.clamp_value(
+		TuningCatalog.DEBUG_START_DISTANCE,
+		value,
+	)
+	if is_equal_approx(debug_run_distance_pixels, safe_value):
+		return
+	debug_run_distance_pixels = safe_value
+	changed.emit()
+
+
+func adjust_debug_run_distance(direction: int) -> void:
+	set_debug_run_distance_pixels(
+		debug_run_distance_pixels +
+		TuningCatalog.step_for(TuningCatalog.DEBUG_START_DISTANCE) * direction,
+	)
+
+
+func set_debug_run_upgrade_level(level: int) -> void:
+	if not settings.show_debug_tools:
+		return
+	var safe_level := roundi(TuningCatalog.clamp_value(
+		TuningCatalog.DEBUG_UPGRADE_LEVEL,
+		float(level),
+	))
+	if debug_run_upgrade_level == safe_level:
+		return
+	debug_run_upgrade_level = safe_level
+	changed.emit()
+
+
+func adjust_debug_run_upgrade_level(direction: int) -> void:
+	set_debug_run_upgrade_level(debug_run_upgrade_level + direction)
+
+
+func request_debug_play() -> void:
+	if not settings.show_debug_tools:
+		return
+	if debug_run_upgrade_level >= 0:
+		_progression_service.set_debug_upgrade_overlay_level(
+			debug_run_upgrade_level,
+		)
+	else:
+		_progression_service.clear_debug_upgrade_overlay()
+	debug_play_requested.emit(
+		settings.copy(),
+		debug_run_distance_pixels,
+		debug_run_upgrade_level,
+	)
+
+
+func sync_debug_run_setup(
+	distance_pixels: float,
+	upgrade_level: int,
+) -> void:
+	if not settings.show_debug_tools:
+		return
+	debug_run_distance_pixels = TuningCatalog.clamp_value(
+		TuningCatalog.DEBUG_START_DISTANCE,
+		distance_pixels,
+	)
+	debug_run_upgrade_level = roundi(TuningCatalog.clamp_value(
+		TuningCatalog.DEBUG_UPGRADE_LEVEL,
+		float(upgrade_level),
+	))
 
 
 func request_spider_profile(spider_id: StringName) -> void:
@@ -287,6 +375,8 @@ func set_debug_tools(enabled: bool) -> void:
 	settings.show_debug_tools = enabled
 	if not enabled:
 		_progression_service.clear_debug_upgrade_overlay()
+		if screen == Screen.DEBUG_RUN_SETUP:
+			screen = Screen.HOME
 	_publish_settings()
 
 
@@ -294,6 +384,8 @@ func reset_settings() -> void:
 	settings = PlayerSettings.defaults()
 	if not settings.show_debug_tools:
 		_progression_service.clear_debug_upgrade_overlay()
+		if screen == Screen.DEBUG_RUN_SETUP:
+			screen = Screen.HOME
 	_publish_settings()
 
 
@@ -304,3 +396,7 @@ func current_tutorial_step() -> Dictionary:
 func _publish_settings() -> void:
 	settings_changed.emit(settings.copy())
 	changed.emit()
+
+
+func _clear_debug_overlay_for_normal_run() -> void:
+	_progression_service.clear_debug_upgrade_overlay()

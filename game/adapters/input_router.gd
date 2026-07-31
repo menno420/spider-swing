@@ -49,6 +49,8 @@ var _debug_category_controls: Dictionary = {}
 var _debug_controls_enabled: bool = true
 var _active_debug_category_index: int = 0
 var _debug_start_distance_pixels: float = 0.0
+var _debug_start_distance_dirty: bool = false
+var _syncing_debug_start_distance_entry: bool = false
 
 
 func _ready() -> void:
@@ -239,6 +241,15 @@ func install_touch_surface(
 					category_controls,
 					_debug_start_distance_entry,
 				)
+				var apply_distance := _make_fixed_button(
+					&"DebugStartDistanceApply",
+					LabLayout.parameter_value_apply_rect(
+						card_index,
+						layout_size,
+					),
+				)
+				apply_distance.pressed.connect(_apply_debug_start_distance)
+				_register_category_control(category_controls, apply_distance)
 
 	var visual_category_index := TuningCatalog.category_index(
 		TuningCatalog.CATEGORY_VISUALS)
@@ -308,10 +319,11 @@ func configure_debug_controls(enabled: bool) -> void:
 func present_snapshot(snapshot: SimulationSnapshot) -> void:
 	_debug_start_distance_pixels = snapshot.start_distance_pixels
 	if _debug_start_distance_entry != null and \
-			not _debug_start_distance_entry.has_focus():
-		_debug_start_distance_entry.text = _format_debug_distance(
+			not _debug_start_distance_entry.has_focus() and \
+			not _debug_start_distance_dirty:
+		_set_debug_start_distance_text(_format_debug_distance(
 			_debug_start_distance_pixels,
-		)
+		))
 	if snapshot.debug_category_index != _active_debug_category_index:
 		_active_debug_category_index = snapshot.debug_category_index
 		if _debug_visible:
@@ -396,29 +408,59 @@ func _make_debug_distance_entry(
 	var rect := LabLayout.parameter_value_entry_rect(card_index, layout_size)
 	entry.position = rect.position
 	entry.size = rect.size
+	entry.text_changed.connect(_on_debug_start_distance_changed)
 	entry.text_submitted.connect(_submit_debug_start_distance)
+	entry.focus_exited.connect(_submit_dirty_debug_start_distance)
 	_touch_surface.add_child(entry)
 	return entry
 
 
 func _submit_debug_start_distance(text_value: String) -> void:
+	_commit_debug_start_distance(text_value)
+
+
+func _submit_dirty_debug_start_distance() -> void:
+	if _debug_start_distance_dirty:
+		_commit_debug_start_distance(_debug_start_distance_entry.text)
+
+
+func _apply_debug_start_distance() -> void:
+	_commit_debug_start_distance(_debug_start_distance_entry.text)
+
+
+func _commit_debug_start_distance(text_value: String) -> void:
 	var normalized := text_value.strip_edges().replace(",", ".")
 	if not normalized.is_valid_float():
-		_debug_start_distance_entry.text = _format_debug_distance(
+		_debug_start_distance_dirty = false
+		_set_debug_start_distance_text(_format_debug_distance(
 			_debug_start_distance_pixels,
-		)
+		))
 		return
 	_debug_start_distance_pixels = TuningCatalog.clamp_value(
 		TuningCatalog.DEBUG_START_DISTANCE,
 		normalized.to_float() * 10.0,
 	)
-	_debug_start_distance_entry.text = _format_debug_distance(
+	_debug_start_distance_dirty = false
+	_set_debug_start_distance_text(_format_debug_distance(
 		_debug_start_distance_pixels,
-	)
+	))
+	if _debug_start_distance_entry.is_inside_tree():
+		_debug_start_distance_entry.release_focus()
 	tuning_value_requested.emit(
 		TuningCatalog.DEBUG_START_DISTANCE,
 		_debug_start_distance_pixels,
 	)
+
+
+func _on_debug_start_distance_changed(_text_value: String) -> void:
+	if not _syncing_debug_start_distance_entry:
+		_debug_start_distance_dirty = true
+
+
+func _set_debug_start_distance_text(text_value: String) -> void:
+	_syncing_debug_start_distance_entry = true
+	_debug_start_distance_entry.text = text_value
+	_syncing_debug_start_distance_entry = false
 
 
 func _format_debug_distance(distance_pixels: float) -> String:
@@ -493,10 +535,38 @@ func _emit_parameter_adjustment(
 	parameter: StringName,
 	direction: float,
 ) -> void:
+	if parameter == TuningCatalog.DEBUG_START_DISTANCE:
+		var normalized := _debug_start_distance_entry.text.strip_edges().replace(
+			",",
+			".",
+		)
+		var current := _debug_start_distance_pixels
+		if normalized.is_valid_float():
+			current = normalized.to_float() * 10.0
+		_emit_tuning_value(
+			parameter,
+			TuningCatalog.clamp_value(
+				parameter,
+				current + TuningCatalog.step_for(parameter) * direction,
+			),
+		)
+		return
 	tuning_parameter_adjustment_requested.emit(parameter, direction)
 
 
 func _emit_tuning_value(parameter: StringName, value: float) -> void:
+	if parameter == TuningCatalog.DEBUG_START_DISTANCE:
+		_debug_start_distance_pixels = TuningCatalog.clamp_value(
+			parameter,
+			value,
+		)
+		_debug_start_distance_dirty = false
+		_set_debug_start_distance_text(_format_debug_distance(
+			_debug_start_distance_pixels,
+		))
+		if _debug_start_distance_entry.is_inside_tree():
+			_debug_start_distance_entry.release_focus()
+		value = _debug_start_distance_pixels
 	tuning_value_requested.emit(parameter, value)
 
 

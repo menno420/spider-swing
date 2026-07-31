@@ -25,6 +25,7 @@ var _garage: Control
 var _shop: Control
 var _creator: Control
 var _practice: Control
+var _debug_run_setup: Control
 var _field_guide: Control
 var _field_guide_back: Button
 var _tutorial_preview: TutorialPreview
@@ -59,10 +60,15 @@ var _upgrade_descriptions: Dictionary = {}
 var _upgrade_milestones: Dictionary = {}
 var _creator_slot_buttons: Array[Button] = []
 var _practice_buttons: Dictionary = {}
+var _debug_run_route: Button
+var _debug_run_distance_entry: LineEdit
+var _debug_run_distance_value: Label
+var _debug_run_upgrade_value: Label
 var _buttons: Dictionary = {}
 var _interface_ready: bool = false
 var _syncing_settings: bool = false
 var _syncing_progress: bool = false
+var _syncing_debug_run_setup: bool = false
 var _elapsed: float = 0.0
 
 
@@ -95,6 +101,7 @@ func ensure_interface() -> void:
 	_build_shop()
 	_build_creator()
 	_build_practice()
+	_build_debug_run_setup()
 	_build_field_guide()
 
 
@@ -245,6 +252,15 @@ func _build_home() -> void:
 	field_guide.pressed.connect(_on_field_guide.bind(FrontEndState.Screen.HOME))
 	field_guide.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	routes.add_child(field_guide)
+	_debug_run_route = _button(
+		&"DebugRunSetup",
+		"DEBUG TEST RUN",
+		ORANGE,
+		54.0,
+	)
+	_debug_run_route.pressed.connect(_on_debug_run_setup)
+	_debug_run_route.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	routes.add_child(_debug_run_route)
 	var note := _label("Your choices save automatically.", 14, MUTED)
 	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	menu.add_child(note)
@@ -693,6 +709,180 @@ func _build_practice() -> void:
 	content.add_child(note)
 
 
+func _build_debug_run_setup() -> void:
+	_debug_run_setup = _full_screen(&"DebugRunSetupScreen")
+	var back := _button(&"DebugRunBack", "‹  HOME", CYAN, 50.0)
+	back.pressed.connect(_on_home)
+	_place(back, _debug_run_setup, 0.025, 0.035, 0.16, 0.11)
+
+	var heading := _label("DEBUG TEST RUN", 38, INK)
+	_place(heading, _debug_run_setup, 0.19, 0.035, 0.64, 0.12)
+	var explanation := _label(
+		"Set up the distance and temporary upgrade feel before the run starts. "
+		+ "These choices are session-only and never change what you own.",
+		18,
+		MUTED,
+	)
+	explanation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_place(explanation, _debug_run_setup, 0.19, 0.115, 0.93, 0.205)
+
+	var card := _panel(PANEL)
+	card.name = "DebugRunSetupCard"
+	_place(card, _debug_run_setup, 0.075, 0.215, 0.925, 0.955)
+	var content := VBoxContainer.new()
+	content.name = "DebugRunSetupContent"
+	content.add_theme_constant_override("separation", 10)
+	_fill_with_margin(content, card, 20.0)
+	content.add_child(_section_label("CHOOSE BOTH, THEN START ONCE"))
+
+	var columns := HBoxContainer.new()
+	columns.name = "DebugRunSetupColumns"
+	columns.add_theme_constant_override("separation", 16)
+	columns.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	content.add_child(columns)
+	columns.add_child(_build_debug_distance_card())
+	columns.add_child(_build_debug_upgrade_card())
+
+	var warning := _label(
+		"DEBUG PRACTICE · NO FLIES · NO RECORD · NO CHECKPOINTS · NO LEADERBOARD",
+		16,
+		YELLOW,
+	)
+	warning.name = "DebugRunAwardsWarning"
+	warning.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	warning.custom_minimum_size.y = 28.0
+	content.add_child(warning)
+	var start := _button(
+		&"DebugRunStart",
+		"START TEST RUN  ·  AWARDS NOTHING",
+		GREEN,
+		68.0,
+	)
+	start.pressed.connect(_on_debug_run_start)
+	content.add_child(start)
+
+
+func _build_debug_distance_card() -> PanelContainer:
+	var card := _panel(PANEL_SOFT, 16, CYAN)
+	card.name = "DebugRunDistanceCard"
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var body := VBoxContainer.new()
+	body.add_theme_constant_override("separation", 8)
+	_fill_with_margin(body, card, 16.0)
+	body.add_child(_setting_heading("START DISTANCE"))
+	var description := _setting_description(
+		"Type an exact distance in metres, or move in 100 m steps.")
+	description.add_theme_font_size_override("font_size", 16)
+	body.add_child(description)
+
+	var adjustment := HBoxContainer.new()
+	adjustment.add_theme_constant_override("separation", 10)
+	body.add_child(adjustment)
+	var minus := _button(&"DebugDistanceMinus", "−", CYAN, 64.0)
+	minus.custom_minimum_size.x = 72.0
+	minus.add_theme_font_size_override("font_size", 34)
+	minus.pressed.connect(_on_debug_distance_adjust.bind(-1))
+	adjustment.add_child(minus)
+	_debug_run_distance_entry = _debug_distance_entry()
+	_debug_run_distance_entry.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	adjustment.add_child(_debug_run_distance_entry)
+	var plus := _button(&"DebugDistancePlus", "+", CYAN, 64.0)
+	plus.custom_minimum_size.x = 72.0
+	plus.add_theme_font_size_override("font_size", 32)
+	plus.pressed.connect(_on_debug_distance_adjust.bind(1))
+	adjustment.add_child(plus)
+
+	var presets := HBoxContainer.new()
+	presets.add_theme_constant_override("separation", 8)
+	body.add_child(presets)
+	var quick_values: Array[float] = [0.0, 50000.0, 100000.0, 250000.0]
+	var quick_labels := ["0 m", "5,000", "10,000", "25,000"]
+	for index in range(quick_values.size()):
+		var button := _button(
+			StringName("DebugDistanceQuick%d" % index),
+			quick_labels[index],
+			CYAN,
+			52.0,
+		)
+		button.add_theme_font_size_override("font_size", 16)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.pressed.connect(_on_debug_distance_set.bind(quick_values[index]))
+		presets.add_child(button)
+	_debug_run_distance_value = _label("", 16, CYAN)
+	_debug_run_distance_value.name = "DebugRunDistanceValue"
+	_debug_run_distance_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_debug_run_distance_value.custom_minimum_size.y = 26.0
+	body.add_child(_debug_run_distance_value)
+	return card
+
+
+func _build_debug_upgrade_card() -> PanelContainer:
+	var card := _panel(PANEL_SOFT, 16, ORANGE)
+	card.name = "DebugRunUpgradeCard"
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var body := VBoxContainer.new()
+	body.add_theme_constant_override("separation", 8)
+	_fill_with_margin(body, card, 16.0)
+	body.add_child(_setting_heading("TEMPORARY UPGRADES"))
+	var description := _setting_description(
+		"Set one test level across all seven tracks. Nothing is bought or saved.")
+	description.add_theme_font_size_override("font_size", 16)
+	body.add_child(description)
+
+	var adjustment := HBoxContainer.new()
+	adjustment.add_theme_constant_override("separation", 10)
+	body.add_child(adjustment)
+	var minus := _button(&"DebugUpgradeMinus", "−", ORANGE, 64.0)
+	minus.custom_minimum_size.x = 72.0
+	minus.add_theme_font_size_override("font_size", 34)
+	minus.pressed.connect(_on_debug_upgrade_adjust.bind(-1))
+	adjustment.add_child(minus)
+	var value_panel := _panel(Color("071c23"), 10, ORANGE)
+	value_panel.custom_minimum_size.y = 64.0
+	value_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	adjustment.add_child(value_panel)
+	_debug_run_upgrade_value = _label("", 21, YELLOW)
+	_debug_run_upgrade_value.name = "DebugRunUpgradeValue"
+	_debug_run_upgrade_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_fill_with_margin(_debug_run_upgrade_value, value_panel, 6.0)
+	var plus := _button(&"DebugUpgradePlus", "+", ORANGE, 64.0)
+	plus.custom_minimum_size.x = 72.0
+	plus.add_theme_font_size_override("font_size", 32)
+	plus.pressed.connect(_on_debug_upgrade_adjust.bind(1))
+	adjustment.add_child(plus)
+
+	var presets := HBoxContainer.new()
+	presets.add_theme_constant_override("separation", 8)
+	body.add_child(presets)
+	var levels := [
+		ProgressionService.DEBUG_UPGRADE_OVERLAY_DISABLED,
+		0,
+		10,
+		SpiderCatalog.MAX_UPGRADE_LEVEL,
+	]
+	var labels := ["OWNED", "L0", "L10", "MAX"]
+	for index in range(levels.size()):
+		var button := _button(
+			StringName("DebugUpgradeQuick%d" % index),
+			labels[index],
+			ORANGE,
+			52.0,
+		)
+		button.add_theme_font_size_override("font_size", 17)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.pressed.connect(_on_debug_upgrade_set.bind(levels[index]))
+		presets.add_child(button)
+	var note := _label(
+		"− from L0 returns to OWNED · + from OWNED begins at L0",
+		15,
+		ORANGE,
+	)
+	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	note.custom_minimum_size.y = 26.0
+	body.add_child(note)
+	return card
+
+
 func _build_field_guide() -> void:
 	_field_guide = _full_screen(&"FieldGuide")
 	_field_guide_back = _button(&"FieldGuideBack", "‹  BACK", CYAN, 50.0)
@@ -811,7 +1001,11 @@ func _render() -> void:
 	_shop.visible = _state.screen == FrontEndState.Screen.SHOP
 	_creator.visible = _state.screen == FrontEndState.Screen.CREATOR
 	_practice.visible = _state.screen == FrontEndState.Screen.PRACTICE
+	_debug_run_setup.visible = \
+		_state.screen == FrontEndState.Screen.DEBUG_RUN_SETUP and \
+		_state.settings.show_debug_tools
 	_field_guide.visible = _state.screen == FrontEndState.Screen.FIELD_GUIDE
+	_debug_run_route.visible = _state.settings.show_debug_tools
 	if _field_guide.visible:
 		_field_guide_back.text = (
 			"‹  GARAGE"
@@ -856,6 +1050,7 @@ func _render() -> void:
 	_render_shop()
 	_render_creator()
 	_render_practice()
+	_render_debug_run_setup()
 	_syncing_progress = false
 	queue_redraw()
 
@@ -1028,6 +1223,25 @@ func _render_practice() -> void:
 		]
 
 
+func _render_debug_run_setup() -> void:
+	if not _debug_run_distance_entry.has_focus():
+		_syncing_debug_run_setup = true
+		_debug_run_distance_entry.text = _format_debug_distance_metres(
+			_state.debug_run_distance_pixels,
+		)
+		_syncing_debug_run_setup = false
+	_debug_run_distance_value.text = "STAGED START · %s m" % \
+		_format_debug_distance_metres(_state.debug_run_distance_pixels)
+	_debug_run_upgrade_value.text = (
+		"OWNED LEVELS"
+		if _state.debug_run_upgrade_level < 0
+		else "LEVEL %d / %d" % [
+			_state.debug_run_upgrade_level,
+			SpiderCatalog.MAX_UPGRADE_LEVEL,
+		]
+	)
+
+
 func _on_play() -> void:
 	if _state != null:
 		_state.request_play()
@@ -1076,6 +1290,74 @@ func _on_creator() -> void:
 func _on_practice() -> void:
 	if _state != null:
 		_state.show_practice()
+
+
+func _on_debug_run_setup() -> void:
+	if _state != null:
+		_state.show_debug_run_setup()
+
+
+func _on_debug_distance_changed(text_value: String) -> void:
+	if _state == null or _syncing_debug_run_setup:
+		return
+	var normalized := text_value.strip_edges().replace(",", ".")
+	if normalized.is_valid_float():
+		_state.set_debug_run_distance_pixels(
+			float(normalized) * CourseRegionCatalog.PIXELS_PER_METRE,
+		)
+
+
+func _on_debug_distance_submitted(_text_value: String) -> void:
+	_commit_debug_run_distance()
+
+
+func _on_debug_distance_focus_exited() -> void:
+	_commit_debug_run_distance()
+
+
+func _on_debug_distance_adjust(direction: int) -> void:
+	if _state != null:
+		_state.adjust_debug_run_distance(direction)
+
+
+func _on_debug_distance_set(value: float) -> void:
+	if _state != null:
+		_state.set_debug_run_distance_pixels(value)
+
+
+func _on_debug_upgrade_adjust(direction: int) -> void:
+	if _state != null:
+		_state.adjust_debug_run_upgrade_level(direction)
+
+
+func _on_debug_upgrade_set(level: int) -> void:
+	if _state != null:
+		_state.set_debug_run_upgrade_level(level)
+
+
+func _on_debug_run_start() -> void:
+	if _state == null:
+		return
+	_commit_debug_run_distance()
+	_state.request_debug_play()
+
+
+func _commit_debug_run_distance() -> void:
+	if _state == null:
+		return
+	var normalized := _debug_run_distance_entry.text.strip_edges().replace(
+		",",
+		".",
+	)
+	if normalized.is_valid_float():
+		_state.set_debug_run_distance_pixels(
+			float(normalized) * CourseRegionCatalog.PIXELS_PER_METRE,
+		)
+	_syncing_debug_run_setup = true
+	_debug_run_distance_entry.text = _format_debug_distance_metres(
+		_state.debug_run_distance_pixels,
+	)
+	_syncing_debug_run_setup = false
 
 
 func _on_practice_region(region_id: StringName) -> void:
@@ -1400,6 +1682,36 @@ func _button_style(
 	width: int = 2,
 ) -> StyleBoxFlat:
 	return SpiderUiTheme.button_style(fill, border, width)
+
+
+func _debug_distance_entry() -> LineEdit:
+	var entry := LineEdit.new()
+	entry.name = "DebugRunDistanceEntry"
+	entry.placeholder_text = "METRES"
+	entry.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	entry.virtual_keyboard_type = LineEdit.KEYBOARD_TYPE_NUMBER_DECIMAL
+	entry.custom_minimum_size.y = 64.0
+	entry.mouse_filter = Control.MOUSE_FILTER_STOP
+	entry.add_theme_font_size_override("font_size", 24)
+	entry.add_theme_color_override("font_color", YELLOW)
+	entry.add_theme_color_override("caret_color", CYAN)
+	entry.add_theme_color_override("selection_color", Color("245b65"))
+	var normal := SpiderUiTheme.button_style(Color("071c23"), CYAN, 2)
+	entry.add_theme_stylebox_override("normal", normal)
+	var focus := normal.duplicate() as StyleBoxFlat
+	focus.border_color = YELLOW
+	entry.add_theme_stylebox_override("focus", focus)
+	entry.text_changed.connect(_on_debug_distance_changed)
+	entry.text_submitted.connect(_on_debug_distance_submitted)
+	entry.focus_exited.connect(_on_debug_distance_focus_exited)
+	return entry
+
+
+func _format_debug_distance_metres(distance_pixels: float) -> String:
+	var metres := distance_pixels / CourseRegionCatalog.PIXELS_PER_METRE
+	if is_equal_approx(metres, roundf(metres)):
+		return "%.0f" % metres
+	return ("%.1f" % metres).trim_suffix(".0")
 
 
 func _toggle(text_value: String) -> CheckButton:

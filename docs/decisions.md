@@ -622,7 +622,36 @@
 - provenance: Menno's 2026-07-31 depth-testing request for arbitrary course
   access and non-persistent free upgrades
 
-## [D-0036] Promote balanced to the approved baseline, and record that it was never a comparison
+## [D-0036] Give mobile debug values an explicit commit action
+
+- status: decided
+- date: 2026-07-31
+- verdict: A typed mobile debug value must have a visible, touch-sized commit
+  action and may not depend only on an IME-specific Enter/Done event. Exact
+  distance now applies through a 48-pixel `GO`, Enter/Done, or focus loss;
+  presets and `−`/`+` keep the field synchronized. Temporary upgrades say
+  plainly that `MAX` affects all seven tracks without buying or saving them.
+  The primary workflow stages both choices on a debug-only Home route before
+  the run: distance has large 100 m `−`/`+`, upgrades have large one-level
+  `−`/`+` plus `OWNED`/L0/L10/`MAX`, and one explicit action starts the
+  noncompetitive practice session. The in-run controls remain available for
+  live adjustment. Ordinary Play, Course Lab, and Region Practice clear the
+  overlay before mounting. Regression contracts connect both native surfaces
+  to a live `SwingLabSession` instead of testing UI and application separately.
+- why: PR #54's typed-distance contract emitted `text_submitted` directly and
+  its overlay contracts called services directly. Both halves were correct,
+  but the first owner device test still found the controls unclear or
+  ineffective. Android keyboards do not provide a reliable visible submission
+  affordance, and a temporary overlay can look like a failed purchase unless
+  ownership is explicit. Mounting both choices only after gameplay had begun
+  also made correct setup unnecessarily awkward. The fix strengthens the
+  interaction seam without turning debug levels into persisted free purchases
+  or changing any upgrade.
+- provenance: Menno's 2026-07-31 device report that the distance chooser and
+  free-level testing did not appear to work properly, followed by his direction
+  to configure them before play with direct upgrade `−`/`+`
+
+## [D-0037] Promote balanced to the approved baseline, and record that it was never a comparison
 
 - status: decided
 - date: 2026-07-31

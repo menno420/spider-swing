@@ -33,6 +33,7 @@ static func run() -> Dictionary:
 	)
 	passed += _test_debug_panel_expands_for_wide_phone(failures)
 	passed += _test_depth_debug_controls_fit_reference_viewport(failures)
+	passed += _test_depth_debug_controls_drive_live_session(failures)
 	passed += _test_debug_controls_can_be_disabled(failures)
 	passed += _test_world_input_waits_for_gui(failures)
 	return {"passed": passed, "failures": failures}
@@ -964,8 +965,10 @@ static func _test_debug_panel_expands_for_wide_phone(
 	var last_tab := router.hud_button(StringName(
 		"Category%d" % TuningCatalog.tools_category_index()))
 	var first_plus := router.hud_button(&"gravityPlus")
+	var distance_apply := router.hud_button(&"DebugStartDistanceApply")
 	var panel := LabLayout.debug_panel_rect(wide_size)
-	if blocker == null or last_tab == null or first_plus == null:
+	if blocker == null or last_tab == null or first_plus == null or \
+			distance_apply == null:
 		failures.append("wide DEBUG layout did not create its shared hit regions")
 		router.free()
 		return 0
@@ -980,7 +983,10 @@ static func _test_debug_panel_expands_for_wide_phone(
 				wide_size,
 			)) or \
 			_resolved_rect(first_plus, wide_size) != \
-			LabLayout.parameter_plus_rect(0, wide_size):
+			LabLayout.parameter_plus_rect(0, wide_size) or \
+			not _resolved_rect(distance_apply, wide_size).is_equal_approx(
+				LabLayout.parameter_value_apply_rect(2, wide_size),
+			):
 		failures.append("wide DEBUG visuals and native hit targets drifted")
 		router.free()
 		return 0
@@ -1043,7 +1049,9 @@ static func _test_depth_debug_controls_fit_reference_viewport(
 	var debug_start := router.hud_button(&"debug_start_mPlus")
 	var max_upgrades := router.hud_button(&"debug_upgrade_levelQuick3")
 	var exact_entry := router.hud_control(&"DebugStartDistanceEntry") as LineEdit
-	if debug_start == null or max_upgrades == null or exact_entry == null:
+	var apply_distance := router.hud_button(&"DebugStartDistanceApply")
+	if debug_start == null or max_upgrades == null or exact_entry == null or \
+			apply_distance == null:
 		failures.append("RUN depth controls are not backed by direct touch controls")
 		router.free()
 		viewport.free()
@@ -1062,30 +1070,128 @@ static func _test_depth_debug_controls_fit_reference_viewport(
 		),
 	)).pressed.emit()
 	if not debug_start.visible or not max_upgrades.visible or \
-			not exact_entry.visible or \
+			not exact_entry.visible or not apply_distance.visible or \
 			not panel.encloses(_resolved_rect(exact_entry, size)) or \
-			_resolved_rect(exact_entry, size).size.y < 48.0:
+			not panel.encloses(_resolved_rect(apply_distance, size)) or \
+			_resolved_rect(exact_entry, size).size.y < 48.0 or \
+			_resolved_rect(apply_distance, size).size.y < 48.0:
 		failures.append("RUN depth controls are not visible inside DEBUG")
 		router.free()
 		viewport.free()
 		return 0
-	exact_entry.text_submitted.emit("12345,7")
+	exact_entry.text = "12345,7"
+	apply_distance.pressed.emit()
 	if exact_requests != [{
 		"parameter": TuningCatalog.DEBUG_START_DISTANCE,
 		"value": 123457.0,
 	}]:
-		failures.append("exact-distance entry did not emit arbitrary typed meters")
+		failures.append("visible GO did not apply arbitrary typed meters")
+		router.free()
+		viewport.free()
+		return 0
+	exact_entry.text = "2468,3"
+	exact_entry.text_changed.emit(exact_entry.text)
+	exact_entry.focus_exited.emit()
+	if exact_requests.size() != 2 or exact_requests[1] != {
+		"parameter": TuningCatalog.DEBUG_START_DISTANCE,
+		"value": 24683.0,
+	}:
+		failures.append("leaving the distance field did not apply its typed value")
 		router.free()
 		viewport.free()
 		return 0
 	router.configure_debug_controls(false)
 	if debug_start.visible or max_upgrades.visible or exact_entry.visible or \
+			apply_distance.visible or \
 			router.hud_button(&"Debug").visible:
 		failures.append("RUN depth controls remain reachable when DEBUG is off")
 		router.free()
 		viewport.free()
 		return 0
 	router.free()
+	viewport.free()
+	return 1
+
+
+static func _test_depth_debug_controls_drive_live_session(
+	failures: PackedStringArray,
+) -> int:
+	var viewport := SubViewport.new()
+	viewport.size = Vector2i(1280, 720)
+	viewport.handle_input_locally = true
+	var progress := PlayerProgress.defaults()
+	progress.upgrade_levels["classic_reel"] = 3
+	progress.upgrade_levels["classic_burst"] = 1
+	var service := ProgressionService.new()
+	var session := SwingLabSession.new()
+	session.configure_progress(progress, service)
+	session.configure_run(SwingLabSession.RUN_STANDARD, 0.0, 913)
+	session._reset_run()
+	var router := InputRouter.new()
+	router.install_touch_surface(Vector2(viewport.size))
+	router.tuning_category_requested.connect(session.select_tuning_category)
+	router.tuning_parameter_adjustment_requested.connect(
+		session.adjust_tuning_parameter,
+	)
+	router.tuning_value_requested.connect(session.set_tuning_parameter)
+	session.snapshot_published.connect(router.present_snapshot)
+	viewport.add_child(session)
+	viewport.add_child(router)
+	router.present_snapshot(session.current_snapshot())
+
+	router.hud_button(&"Debug").pressed.emit()
+	router.hud_button(StringName(
+		"Category%d" % TuningCatalog.category_index(
+			TuningCatalog.CATEGORY_RUN,
+		),
+	)).pressed.emit()
+	var entry := router.hud_control(&"DebugStartDistanceEntry") as LineEdit
+	entry.text = "12345.7"
+	router.hud_button(&"DebugStartDistanceApply").pressed.emit()
+	var snapshot := session.current_snapshot()
+	if not snapshot.debug_start_active or \
+			snapshot.run_mode != SwingLabSession.RUN_PRACTICE or \
+			snapshot.records_eligible or \
+			not is_equal_approx(snapshot.start_distance_pixels, 123457.0) or \
+			not is_equal_approx(snapshot.distance_pixels, 123457.0):
+		failures.append("connected GO control did not restart live practice")
+		viewport.free()
+		return 0
+
+	router.hud_button(&"debug_upgrade_levelQuick3").pressed.emit()
+	snapshot = session.current_snapshot()
+	var expected_max := SpiderCatalog.resolved_config(
+		SwingConfig.PRESET_BALANCED,
+		service.resolved_progress(progress),
+	)
+	if snapshot.debug_upgrade_overlay_level != \
+			SpiderCatalog.MAX_UPGRADE_LEVEL or \
+			not service.debug_upgrade_overlay_enabled() or \
+			not is_equal_approx(
+				session._config.reel_retraction_rate,
+				expected_max.reel_retraction_rate,
+			) or \
+			not is_equal_approx(snapshot.start_distance_pixels, 123457.0):
+		failures.append("connected MAX control did not resolve the live overlay")
+		viewport.free()
+		return 0
+
+	router.hud_button(&"debug_upgrade_levelQuick0").pressed.emit()
+	snapshot = session.current_snapshot()
+	var expected_owned := SpiderCatalog.resolved_config(
+		SwingConfig.PRESET_BALANCED,
+		progress,
+	)
+	if service.debug_upgrade_overlay_enabled() or \
+			snapshot.debug_upgrade_overlay_level != \
+				ProgressionService.DEBUG_UPGRADE_OVERLAY_DISABLED or \
+			not is_equal_approx(
+				session._config.reel_retraction_rate,
+				expected_owned.reel_retraction_rate,
+			) or snapshot.run_mode != SwingLabSession.RUN_PRACTICE:
+		failures.append("connected OWNED control did not restore the saved config")
+		viewport.free()
+		return 0
 	viewport.free()
 	return 1
 

@@ -25,6 +25,7 @@ static func run() -> Dictionary:
 	passed += _test_debug_upgrade_overlay_never_persists(failures)
 	passed += _test_debug_upgrade_overlay_restores_exact_saved_levels(failures)
 	passed += _test_garage_and_shop_disclose_debug_upgrade_levels(failures)
+	passed += _test_debug_run_setup_stages_and_starts_before_play(failures)
 	passed += _test_upgrades_and_creator_edits_use_progression_service(failures)
 	passed += _test_composition_root_mounts_front_end_first(failures)
 	return {"passed": passed, "failures": failures}
@@ -255,6 +256,13 @@ static func _test_composition_root_mounts_front_end_first(
 		return 0
 	if not source.contains("_front_end_state.play_requested.connect(_start_game)"):
 		failures.append("Play does not own the transition into gameplay")
+		return 0
+	if not source.contains(
+		"_front_end_state.debug_play_requested.connect(_start_debug_game)"
+	) or not source.contains(
+		"_session.configure_run(run_mode, start_distance_pixels, -1, debug_start)"
+	):
+		failures.append("debug pre-run setup bypasses the composition root")
 		return 0
 	return 1
 
@@ -881,6 +889,147 @@ static func _test_garage_and_shop_disclose_debug_upgrade_levels(
 		view.free()
 		return 0
 	view.free()
+	return 1
+
+
+static func _test_debug_run_setup_stages_and_starts_before_play(
+	failures: PackedStringArray,
+) -> int:
+	var settings := PlayerSettings.defaults()
+	settings.show_debug_tools = false
+	var progress := PlayerProgress.defaults()
+	progress.upgrade_levels["classic_reel"] = 3
+	progress.upgrade_levels["classic_burst"] = 1
+	var exact_saved := progress.to_dictionary()
+	var service := ProgressionService.new()
+	var state := FrontEndState.new()
+	state.configure(settings, progress, service)
+	var viewport := SubViewport.new()
+	viewport.size = Vector2i(1280, 720)
+	var view := FrontEndView.new()
+	view.size = Vector2(viewport.size)
+	viewport.add_child(view)
+	view.bind_state(state)
+	var route := view.front_end_button(&"DebugRunSetup")
+	if route == null or route.visible:
+		failures.append("debug run setup is reachable while debug tools are off")
+		viewport.free()
+		return 0
+	route.pressed.emit()
+	if state.screen != FrontEndState.Screen.HOME:
+		failures.append("hidden debug route bypassed its application guard")
+		viewport.free()
+		return 0
+
+	state.set_debug_tools(true)
+	if not route.visible:
+		failures.append("debug run setup did not appear after enabling debug tools")
+		viewport.free()
+		return 0
+	route.pressed.emit()
+	var screen := view.find_child(
+		"DebugRunSetupScreen", true, false) as Control
+	var card := view.find_child("DebugRunSetupCard", true, false) as Control
+	var columns := view.find_child(
+		"DebugRunSetupColumns", true, false) as HBoxContainer
+	var entry := view.find_child(
+		"DebugRunDistanceEntry", true, false) as LineEdit
+	var warning := view.find_child(
+		"DebugRunAwardsWarning", true, false) as Label
+	if state.screen != FrontEndState.Screen.DEBUG_RUN_SETUP or \
+			screen == null or not screen.visible or card == null or \
+			columns == null or columns.get_child_count() != 2 or entry == null or \
+			warning == null or not warning.text.contains("NO RECORD"):
+		failures.append("debug route did not open a complete pre-run setup")
+		viewport.free()
+		return 0
+	if card.anchor_left < 0.0 or card.anchor_top < 0.0 or \
+			card.anchor_right > 1.0 or card.anchor_bottom > 1.0:
+		failures.append("debug setup card is not enclosed by the 1280×720 view")
+		viewport.free()
+		return 0
+	for button_name: StringName in [
+		&"DebugDistanceMinus", &"DebugDistancePlus",
+		&"DebugUpgradeMinus", &"DebugUpgradePlus", &"DebugRunStart",
+	]:
+		var button := view.front_end_button(button_name)
+		if button == null or button.custom_minimum_size.y < 64.0:
+			failures.append("%s is not a mobile-sized pre-run control" % button_name)
+			viewport.free()
+			return 0
+
+	# OWNED -> L0 -> L1 -> L0 proves both large controls cross the overlay edge.
+	view.front_end_button(&"DebugUpgradePlus").pressed.emit()
+	view.front_end_button(&"DebugUpgradePlus").pressed.emit()
+	view.front_end_button(&"DebugUpgradeMinus").pressed.emit()
+	if state.debug_run_upgrade_level != 0:
+		failures.append("pre-run upgrade −/+ does not switch levels directly")
+		viewport.free()
+		return 0
+	state.set_debug_run_upgrade_level(6)
+	entry.text = "12345,7"
+	entry.text_changed.emit(entry.text)
+	var debug_requests: Array[Dictionary] = []
+	state.debug_play_requested.connect(func(
+		requested_settings: PlayerSettings,
+		distance_pixels: float,
+		upgrade_level: int,
+	) -> void:
+		debug_requests.append({
+			"debug": requested_settings.show_debug_tools,
+			"distance": distance_pixels,
+			"level": upgrade_level,
+		}))
+	view.front_end_button(&"DebugRunStart").pressed.emit()
+	if debug_requests.size() != 1 or not bool(debug_requests[0]["debug"]) or \
+			not is_equal_approx(float(debug_requests[0]["distance"]), 123457.0) or \
+			int(debug_requests[0]["level"]) != 6 or \
+			service.debug_upgrade_overlay_level() != 6 or \
+			progress.to_dictionary() != exact_saved:
+		failures.append("pre-run choices did not start one exact temporary test")
+		viewport.free()
+		return 0
+
+	var session := SwingLabSession.new()
+	session.configure_progress(progress, service)
+	session.configure_run(
+		SwingLabSession.RUN_PRACTICE,
+		123457.0,
+		913,
+		true,
+	)
+	session._reset_run()
+	var snapshot := session.current_snapshot()
+	if not snapshot.debug_start_active or \
+			snapshot.run_mode != SwingLabSession.RUN_PRACTICE or \
+			snapshot.records_eligible or \
+			not is_equal_approx(snapshot.distance_pixels, 123457.0) or \
+			snapshot.debug_upgrade_overlay_level != 6:
+		failures.append("pre-run setup did not inherit debug practice ownership")
+		session.free()
+		viewport.free()
+		return 0
+	session.free()
+
+	var standard_requests: Array[PlayerSettings] = []
+	state.play_requested.connect(func(value: PlayerSettings) -> void:
+		standard_requests.append(value))
+	state.request_play()
+	if standard_requests.size() != 1 or service.debug_upgrade_overlay_enabled() or \
+			progress.to_dictionary() != exact_saved:
+		failures.append("normal PLAY did not restore exact owned upgrade state")
+		viewport.free()
+		return 0
+	state.set_debug_tools(false)
+	state.show_home()
+	route.pressed.emit()
+	state.request_debug_play()
+	if route.visible or state.screen != FrontEndState.Screen.HOME or \
+			debug_requests.size() != 1:
+		failures.append("pre-run debug controls bypassed show_debug_tools gating")
+		viewport.free()
+		return 0
+	viewport.free()
 	return 1
 
 

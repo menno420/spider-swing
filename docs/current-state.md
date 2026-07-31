@@ -20,9 +20,9 @@ without a reported regression.
   `canvas_items`/`expand` stretch, 60 Hz fixed simulation, and four maximum
   catch-up steps. No gameplay autoload singleton exists.
 - The app opens on Home. `FrontEndState` owns Home, Garage, Shop, Tutorial,
-  Course Lab, Region Practice, Field Guide, and Settings. The bootstrap root
-  alone wires and mounts presentation, input, persistence, progression, and the
-  application session.
+  Course Lab, Region Practice, Field Guide, Settings, and the debug-only Test
+  Run setup. The bootstrap root alone wires and mounts presentation, input,
+  persistence, progression, and the application session.
 - Layering is enforced in both directions: domain imports no Godot-facing layer;
   simulation imports domain; application imports inward; adapters and
   presentation are outer peers; presentation never mutates simulation state.
@@ -35,15 +35,14 @@ without a reported regression.
   bounded idempotent-settlement history. Schema 5 infers already-reached region
   checkpoints from a schema-4 standard best once; pre-20-level saves migrate
   proportionally once.
-- Build `0.19.0-depth-testing` (Android version code 35, package
-  `com.menno420.spiderswing.dev`) replaces Actions' per-run signing key with the
-  stable conventional public debug identity in `.github/android/debug.keystore`.
-  The workflow pins its file and certificate digests and fails if key generation
-  returns. The key exists only so consecutive laboratory APKs update in place
-  and preserve app data.
-- The **next** installation still requires one final uninstall because every
-  older artifact used an unrelated throwaway signer. Every installation after
-  that stable-key build can update in place and preserve saves.
+- Build `0.19.1-depth-control-repair` (Android version code 36, package
+  `com.menno420.spiderswing.dev`) retains the stable conventional public debug
+  identity introduced by `0.19.0-depth-testing` in
+  `.github/android/debug.keystore`. The workflow pins its file and certificate
+  digests and fails if key generation returns.
+- A device still carrying a pre-`0.19.0` throwaway-signed artifact needs one
+  final uninstall. A device that has installed `0.19.0` or later updates in
+  place and preserves saves; do not uninstall that stable-key build.
 - The committed key and its `androiddebugkey` / `android` / `android`
   credentials are public. It must **NEVER** be reused for Google Play, a release
   build, production signing, or any signed distribution. Release signing remains
@@ -79,26 +78,33 @@ without a reported regression.
 
 **Depth-testing access**
 
-- DEBUG → RUN now accepts a typed metre value (plus direct comparison values and
-  `−`/`+`) and restarts at that exact distance. It reuses
-  `SwingLabSession.RUN_PRACTICE`, preserves the active deterministic seed, and
-  therefore inherits the complete no-awards/no-records policy. A contract
-  compares an off-grid debug start against the same seed streamed sequentially
-  from zero and requires exact geometry equality.
-- DEBUG → RUN also selects an upgrade test level from 0–20 or `OWNED`.
-  `ProgressionService` owns this as a session-only resolution overlay; the
-  purchase cost check and real `PlayerProgress` remain unchanged. Turning the
-  overlay off restores the exact saved level dictionary. Garage and Shop label
-  displayed overlay levels `NOT OWNED`, Shop pauses purchases, and an overlay
-  run is noncompetitive.
-- Both depth controls are unreachable when `show_debug_tools` is off. Their HUD
-  status says `DEBUG START … · AWARDS NOTHING` or
-  `DEBUG UPGRADES … · AWARDS NOTHING`; they never enter normal production flow.
-- The touch laboratory now groups Movement, Pacing, Rope, Pulls, Course, Routes,
+- When Debug Tools are enabled, Home exposes `DEBUG TEST RUN`. This pre-run
+  screen stages an exact typed distance, 0/5000/10000/25000 m shortcuts, and
+  large 100 m `−`/`+` controls before one explicit `START TEST RUN`. The run
+  reuses `SwingLabSession.RUN_PRACTICE` and therefore inherits the complete
+  no-awards/no-records policy. A contract compares an off-grid debug start
+  against the same seed streamed sequentially from zero and requires exact
+  geometry equality.
+- The same screen stages one temporary 0–20 level across all seven selected-
+  spider tracks, with large `−`/`+` controls plus `OWNED`, L0, L10, and `MAX`.
+  `ProgressionService` applies this session-only resolution overlay only when
+  the test starts; the purchase cost check and real `PlayerProgress` remain
+  unchanged. Ordinary Play, Course Lab, or Region Practice clears the overlay
+  first, and `OWNED` restores the exact saved level dictionary. Garage and Shop
+  label displayed overlay levels `NOT OWNED`, Shop pauses purchases, and an
+  overlay run is noncompetitive.
+- DEBUG → RUN retains its live distance and upgrade controls for adjustments
+  during a test, including typed `GO`, Enter/Done, focus loss, presets, and
+  `−`/`+`. The pre-run screen is the primary setup path. Both surfaces are
+  unreachable when `show_debug_tools` is off. Their HUD status says
+  `DEBUG START … · AWARDS NOTHING` or `DEBUG UPGRADES … · AWARDS NOTHING`.
+- The touch laboratory groups Movement, Pacing, Rope, Pulls, Course, Routes,
   Run, Special, Look, Overlays, and Tools. A headless 1280×720 `SubViewport`
-  measurement proves every new RUN/SPECIAL card, the typed distance entry, and
-  every category tab remain inside the panel; the native inputs disappear when
-  DEBUG is disabled.
+  measurement proves every RUN/SPECIAL card, typed field, `GO` target, and
+  category tab remain inside the panel. A live adapter-to-session contract
+  applies typed distance, `MAX`, and `OWNED`; the native inputs disappear when
+  DEBUG is disabled. A separate headless 1280×720 measurement encloses the
+  1088×533 pre-run setup card and its 64-pixel `−`/`+` controls.
 
 **Profiles, progression, and presentation**
 
@@ -130,16 +136,18 @@ without a reported regression.
 
 - Local source passes `python3 tools/verify.py` with the exact
   `4.7.1.stable.official.a13da4feb` Standard binary: clean import, front-end boot,
-  architecture scan, and **116/116** contracts. The declared suite contains 51
-  deterministic physics checks, 11 spider-biology checks, 23 mobile GUI/layout
-  checks, 20 front-end/settings/progression checks, and 11 bootstrap/build
+  architecture scan, and **118/118** contracts. The declared suite contains 51
+  deterministic physics checks, 11 spider-biology checks, 24 mobile GUI/layout
+  checks, 21 front-end/settings/progression checks, and 11 bootstrap/build
   contracts.
 - New contracts prove stable signing cannot silently return to per-run key
   generation; debug starts grant no rewards or records and cannot unlock
   checkpoints; off-grid seeded geometry equals traversal from zero; overlay
   levels never serialize; disabling the overlay restores exact owned levels;
-  Garage/Shop disclose ownership; overlay play is noncompetitive; and the new
-  controls fit and gate correctly at 1280×720.
+  Garage/Shop disclose ownership; overlay play is noncompetitive; typed values
+  have an explicit mobile commit path; pre-run `−`/`+` choices reach the real
+  practice session; normal Play clears the overlay; and both surfaces gate
+  correctly at 1280×720.
 - `tools/check_architecture.py` passes all 14 self-test fixtures and the live
   source scan. `python3 bootstrap.py check --strict` passes all content checks;
   during implementation its only hold is the session card's deliberate
@@ -148,9 +156,12 @@ without a reported regression.
   run 30646172533. Android run 30646174062 produced artifact 8799510029; its
   downloaded ZIP matched GitHub's `8be96ccd…` digest, its intact APK matched
   `5835c002…`, and `keytool` independently reported the pinned certificate
-  `83ff0bc2…`. `substrate-gate` remains deliberately red only until the session
-  card flips complete. Android export is not a required merge check because SDK
-  downloads are an external dependency.
+  `83ff0bc2…`; its completed `substrate-gate` also passed. Android export is not
+  a required merge check because SDK downloads are an external dependency.
+- PR #60 implementation head `34b8d5d1…` passed `game-quality` run 30656982928
+  and Android run 30656983045. Artifact 8803635374's downloaded ZIP matched
+  GitHub's `cb9cb31d…` digest; its intact APK matched `7a9aa69d…`, embeds that
+  source/build identity, and reports the pinned `83ff0bc2…` certificate.
 
 **Deliberately absent — scope boundaries, not gaps**
 
@@ -183,18 +194,26 @@ closes it. Owner testing so far concentrates on the Garden Spider, whose core
 mechanics behave correctly at the distances reached so far — but the owner is
 explicit that this is **not** a completion claim for that spider: comparing the
 baseline against upgrade levels, and behaviour at longer distances, are both
-substantially untested. No spider is finished; one is further along. Remaining
-evidence still to gather: long-distance region identity, upgrade A/B feel, save
-survival across two stable-key builds, and the traversal checklist in the Swing
-Laboratory reference.
+substantially untested. No spider is finished; one is further along.
 
-The depth build removes the three access blockers: its first install establishes
-the stable signer, later builds retain the same save, DEBUG can jump to any typed
-distance, and `OWNED` versus a selected upgrade level can be compared without
-wiping or granting progression.
+The first depth build mounted setup after play had already begun, so the repair
+makes Home own a debug-only pre-run setup with exact distance, large upgrade
+`−`/`+`, shortcuts, and one no-awards start; the in-run controls also gain
+explicit `GO` and focus-loss submission. It updates over the stable-key build
+without uninstalling, and `OWNED` versus a selected upgrade level can be
+compared without wiping or granting progression.
+
+Owner evidence still to gather: exact far starts, `OWNED` versus `MAX`, upgrade
+A/B feel, save survival across two stable-key builds, long-distance region
+identity, and the existing traversal checklist in the Swing Laboratory
+reference.
 
 ## Recently shipped (newest first)
 
+- **2026-07-31 — Pre-run debug depth controls (PR #60 candidate).** Home now
+  stages exact distance and temporary upgrades through large `−`/`+` before one
+  no-awards test start; ordinary Play restores owned levels, and the in-run
+  controls remain available for live adjustments.
 - **2026-07-31 — Debug depth-testing access.** Stable debug signing, exact
   arbitrary-distance practice starts, and a session-only selectable upgrade
   overlay make persistent far-course and progression testing possible without
