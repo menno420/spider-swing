@@ -111,6 +111,14 @@ Format: `- YYYY-MM-DD · capability|wall · <venue> · finding · evidence · wo
 `any`; older five-field lines without a venue token stay valid — read them
 as venue `any`.)
 
+- 2026-07-31 · wall · `owner-live` · **This seat's headless Godot renderer
+  cannot capture a `SubViewport` image.** · Godot 4.7.1 returned
+  `Parameter "t" is null` at dummy `texture_2d_get`, followed by a null image,
+  both with plain `--headless` and with `--rendering-driver opengl3`; no X11,
+  Wayland, Xvfb, or OSMesa runtime is installed. · workaround: use executable
+  1280×720 layout/GUI contracts here, then inspect the exported Android artifact
+  on a real device or a venue with a rendering display for pixel-level proof.
+
 - 2026-07-31 · capability · `owner-live` · **`api.github.com` direct HTTP is NOT
   blocked — the seeded wall is false as written.** The seed says "blocked →
   GitHub access is MCP-tools-only". Only the *proxied* path is blocked. ·

@@ -170,18 +170,23 @@ Each card uses a plain name, one-sentence description, direct comparison values,
 and 52-pixel `−` / `+` targets. Presets are named instead of numbered. This
 avoids searching through one long carousel during device playtests.
 
-**Run** owns two debug-only depth controls. `Start at exact distance` accepts a
-typed metre value (submit with the mobile keyboard's Enter/Done action), direct
-comparison values, or `−` / `+`; applying it restarts on the active course seed
-through `RUN_PRACTICE`. It therefore awards no flies, best distance, checkpoint,
-record, or future leaderboard eligibility. `Upgrade test level` selects 0–20 or
-`OWNED`. It resolves every track for the selected spider through a session-only
-`ProgressionService` overlay, never changes `PlayerProgress`, pauses Shop
-purchases while active, and marks the run noncompetitive. Garage, Shop, the run
-HUD, and restart feedback all disclose that the displayed level is not owned and
-the run awards nothing. Turning the overlay off restores the exact saved levels.
-Both controls and their native hit targets disappear when `show_debug_tools` is
-off.
+When Debug Tools are enabled, Home owns the primary **Debug Test Run** setup.
+Before play begins, it stages a typed exact distance with large 100 m `−` / `+`
+controls and 0/5000/10000/25000 m shortcuts. It also stages one temporary level
+across all seven selected-spider tracks through large `−` / `+` controls plus
+`OWNED`, L0, L10, and `MAX`. The overlay is not applied until the explicit
+no-awards start action. That start routes through `RUN_PRACTICE`, so it awards
+no flies, best distance, checkpoint, record, or future leaderboard eligibility.
+
+**Run** retains the same two controls for adjustments during a mounted test.
+`Start at exact distance` accepts a typed metre value through a visible
+48-pixel `GO`, Enter/Done, or focus loss. `Temporary upgrade level` resolves
+every track through the same session-only `ProgressionService` overlay. Neither
+surface changes `PlayerProgress`; Shop purchases pause while the overlay is
+active, and Garage, Shop, HUD, and restart feedback disclose that the level is
+not owned and the run awards nothing. `OWNED` and every ordinary Play/Course
+Lab/Region Practice start clear the overlay and restore the exact saved levels.
+Both setup surfaces disappear when `show_debug_tools` is off.
 
 **Special** holds Burst reserve/Frenzy and Buckler's bounded rail-recovery
 controls. Moving those existing controls out of Run/Pulls keeps the complete
@@ -229,8 +234,8 @@ collision outlines and web-target guides.
 | `Inward rails begin` | first distance where a rail-only passage may narrow | 250 m / 1000–8000 m |
 | `Opening training web` | start on the ordinary guided ceiling web | off / on |
 | `One rescue per run` | recover the first lethal mistake | off / on |
-| `Start at exact distance` | restart a no-awards debug run at typed metres on the active seed | typed 0–100,000 m; 100 m `−` / `+` |
-| `Upgrade test level` | resolve selected-spider tracks without changing ownership | `OWNED` or 0–20 |
+| `Start at exact distance` | restart a no-awards debug run at typed metres on the active seed | typed 0–100,000 m with 48 px `GO`; 100 m `−` / `+` |
+| `Temporary upgrade level` | resolve selected-spider tracks without changing ownership | `OWNED`, 0–20, or one-tap `MAX` |
 | `Stored Bursts` | comparison capacity for serially refilled Anchor Burst charges | 1 / 1–3 |
 | `Burst Frenzy time` | Anchor Burst cooldown suppression | 0.5 / 1–10 s |
 | `One-charge rail bounce` | enable bounded moderate rail recovery | off / on |
@@ -305,15 +310,20 @@ product decisions.
   dictionary when disabled;
 - a real Swing Lab view and native input surface instantiated in a 1280×720
   headless `SubViewport` keep all category tabs, all six-card sections, the typed
-  distance field, and its 48-pixel target inside the panel; DEBUG-off hides every
-  depth control.
+  distance field, and its 48-pixel `GO` target inside the panel; a connected
+  input-router/session contract applies typed distance, `MAX`, and `OWNED` to the
+  live run; DEBUG-off hides every depth control.
+- a real Front End instantiated in a 1280×720 headless `SubViewport` encloses
+  the 1088×533 pre-run card, 64-pixel `−` / `+`, and 68-pixel start action; a
+  joined contract stages an off-grid distance and upgrade level, starts the
+  authoritative practice session, and proves ordinary Play clears the overlay.
 
 ## Owner device playtest
 
-Install `0.19.0-depth-testing`. Because all older APKs used unrelated throwaway
-signers, this install needs **one final uninstall** first. Do not uninstall the
-stable-key build afterward: every later debug artifact should install over it
-and preserve its save.
+Install `0.19.1-depth-control-repair` over `0.19.0-depth-testing` without
+uninstalling; both use the stable signer and the update should preserve the save.
+Only a device that never installed `0.19.0` or later needs the one final
+uninstall from the old throwaway-signer era.
 
 Before the traversal checklist, prove the new depth-access gate:
 
@@ -321,13 +331,16 @@ Before the traversal checklist, prove the new depth-access gate:
   retain the app for the next build; after installing that later build without
   uninstalling, verify the setting, balance, owned level, best distance, and
   checkpoints are unchanged;
-- open DEBUG → RUN, tap the distance field, type an off-grid value such as
-  `12345.7`, press Enter/Done, and confirm the HUD says
+- enable Debug Tools, return Home, open `DEBUG TEST RUN`, type an off-grid value
+  such as `12345.7`, use the large upgrade `−` / `+`, and tap the single start
+  action; confirm the HUD says
   `DEBUG START 12346 m … AWARDS NOTHING` (rounded only for HUD copy);
 - play and die from that start; flies, best distance, checkpoint access, and
   owned upgrades must remain unchanged;
-- set `Upgrade test level` to `MAX`, compare the upgraded feel, return to Garage
-  and Shop, and verify both say the level is a debug overlay and `NOT OWNED`;
+- return to the pre-run setup, set temporary upgrades to `MAX`, compare the
+  upgraded feel, return to
+  Garage and Shop, and verify both say the level is a debug overlay and
+  `NOT OWNED`;
 - switch the level back to `OWNED` and confirm the exact prior Shop levels and
   balance return. Turn Debug Tools off in Settings and confirm neither depth
   control is reachable.
@@ -355,8 +368,8 @@ Then check the traversal baseline:
 10. use level-zero Garden, hold Reel continuously, and confirm its full ring
     lasts about two seconds, responds at 320 px/s, and changes height/arc
     without a separate forward shove;
-11. use DEBUG → RUN → `Upgrade test level` to compare owned Garden against max,
-    and confirm max Silk Winder resolves to 416 px/s and supplies enough
+11. use Home → `DEBUG TEST RUN` to compare owned Garden against
+    max, and confirm max Silk Winder resolves to 416 px/s and supplies enough
     deliberate high↔low correction near 5000 m;
 12. compare several starting web lengths and confirm base Burst covers roughly
     40% while a close valid target still provides its visible minimum travel;
@@ -415,8 +428,8 @@ Then check the traversal baseline:
     clipping either obstacle or showing a rectangular art cut;
 33. pass the small silk-suspended burr above and below; its visible bramble,
     collision outline, and safe support thread must agree.
-34. toggle `Upgrade test level` between `OWNED` and `MAX` to compare the exact
-    same saved Garden. Max Silk Winder + Silk Reserve should offer clearly
+34. use the pre-run upgrade `−` / `+` and toggle `OWNED` / `MAX` to compare the
+    exact same saved Garden. Max Silk Winder + Silk Reserve should offer clearly
     stronger and longer arc correction, but neither version should feel
     mandatory for every ordinary route; `OWNED` must restore the saved levels.
 35. switch repeatedly between Garden and Anchorite in the Garage and in play.
