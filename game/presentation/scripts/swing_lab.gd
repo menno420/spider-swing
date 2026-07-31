@@ -986,12 +986,7 @@ func _draw_finished_spider_sprite(
 	var texture := _art_texture(asset_id)
 	if texture == null:
 		return false
-	var tint := Color.WHITE
-	match _snapshot.spider_style:
-		PlayerProgress.STYLE_AMBER:
-			tint = Color(1.0, 0.90, 0.72, 1.0)
-		PlayerProgress.STYLE_COMET:
-			tint = Color(0.73, 0.88, 1.0, 1.0)
+	var tint := ArtAssetCatalog.spider_style_tint(_snapshot.spider_style)
 	var sprite_size := Vector2(96.0, 46.0) * scale
 	draw_set_transform(center, rotation, pose_scale)
 	draw_texture_rect(

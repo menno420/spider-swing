@@ -70,6 +70,15 @@ static func spider_asset_id(profile_id: StringName) -> StringName:
 	return StringName(SPIDER_ASSET_IDS.get(profile_id, &""))
 
 
+static func spider_style_tint(style: StringName) -> Color:
+	match style:
+		PlayerProgress.STYLE_AMBER:
+			return Color(1.0, 0.90, 0.72, 1.0)
+		PlayerProgress.STYLE_COMET:
+			return Color(0.73, 0.88, 1.0, 1.0)
+	return Color.WHITE
+
+
 static func texture_paths() -> PackedStringArray:
 	var paths := PackedStringArray()
 	for asset_id: StringName in ASSETS:

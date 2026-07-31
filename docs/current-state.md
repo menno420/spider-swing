@@ -204,8 +204,10 @@ without a reported regression.
   restrained action poses, and mipmaps improve the heavily downscaled spider
   and fly without touching physics. All five profiles share one right-facing
   384×181 RGBA contract, mipmapped finished-sprite path, and radius-scaled
-  renderer. Their 4-near + 2-far-front visible-leg convention preserves clear
-  2D depth while every authoritative profile radius remains unchanged.
+  renderer; Garage and Shop reuse the same asset lookup and cosmetic tint in an
+  aspect-preserving preview. Their 4-near + 2-far-front visible-leg convention
+  preserves clear 2D depth while every authoritative profile radius remains
+  unchanged.
 - No autoload singletons exist, and a test fails if one appears.
 
 **Verification**
