@@ -752,8 +752,10 @@ func _field_guide_entry(spider_id: StringName) -> Control:
 	for source: Dictionary in SpiderBiologyCatalog.sources_for(spider_id):
 		citations.append(str(source["publisher"]))
 	if not citations.is_empty():
+		# Publishers contain their own commas ("Natural History Museum, London"),
+		# so a comma-joined list reads as more sources than were cited.
 		body.add_child(_field_guide_line(
-			"SOURCES · %s" % ", ".join(citations), MUTED))
+			"SOURCES · %s" % "  ·  ".join(citations), MUTED))
 	return row
 
 
