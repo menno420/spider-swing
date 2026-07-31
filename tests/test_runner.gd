@@ -4,8 +4,8 @@ extends SceneTree
 const MAIN_SCENE_PATH := "res://game/bootstrap/main.tscn"
 const EXPORT_PRESETS_PATH := "res://export_presets.cfg"
 const ANDROID_WORKFLOW_PATH := "res://.github/workflows/android-debug.yml"
-const BUILD_VERSION := "0.17.0-buckler-test"
-const ANDROID_VERSION_CODE := 33
+const BUILD_VERSION := "0.18.0-buckler-test"
+const ANDROID_VERSION_CODE := 34
 const ANDROID_APP_NAME := "Spider Swing Buckler (dev)"
 const EXPECTED_CHECK_COUNT := 107
 const REQUIRED_INPUT_ACTIONS := [

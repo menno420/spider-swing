@@ -34,6 +34,7 @@ var _motion_toggle: CheckButton
 var _debug_toggle: CheckButton
 var _garage_name: Label
 var _garage_role: Label
+var _garage_spider_preview: TextureRect
 var _garage_description: Label
 var _garage_tradeoff: Label
 var _garage_stats: Label
@@ -44,6 +45,7 @@ var _garage_silk_preview: SilkPreview
 var _profile_buttons: Dictionary = {}
 var _shop_flies: Label
 var _shop_title: Label
+var _shop_spider_preview: TextureRect
 var _shop_description: Label
 var _upgrade_buttons: Dictionary = {}
 var _upgrade_rows: Dictionary = {}
@@ -411,8 +413,17 @@ func _build_garage() -> void:
 	_fill_with_margin(detail, detail_card, 18.0)
 	_garage_role = _section_label("")
 	detail.add_child(_garage_role)
+	var identity_row := HBoxContainer.new()
+	identity_row.add_theme_constant_override("separation", 10)
+	detail.add_child(identity_row)
 	_garage_name = _label("", 29, INK)
-	detail.add_child(_garage_name)
+	_garage_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	identity_row.add_child(_garage_name)
+	_garage_spider_preview = _spider_preview(
+		&"GarageSpiderPreview",
+		Vector2(118.0, 56.0),
+	)
+	identity_row.add_child(_garage_spider_preview)
 	_garage_description = _setting_description("")
 	_garage_description.add_theme_font_size_override("font_size", 15)
 	_garage_description.custom_minimum_size.y = 30.0
@@ -493,6 +504,11 @@ func _build_shop() -> void:
 	var header := HBoxContainer.new()
 	header.add_theme_constant_override("separation", 14)
 	content.add_child(header)
+	_shop_spider_preview = _spider_preview(
+		&"ShopSpiderPreview",
+		Vector2(112.0, 53.0),
+	)
+	header.add_child(_shop_spider_preview)
 	_shop_title = _label("", 32, INK)
 	_shop_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(_shop_title)
@@ -831,6 +847,7 @@ func _render_garage() -> void:
 		]
 	_garage_role.text = str(item["role"])
 	_garage_name.text = str(item["name"])
+	_sync_spider_preview(_garage_spider_preview, selected)
 	_garage_description.text = str(item["description"])
 	_garage_tradeoff.text = "TRADE-OFF · %s" % item["tradeoff"]
 	var preview := SpiderCatalog.resolved_config(
@@ -884,6 +901,7 @@ func _render_garage() -> void:
 func _render_shop() -> void:
 	var selected := _state.progress.selected_spider_id
 	var profile_item := SpiderCatalog.profile(selected)
+	_sync_spider_preview(_shop_spider_preview, selected)
 	_shop_title.text = "%s UPGRADES" % str(profile_item["name"]).to_upper()
 	_shop_flies.text = "%d FLIES AVAILABLE" % _state.progress.spendable_flies
 	for upgrade_id: StringName in _upgrade_buttons:
@@ -1170,6 +1188,36 @@ func _creator_piece_label(piece: StringName) -> String:
 			return "SPLIT ROOT GATE"
 		_:
 			return "EMPTY"
+
+
+func _spider_preview(
+	node_name: StringName,
+	minimum_size: Vector2,
+) -> TextureRect:
+	var preview := TextureRect.new()
+	preview.name = str(node_name)
+	preview.custom_minimum_size = minimum_size
+	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	preview.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return preview
+
+
+func _sync_spider_preview(
+	preview: TextureRect,
+	spider_id: StringName,
+) -> void:
+	var asset_id := ArtAssetCatalog.spider_asset_id(spider_id)
+	var path := ArtAssetCatalog.texture_path(asset_id)
+	preview.texture = (
+		load(path) as Texture2D
+		if ResourceLoader.exists(path)
+		else null
+	)
+	preview.modulate = ArtAssetCatalog.spider_style_tint(
+		_state.progress.selected_spider_style,
+	)
 
 
 func _full_screen(node_name: StringName) -> Control:

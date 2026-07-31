@@ -41,7 +41,7 @@ env:
   GODOT_VERSION: 4.7.1
   APK_PATH: build/spider-swing-debug.apk
   ARTIFACT_NAME: spider-swing-android-debug
-  BUILD_VERSION: 0.17.0-buckler-test
+  BUILD_VERSION: 0.18.0-buckler-test
   SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
 jobs:
@@ -101,7 +101,7 @@ jobs:
           set -euo pipefail
           grep -F "config/version=\"${BUILD_VERSION}\"" project.godot
           grep -F "version/name=\"${BUILD_VERSION}\"" export_presets.cfg
-          grep -F 'version/code=33' export_presets.cfg
+          grep -F 'version/code=34' export_presets.cfg
           grep -F 'package/name="Spider Swing Buckler (dev)"' export_presets.cfg
           echo "build identity: ${BUILD_VERSION} @ ${SOURCE_SHA}"
 
@@ -199,7 +199,7 @@ jobs:
             echo "| Godot | ${GODOT_VERSION} Standard |"
             echo "| Version | \`${BUILD_VERSION}\` |"
             echo "| Source | \`${SOURCE_SHA}\` |"
-            echo "| App label | \`Spider Swing Anchorite Art (dev)\` |"
+            echo "| App label | \`Spider Swing Five Spider Art (dev)\` |"
             echo "| Package | \`com.menno420.spiderswing.dev\` (development only) |"
             echo "| Retention | 14 days |"
             echo ""

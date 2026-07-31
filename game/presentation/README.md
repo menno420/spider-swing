@@ -58,9 +58,9 @@ between consecutive fixed-step snapshots using Godot's physics interpolation
 fraction. This changes only render coordinates. Teleports and run resets snap
 both samples together, reduced-motion disables action-pose deformation, and
 authoritative collision continues to use the untouched snapshot state.
-Finished Garden and Anchorite sprites use that same path and scale from each
-profile's authoritative radius; missing textures and unfinished spider profiles
-retain the procedural renderer as a presentation-only fallback.
+All five finished spider sprites use that same path and scale from each
+profile's authoritative radius; a missing texture retains the procedural
+renderer as a presentation-only fallback.
 
 The composition root mounts either the front end or the laboratory, never two
 competing roots. See ADR 0002 and `docs/technical/front-end-flow.md`.
