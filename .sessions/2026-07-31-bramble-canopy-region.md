@@ -1,6 +1,6 @@
 # Bramble Canopy environment and height-control session
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 
