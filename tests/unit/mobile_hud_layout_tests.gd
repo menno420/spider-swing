@@ -682,9 +682,11 @@ static func _test_environment_theme_packs_are_visual_only(
 			failures.append("environment texture is not a 384 px runtime tile")
 			return 0
 	var art_paths := ArtAssetCatalog.texture_paths()
-	if art_paths.size() != 11:
+	var expected_art_count := 8 + SpiderCatalog.ALL_IDS.size() + 1
+	if art_paths.size() != expected_art_count:
 		failures.append(
-			"finished forest slice does not expose eleven active art assets")
+			"art catalog does not expose eight forest layers, one asset per "
+			+ "spider profile, and the fly")
 		return 0
 	for path: String in art_paths:
 		if not ResourceLoader.exists(path):
