@@ -4,10 +4,10 @@ extends SceneTree
 const MAIN_SCENE_PATH := "res://game/bootstrap/main.tscn"
 const EXPORT_PRESETS_PATH := "res://export_presets.cfg"
 const ANDROID_WORKFLOW_PATH := "res://.github/workflows/android-debug.yml"
-const BUILD_VERSION := "0.15.0-seeded-regions-test"
-const ANDROID_VERSION_CODE := 31
-const ANDROID_APP_NAME := "Spider Swing Seeded Regions (dev)"
-const EXPECTED_CHECK_COUNT := 97
+const BUILD_VERSION := "0.16.0-field-guide-test"
+const ANDROID_VERSION_CODE := 32
+const ANDROID_APP_NAME := "Spider Swing Field Guide (dev)"
+const EXPECTED_CHECK_COUNT := 107
 const REQUIRED_INPUT_ACTIONS := [
 	"web_action", "reel_in", "burst_action", "pause", "restart_run",
 	"toggle_debug"]
@@ -27,6 +27,7 @@ func _initialize() -> void:
 	_check_no_autoloads()
 	_check_inward_dependencies()
 	_check_phase0_physics()
+	_check_spider_biology()
 	_check_mobile_hud_layout()
 	_check_front_end_flow()
 	print("")
@@ -238,6 +239,18 @@ func _check_phase0_physics() -> void:
 		return
 	for failure: String in failures:
 		_fail("Phase 0 physics — %s" % failure)
+
+
+func _check_spider_biology() -> void:
+	var result := SpiderBiologyTests.run()
+	var failures: PackedStringArray = result["failures"]
+	if failures.is_empty():
+		_passed += int(result["passed"])
+		print("  ✓ Spider biology: %d inspiration and disclosure contracts" %
+			int(result["passed"]))
+		return
+	for failure: String in failures:
+		_fail("Spider biology — %s" % failure)
 
 
 func _check_mobile_hud_layout() -> void:

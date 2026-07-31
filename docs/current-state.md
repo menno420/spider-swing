@@ -36,6 +36,21 @@ without a reported regression.
   apply the listed increase twice, marks the next milestone
   `BREAKTHROUGH ×2`, and derives a maxed track's
   four-breakthrough/24-step summary from the authoritative catalog.
+- `SpiderBiologyCatalog` holds one biological record per playable profile and
+  shares no key with `SpiderCatalog`: inspiration, claim strength (species,
+  composite, behaviour, or fictional), the observed real-world trait, an
+  explicit statement of what the game invents, a myth correction where one is
+  needed, and cited sources with an accepted-name authority and review date.
+  Only a species-level claim states a binomial, so Garden Spider and Anchorite
+  stay honest composites, Ballooner stays behaviour-level, and Springtail is
+  labelled a fictional name that corrects the Collembola confusion. The Garage
+  detail card names the selected spider's inspiration and routes to a scrollable
+  FIELD GUIDE screen that keeps game identity, inspiration, real biology, and
+  game adaptation on separate lines. Nine contracts fail the build if a profile
+  loses its record or its disclosure, if a non-species record claims a binomial,
+  or if the two tables start sharing keys. `docs/product/spider-biology-folio.md`
+  carries the reasoning, art rules, editorial voice, and the parked candidate
+  backlog.
 - The six-step in-engine Tutorial teaches movement, forgiving solid targets,
   release and momentum, speed-neutral rope-shortening Reel, percentage Burst,
   one-shot downward Dive Pull, shaped obstacles/gaps, restart, Menu, and optional
@@ -606,12 +621,23 @@ without a reported regression.
 
 ## In flight
 
-No implementation session remains in flight after PR #48 closeout. The next
+The biological inspiration layer and Field Guide are open for review. The next
 owner evidence should cover seeded-region identity and checkpoint-practice
-integrity, reserve-Burst feel, and Anchorite species readability.
+integrity, reserve-Burst feel, and Anchorite species readability. Two naming
+questions are the owner's alone and are parked, not blocking: whether Springtail
+keeps its fictional name plus the disclosure or is renamed, and whether the
+release roster uses fictional names throughout or promotes species names.
 
 ## Recently shipped (newest first)
 
+- **2026-07-31 — Biological inspiration layer and Field Guide.** Adds a domain
+  record per profile that separates what each spider is inspired by, what the
+  real animal does, and what the game invents; surfaces it on the Garage card
+  and in a new FIELD GUIDE route; corrects the Skitter sprite brief, whose
+  "compact, short-legged" direction contradicted the slender *Lyssomanes
+  viridis* it names; and lands the approved mappings, editorial rules, and
+  parked candidate backlog in `docs/product/spider-biology-folio.md`. No
+  physics, collision, economy, or upgrade value changed.
 - **2026-07-30 — Seeded regions and checkpoint practice (PR #48).** Divides
   the endless course into three reproducible 5,000 m identities with distinct
   curated pools and bounded recovery cadence, adds presentation-owned region
