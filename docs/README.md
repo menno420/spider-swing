@@ -43,6 +43,7 @@ Binding. Superseded rather than deleted.
 | [`0001`](technical/adr/0001-engine-and-runtime.md) | Godot 4.7.1 Standard, GDScript, Compatibility renderer, 60 Hz fixed step. |
 | [`0002`](technical/adr/0002-simulation-and-event-boundaries.md) | Inward layering and deterministic event flow. |
 | [`0003`](technical/adr/0003-android-build-strategy.md) | Debug-only Android CI now; production signing later, owner-controlled. |
+| [`0004`](technical/adr/0004-deterministic-moving-parts.md) | Pure fixed-tick motion, swept moving collision, and energy-safe moving web anchors. |
 
 ## Substrate-generated living ledgers
 
