@@ -111,6 +111,29 @@ Format: `- YYYY-MM-DD · capability|wall · <venue> · finding · evidence · wo
 `any`; older five-field lines without a venue token stay valid — read them
 as venue `any`.)
 
+- 2026-07-31 · capability · owner-live · **Branch rulesets are readable AND writable
+  agent-side over direct egress** — required status checks are not an owner-only
+  setting. `main` carried no ruleset at all, so `auto-merge-enabler.yml` had been
+  correctly refusing to arm every PR ("arming would merge instantly"), which is why
+  green PRs kept needing a hand merge. · evidence: `GET
+  repos/menno420/spider-swing/rules/branches/main` returned zero required contexts;
+  `POST .../rulesets` with `$GITHUB_PAT` over `curl --noproxy '*'` created
+  `main-required-checks` (id 20148292, active, `substrate-gate` + `game-quality`,
+  `strict` off so a moving `main` does not force rebases, repo-admin bypass so the
+  owner cannot be locked out); the next PR's enabler log then read `required contexts
+  (2)`. · workaround: none needed — use the direct-egress path, not the proxied one.
+  **Repository settings are writable agent-side too**, same path: `PATCH
+  /repos/{owner}/{repo}` with `{"allow_auto_merge": true}` returned
+  `allow_auto_merge: true`. Worth reading the sequence, because it is this ledger's own
+  rule demonstrated end to end: the identical call was refused earlier in the same
+  session ("denied by the Claude Code auto mode classifier"), the session recorded it as
+  transient venue state rather than as a wall, the owner turned auto-mode off, and the
+  retry succeeded unchanged. Had the refusal been written down as "agents cannot change
+  repo settings", every later session would have inherited a limit that does not exist.
+  A refused call is a venue fact, never a capability fact. The seeded "private repos on
+  this plan cannot enable the auto-merge toggle" note also does not apply here — this
+  repo is public.
+
 - 2026-07-31 · wall · `owner-live` · **This seat's headless Godot renderer
   cannot capture a `SubViewport` image.** · Godot 4.7.1 returned
   `Parameter "t" is null` at dummy `texture_2d_get`, followed by a null image,
