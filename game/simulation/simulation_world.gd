@@ -18,6 +18,10 @@ var anchors: PackedVector2Array = PackedVector2Array()
 var surfaces: Array[PackedVector2Array] = []
 var boundary_surfaces: Array[PackedVector2Array] = []
 var obstacles: Array[PackedVector2Array] = []
+## Parallel to `obstacles`: 1 when the hazard answers web taps, 0 when it is
+## lethal-but-untappable. Absent entries read as tappable so geometry built
+## without the flag keeps its original behaviour.
+var obstacle_anchorable: PackedByteArray = PackedByteArray()
 var fly_positions: PackedVector2Array = PackedVector2Array()
 var boost_positions: PackedVector2Array = PackedVector2Array()
 var run_flies: int = 0
@@ -82,8 +86,11 @@ func set_course_geometry(geometry: CourseGeometry) -> void:
 	for surface: PackedVector2Array in geometry.boundary_surfaces:
 		boundary_surfaces.append(surface.duplicate())
 	obstacles.clear()
-	for obstacle: PackedVector2Array in geometry.obstacles:
-		obstacles.append(obstacle.duplicate())
+	obstacle_anchorable.clear()
+	for index in range(geometry.obstacles.size()):
+		obstacles.append(geometry.obstacles[index].duplicate())
+		obstacle_anchorable.append(
+			1 if geometry.is_obstacle_anchorable(index) else 0)
 	fly_positions.clear()
 	for fly: Vector2 in geometry.fly_positions:
 		if not _collected_pickups.has(_pickup_key(&"fly", fly)):
@@ -207,8 +214,16 @@ func nearest_solid_point(target: Vector2) -> Dictionary:
 				best_distance = float(candidate["distance"])
 				best = candidate["point"]
 				best_kind = &"boundary"
-	for obstacle: PackedVector2Array in obstacles:
-		var candidate := SolidGeometry.closest_point_on_polygon(target, obstacle)
+	for index in range(obstacles.size()):
+		# Floor-grown hazards are lethal but not tappable. A release tap and a
+		# web tap are aimed at the same area, so a hazard rising from the floor
+		# just below the spider used to convert releases into Dive Pulls. Only
+		# the anchor search skips them; `_collision_at` still sees every
+		# obstacle, so nothing became safe to touch.
+		if not _obstacle_anchorable(index):
+			continue
+		var candidate := SolidGeometry.closest_point_on_polygon(
+			target, obstacles[index])
 		if bool(candidate["found"]) and float(candidate["distance"]) < best_distance:
 			best_distance = float(candidate["distance"])
 			best = candidate["point"]
@@ -219,6 +234,12 @@ func nearest_solid_point(target: Vector2) -> Dictionary:
 		"distance": best_distance,
 		"kind": best_kind,
 	}
+
+
+func _obstacle_anchorable(index: int) -> bool:
+	if index < 0 or index >= obstacle_anchorable.size():
+		return true
+	return obstacle_anchorable[index] != 0
 
 
 func _collides_with_obstacle(center: Vector2) -> bool:

@@ -43,6 +43,7 @@ static func run() -> Dictionary:
 	passed += _test_obstacle_scales_change_authoritative_polygons(failures)
 	passed += _test_guided_opening_swings_safely_without_input_lock(failures)
 	passed += _test_one_rescue_is_consumed_before_death(failures)
+	passed += _test_floor_grown_hazards_are_lethal_but_not_tappable(failures)
 	passed += _test_dying_window_is_not_eaten_by_an_in_flight_tap(failures)
 	passed += _test_spider_profiles_and_glide_share_one_config(failures)
 	passed += _test_creator_pattern_drives_deterministic_chunks(failures)
@@ -2059,6 +2060,57 @@ static func _test_one_rescue_is_consumed_before_death(
 		session.free()
 		return 0
 	session.free()
+	return 1
+
+
+static func _test_floor_grown_hazards_are_lethal_but_not_tappable(
+	failures: PackedStringArray,
+) -> int:
+	var world := SimulationWorld.new()
+	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	var geometry := CourseGeometry.new()
+	# One hazard rising from the floor and one hanging from the ceiling, the
+	# same shape and the same distance from the tap, so only the flag differs.
+	var floor_grown := PackedVector2Array([
+		Vector2(560.0, 460.0), Vector2(640.0, 460.0),
+		Vector2(640.0, 560.0), Vector2(560.0, 560.0),
+	])
+	var ceiling_grown := PackedVector2Array([
+		Vector2(560.0, 140.0), Vector2(640.0, 140.0),
+		Vector2(640.0, 240.0), Vector2(560.0, 240.0),
+	])
+	geometry.append_obstacle(floor_grown, false)
+	geometry.append_obstacle(ceiling_grown, true)
+	world.reset(config, geometry)
+
+	if world.obstacles.size() != 2:
+		failures.append("floor-grown hazard was dropped from collision geometry")
+		return 0
+	# The ceiling-grown hazard still answers a tap aimed at it.
+	var upper := world.nearest_solid_point(Vector2(600.0, 190.0))
+	if not bool(upper["found"]) or StringName(upper["kind"]) != &"obstacle":
+		failures.append("ceiling-grown hazard stopped being a valid web anchor")
+		return 0
+	# The floor-grown one does not, even aimed dead centre.
+	var lower := world.nearest_solid_point(Vector2(600.0, 510.0))
+	if bool(lower["found"]) and StringName(lower["kind"]) == &"obstacle":
+		failures.append("floor-grown hazard still answered a tap and can steal a release")
+		return 0
+	# But it is still solid: untappable must never mean safe to touch.
+	if not world._collides_with_obstacle(Vector2(600.0, 510.0)):
+		failures.append("floor-grown hazard stopped being lethal — untappable is not safe")
+		return 0
+	# The flag survives a geometry copy.
+	var copy := geometry.duplicate_geometry()
+	if copy.is_obstacle_anchorable(0) or not copy.is_obstacle_anchorable(1):
+		failures.append("anchor eligibility did not survive duplicate_geometry")
+		return 0
+	# Geometry built without the flag keeps the original behaviour.
+	var legacy := CourseGeometry.new()
+	legacy.obstacles.append(floor_grown)
+	if not legacy.is_obstacle_anchorable(0):
+		failures.append("untagged geometry must default to tappable")
+		return 0
 	return 1
 
 
