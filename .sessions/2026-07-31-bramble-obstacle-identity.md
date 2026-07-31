@@ -95,6 +95,35 @@ chroma-removal pipeline produced the runtime alpha assets.
   card's deliberate `in-progress` lifecycle hold. Source-identified Android
   and signer proof remain required before the final `complete` flip.
 
+## Remote and Android proof
+
+- Exact remote head `4fb5cce4ff7b1abdf39f27593a317bca5b756101` has tree
+  `d3e7d606c22004ccf5e7b7840edbbadb19e85978`, byte-identical to the merged,
+  locally verified tree. It is a true merge over current main
+  `6e2f63686b9f21c6058c615517c278a1b3a264b8`, so PR #69 is mergeable rather
+  than silently skipping Actions as a conflicted head.
+- `game-quality` run
+  [30667529686](https://github.com/menno420/spider-swing/actions/runs/30667529686)
+  passed the exact head. `substrate-gate` run 30667529692 fails only on this
+  card's deliberate `in-progress` badge; the merge helper passed.
+- Android run
+  [30667529691](https://github.com/menno420/spider-swing/actions/runs/30667529691)
+  passed stable-key, export, APK identity/version, signer-certificate, and
+  upload checks. [Artifact
+  8807542392](https://github.com/menno420/spider-swing/actions/runs/30667529691/artifacts/8807542392)
+  is 64,949,162 bytes; the downloaded ZIP exactly matches GitHub's SHA-256
+  `f4b166b08dfe1ea0a8e70a78d65ca2e8424ceff01cd240bb36337590d483791a`.
+- The intact 65,358,715-byte APK has SHA-256
+  `aaad94c103349e6812ca2074571c3ce90d9dfcd6dbb1322d2247c40141c4d9a5`.
+  Its embedded provenance names build `0.20.1-bramble-obstacles`, exact source
+  `4fb5cce4…`, package `com.menno420.spiderswing.dev`, and display name
+  `Spider Swing Bramble Obstacles (dev)`. Both new imported textures, their
+  manifests, `classes.dex`, `AndroidManifest.xml`, and `assets/project.binary`
+  are present in the APK.
+- `keytool -printcert -jarfile` independently reports certificate SHA-256
+  `83ff0bc27903351779ffd1439f115e8c7e4c228fddd683e2a801c9700b30a741`,
+  exactly the pinned stable public debug signer.
+
 ## Planned verification
 
 Prove that Bramble selects no Ancient-Forest obstacle ids, that every new family
