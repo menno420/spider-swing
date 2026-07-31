@@ -140,6 +140,25 @@ than inventing a new lever.
 
 - **📊 Model:** opus-5 · high · research — difficulty curve baseline
 
+## Wake chain
+
+One outstanding wake, armed after the slice's work was pushed. Recorded
+verbatim per `docs/ROUTINES.md`:
+
+- **id:** `trig_01SHptxVQLm6zjoz2rnqWoZb`
+- **binding:** self-bound one-shot (`send_later`) into this session
+- **fires:** `2026-07-31T22:57:00Z` (50 minutes out)
+- **carries:** get PR #74 to merged first — including the Godot install recipe
+  and the CI-stall context — then slice 2, written to work from cold.
+
+Armed 50 minutes out rather than the brief's ~75 because it is a
+CI-recovery check-in, not a post-merge slice hand-off: at 22:05Z GitHub
+Actions was stalled repo-wide (zero workflow runs on any branch since
+21:49Z, so this PR's head had no checks scheduled and auto-merge had
+nothing to consume). Transient venue state, not a wall — the previous
+commit fired all four workflows through the same path, and `game-quality`
+passed on it. The wake re-fires the event if the queued ones were dropped.
+
 ## Next slice
 
 **Slice 2 — campaign teaching tier.** The gap is named in the approved campaign
