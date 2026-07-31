@@ -35,7 +35,7 @@ without a reported regression.
   bounded idempotent-settlement history. Schema 5 infers already-reached region
   checkpoints from a schema-4 standard best once; pre-20-level saves migrate
   proportionally once.
-- Build `0.20.1-bramble-obstacles` (Android version code 38, package
+- Build `0.21.0-zones-4-8` (Android version code 39, package
   `com.menno420.spiderswing.dev`) retains the stable conventional public debug
   identity introduced by `0.19.0-depth-testing` in
   `.github/android/debug.keystore`. The workflow pins its file and certificate
