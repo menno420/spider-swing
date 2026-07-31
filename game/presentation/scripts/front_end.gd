@@ -11,6 +11,11 @@ const CYAN := SpiderUiTheme.DEW
 const GREEN := SpiderUiTheme.MOSS
 const ORANGE := SpiderUiTheme.SAP
 const YELLOW := SpiderUiTheme.AMBER
+const SHOP_PROGRESSION_COPY := (
+	"Five CORE tracks shape every spider consistently; two IDENTITY tracks "
+	+ "reinforce its trade-off. Levels 5, 10, 15, and 20 apply the listed "
+	+ "increase twice."
+)
 
 var _state: FrontEndState
 var _home: Control
@@ -537,10 +542,7 @@ func _build_shop() -> void:
 		+ "real-money entitlement is connected in this build.")
 	shop_note.add_theme_font_size_override("font_size", 17)
 	content.add_child(shop_note)
-	_shop_description = _setting_description(
-		"Five CORE tracks shape every spider consistently; two IDENTITY tracks "
-		+ "reinforce its trade-off. Levels 5, 10, 15, and 20 apply the listed "
-		+ "increase twice.")
+	_shop_description = _setting_description(SHOP_PROGRESSION_COPY)
 	_shop_description.name = "ShopProgressionRule"
 	_shop_description.add_theme_font_size_override("font_size", 16)
 	_shop_description.custom_minimum_size.y = 34.0
@@ -859,6 +861,7 @@ func _render() -> void:
 func _render_garage() -> void:
 	var selected := _state.progress.selected_spider_id
 	var item := SpiderCatalog.profile(selected)
+	var overlay_level := _state.debug_upgrade_overlay_level()
 	for spider_id: StringName in _profile_buttons:
 		var button: Button = _profile_buttons[spider_id]
 		var profile_item := SpiderCatalog.profile(spider_id)
@@ -866,14 +869,18 @@ func _render_garage() -> void:
 			"✓ " if spider_id == selected else "",
 			str(profile_item["name"]).to_upper(),
 		]
-	_garage_role.text = str(item["role"])
+	_garage_role.text = (
+		"DEBUG UPGRADE OVERLAY · LEVEL %d · NOT OWNED" % overlay_level
+		if _state.debug_upgrade_overlay_enabled()
+		else str(item["role"])
+	)
 	_garage_name.text = str(item["name"])
 	_sync_spider_preview(_garage_spider_preview, selected)
 	_garage_description.text = str(item["description"])
 	_garage_tradeoff.text = "TRADE-OFF · %s" % item["tradeoff"]
 	var preview := SpiderCatalog.resolved_config(
 		SwingConfig.PRESET_BALANCED,
-		_state.progress,
+		_state.resolved_progress(),
 	)
 	var stats_format := (
 		"HITBOX %.1f px  ·  GRAVITY %.0f  ·  REEL %.0f px/s · %.2f s%s\n"
@@ -922,9 +929,18 @@ func _render_garage() -> void:
 func _render_shop() -> void:
 	var selected := _state.progress.selected_spider_id
 	var profile_item := SpiderCatalog.profile(selected)
+	var overlay_enabled := _state.debug_upgrade_overlay_enabled()
+	var overlay_level := _state.debug_upgrade_overlay_level()
 	_sync_spider_preview(_shop_spider_preview, selected)
-	_shop_title.text = "%s UPGRADES" % str(profile_item["name"]).to_upper()
+	_shop_title.text = "%s UPGRADES%s" % [
+		str(profile_item["name"]).to_upper(),
+		" · DEBUG" if overlay_enabled else "",
+	]
 	_shop_flies.text = "%d FLIES AVAILABLE" % _state.progress.spendable_flies
+	_shop_description.text = (
+		"DEBUG OVERLAY · LEVEL %d ON EVERY TRACK · NOT OWNED. Saved levels "
+		+ "are unchanged; purchases are paused."
+	) % overlay_level if overlay_enabled else SHOP_PROGRESSION_COPY
 	for upgrade_id: StringName in _upgrade_buttons:
 		(_upgrade_rows[upgrade_id] as Control).visible = false
 	for upgrade_item: Dictionary in SpiderCatalog.upgrades_for(selected):
@@ -933,16 +949,27 @@ func _render_shop() -> void:
 		var row: Control = _upgrade_rows[upgrade_id]
 		var description: Label = _upgrade_descriptions[upgrade_id]
 		var milestones: Label = _upgrade_milestones[upgrade_id]
-		var level := _state.progress.upgrade_level(upgrade_id)
+		var owned_level := _state.progress.upgrade_level(upgrade_id)
+		var level := _state.displayed_upgrade_level(upgrade_id)
 		var maximum := level >= SpiderCatalog.MAX_UPGRADE_LEVEL
-		var cost := SpiderCatalog.cost_for_level(level)
+		var cost := SpiderCatalog.cost_for_level(owned_level)
 		var next_level := mini(SpiderCatalog.MAX_UPGRADE_LEVEL, level + 1)
 		var next_is_breakthrough := \
 			SpiderCatalog.is_breakthrough_level(next_level)
 		var scope := StringName(upgrade_item["scope"])
 		row.visible = true
-		button.disabled = maximum or _state.progress.spendable_flies < cost
+		button.disabled = overlay_enabled or maximum or \
+			_state.progress.spendable_flies < cost
 		button.text = (
+			"%s · %s\nDEBUG OVERLAY LEVEL %d/%d · NOT OWNED"
+			% [
+				"CORE" if scope == SpiderCatalog.SCOPE_CORE else "IDENTITY",
+				str(upgrade_item["name"]).to_upper(),
+				level,
+				SpiderCatalog.MAX_UPGRADE_LEVEL,
+			]
+			if overlay_enabled
+			else (
 			"%s · %s\nLEVEL %d/%d  ·  %s%s"
 			% [
 				"CORE" if scope == SpiderCatalog.SCOPE_CORE else "IDENTITY",
@@ -956,6 +983,7 @@ func _render_shop() -> void:
 					else ""
 				),
 			]
+			)
 		)
 		var next_breakthrough := SpiderCatalog.next_breakthrough_level(level)
 		description.text = "%s  ·  %s" % [

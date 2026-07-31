@@ -97,18 +97,24 @@ var field_guide_return_screen: int = Screen.HOME
 var tutorial_index: int = 0
 var settings: PlayerSettings = PlayerSettings.defaults()
 var progress: PlayerProgress = PlayerProgress.defaults()
+var _progression_service := ProgressionService.new()
 
 
 func configure(
 	initial_settings: PlayerSettings,
 	initial_progress: PlayerProgress = null,
+	progression_service: ProgressionService = null,
 ) -> void:
+	if progression_service != null:
+		_progression_service = progression_service
 	settings = initial_settings.copy()
 	progress = (
 		initial_progress.copy()
 		if initial_progress != null
 		else PlayerProgress.defaults()
 	)
+	if not settings.show_debug_tools:
+		_progression_service.clear_debug_upgrade_overlay()
 	screen = Screen.HOME
 	tutorial_index = 0
 	changed.emit()
@@ -171,6 +177,22 @@ func configure_progress(updated_progress: PlayerProgress) -> void:
 	changed.emit()
 
 
+func resolved_progress() -> PlayerProgress:
+	return _progression_service.resolved_progress(progress)
+
+
+func displayed_upgrade_level(upgrade_id: StringName) -> int:
+	return _progression_service.resolved_upgrade_level(progress, upgrade_id)
+
+
+func debug_upgrade_overlay_enabled() -> bool:
+	return _progression_service.debug_upgrade_overlay_enabled()
+
+
+func debug_upgrade_overlay_level() -> int:
+	return _progression_service.debug_upgrade_overlay_level()
+
+
 func next_tutorial_step() -> void:
 	if tutorial_index >= TUTORIAL_STEPS.size() - 1:
 		request_play()
@@ -224,7 +246,8 @@ func request_web_variant(web_variant: StringName) -> void:
 
 
 func request_upgrade_purchase(upgrade_id: StringName) -> void:
-	if not SpiderCatalog.upgrade(upgrade_id).is_empty():
+	if not debug_upgrade_overlay_enabled() and \
+			not SpiderCatalog.upgrade(upgrade_id).is_empty():
 		upgrade_purchase_requested.emit(upgrade_id)
 
 
@@ -262,11 +285,15 @@ func set_debug_tools(enabled: bool) -> void:
 	if settings.show_debug_tools == enabled:
 		return
 	settings.show_debug_tools = enabled
+	if not enabled:
+		_progression_service.clear_debug_upgrade_overlay()
 	_publish_settings()
 
 
 func reset_settings() -> void:
 	settings = PlayerSettings.defaults()
+	if not settings.show_debug_tools:
+		_progression_service.clear_debug_upgrade_overlay()
 	_publish_settings()
 
 

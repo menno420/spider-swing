@@ -1061,7 +1061,7 @@ func _draw_hud(size: Vector2) -> void:
 	if _snapshot.run_mode == SwingLabSession.RUN_PRACTICE:
 		_draw_centered_text(
 			Vector2(size.x * 0.5, 42.0),
-			"PRACTICE · NO FLIES OR RECORDS",
+			_run_access_status(),
 			17,
 			YELLOW,
 		)
@@ -1288,7 +1288,7 @@ func _draw_tuning_cards(
 			15,
 			status_color,
 		)
-	elif category_id == TuningCatalog.CATEGORY_RUN and \
+	elif category_id == TuningCatalog.CATEGORY_ABILITIES and \
 			_snapshot.surface_bounce_enabled:
 		var shell_status := "IMPACT SHELL READY" \
 			if _snapshot.surface_bounce_ready \
@@ -1511,6 +1511,8 @@ func _format_tuning_value(parameter: StringName, value: float) -> String:
 			return "%.0f px/s" % value
 		&"meters":
 			return "%.0f m" % (value / 10.0)
+		&"debug_level":
+			return "OWNED" if value < 0.0 else "LEVEL %d" % roundi(value)
 		&"number":
 			return "%.0f" % value
 	return "%.3f" % value
@@ -1532,9 +1534,32 @@ func _quick_value_label(parameter: StringName, value: float) -> String:
 			return "%.0f" % value
 		&"meters":
 			return "%.0fm" % (value / 10.0)
+		&"debug_level":
+			if value < 0.0:
+				return "OWNED"
+			if roundi(value) == SpiderCatalog.MAX_UPGRADE_LEVEL:
+				return "MAX"
+			return "L%d" % roundi(value)
 		&"number":
 			return "%.0f" % value
 	return "%.2f" % value
+
+
+func _run_access_status() -> String:
+	var level := _snapshot.debug_upgrade_overlay_level
+	if _snapshot.debug_start_active:
+		return (
+			"DEBUG START %.0f m · UPGRADES L%d · AWARDS NOTHING" % [
+				_snapshot.start_distance_pixels / 10.0,
+				level,
+			]
+			if level >= 0
+			else "DEBUG START %.0f m · AWARDS NOTHING" % (
+				_snapshot.start_distance_pixels / 10.0)
+		)
+	if level >= 0:
+		return "DEBUG UPGRADES L%d · AWARDS NOTHING" % level
+	return "PRACTICE · NO FLIES OR RECORDS"
 
 
 func _preset_label(name: StringName) -> String:

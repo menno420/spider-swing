@@ -122,6 +122,17 @@ static func parameter_plus_rect(
 	)
 
 
+static func parameter_value_entry_rect(
+	index: int,
+	viewport_size: Vector2 = REFERENCE_SIZE,
+) -> Rect2:
+	var card := parameter_card_rect(index, viewport_size)
+	return Rect2(
+		Vector2(card.end.x - 174.0, card.position.y + 8.0),
+		Vector2(156.0, 48.0),
+	)
+
+
 static func parameter_quick_rect(
 	card_index: int,
 	quick_index: int,

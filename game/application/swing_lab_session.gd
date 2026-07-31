@@ -23,9 +23,11 @@ var _course_chunk_index: int = -1
 var _run := RunStateMachine.new()
 var _effects := EffectState.new()
 var _progress := PlayerProgress.defaults()
+var _progression_service := ProgressionService.new()
 var _creator_pattern: Array[StringName] = []
 var _run_mode: StringName = RUN_STANDARD
 var _start_distance_pixels: float = 0.0
+var _debug_start_active: bool = false
 var _course_seed: int = 1337
 var _course_seed_override: int = -1
 var _recording_seed: int = 1337
@@ -60,9 +62,14 @@ func _ready() -> void:
 	_reset_run()
 
 
-func configure_progress(progress: PlayerProgress) -> void:
+func configure_progress(
+	progress: PlayerProgress,
+	progression_service: ProgressionService = null,
+) -> void:
+	if progression_service != null:
+		_progression_service = progression_service
 	_progress = progress.copy()
-	_config = SpiderCatalog.resolved_config(_config.preset_name, _progress)
+	_config = _resolved_config(_config.preset_name)
 	if is_inside_tree():
 		_world.config = _config
 
@@ -76,10 +83,17 @@ func configure_run(
 	start_distance_pixels: float = 0.0,
 	course_seed_override: int = -1,
 ) -> void:
-	_run_mode = RUN_PRACTICE if mode == RUN_PRACTICE else RUN_STANDARD
+	_debug_start_active = false
+	var requested_practice := mode == RUN_PRACTICE
+	_run_mode = (
+		RUN_PRACTICE
+		if requested_practice or \
+			_progression_service.debug_upgrade_overlay_enabled()
+		else RUN_STANDARD
+	)
 	_start_distance_pixels = (
 		maxf(0.0, start_distance_pixels)
-		if _run_mode == RUN_PRACTICE
+		if requested_practice
 		else 0.0
 	)
 	_course_seed_override = course_seed_override
@@ -176,7 +190,7 @@ func toggle_slow_motion() -> void:
 
 
 func apply_preset(name: StringName) -> void:
-	_config = SpiderCatalog.resolved_config(name, _progress)
+	_config = _resolved_config(name)
 	_world.config = _config
 	_world.surface_bounce_ready = _config.surface_bounce_enabled
 	_reset_course_stream()
@@ -197,9 +211,10 @@ func select_tuning_parameter(direction: int) -> void:
 
 func adjust_selected_parameter(direction: float) -> void:
 	var parameter: StringName = TUNING_PARAMETERS[_selected_parameter_index]
-	_config.adjust(parameter, direction)
-	_after_tuning_change(parameter)
-	_publish_snapshot()
+	_apply_tuning_value(
+		parameter,
+		_tuning_value(parameter) + TuningCatalog.step_for(parameter) * direction,
+	)
 
 
 func select_tuning_category(index: int) -> void:
@@ -218,16 +233,38 @@ func adjust_tuning_parameter(
 	if parameter not in TUNING_PARAMETERS:
 		return
 	_selected_parameter_index = TUNING_PARAMETERS.find(parameter)
-	_config.adjust(parameter, direction)
-	_after_tuning_change(parameter)
-	_publish_snapshot()
+	_apply_tuning_value(
+		parameter,
+		_tuning_value(parameter) + TuningCatalog.step_for(parameter) * direction,
+	)
 
 
 func set_tuning_parameter(parameter: StringName, value: float) -> void:
 	if parameter not in TUNING_PARAMETERS:
 		return
 	_selected_parameter_index = TUNING_PARAMETERS.find(parameter)
-	_config.set_tuning_value(parameter, value)
+	_apply_tuning_value(parameter, value)
+
+
+func _apply_tuning_value(parameter: StringName, value: float) -> void:
+	var safe_value := TuningCatalog.clamp_value(parameter, value)
+	if parameter == TuningCatalog.DEBUG_START_DISTANCE:
+		_start_distance_pixels = safe_value
+		_debug_start_active = true
+		_run_mode = RUN_PRACTICE
+		_reset_run(true, false)
+		return
+	if parameter == TuningCatalog.DEBUG_UPGRADE_LEVEL:
+		_progression_service.set_debug_upgrade_overlay_level(roundi(safe_value))
+		_config = _resolved_config(_config.preset_name)
+		_world.config = _config
+		_world.surface_bounce_ready = _config.surface_bounce_enabled
+		# Once a mounted run has used an overlay it stays non-competitive even
+		# after OWNED levels are restored. A fresh Play from Home starts standard.
+		_run_mode = RUN_PRACTICE
+		_reset_run(true, false)
+		return
+	_config.set_tuning_value(parameter, safe_value)
 	_after_tuning_change(parameter)
 	_publish_snapshot()
 
@@ -301,7 +338,10 @@ func export_diagnostic() -> void:
 		"seed": _course_seed,
 		"run_mode": str(_run_mode),
 		"start_distance_pixels": _start_distance_pixels,
-		"records_eligible": _run_mode == RUN_STANDARD,
+		"debug_start_active": _debug_start_active,
+		"debug_upgrade_overlay_level":
+			_progression_service.debug_upgrade_overlay_level(),
+		"records_eligible": _records_eligible(),
 		"region": str(_last_region_id),
 		"preset": str(_config.preset_name),
 		"tick": _world.tick,
@@ -484,15 +524,7 @@ func _reset_run(
 	event_published.emit(SimulationEvent.make(
 		SimulationEvent.Kind.RUN_RESTARTED,
 		_world.position,
-		(
-			"%s practice · no records or rewards" % region["name"]
-			if _run_mode == RUN_PRACTICE
-			else (
-				"Opening web ready"
-				if guided
-				else "%s ready" % region["name"]
-			)
-		),
+		_run_start_message(region, guided),
 		{
 			"course_seed": _course_seed,
 			"run_mode": _run_mode,
@@ -573,13 +605,17 @@ func _make_snapshot() -> SimulationSnapshot:
 	snapshot.replaying = _replaying
 	snapshot.debug_category_index = _debug_category_index
 	for parameter: StringName in TUNING_PARAMETERS:
-		snapshot.tuning_values[parameter] = _config.value_for(parameter)
+		snapshot.tuning_values[parameter] = _tuning_value(parameter)
 	snapshot.selected_parameter = TUNING_PARAMETERS[_selected_parameter_index]
-	snapshot.selected_parameter_value = _config.value_for(snapshot.selected_parameter)
+	snapshot.selected_parameter_value = _tuning_value(
+		snapshot.selected_parameter)
 	snapshot.seed = _course_seed
 	snapshot.run_mode = _run_mode
 	snapshot.start_distance_pixels = _start_distance_pixels
-	snapshot.records_eligible = _run_mode == RUN_STANDARD
+	snapshot.debug_start_active = _debug_start_active
+	snapshot.debug_upgrade_overlay_level = \
+		_progression_service.debug_upgrade_overlay_level()
+	snapshot.records_eligible = _records_eligible()
 	var region := CourseRegionCatalog.region_for_distance(
 		_world.distance_pixels)
 	snapshot.region_id = StringName(region["id"])
@@ -629,7 +665,7 @@ func _emit_settlement(cause: StringName) -> void:
 		cause,
 		_run_mode,
 		_start_distance_pixels,
-		_run_mode == RUN_STANDARD,
+		_records_eligible(),
 		_course_seed,
 	))
 
@@ -669,7 +705,7 @@ func _update_region_progress() -> void:
 				"visual_profile": region["visual_profile"],
 			},
 		))
-	if _run_mode != RUN_STANDARD:
+	if not _records_eligible():
 		return
 	for checkpoint_id: StringName in \
 			CourseRegionCatalog.checkpoint_ids_reached(
@@ -685,6 +721,45 @@ func _update_region_progress() -> void:
 			"Checkpoint unlocked · %s" % checkpoint["name"],
 			{"region_id": checkpoint_id},
 		))
+
+
+func _resolved_config(preset_name: StringName) -> SwingConfig:
+	return SpiderCatalog.resolved_config(
+		preset_name,
+		_progression_service.resolved_progress(_progress),
+	)
+
+
+func _tuning_value(parameter: StringName) -> float:
+	if parameter == TuningCatalog.DEBUG_START_DISTANCE:
+		return _start_distance_pixels
+	if parameter == TuningCatalog.DEBUG_UPGRADE_LEVEL:
+		return float(_progression_service.debug_upgrade_overlay_level())
+	return _config.value_for(parameter)
+
+
+func _records_eligible() -> bool:
+	return _run_mode == RUN_STANDARD and not _debug_start_active and \
+		not _progression_service.debug_upgrade_overlay_enabled()
+
+
+func _run_start_message(region: Dictionary, guided: bool) -> String:
+	var overlay_level := _progression_service.debug_upgrade_overlay_level()
+	if _debug_start_active:
+		return (
+			"DEBUG START %.0f m · UPGRADES L%d · awards nothing" % [
+				_start_distance_pixels / 10.0,
+				overlay_level,
+			]
+			if overlay_level >= 0
+			else "DEBUG START %.0f m · awards nothing" % (
+				_start_distance_pixels / 10.0)
+		)
+	if overlay_level >= 0:
+		return "DEBUG UPGRADE OVERLAY L%d · awards nothing" % overlay_level
+	if _run_mode == RUN_PRACTICE:
+		return "%s practice · no records or rewards" % region["name"]
+	return "Opening web ready" if guided else "%s ready" % region["name"]
 
 
 func _next_course_seed() -> int:

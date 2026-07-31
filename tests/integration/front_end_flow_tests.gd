@@ -22,6 +22,9 @@ static func run() -> Dictionary:
 	passed += _test_field_guide_separates_biology_from_game(failures)
 	passed += _test_shop_exposes_seven_mobile_readable_tracks(failures)
 	passed += _test_shop_explains_breakthrough_bonuses(failures)
+	passed += _test_debug_upgrade_overlay_never_persists(failures)
+	passed += _test_debug_upgrade_overlay_restores_exact_saved_levels(failures)
+	passed += _test_garage_and_shop_disclose_debug_upgrade_levels(failures)
 	passed += _test_upgrades_and_creator_edits_use_progression_service(failures)
 	passed += _test_composition_root_mounts_front_end_first(failures)
 	return {"passed": passed, "failures": failures}
@@ -705,6 +708,176 @@ static func _test_shop_explains_breakthrough_bonuses(
 				"4 breakthroughs earned · 24 tuning steps total"):
 		failures.append(
 			"maxed Shop card does not summarize its four bonus steps")
+		view.free()
+		return 0
+	view.free()
+	return 1
+
+
+static func _test_debug_upgrade_overlay_never_persists(
+	failures: PackedStringArray,
+) -> int:
+	var progress := PlayerProgress.defaults()
+	progress.total_flies = 37
+	progress.spendable_flies = 19
+	progress.upgrade_levels = {
+		"classic_reel": 3,
+		"classic_flow": 7,
+		"skitter_size": 5,
+	}
+	var before := progress.to_dictionary()
+	var service := ProgressionService.new()
+	service.set_debug_upgrade_overlay_level(SpiderCatalog.MAX_UPGRADE_LEVEL)
+	var resolved := service.resolved_progress(progress)
+	for item: Dictionary in SpiderCatalog.upgrades_for(SpiderCatalog.CLASSIC):
+		if resolved.upgrade_level(StringName(item["id"])) != \
+				SpiderCatalog.MAX_UPGRADE_LEVEL:
+			failures.append("debug overlay did not resolve every selected track")
+			return 0
+	if resolved.upgrade_level(&"skitter_size") != 5 or \
+			progress.to_dictionary() != before:
+		failures.append("debug overlay mutated owned or unselected upgrade levels")
+		return 0
+
+	var session := SwingLabSession.new()
+	session.configure_progress(progress, service)
+	session.configure_run(SwingLabSession.RUN_STANDARD, 0.0, 811)
+	session._reset_run()
+	var snapshot := session.current_snapshot()
+	var settlements: Array[RunSettlement] = []
+	session.settlement_created.connect(func(value: RunSettlement) -> void:
+		settlements.append(value))
+	session._emit_settlement(&"debug-overlay-test")
+	if snapshot.run_mode != SwingLabSession.RUN_PRACTICE or \
+			snapshot.records_eligible or settlements.size() != 1 or \
+			settlements[0].rewards_eligible or \
+			settlements[0].records_eligible or \
+			settlements[0].leaderboards_eligible:
+		failures.append("upgrade overlay run remained competitive")
+		session.free()
+		return 0
+	session.free()
+
+	var settings_path := "user://debug_overlay_test_settings.json"
+	var progress_path := "user://debug_overlay_test_progress.json"
+	for path: String in [
+		settings_path,
+		"%s.tmp" % settings_path,
+		"%s.bak" % settings_path,
+		progress_path,
+		"%s.tmp" % progress_path,
+		"%s.bak" % progress_path,
+	]:
+		_remove_test_file(path)
+	var repository := SaveRepository.new(settings_path, progress_path)
+	if not repository.save_progress(progress):
+		failures.append("real progress could not save while debug overlay was active")
+		return 0
+	var persisted_file := FileAccess.open(progress_path, FileAccess.READ)
+	var persisted_text := (
+		persisted_file.get_as_text() if persisted_file != null else ""
+	)
+	if persisted_file != null:
+		persisted_file.close()
+	var restored := repository.load_progress()
+	for path: String in [
+		settings_path,
+		"%s.tmp" % settings_path,
+		"%s.bak" % settings_path,
+		progress_path,
+		"%s.tmp" % progress_path,
+		"%s.bak" % progress_path,
+	]:
+		_remove_test_file(path)
+	if persisted_text.contains("debug_upgrade") or \
+			restored.to_dictionary() != before or \
+			ProgressionService.new().debug_upgrade_overlay_enabled():
+		failures.append("debug upgrade overlay leaked into persisted progress")
+		return 0
+	return 1
+
+
+static func _test_debug_upgrade_overlay_restores_exact_saved_levels(
+	failures: PackedStringArray,
+) -> int:
+	var progress := PlayerProgress.defaults()
+	progress.selected_spider_id = SpiderCatalog.CLASSIC
+	progress.upgrade_levels = {
+		"classic_reel": 18,
+		"classic_burst": 1,
+		"classic_flow": 3,
+		"classic_rhythm": 14,
+		"skitter_size": 9,
+	}
+	var exact_saved := progress.to_dictionary()
+	var service := ProgressionService.new()
+	service.set_debug_upgrade_overlay_level(11)
+	var overlaid := service.resolved_progress(progress)
+	if overlaid.upgrade_level(&"classic_reel") != 11 or \
+			overlaid.upgrade_level(&"classic_flow") != 11 or \
+			overlaid.upgrade_level(&"skitter_size") != 9:
+		failures.append("selectable overlay did not resolve only the active spider")
+		return 0
+	service.clear_debug_upgrade_overlay()
+	var restored := service.resolved_progress(progress)
+	if service.debug_upgrade_overlay_enabled() or \
+			service.debug_upgrade_overlay_level() != \
+				ProgressionService.DEBUG_UPGRADE_OVERLAY_DISABLED or \
+			restored.to_dictionary() != exact_saved or \
+			progress.to_dictionary() != exact_saved:
+		failures.append("disabling overlay did not restore exact saved levels")
+		return 0
+	return 1
+
+
+static func _test_garage_and_shop_disclose_debug_upgrade_levels(
+	failures: PackedStringArray,
+) -> int:
+	var settings := PlayerSettings.defaults()
+	settings.show_debug_tools = true
+	var progress := PlayerProgress.defaults()
+	progress.spendable_flies = 100
+	progress.upgrade_levels["classic_reel"] = 4
+	var service := ProgressionService.new()
+	service.set_debug_upgrade_overlay_level(20)
+	var state := FrontEndState.new()
+	state.configure(settings, progress, service)
+	var purchase_requests: Array[StringName] = []
+	state.upgrade_purchase_requested.connect(func(upgrade_id: StringName) -> void:
+		purchase_requests.append(upgrade_id))
+	var view := FrontEndView.new()
+	view.bind_state(state)
+	state.show_garage()
+	if not view._garage_role.text.contains("DEBUG UPGRADE OVERLAY") or \
+			not view._garage_role.text.contains("NOT OWNED"):
+		failures.append("Garage does not disclose the unowned debug overlay")
+		view.free()
+		return 0
+	state.show_shop()
+	var rule := view.find_child(
+		"ShopProgressionRule",
+		true,
+		false,
+	) as Label
+	var upgrade := view.front_end_button(&"UpgradeClassicReel")
+	upgrade.pressed.emit()
+	if rule == null or not rule.text.contains("NOT OWNED") or \
+			not rule.text.contains("Saved levels are unchanged") or \
+			upgrade == null or not upgrade.disabled or \
+			not upgrade.text.contains("DEBUG OVERLAY LEVEL 20/20") or \
+			not purchase_requests.is_empty():
+		failures.append("Shop does not disclose or safely pause debug ownership")
+		view.free()
+		return 0
+
+	state.set_debug_tools(false)
+	state.request_upgrade_purchase(&"classic_reel")
+	if service.debug_upgrade_overlay_enabled() or \
+			state.displayed_upgrade_level(&"classic_reel") != 4 or \
+			upgrade.disabled or upgrade.text.contains("DEBUG OVERLAY") or \
+			purchase_requests != [&"classic_reel"]:
+		failures.append(
+			"turning DEBUG off did not restore owned UI and purchase routing")
 		view.free()
 		return 0
 	view.free()

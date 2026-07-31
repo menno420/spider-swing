@@ -27,9 +27,10 @@ failure never hides the rest.
 
 ## What exists now
 
-107 runtime contracts: ten bootstrap/build checks plus forty-nine deterministic
-physics, nine spider-biology, twenty-two mobile HUD, and seventeen front-end
-checks. The physics group proves continuous
+116 runtime contracts: eleven bootstrap/build checks plus fifty-one
+deterministic physics, eleven spider-biology, twenty-three mobile HUD, and twenty
+front-end checks. The bootstrap group pins the public stable debug signer and
+rejects per-run key generation. The physics group proves continuous
 solid targeting, larger aim forgiveness, momentum-preserving release,
 speed-neutral Reel and automatic take-up, the two-second base resource plus the
 owner-tested 400–450 px/s max Garden response band, non-compounding config
@@ -38,17 +39,19 @@ recovery-web interruption, detached cooldown double-tap fallback, explicit
 release/retarget behavior, a paced bounded organic course with lower rail routes,
 independent rail lethality, swept pickups, authoritative polygon collisions, a
 three-lane steering-envelope sweep through every rail-grown root passage, and
-seeded 5000 m region identities with bounded recovery cadence and safe
-non-record checkpoint starts, plus equivalent trajectories through
+seeded 5000 m region identities with bounded recovery cadence, safe non-record
+checkpoint starts, an arbitrary no-awards debug start, and exact seeded geometry
+equivalence between a late start and traversal from zero, plus equivalent trajectories through
 simulated 30/60/90/120 Hz render loops. The HUD group proves the 228×228 thumb
 targets, event consumption, shared geometry, gesture separation, success
 feedback, independent off-by-default collision/web-guide diagnostics, a
 sprite-only finished forest obstacle policy, mipmapped 384×181 transparent art
 for all five profiles with one shared presentation renderer, and one
 authoritative world intent for a touchscreen event plus Godot's emulated mouse
-copy. The front-end group includes actual filesystem
-round-trips for settings and progression, idempotent settlement application,
-checkpoint migration, and locked/unlocked non-competitive practice routes.
+copy. The front-end group includes actual filesystem round-trips for settings
+and progression, idempotent settlement application, checkpoint migration,
+locked/unlocked non-competitive practice routes, and a selectable session-only
+upgrade overlay that never serializes and restores exact owned levels.
 
 ## Writing tests
 

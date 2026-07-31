@@ -12,9 +12,12 @@ const CATEGORY_PULLS := &"pulls"
 const CATEGORY_COURSE := &"course"
 const CATEGORY_ROUTES := &"routes"
 const CATEGORY_RUN := &"run"
+const CATEGORY_ABILITIES := &"abilities"
 const CATEGORY_VISUALS := &"visuals"
 const CATEGORY_OVERLAYS := &"overlays"
 const CATEGORY_TOOLS := &"tools"
+const DEBUG_START_DISTANCE := &"debug_start_m"
+const DEBUG_UPGRADE_LEVEL := &"debug_upgrade_level"
 
 const CATEGORIES := [
 	{
@@ -50,7 +53,12 @@ const CATEGORIES := [
 	{
 		"id": CATEGORY_RUN,
 		"label": "RUN",
-		"help": "Opening assistance, one-run recovery, and temporary boosts.",
+		"help": "Opening help, recovery, exact-distance starts, and upgrade tests.",
+	},
+	{
+		"id": CATEGORY_ABILITIES,
+		"label": "SPECIAL",
+		"help": "Temporary Burst power and Buckler's one-charge rail recovery.",
 	},
 	{
 		"id": CATEGORY_VISUALS,
@@ -270,7 +278,7 @@ const PARAMETERS := [
 	},
 	{
 		"id": &"burst_charges",
-		"category": CATEGORY_PULLS,
+		"category": CATEGORY_ABILITIES,
 		"label": "Stored Bursts",
 		"help": "How many Anchor Bursts can be held ready; the cooldown refills one at a time.",
 		"format": &"number",
@@ -434,8 +442,30 @@ const PARAMETERS := [
 		"quick": [0.0, 1.0],
 	},
 	{
-		"id": &"boost_duration",
+		"id": DEBUG_START_DISTANCE,
 		"category": CATEGORY_RUN,
+		"label": "Start at exact distance",
+		"help": "Type meters and press Enter, or adjust; the debug run awards nothing.",
+		"format": &"meters",
+		"minimum": 0.0,
+		"maximum": 1000000.0,
+		"step": 1000.0,
+		"quick": [0.0, 50000.0, 100000.0, 250000.0],
+	},
+	{
+		"id": DEBUG_UPGRADE_LEVEL,
+		"category": CATEGORY_RUN,
+		"label": "Upgrade test level",
+		"help": "Resolves every selected-spider track without changing ownership.",
+		"format": &"debug_level",
+		"minimum": -1.0,
+		"maximum": 20.0,
+		"step": 1.0,
+		"quick": [-1.0, 0.0, 10.0, 20.0],
+	},
+	{
+		"id": &"boost_duration",
+		"category": CATEGORY_ABILITIES,
 		"label": "Burst Frenzy time",
 		"help": "How long a boost removes Anchor Burst cooldown.",
 		"format": &"seconds",
@@ -446,7 +476,7 @@ const PARAMETERS := [
 	},
 	{
 		"id": &"impact_shell",
-		"category": CATEGORY_RUN,
+		"category": CATEGORY_ABILITIES,
 		"label": "One-charge rail bounce",
 		"help": "Allows one moderate ceiling/floor hit; upper web contact rearms it.",
 		"format": &"toggle",
@@ -457,7 +487,7 @@ const PARAMETERS := [
 	},
 	{
 		"id": &"safe_impact_speed",
-		"category": CATEGORY_RUN,
+		"category": CATEGORY_ABILITIES,
 		"label": "Maximum safe impact",
 		"help": "Fastest inward rail hit the charged shell can survive.",
 		"format": &"speed",
@@ -468,7 +498,7 @@ const PARAMETERS := [
 	},
 	{
 		"id": &"bounce_strength",
-		"category": CATEGORY_RUN,
+		"category": CATEGORY_ABILITIES,
 		"label": "Rail bounce strength",
 		"help": "Share of inward impact speed returned away from the rail.",
 		"format": &"percent",

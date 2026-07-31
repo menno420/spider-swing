@@ -164,12 +164,28 @@ comparison values only.
 ## Debug tuning
 
 The touch-first debug panel is split into **Movement**, **Pacing**, **Rope**,
-**Pulls**, **Course**, **Routes**, **Run**, **Look**, **Overlays**, and **Tools**. Every tuning
-section shows
-at most six large setting cards.
+**Pulls**, **Course**, **Routes**, **Run**, **Special**, **Look**, **Overlays**,
+and **Tools**. Every tuning section shows at most six large setting cards.
 Each card uses a plain name, one-sentence description, direct comparison values,
 and 52-pixel `−` / `+` targets. Presets are named instead of numbered. This
 avoids searching through one long carousel during device playtests.
+
+**Run** owns two debug-only depth controls. `Start at exact distance` accepts a
+typed metre value (submit with the mobile keyboard's Enter/Done action), direct
+comparison values, or `−` / `+`; applying it restarts on the active course seed
+through `RUN_PRACTICE`. It therefore awards no flies, best distance, checkpoint,
+record, or future leaderboard eligibility. `Upgrade test level` selects 0–20 or
+`OWNED`. It resolves every track for the selected spider through a session-only
+`ProgressionService` overlay, never changes `PlayerProgress`, pauses Shop
+purchases while active, and marks the run noncompetitive. Garage, Shop, the run
+HUD, and restart feedback all disclose that the displayed level is not owned and
+the run awards nothing. Turning the overlay off restores the exact saved levels.
+Both controls and their native hit targets disappear when `show_debug_tools` is
+off.
+
+**Special** holds Burst reserve/Frenzy and Buckler's bounded rail-recovery
+controls. Moving those existing controls out of Run/Pulls keeps the complete
+1280×720 panel within its measured six-card grid; no tuning value changed.
 
 **Look** uses five larger preview cards rather than numeric tuning: Graybox,
 Ancient Forest, Mossy Ravine, Overgrown Greenhouse, and Reclaimed Attic. The
@@ -213,6 +229,9 @@ collision outlines and web-target guides.
 | `Inward rails begin` | first distance where a rail-only passage may narrow | 250 m / 1000–8000 m |
 | `Opening training web` | start on the ordinary guided ceiling web | off / on |
 | `One rescue per run` | recover the first lethal mistake | off / on |
+| `Start at exact distance` | restart a no-awards debug run at typed metres on the active seed | typed 0–100,000 m; 100 m `−` / `+` |
+| `Upgrade test level` | resolve selected-spider tracks without changing ownership | `OWNED` or 0–20 |
+| `Stored Bursts` | comparison capacity for serially refilled Anchor Burst charges | 1 / 1–3 |
 | `Burst Frenzy time` | Anchor Burst cooldown suppression | 0.5 / 1–10 s |
 | `One-charge rail bounce` | enable bounded moderate rail recovery | off / on |
 | `Maximum safe impact` | fastest charged rail impact that survives | 40 / 300–1100 px/s |
@@ -223,8 +242,8 @@ speed: it accelerates forward only toward that target, while the target itself
 increases with distance. It is not a free velocity multiplier.
 
 Diagnostics include active pull kind, separate Burst cooldown and Dive-ready
-state, retained stream chunks, record/replay, and JSON export. Runtime changes
-reset when the app restarts.
+state, retained stream chunks, debug start/overlay identity, record eligibility,
+record/replay, and JSON export. Runtime changes reset when the app restarts.
 
 These controls are also the measurement surface for possible future upgrades.
 The Garage and seven-track Shop prove that validated profile and fly-funded
@@ -277,11 +296,43 @@ product decisions.
   catalog without changing authoritative course geometry.
 - custom spider/web presentation interpolates fixed snapshots, snaps teleports,
   honors reduced motion, and uses mipmaps for heavily minified moving art.
+- an arbitrary debug start inherits practice settlement ownership and cannot
+  grant flies, records, checkpoints, or leaderboard eligibility;
+- geometry at an off-grid debug distance exactly equals the same seed streamed
+  sequentially from zero;
+- the selectable upgrade overlay never serializes, affects only the selected
+  spider, makes its run noncompetitive, and restores the exact saved level
+  dictionary when disabled;
+- a real Swing Lab view and native input surface instantiated in a 1280×720
+  headless `SubViewport` keep all category tabs, all six-card sections, the typed
+  distance field, and its 48-pixel target inside the panel; DEBUG-off hides every
+  depth control.
 
 ## Owner device playtest
 
-Install `0.13.0-anchorite-art-test` after uninstalling the previous
-ephemerally signed dev app, then check:
+Install `0.19.0-depth-testing`. Because all older APKs used unrelated throwaway
+signers, this install needs **one final uninstall** first. Do not uninstall the
+stable-key build afterward: every later debug artifact should install over it
+and preserve its save.
+
+Before the traversal checklist, prove the new depth-access gate:
+
+- change a visible setting, collect flies, buy at least one real upgrade, and
+  retain the app for the next build; after installing that later build without
+  uninstalling, verify the setting, balance, owned level, best distance, and
+  checkpoints are unchanged;
+- open DEBUG → RUN, tap the distance field, type an off-grid value such as
+  `12345.7`, press Enter/Done, and confirm the HUD says
+  `DEBUG START 12346 m … AWARDS NOTHING` (rounded only for HUD copy);
+- play and die from that start; flies, best distance, checkpoint access, and
+  owned upgrades must remain unchanged;
+- set `Upgrade test level` to `MAX`, compare the upgraded feel, return to Garage
+  and Shop, and verify both say the level is a debug overlay and `NOT OWNED`;
+- switch the level back to `OWNED` and confirm the exact prior Shop levels and
+  balance return. Turn Debug Tools off in Settings and confirm neither depth
+  control is reachable.
+
+Then check the traversal baseline:
 
 1. start a run without touching the screen for one second; the ordinary opening
    web should produce a safe useful first swing instead of a free fall;
@@ -304,8 +355,9 @@ ephemerally signed dev app, then check:
 10. use level-zero Garden, hold Reel continuously, and confirm its full ring
     lasts about two seconds, responds at 320 px/s, and changes height/arc
     without a separate forward shove;
-11. max Silk Winder and confirm the Garage/DEBUG value resolves to 416 px/s and
-    supplies enough deliberate high↔low correction near 5000 m;
+11. use DEBUG → RUN → `Upgrade test level` to compare owned Garden against max,
+    and confirm max Silk Winder resolves to 416 px/s and supplies enough
+    deliberate high↔low correction near 5000 m;
 12. compare several starting web lengths and confirm base Burst covers roughly
     40% while a close valid target still provides its visible minimum travel;
 13. use a lower rail target twice without attaching above between attempts; the
@@ -363,9 +415,10 @@ ephemerally signed dev app, then check:
     clipping either obstacle or showing a rectangular art cut;
 33. pass the small silk-suspended burr above and below; its visible bramble,
     collision outline, and safe support thread must agree.
-34. compare level-zero Garden against maxed Silk Winder + Silk Reserve. The
-    maxed version should offer clearly stronger and longer arc correction, but
-    neither version should feel mandatory for every ordinary route.
+34. toggle `Upgrade test level` between `OWNED` and `MAX` to compare the exact
+    same saved Garden. Max Silk Winder + Silk Reserve should offer clearly
+    stronger and longer arc correction, but neither version should feel
+    mandatory for every ordinary route; `OWNED` must restore the saved levels.
 35. switch repeatedly between Garden and Anchorite in the Garage and in play.
     Anchorite should read as a broad, low, heavy burrowing spider at gameplay
     size, retain clean alpha without a magenta fringe, rotate and pose smoothly,

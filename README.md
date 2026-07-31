@@ -16,11 +16,11 @@ The product *is* the swinging. Everything else exists to support it.
 > `com.menno420.spiderswing.dev` are all development identifiers and are all
 > expected to change.
 
-## Current phase: Phase 0.24 mobile route polish
+## Current phase: Phase 0.25 depth testing
 
 **The first playable traversal test is implemented.** The project opens on a
 player-facing Home screen with Play, Garage, Shop, a six-step Tutorial, Course
-Lab, and readable scrolling Settings. Play begins on a real ceiling web that
+Lab, Region Practice, Field Guide, and readable scrolling Settings. Play begins on a real ceiling web that
 provides a safe first swing before the player must react. The endless laboratory
 keeps forgiving solid-object attachment, momentum-preserving release, naturally
 retained rope shortening, interruptible percentage-based Anchor Burst and Dive
@@ -30,7 +30,7 @@ Burst boost.
 ### What exists
 
 - A responsive starting screen with Play, Garage, Shop, Tutorial, Course Lab,
-  and Settings. One forest-web skin supplies the bark/moss/silk palette,
+  Region Practice, Field Guide, and Settings. One forest-web skin supplies the bark/moss/silk palette,
   natural web backdrop, controls, panels, focus states, and silk-like
   scrollbars across every screen; settings persist the swing candidate,
   control hints, reduced motion, and debug-tool visibility.
@@ -130,8 +130,14 @@ Burst boost.
 - Buckler can survive one moderate free-flight rail hit, then must attach an
   upper web to recharge. Obstacles, high-speed impacts, pull collisions, and a
   second rail contact remain lethal.
+- DEBUG → RUN accepts an exact typed distance and restarts there through the
+  existing no-awards Region Practice path on the same deterministic seed. It
+  also selects a session-only upgrade level or `OWNED`; Garage and Shop mark
+  overlay levels `NOT OWNED`, purchases remain real, and disabling the overlay
+  restores the exact saved levels. Both controls disappear when Debug Tools is
+  off.
 - A presentation view with camera follow, 228-pixel thumb targets,
-  action flashes/haptics, pause/frame-step/slow-motion, and a ten-section,
+  action flashes/haptics, pause/frame-step/slow-motion, and an eleven-section,
   touch-first DEBUG panel with direct values for Burst/Dive percentages and
   durations, Burst cooldown, Reel shortening speed and full-meter hold time,
   natural take-up mode/percentage, rail presence/lethality, obstacle sizes,
@@ -141,7 +147,7 @@ Burst boost.
   catch, aim forgiveness, range, RELEASE/RETARGET behavior,
   deterministic input recording/replay, visual-theme comparison, independent
   opt-in overlays, and diagnostic export.
-- Forty-five deterministic physics tests (91 runtime contracts total),
+- Fifty-one deterministic physics tests (116 runtime contracts total),
   including interruptible recovery webs, double-tap fallback, explicit
   release/retarget modes, opening-runway pacing, lower anchor coverage, exact
   pull-distance shares, speed-neutral Reel/take-up shortening, rail policy,
@@ -162,8 +168,8 @@ Burst boost.
 
 No authored Phase 1 chunk pack, moving hazards, finalized currency/economy,
 missions, production monetization, or approved production art. Temporary
-spider-style modes, ability-bearing spider locks, a second stored Burst, and
-fixed-stat Challenge runs are deliberately deferred until the new progression
+spider-style modes, ability-bearing spider locks, and fixed-stat Challenge runs
+are deliberately deferred until the new progression
 foundation and the isolated Reel rebaseline are device-balanced. The generated environment tiles, fly-funded upgrades,
 temporary boost, one-run rescue, spider profiles, and local Course Lab are
 deliberately small architecture-proving slices—not approved balance or
@@ -231,13 +237,17 @@ Every push to `main` builds an installable debug APK.
 2. Click the most recent successful run.
 3. Download the **`spider-swing-android-debug`** artifact from the Artifacts
    section (kept 14 days).
-4. Uninstall the previous Spider Swing development app, unzip the artifact, and
-   install `spider-swing-debug.apk`. Current CI runs use a fresh throwaway
-   signing key, so Android cannot update a differently signed older build.
+4. For build `0.19.0-depth-testing`, uninstall an older Spider Swing development
+   app one final time, unzip the artifact, and install
+   `spider-swing-debug.apk`. Do not uninstall afterward: every later artifact
+   uses the same stable debug identity and should update in place while
+   preserving saves.
 
-Debug build, debug-signed with a throwaway per-run keystore. Not signed for
-release, not on Google Play, and it installs alongside any future production build
-because the package identifiers differ. See
+Debug build only, signed by the conventional public key committed under
+`.github/android/`. The key and its credentials are public and must **NEVER** be
+reused for Google Play, a release build, production signing, or any signed
+distribution. No release signing exists. The development app installs alongside
+any future production build because the package identifiers differ. See
 [ADR 0003](docs/technical/adr/0003-android-build-strategy.md).
 
 You can also trigger a build manually from the workflow page via **Run workflow**.

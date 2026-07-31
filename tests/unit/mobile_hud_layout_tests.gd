@@ -32,6 +32,7 @@ static func run() -> Dictionary:
 		failures,
 	)
 	passed += _test_debug_panel_expands_for_wide_phone(failures)
+	passed += _test_depth_debug_controls_fit_reference_viewport(failures)
 	passed += _test_debug_controls_can_be_disabled(failures)
 	passed += _test_world_input_waits_for_gui(failures)
 	return {"passed": passed, "failures": failures}
@@ -987,6 +988,108 @@ static func _test_debug_panel_expands_for_wide_phone(
 	return 1
 
 
+static func _test_depth_debug_controls_fit_reference_viewport(
+	failures: PackedStringArray,
+) -> int:
+	var viewport := SubViewport.new()
+	viewport.size = Vector2i(1280, 720)
+	var view := SwingLabView.new()
+	viewport.add_child(view)
+	var snapshot := SimulationSnapshot.new()
+	snapshot.tick = 1
+	snapshot.debug_visible = true
+	snapshot.debug_category_index = TuningCatalog.category_index(
+		TuningCatalog.CATEGORY_RUN,
+	)
+	snapshot.run_mode = SwingLabSession.RUN_PRACTICE
+	snapshot.start_distance_pixels = 123450.0
+	snapshot.debug_start_active = true
+	snapshot.debug_upgrade_overlay_level = 20
+	for parameter: StringName in TuningCatalog.parameter_ids():
+		snapshot.tuning_values[parameter] = 0.0
+	view.present(snapshot)
+	if view._run_access_status() != \
+			"DEBUG START 12345 m · UPGRADES L20 · AWARDS NOTHING":
+		failures.append("debug-start HUD does not plainly say it awards nothing")
+		viewport.free()
+		return 0
+
+	var size := Vector2(viewport.size)
+	var panel := LabLayout.debug_panel_rect(size)
+	for category_index in range(TuningCatalog.category_count()):
+		var category_rect := LabLayout.category_rect(category_index, size)
+		if not panel.encloses(category_rect) or category_rect.size.x < 48.0 or \
+				category_rect.size.y < 48.0:
+			failures.append("DEBUG category tabs overflow the 1280×720 viewport")
+			viewport.free()
+			return 0
+		var category := TuningCatalog.category(category_index)
+		var parameters := TuningCatalog.parameters_for_category(
+			StringName(category["id"]),
+		)
+		if parameters.size() > 6:
+			failures.append("DEBUG category exceeds the measured six-card grid")
+			viewport.free()
+			return 0
+		for card_index in range(parameters.size()):
+			if not panel.encloses(
+				LabLayout.parameter_card_rect(card_index, size),
+			):
+				failures.append("DEBUG card overflows the 1280×720 viewport")
+				viewport.free()
+				return 0
+	var router := InputRouter.new()
+	router.install_touch_surface(size)
+	var debug_start := router.hud_button(&"debug_start_mPlus")
+	var max_upgrades := router.hud_button(&"debug_upgrade_levelQuick3")
+	var exact_entry := router.hud_control(&"DebugStartDistanceEntry") as LineEdit
+	if debug_start == null or max_upgrades == null or exact_entry == null:
+		failures.append("RUN depth controls are not backed by direct touch controls")
+		router.free()
+		viewport.free()
+		return 0
+	var exact_requests: Array[Dictionary] = []
+	router.tuning_value_requested.connect(func(
+		parameter: StringName,
+		value: float,
+	) -> void:
+		if parameter == TuningCatalog.DEBUG_START_DISTANCE:
+			exact_requests.append({"parameter": parameter, "value": value}))
+	router.hud_button(&"Debug").pressed.emit()
+	router.hud_button(StringName(
+		"Category%d" % TuningCatalog.category_index(
+			TuningCatalog.CATEGORY_RUN,
+		),
+	)).pressed.emit()
+	if not debug_start.visible or not max_upgrades.visible or \
+			not exact_entry.visible or \
+			not panel.encloses(_resolved_rect(exact_entry, size)) or \
+			_resolved_rect(exact_entry, size).size.y < 48.0:
+		failures.append("RUN depth controls are not visible inside DEBUG")
+		router.free()
+		viewport.free()
+		return 0
+	exact_entry.text_submitted.emit("12345,7")
+	if exact_requests != [{
+		"parameter": TuningCatalog.DEBUG_START_DISTANCE,
+		"value": 123457.0,
+	}]:
+		failures.append("exact-distance entry did not emit arbitrary typed meters")
+		router.free()
+		viewport.free()
+		return 0
+	router.configure_debug_controls(false)
+	if debug_start.visible or max_upgrades.visible or exact_entry.visible or \
+			router.hud_button(&"Debug").visible:
+		failures.append("RUN depth controls remain reachable when DEBUG is off")
+		router.free()
+		viewport.free()
+		return 0
+	router.free()
+	viewport.free()
+	return 1
+
+
 static func _test_debug_controls_can_be_disabled(
 	failures: PackedStringArray,
 ) -> int:
@@ -1022,15 +1125,15 @@ static func _test_world_input_waits_for_gui(
 	return 1
 
 
-static func _resolved_rect(button: Button, viewport_size: Vector2) -> Rect2:
-	var anchor := Vector2(button.anchor_left, button.anchor_top)
+static func _resolved_rect(control: Control, viewport_size: Vector2) -> Rect2:
+	var anchor := Vector2(control.anchor_left, control.anchor_top)
 	return Rect2(
 		anchor * viewport_size + Vector2(
-			button.offset_left,
-			button.offset_top,
+			control.offset_left,
+			control.offset_top,
 		),
 		Vector2(
-			button.offset_right - button.offset_left,
-			button.offset_bottom - button.offset_top,
+			control.offset_right - control.offset_left,
+			control.offset_bottom - control.offset_top,
 		),
 	)
