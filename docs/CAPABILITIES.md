@@ -111,6 +111,37 @@ Format: `- YYYY-MM-DD · capability|wall · <venue> · finding · evidence · wo
 `any`; older five-field lines without a venue token stay valid — read them
 as venue `any`.)
 
+- 2026-07-31 · capability · `owner-live` · **`api.github.com` direct HTTP is NOT
+  blocked — the seeded wall is false as written.** The seed says "blocked →
+  GitHub access is MCP-tools-only". Only the *proxied* path is blocked. ·
+  evidence, measured this session: proxied
+  `curl -H "Authorization: Bearer $GITHUB_PAT" https://api.github.com/repos/menno420/spider-swing`
+  → **403**; the same call with **`--noproxy '*'`** → **200** with full JSON
+  (`full_name: menno420/spider-swing`). Used successfully during a real GitHub
+  MCP outage today to read PR state and check-run conclusions. · workaround:
+  **`curl --noproxy '*'`** (or `requests` with `trust_env=False` and
+  `verify=/root/.ccr/ca-bundle.crt`). This matches fleet-manager's boot file,
+  which already records the proxied 403 as "a path quirk — not a wall"; this
+  ledger had drifted out of sync with it. Consequence of the stale wording: a
+  session losing the MCP server would conclude it has no GitHub access at all,
+  when it has full access one flag away.
+- 2026-07-31 · capability · `owner-live` · **Media-is-readable re-verified, with
+  one missing step**: the seeded recipe assumes `ffmpeg` is already present. In
+  this container it was not, and `apt-get install -y ffmpeg` **failed with 404s**
+  on stale package indexes (`Failed to fetch .../i965-va-driver_...deb 404`). A
+  session following the recipe verbatim could read that as a wall. · evidence:
+  `apt-get update -qq && apt-get install -y --no-install-recommends ffmpeg` then
+  succeeded; `ffmpeg -version` → `6.1.1-3ubuntu5`. · workaround: **always
+  `apt-get update` first**, then install, then use the documented
+  `ffprobe`/`fps=` recipe. Refreshes the 2026-07-10 entry, which was 21 days
+  stale. **Read this file before probing a format or credential question, not
+  after**: this session rediscovered frame extraction from scratch when both this
+  ledger and fleet-manager's already documented it, and the owner had to point
+  that out — he reports having explained the same ability to Claude sessions
+  repeatedly, which is the exact cost this file exists to remove. The
+  `[capability-entry-stale]` advisories from `bootstrap.py check --strict` are a
+  prompt to re-verify the entry you are about to rely on, not noise to skip.
+
 (Hand-filled by sessions, per the discovery rule. Seed rows above are
 kit-owned — they refresh at upgrade between the fence markers; local
 findings go here, below the fence.)
