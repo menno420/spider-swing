@@ -419,3 +419,133 @@
   phone scale, and gives every roster asset one testable composition rule.
 - provenance: Menno's direct anatomy review and approval of the corrected
   Skitter sprite, followed by the Garden correction and five-roster art session
+
+## [D-0028] Rename Springtail to Buckler and make invented spiders first-class
+
+- status: decided
+- date: 2026-07-31
+- verdict: The guarded-recovery profile is renamed **Buckler** — a small round
+  shield made to absorb one blow. Its biological record stays `fictional` and
+  now discloses that the animal itself is invented; its correction explains that
+  low mass and air resistance, not armour, are why small animals survive falls.
+  The persisted profile id stays `springtail` because it keys saved profile
+  selection and the springtail_shell / springtail_bounce upgrade levels; no
+  player sees it and renaming it would cost a save migration for nothing. The
+  folio gains a "designing fictional spiders" section stating that invented
+  spiders belong in this game, with four rules: fiction is never the exciting
+  tier, it never borrows a real animal's name, it still says what it borrowed,
+  and it carries a correction for the misconception it creates.
+- why: The owner's product is fun first and educational second, and the previous
+  session's folio read as though only real species were welcome — a tone the
+  owner corrected directly. Fiction is not what costs an educational game its
+  credibility; undisclosed fiction is, and a wholly invented spider is safer
+  than a half-accurate real one because no real animal can be misremembered.
+  Springtail was the single case where fiction genuinely misinformed: it
+  borrowed the name of Collembola, six-legged hexapods that are not arachnids,
+  and made a disclaimer do work an invented name does for free. Buckler names no
+  animal, matches the compact round amber carapace and the one-hit Impact
+  Carapace mechanic, and sits in the same archaic register as Anchorite.
+  D-0026 established the biology layer; this entry sets its policy on
+  invented content and applies that policy to the one profile that
+  needed it.
+- provenance: Menno's 2026-07-31 direction that the game should be fun and
+  educational without excluding fictional spiders, plus the rename request
+
+## [D-0029] Re-verify research claims before they reach shipped biology data
+
+- status: decided
+- date: 2026-07-31
+- verdict: A research document is an input, not a source. When a supplied report
+  cites claims by keys that resolve to nothing, its claims are independently
+  re-verified — against the World Spider Catalog, a peer-reviewed paper, or a
+  museum or health authority — before any of them enter
+  `SpiderBiologyCatalog`, and each check is logged with its verdict in a dated
+  verification record under `docs/product/`. Claims that were not checked are
+  recorded as unchecked and are not adopted.
+- why: The second deep-research report (2026-07-31) carries 84 bracketed
+  citation keys and no register defining them; the first report's working
+  source list did not survive the rewrite. Its content is largely good — it
+  independently reproduced all five approved mappings — but "largely good"
+  is not a citation, and the folio already promises that every shipped source
+  resolves. Re-verification cost one session and produced a better Buckler
+  mapping plus two taxonomy corrections that would otherwise have shipped
+  wrong. Logging the negative results matters as much as the positive ones: an
+  unchecked claim that looks checked is the failure this entry prevents.
+- provenance: Menno's 2026-07-31 request to verify the second report's claims
+  as far as possible and document what is valuable
+
+## [D-0030] Prioritise real spiders, and ship generated or unencumbered art
+
+- status: decided
+- date: 2026-07-31
+- verdict: Real spiders come first. If a spider is real and has a usable name,
+  the profile uses the real name. Claim strengths are considered in order —
+  `species`, then `composite` for a deliberate blend, then `behaviour` where no
+  species can own the trait, and `fictional` only where nothing real fits. A
+  fictional mechanic does not by itself justify a fictional name: Garden Spider
+  carries real naming with an entirely invented grappling system. Shipped art is
+  generated in-house, public-domain/CC0 verified per file, or owner-produced;
+  anything requiring attribution, share-alike, or per-use permission is avoided
+  rather than negotiated. Reference images consulted while drawing are still
+  recorded in the manifest. Agents verify important claims against trustworthy
+  sources — WSC, peer-reviewed work, museums, health authorities — and that
+  verification is sufficient; no separate human approval gate is required before
+  a claim ships.
+- why: The owner's product is a real-spider game that invents only where reality
+  has no candidate. The previous framing (D-0028) made invented spiders
+  first-class without ranking them against real ones, which read as licence to
+  invent whenever it was convenient; this entry restores the order without
+  losing the disclosure machinery that makes invention safe. The art rule keeps
+  the pipeline free of licence bookkeeping nobody is staffed to maintain, and
+  matches how all five current sprites were actually produced. Naming
+  verification authority as "agents, against trustworthy sources" closes the
+  content-authority question the research report raised, at the level of
+  ceremony the project can sustain.
+- provenance: Menno's 2026-07-31 direction on real-name priority, field-guide
+  value, source verification, and image licensing
+
+## [D-0031] Use the real name where one exists; otherwise name the science
+
+- status: decided
+- date: 2026-07-31
+- verdict: A profile uses a real spider's name whenever that spider is real and
+  has a name a player can read and say. Where no usable real name exists, invent
+  a good one — and the Field Guide then owes the player the science instead:
+  `drawn_from` lists every real spider the profile borrows from, with the
+  accepted name, its authority where verified, its family, and **what that
+  animal actually contributes**. One invented spider may deliberately combine
+  several real ones, each supplying a different part. A contract fails the build
+  if an invented name ships without that list or if an entry omits its
+  contribution. Applied: Skitter becomes **Magnolia Green Jumper** because
+  *Lyssomanes viridis* has a usable common name; Buckler keeps its invented name
+  because *Cyclocosmia* has no settled English common name and the profile
+  blends *Ummidia*'s body and trapdoor with *Cyclocosmia*'s hardened disc.
+- why: D-0030 set real-first as the priority but left the remedy for the
+  invented cases unstated, which is where the educational value actually lives.
+  Naming the contributing species — and which part each one gave — turns an
+  invented profile from a gap in the teaching into a route into it: a player who
+  likes Buckler can be shown two real spiders instead of none. Making
+  `drawn_from` a list rather than a single reference is what lets a combined
+  identity stay honest, because no single animal has to be stretched to cover a
+  blend.
+- provenance: Menno's 2026-07-31 direction on inventing names only where needed,
+  explaining the scientific names in the field guide, and combining several real
+  spiders into one
+
+## [D-0032] Give the Field Guide its own Home route
+
+- status: decided
+- date: 2026-07-31
+- verdict: The Field Guide is a first-class Home route, not only a Garage
+  detail. It remains reachable from the Garage beside the spider it describes,
+  and records which screen opened it so BACK returns there rather than always
+  landing in the Garage. Home's intro paragraph gives up height to make room:
+  eight routes leave 62 px of headroom on the card, measured at the 1280×720
+  reference rather than assumed.
+- why: An educational surface nobody finds teaches nobody, and the Garage is a
+  detour a player only takes when changing spider. The owner asked for
+  discoverability directly. Tracking the origin costs one integer and removes
+  the only real objection to a second entry point — a back button that lies
+  about where it goes.
+- provenance: Menno's 2026-07-31 direction to make the Field Guide a separate
+  Home button for discoverability

@@ -264,7 +264,7 @@ product decisions.
 - one authoritative rescue followed by normal death on the next lethal contact;
 - five catalogued spider profiles, five shared core plus two identity upgrade
   paths each, 20-level bounds, deterministic breakthroughs, level-zero
-  preservation, a real bounded glide state, and Springtail's one-charge
+  preservation, a real bounded glide state, and Buckler's one-charge
   moderate rail bounce using the same central configuration;
 - independently safe/lethal course rails, swept pickups that do not respawn,
   idempotent persistent progression, and milestone cosmetic unlocks;
@@ -332,9 +332,9 @@ ephemerally signed dev app, then check:
     begin off, can be enabled independently, and return off in a new run;
 22. deliberately hit a lethal obstacle once and verify `RESCUE READY` becomes
     `RESCUE SPENT`; the next lethal hit must end the run;
-23. compare all five Garage profiles, especially Skitter's smaller collision
+23. compare all five Garage profiles, especially the Magnolia Green Jumper's smaller collision
     radius, Anchorite's weight, Ballooner's visible bounded glide, and
-    Springtail's charged moderate rail bounce;
+    Buckler's charged moderate rail bounce;
 24. on maxed Balanced Flow, confirm the description says automatic take-up
     keeps less slack and shortens the web; then spend laboratory flies through
     levels 4→5 on one Shop track, confirm the button says `BREAKTHROUGH ×2`,
@@ -346,9 +346,9 @@ ephemerally signed dev app, then check:
     and confirm it does not bypass the upper-web requirement for another Dive.
 27. compare full-speed distances around 3000/5000/6500 m and confirm the default
     no longer feels near maximum during the opening kilometre;
-28. spend Springtail's shell on a moderate rail hit, confirm a second hit kills,
+28. spend Buckler's shell on a moderate rail hit, confirm a second hit kills,
     then attach an upper web and verify the shell becomes ready again;
-29. verify Springtail still dies to obstacles, an excessive rail impact, or
+29. verify Buckler still dies to obstacles, an excessive rail impact, or
     contact caused by a Burst/Dive pull.
 30. compare the spider at steady speed, during Reel, and during Burst on the
     1040×480 device recording path; confirm it no longer vibrates or leaves the

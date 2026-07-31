@@ -85,7 +85,7 @@ const TUTORIAL_STEPS := [
 			+ "The solid ceiling and floor are lethal by default, but reshape "
 			+ "around most obstacles to create high, low, and occasional tight "
 			+ "routes. A lethal mistake can spend your one visible RESCUE. "
-			+ "Springtail also has one moderate rail bounce that an upper web "
+			+ "Buckler also has one moderate rail bounce that an upper web "
 			+ "recharges. A hard impact or obstacle still ends the run. Tap after "
 			+ "death to restart, or use MENU.",
 		"tip": "Follow the changing corridor and save recovery mechanics for real mistakes.",
@@ -93,6 +93,7 @@ const TUTORIAL_STEPS := [
 ]
 
 var screen: int = Screen.HOME
+var field_guide_return_screen: int = Screen.HOME
 var tutorial_index: int = 0
 var settings: PlayerSettings = PlayerSettings.defaults()
 var progress: PlayerProgress = PlayerProgress.defaults()
@@ -139,8 +140,19 @@ func show_shop() -> void:
 	changed.emit()
 
 
-func show_field_guide() -> void:
+## The Field Guide is reachable from Home (discoverability) and from the Garage
+## (next to the spider it describes), so it remembers which one to go back to
+## rather than guessing.
+func show_field_guide(return_to: int = Screen.HOME) -> void:
+	field_guide_return_screen = (
+		return_to if return_to in [Screen.HOME, Screen.GARAGE] else Screen.HOME
+	)
 	screen = Screen.FIELD_GUIDE
+	changed.emit()
+
+
+func leave_field_guide() -> void:
+	screen = field_guide_return_screen
 	changed.emit()
 
 

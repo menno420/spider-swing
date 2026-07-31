@@ -19,7 +19,9 @@ const CLASSIC_SPIDER := &"classic_spider"
 const SKITTER_SPIDER := &"skitter_spider"
 const ANCHORITE_SPIDER := &"anchorite_spider"
 const BALLOONER_SPIDER := &"ballooner_spider"
-const SPRINGTAIL_SPIDER := &"springtail_spider"
+# Asset key and filename keep the "springtail" spelling: the manifest binds
+# filename to SHA256, and no player sees either. The profile is Buckler.
+const BUCKLER_SPIDER := &"springtail_spider"
 const GOLDEN_FLY := &"golden_fly"
 
 const ASSETS := {
@@ -47,7 +49,7 @@ const ASSETS := {
 		"res://assets/runtime/characters/anchorite-burrowing-spider.png",
 	BALLOONER_SPIDER:
 		"res://assets/runtime/characters/ballooner-spider.png",
-	SPRINGTAIL_SPIDER:
+	BUCKLER_SPIDER:
 		"res://assets/runtime/characters/springtail-trapdoor-spider.png",
 	GOLDEN_FLY:
 		"res://assets/runtime/collectibles/golden-forest-fly.png",
@@ -58,7 +60,7 @@ const SPIDER_ASSET_IDS := {
 	SpiderCatalog.SKITTER: SKITTER_SPIDER,
 	SpiderCatalog.ANCHORITE: ANCHORITE_SPIDER,
 	SpiderCatalog.BALLOONER: BALLOONER_SPIDER,
-	SpiderCatalog.SPRINGTAIL: SPRINGTAIL_SPIDER,
+	SpiderCatalog.BUCKLER: BUCKLER_SPIDER,
 }
 
 

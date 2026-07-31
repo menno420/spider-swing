@@ -9,9 +9,13 @@ const CLASSIC := &"classic"
 const SKITTER := &"skitter"
 const ANCHORITE := &"anchorite"
 const BALLOONER := &"ballooner"
-const SPRINGTAIL := &"springtail"
+# The persisted id stays "springtail" on purpose: it keys saved profile
+# selection and the springtail_shell / springtail_bounce upgrade levels. The
+# player-facing name became Buckler in D-0027; renaming the storage key would
+# buy nothing a player can see and would cost a save migration.
+const BUCKLER := &"springtail"
 const ALL_IDS: Array[StringName] = [
-	CLASSIC, SKITTER, ANCHORITE, BALLOONER, SPRINGTAIL,
+	CLASSIC, SKITTER, ANCHORITE, BALLOONER, BUCKLER,
 ]
 const MAX_UPGRADE_LEVEL := 20
 const LEGACY_LEVEL_MULTIPLIER := 4
@@ -42,7 +46,7 @@ const PROFILES := [
 	},
 	{
 		"id": SKITTER,
-		"name": "Skitter",
+		"name": "Magnolia Green Jumper",
 		"role": "SMALL · AGILE",
 		"description": "A compact spider that changes pace quickly and fits tighter gaps.",
 		"tradeoff": "Shorter, softer Bursts demand more deliberate anchor timing.",
@@ -89,9 +93,9 @@ const PROFILES := [
 		"surface_bounce_enabled": false,
 	},
 	{
-		"id": SPRINGTAIL,
-		"name": "Springtail",
-		"role": "SPRING · RECOVERY",
+		"id": BUCKLER,
+		"name": "Buckler",
+		"role": "GUARDED · RECOVERY",
 		"description": "A guarded spider that can rebound from one moderate rail hit.",
 		"tradeoff": "A wider body and weaker drive demand planning; obstacles and hard hits still kill.",
 		"radius_scale": 1.08,
@@ -230,7 +234,7 @@ const UNIQUE_TRACKS := {
 				"Maximum web reach gains 0.625% per tuning step.",
 		},
 	],
-	SPRINGTAIL: [
+	BUCKLER: [
 		{
 			"suffix": &"shell",
 			"kind": IMPACT_SHELL,

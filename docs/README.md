@@ -20,6 +20,9 @@
 | --- | --- |
 | [`game-design/Spider-Swing-GDD-v2.0.md`](game-design/Spider-Swing-GDD-v2.0.md) | **The product and gameplay source of truth.** Vendored byte-exact and checksum-pinned — see [`game-design/README.md`](game-design/README.md). |
 | [`product/name-status.md`](product/name-status.md) | Why "Spider Swing" is a codename, and what naming/trademark/store review remains. |
+| [`product/spider-biology-folio.md`](product/spider-biology-folio.md) | **Spider identity source of truth.** The naming rule (real name first, otherwise name the science), the approved mapping per profile, editorial voice, art and image-sourcing rules, and the parked candidate backlog. |
+| [`product/spider-biology-verification-2026-07-31.md`](product/spider-biology-verification-2026-07-31.md) | Dated verification log for the second deep-research report — what was re-checked, against what, and what was deliberately not adopted. |
+| [`owner-questions.md`](owner-questions.md) | Open owner-only forks, each with the default the work proceeds under, plus the answered ones. |
 
 ## Technical
 

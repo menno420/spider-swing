@@ -1,6 +1,6 @@
 # Spider biology folio — approved mappings for the current five
 
-> **Status:** `binding` for identity claims · `ideas` for §5 candidates
+> **Status:** `binding` for identity claims · `ideas` for §6 candidates
 >
 > The authoritative record of what each playable profile is inspired by, what
 > the real animal does, and what this game invents. `game/domain/spider_biology_catalog.gd`
@@ -34,9 +34,40 @@ build if one goes missing.
   this level may state an accepted binomial.
 - `composite` — several relatives blended; no species-level claim.
 - `behaviour` — a behaviour recorded across many families, not a taxon.
-- `fictional` — invented name; real biology may still guide the art.
+- `fictional` — an invented animal. **The last resort, not the default** (§3):
+  used only when no real spider fits. Real biology may still guide the art, the
+  disclosure must say the spider itself is invented, and `drawn_from` must name
+  every real spider it borrows from and what each contributes.
 
 ## 2. Approved mappings
+
+### The naming rule, and the five audited against it (2026-07-31)
+
+**A real spider with a usable name always wins.** Where no usable real name
+exists, invent a good one — and then the Field Guide owes the player the
+science: every real spider the profile borrows from, named, **and what each one
+contributes**. One invented spider may combine several real ones; that is the
+point, not a compromise.
+
+| Profile | Name origin | Resolution |
+|---|---|---|
+| **Garden Spider** | real | "Garden spider" is a real common name for Araneidae |
+| **Magnolia Green Jumper** | real | Renamed from "Skitter" — *Lyssomanes viridis* has a usable common name, so the invented one had no justification |
+| **Anchorite** | invented | No single species; a deliberate blend of two theraphosids, each named with its contribution |
+| **Ballooner** | invented | Ballooning is shared across families, so no species can own it; *Erigone atra* named as the documented example |
+| **Buckler** | invented | *Cyclocosmia* has no settled English common name a player would recognise, and the profile is a blend of two genera |
+
+`drawn_from` is therefore a **list**, and each entry carries a `contributes`
+string. Buckler is the clearest case:
+
+- *Ummidia* Thorell, 1875 — the compact glossy body and hinged trapdoor
+- *Cyclocosmia* Ausserer, 1871 — the hardened abdominal disc
+
+Neither animal alone is Buckler. Both are real, both are named, and the guide
+says which part came from where. A contract
+(`_test_invented_names_name_the_science_they_borrow`) fails the build if an
+invented name ships without that list, or if any entry omits what it
+contributes.
 
 ### Garden Spider — `composite`
 
@@ -55,7 +86,7 @@ build if one goes missing.
   capture web at all.
 - **Sources:** WSC v27; NHM London, *Spider webs*.
 
-### Skitter — `species`
+### Magnolia Green Jumper — `species`
 
 - **Inspired by:** magnolia green jumper, *Lyssomanes viridis* (Walckenaer, 1837),
   family Salticidae.
@@ -68,6 +99,8 @@ build if one goes missing.
 - **Correction carried:** *Lyssomanes* is long-legged and slender for a jumping
   spider. **This contradicts the pre-existing sprite brief** and is the reason
   `docs/ideas/spider-sprite-briefs.md` was corrected before production.
+- **Naming history:** called **Skitter** until 2026-07-31. A usable real common
+  name existed, so under the naming rule the invented one had no justification.
 - **Sources:** WSC v27.
 
 ### Anchorite — `composite`
@@ -98,30 +131,115 @@ build if one goes missing.
   or steered flight.
 - **Correction carried:** ballooning is shared across families, not one
   species' ability.
-- **Sources:** Morley & Robert 2018, *Current Biology*; Cho et al. 2021.
+- **Documented example:** *Erigone atra* (Linyphiidae), one of the most-recorded
+  ballooning spiders in Europe. Named as an example only — the record stays
+  `behaviour` and claims no species.
+- **Sources:** Morley & Robert 2018, *Current Biology*; Cho et al. 2021;
+  Weyman 1994 (*Erigone* ballooning).
 - **Note:** ballooning is overwhelmingly a behaviour of small spiders and
   spiderlings. The adult silver showpiece in the art brief is a readability
   choice; it must never be captioned as "the ballooning spider."
 
-### Springtail — `fictional`
+### Buckler — `fictional`
 
-- **Inspired by:** cork-lid trapdoor spiders, *Ummidia* Thorell, 1875, family
-  Halonoproctidae. The **name is invented** and stays that way until the owner
-  decides otherwise.
+- **Inspired by:** cork-lid trapdoor spiders, *Ummidia*, and their relative
+  *Cyclocosmia* Ausserer, 1871 — both Halonoproctidae. **Buckler is an invented
+  spider** — a buckler is a small round shield made to absorb one blow, which is
+  exactly the profile's identity.
+- **Armour reference:** *Cyclocosmia*'s abdomen ends in a hardened, ribbed disc
+  that the spider uses to plug its own burrow (phragmosis). It is the strongest
+  real armour story available to this profile, and it also sharpens the
+  disclosure: the disc is a **door, not a shield** — it seals a burrow behind
+  the animal rather than protecting it from an impact. Verified 2026-07-31; see
+  `spider-biology-verification-2026-07-31.md`.
 - **Real trait:** compact mygalomorphs with a hard glossy carapace that build a
   silk-lined burrow closed by a hinged door and ambush from behind it.
-- **Game adaptation:** surviving and rebounding from one rail impact is
-  invented. A hardened carapace resists drying out and predators at the burrow
-  door; it is not impact armour.
-- **Correction carried:** real springtails (Collembola) are six-legged
-  hexapods, not arachnids, and jump with a tail-like furca.
-- **Sources:** WSC v27.
-- **Open owner decision:** keep the name plus this disclosure (current, and the
-  cheapest honest option), or rename the profile later. Both are one-line
-  changes; the profile id `springtail` is internal and stays either way so no
-  saved progression is touched.
+- **Game adaptation:** the animal is invented and so is the rebound. A hardened
+  carapace resists drying out and predators at the burrow door; it is not impact
+  armour.
+- **Correction carried:** armour is not why small animals survive falls — low
+  mass and high air resistance are. This corrects the exact misconception the
+  mechanic would otherwise plant.
+- **Sources:** WSC v27; Godwin & Bond 2018 (Halonoproctidae); AMNH
+  *Novitates* 2580 (*Cyclocosmia* revision).
+- **Naming history:** this profile was called **Springtail** until 2026-07-31.
+  That name belongs to Collembola — six-legged hexapods, not arachnids — and a
+  disclaimer was doing work an invented name does for free. See D-0028. The
+  persisted id stays `springtail` because it keys saved progression; no player
+  ever sees it.
 
-## 3. Editorial voice
+## 3. Real first — and how to invent for the gaps
+
+**Owner directive, 2026-07-31 (D-0030): prioritise real spiders wherever
+possible.** If a spider is real and has a usable name, use the real name. Invent
+only where no actual spider fits, or where the honest answer is a deliberate
+combination of species.
+
+That gives a priority order, checked in this sequence before any profile name is
+chosen:
+
+| Order | Claim strength | Use when |
+|---:|---|---|
+| 1 | `species` | One real spider fits the identity **and** has a name a player can read and say. Use that name. |
+| 2 | `composite` | Several relatives fit and no single one is diagnostic — a deliberate blend. Name it honestly as a blend; claim no binomial. |
+| 3 | `behaviour` | The identity is a behaviour many spiders share, so no species can own it. |
+| 4 | `fictional` | **Only when nothing real fits.** The mechanic has no animal behind it at all, or every candidate name is unusable. |
+
+A fictional *mechanic* does not force a fictional *name*. Garden Spider carries
+real-spider naming and an entirely invented grappling system, and that is fine —
+the disclosure does the work. Reach for `fictional` when there is no real animal
+to point at, not merely because the ability is invented.
+
+### Inventing well, when you have to
+
+Invention is not a failure state and undisclosed invention is the only real
+problem: a wholly invented spider is *safer* than a half-accurate real one,
+because there is no real animal a player can walk away misremembering. But it is
+the fourth option, not the first.
+
+### The four rules
+
+1. **Fiction must not be the exciting tier.** If real spiders are the starters
+   and invented ones are the rewards, the game quietly teaches that reality is
+   the boring part. It is not. Real spiders cast nets held in their front legs,
+   spit glue in a zigzag, cartwheel down dunes to escape, and build underwater
+   air bells they breathe from. Most of that is stranger than what anyone would
+   invent. Invented profiles sit *alongside* that, never above it.
+2. **Never borrow a real animal's name.** This is the only way fiction actually
+   misinforms, and it is what the Springtail rename fixed. An invented mechanic
+   on an invented name is free. An invented mechanic on a real animal's name
+   makes a disclaimer carry weight it should not have to. The same applies to
+   invented Latin binomials and real-sounding common-name patterns — a
+   `-back`, `-weaver`, or `-jumper` suffix reads as a documented species.
+   Check any candidate name against the World Spider Catalog before it ships.
+3. **An invented spider still says what it borrowed.** "Invented for this game
+   — the glossy shell is drawn from cork-lid trapdoor spiders; the bounce is
+   not something any spider does" is a better card than either pure fantasy or
+   a dry fact. The `inspired_by` field works exactly the same for a fictional
+   profile as for a real one.
+4. **Give it an honest correction too.** A fictional profile is the *best* place
+   for a myth correction, because the invention creates a specific
+   misconception and the entry can answer it directly. Buckler invents impact
+   armour, so its correction explains what actually lets small animals survive
+   falls.
+
+### The pattern worth chasing
+
+Use fiction as the **on-ramp**, not the destination. An invented spider built
+around one exaggerated real trait becomes a doorway to the animal that inspired
+it — a player who enjoys a fictional net-caster is a player who will read the
+*Deinopis* entry. That is fiction serving the education instead of competing
+with it, and it scales: every parked candidate in §6 could arrive first as an
+invented profile and later as a field-guide entry about the real thing.
+
+### What is still rejected
+
+Not fiction — only dishonesty. A fictional profile may not claim an accepted
+name, may not cite sources for invented behaviour, and may not present a
+medically significant real species as a power fantasy. And no profile, invented
+or real, may require a second motor.
+
+## 4. Editorial voice
 
 - Write "can", "has been observed", "in this species", "in these experiments".
   Avoid "designed to", "knows", "decides", and universal claims.
@@ -136,7 +254,7 @@ build if one goes missing.
   correct amount.
 - Younger readers get shorter text, not less accurate text.
 
-## 4. Art and reference rules
+## 5. Art and reference rules
 
 The production contract in `docs/ideas/spider-sprite-briefs.md` stands. This
 folio adds the identity rules that outlive any single brief:
@@ -151,12 +269,28 @@ folio adds the identity rules that outlive any single brief:
 - Choose one sex explicitly when dimorphism changes the silhouette.
 - **Never combine diagnostic markings from several species and then label the
   result as one species.** That is exactly what `composite` exists to prevent.
-- Every reference image needs a manifest entry: URL, creator, licence, access
-  date, permitted transformations, attribution text. Wikimedia licences are
-  per-file. Museum imagery is not automatically reusable. Figures in open-access
-  papers can still be separately copyrighted.
+### Image sourcing — owner directive, 2026-07-31 (D-0030)
 
-## 5. Parked candidates — ideas, not scope
+Shipped art is **generated, or unencumbered**. In order of preference:
+
+1. **Generated** in-house from a written brief — the route that produced all
+   five current sprites.
+2. **Public domain / CC0**, verified per file, not per site.
+3. Owner-produced photography.
+
+Anything needing attribution, a share-alike term, or a per-use permission is
+avoided rather than negotiated. That keeps the art pipeline free of licence
+bookkeeping the project has no one to maintain.
+
+**Reference images consulted while drawing are still recorded** in
+`assets/runtime/characters/REFERENCE-MANIFEST.md` — source, permitted
+transformations, and whether anything is embedded. Looking at a photograph to
+get anatomy right is fine; shipping pixels derived from it is what the manifest
+exists to rule out. Wikimedia licences are per-file, museum imagery is not
+automatically reusable, and figures in open-access papers can still be
+separately copyrighted — which is exactly why generated art is the default.
+
+## 6. Parked candidates — ideas, not scope
 
 Phase 0's owner-judged feel gate (issue #2) is open. Nothing below is planned,
 promised or estimated; this section exists so the research is not lost and so a
@@ -170,14 +304,15 @@ motor is rejected outright.**
 | Flattie, *Selenops* spp. | Directed aerial descent — real righting and steering during a fall | Weaker Reel/Burst, wider laterigrade body | Nothing but the gate; fits the existing detached-state modifier |
 | Fishing spider, *Dolomedes triton* | Water-surface travel and launch; airflow sensing | No benefit on dry routes | A water biome existing at all |
 | Diving-bell spider, *Argyroneta aquatica* | Underwater endurance via air-bell pockets | Buoyancy, drag, dependence on air structures | A water biome; better biome-locked than a starter |
-| Trapdoor guardian, *Ummidia* composite | One deliberate guarded setup window | Slow correction, large body | Overlaps Springtail — use as its mapping, not a second profile |
+| Trapdoor guardian, *Ummidia* composite | One deliberate guarded setup window | Slow correction, large body | Overlaps Buckler — use as its mapping, not a second profile |
 
 ### Temporary modes or pickups, never permanent powers
 
-Net cast (*Deinopis*); stored web-tension release (*Hyptiotes*); bolas
-precision lure (*Mastophora*); spitting entanglement (*Scytodes*); ballooning
-updraft as an environment trigger rather than a species power; vibration route
-preview (*Portia*). Each would be a short window with setup cost — none may
+Net cast (*Deinopis* / *Asianopis* — see the taxonomy note below); stored
+web-tension release (*Hyptiotes*, and *Theridiosoma gemmosum*, whose web snaps
+from a tensioned cone back to a flat disc); bolas precision lure (*Mastophora*);
+spitting entanglement (*Scytodes*); ballooning updraft as an environment trigger
+rather than a species power; vibration route preview (*Portia*). Each would be a short window with setup cost — none may
 become a ranged attack, because that changes the control grammar from traversal
 to combat.
 
@@ -190,6 +325,34 @@ ant-mimicking jumpers; pelican spiders; cave *Trogloraptor*; peacock spiders;
 *Bagheera kiplingi*; uloborids and cribellate silk. These add diversity without
 roster inflation, which is the point.
 
+### Taxonomy corrections carried forward
+
+Two names used in the first research report are superseded. A future session
+must not reuse them:
+
+- **Six-eyed sand spiders.** The southern African species moved from *Sicarius*
+  to ***Hexophthalma*** when that genus was revalidated in 2017 — *H. hahni*,
+  *H. damarensis*. *Sicarius* remains valid for the South American species.
+- **Net-casting spiders.** Asian and Australasian species moved from *Deinopis*
+  to ***Asianopis*** (Lin, Shao, Hänggi, Caleb, Koh, Jäger & Li 2020, *ZooKeys*
+  890) — so the Australian net-caster is ***Asianopis subrufa***, not *Deinopis
+  subrufa*. *Deinopis* is retained for other species, including the American
+  *D. spinosa*.
+
+Both verified 2026-07-31; see `spider-biology-verification-2026-07-31.md`.
+
+### Verified additions to the backlog
+
+Re-verified independently because the second research report's own citations do
+not resolve. Each is an idea, not scope:
+
+| Candidate | What is actually documented | Fit |
+|---|---|---|
+| *Toxeus magnus* | An ant-mimicking jumping spider whose mothers feed young a nutritive secretion, with care continuing past sub-adulthood (Chen et al. 2018, *Science*) | Field guide — a genuine myth-breaker about what spiders do |
+| *Theridiosoma gemmosum* | Tensions its orb into a cone and releases it at flying prey, detected by airborne vibration | Temporary pickup alongside *Hyptiotes*; a second, distinct tension mechanism |
+| *Thwaitesia argentiopunctata* | Reflective guanine platelet arrays give a mirrored abdomen. The patches reportedly change size; treat that as reported, not established | Cosmetic — the strongest visual in the whole atlas |
+| *Adelocosa anops* | Eyeless cave wolf spider, Kōloa basin, Kauaʻi; US-listed endangered since 2000; hunts by touch and builds no capture web | Cave biome inhabitant and a conservation entry |
+
 ### Rejected
 
 A 50–70 profile roster. Species picked for a "deadly" reputation. Permanent
@@ -198,7 +361,7 @@ silhouettes. Wheel/flic-flac spiders as ordinary traversal. Colony and maternal
 behaviour reduced to a solo stat buff. Taxonomy copied into game data without
 review provenance.
 
-## 6. Maintenance
+## 7. Maintenance
 
 - `SpiderBiologyCatalog.REVIEWED_ON` and `NAME_AUTHORITY` travel with the data.
   When the World Spider Catalog moves a genus, correct the record and bump the

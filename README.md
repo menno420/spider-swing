@@ -127,7 +127,7 @@ Burst boost.
   Burst cooldown for a tunable duration. One idempotent run settlement persists
   fly totals and distance milestones; the first two alternate graybox spider
   palettes unlock at 25 flies and 1000 m.
-- Springtail can survive one moderate free-flight rail hit, then must attach an
+- Buckler can survive one moderate free-flight rail hit, then must attach an
   upper web to recharge. Obstacles, high-speed impacts, pull collisions, and a
   second rail contact remain lethal.
 - A presentation view with camera follow, 228-pixel thumb targets,

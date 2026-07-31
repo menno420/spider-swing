@@ -13,7 +13,7 @@ extends SceneTree
 ##   --runs=20            runs per configuration
 ##   --skill=intermediate novice | intermediate | expert | all
 ##   --spider=classic     classic | skitter | anchorite | ballooner |
-##                        springtail | all
+##                        buckler | all
 ##   --preset=balanced_candidate  named SwingConfig preset
 ##   --upgrades=0         0..20, applied to EVERY track of the selected spider
 ##   --seed=1             base seed for the bot-imperfection RNG

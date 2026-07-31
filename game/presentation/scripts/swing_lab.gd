@@ -885,7 +885,7 @@ func _draw_spider() -> void:
 			body = body.lightened(0.12)
 		SpiderCatalog.BALLOONER:
 			accent = accent.lerp(CYAN, 0.34)
-		SpiderCatalog.SPRINGTAIL:
+		SpiderCatalog.BUCKLER:
 			body = body.lerp(Color("435b67"), 0.42)
 			accent = accent.lerp(GREEN, 0.45)
 	var finished_sprite := _draw_finished_spider_sprite(

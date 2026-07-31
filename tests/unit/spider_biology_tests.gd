@@ -26,9 +26,11 @@ static func run() -> Dictionary:
 	passed += _test_every_record_classifies_its_claim(failures)
 	passed += _test_every_record_discloses_the_game_invention(failures)
 	passed += _test_only_species_records_claim_an_accepted_name(failures)
-	passed += _test_springtail_corrects_the_non_spider_name(failures)
+	passed += _test_fictional_profiles_name_themselves_as_invented(failures)
 	passed += _test_ballooner_is_behaviour_and_denies_flight(failures)
 	passed += _test_sources_resolve_to_citable_entries(failures)
+	passed += _test_no_source_is_registered_but_uncited(failures)
+	passed += _test_invented_names_name_the_science_they_borrow(failures)
 	passed += _test_biology_carries_no_tuning_values(failures)
 	passed += _test_garage_summary_shows_the_classification(failures)
 	return {"passed": passed, "failures": failures}
@@ -111,16 +113,32 @@ static func _test_only_species_records_claim_an_accepted_name(
 	return 1
 
 
-static func _test_springtail_corrects_the_non_spider_name(
+static func _test_fictional_profiles_name_themselves_as_invented(
 	failures: PackedStringArray,
 ) -> int:
-	var item := SpiderBiologyCatalog.record(SpiderCatalog.SPRINGTAIL)
-	if StringName(item["inspiration"]) != SpiderBiologyCatalog.FICTIONAL:
-		failures.append("Springtail is not labelled a fictional name")
-		return 0
-	var correction := str(item["correction"]).to_lower()
-	if not correction.contains("collembola") or not correction.contains("not"):
-		failures.append("Springtail does not correct the non-spider name")
+	# Invented spiders are welcome (D-0027). What is not welcome is an invented
+	# spider a player could mistake for a documented one, so the disclosure has
+	# to say the animal itself is invented — not merely that a stat is tuned.
+	var fictional := 0
+	for spider_id: StringName in SpiderCatalog.ALL_IDS:
+		var item := SpiderBiologyCatalog.record(spider_id)
+		if StringName(item["inspiration"]) != SpiderBiologyCatalog.FICTIONAL:
+			continue
+		fictional += 1
+		var disclosure := str(item["game_adaptation"]).to_lower()
+		if not disclosure.contains("invented spider"):
+			failures.append(
+				"%s is fictional but does not say the spider is invented" %
+					spider_id)
+			return 0
+		var display_name := str(SpiderCatalog.profile(spider_id)["name"])
+		if not disclosure.contains(display_name.to_lower()):
+			failures.append(
+				"%s does not disclaim its own name" % spider_id)
+			return 0
+	if fictional != 1:
+		failures.append("expected exactly one fictional profile, found %d" %
+			fictional)
 		return 0
 	return 1
 
@@ -161,6 +179,70 @@ static func _test_sources_resolve_to_citable_entries(
 					return 0
 			if not str(source["url"]).begins_with("https://"):
 				failures.append("%s cites a non-resolvable url" % spider_id)
+				return 0
+	return 1
+
+
+## The second research report (2026-07-31) shipped 84 citation keys and no
+## register defining them, which is what makes a citation decorative. Guard both
+## directions: a cited id must resolve, and a registered source must be cited by
+## something — an orphan entry is a source nobody checked.
+static func _test_no_source_is_registered_but_uncited(
+	failures: PackedStringArray,
+) -> int:
+	var cited := {}
+	for spider_id: StringName in SpiderCatalog.ALL_IDS:
+		for source_id: StringName in SpiderBiologyCatalog.record(
+			spider_id)["sources"]:
+			cited[source_id] = true
+	for source_id: StringName in SpiderBiologyCatalog.SOURCES:
+		if not cited.has(source_id):
+			failures.append("source %s is registered but nothing cites it" %
+				source_id)
+			return 0
+	return 1
+
+
+## D-0031: a real spider with a usable name always wins. Where a name had to be
+## invented, the player is owed the science instead — every real spider the
+## profile borrows from, named, and what each one actually contributes. One
+## invented spider may combine several real ones; that is the point of a list.
+static func _test_invented_names_name_the_science_they_borrow(
+	failures: PackedStringArray,
+) -> int:
+	for spider_id: StringName in SpiderCatalog.ALL_IDS:
+		var item := SpiderBiologyCatalog.record(spider_id)
+		var origin := StringName(item["name_origin"])
+		if origin not in SpiderBiologyCatalog.NAME_ORIGINS:
+			failures.append("%s has unknown name origin %s" % [spider_id, origin])
+			return 0
+		var borrowed: Array = item["drawn_from"]
+		if borrowed.is_empty():
+			failures.append("%s names no real spider at all" % spider_id)
+			return 0
+		for entry: Dictionary in borrowed:
+			for key: String in ["name", "family", "contributes"]:
+				if str(entry.get(key, "")).is_empty():
+					failures.append("%s borrows from an entry missing %s" % [
+						spider_id, key])
+					return 0
+		if origin == SpiderBiologyCatalog.NAME_INVENTED:
+			if not SpiderBiologyCatalog.has_invented_name(spider_id):
+				failures.append("%s invented-name lookup disagrees with its record"
+					% spider_id)
+				return 0
+			var line := SpiderBiologyCatalog.drawn_from_line(spider_id)
+			for entry: Dictionary in borrowed:
+				if not line.contains(str(entry["name"])):
+					failures.append("%s omits %s from its borrowed list" % [
+						spider_id, entry["name"]])
+					return 0
+		# A species-level record names exactly the one animal it claims to be.
+		if StringName(item["inspiration"]) == SpiderBiologyCatalog.SPECIES:
+			if borrowed.size() != 1 or \
+					str(borrowed[0]["name"]) != str(item["accepted_name"]):
+				failures.append("%s claims a species but borrows elsewhere" %
+					spider_id)
 				return 0
 	return 1
 

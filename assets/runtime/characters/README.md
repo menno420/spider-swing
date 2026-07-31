@@ -20,6 +20,6 @@ authoritative collision radius. All are imported with mipmaps because the
 Presentation interpolates fixed-step positions and applies only restrained
 action-state pose scaling; Garage and Shop consume the same catalog through a
 reusable aspect-preserving preview; DEBUG still shows the exact collision
-circle. Skitter, Ballooner, and Springtail no longer take the procedural
+circle. Skitter, Ballooner, and Buckler no longer take the procedural
 fallback during normal play; that fallback remains fail-safe behavior for a
 missing texture.

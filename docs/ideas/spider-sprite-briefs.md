@@ -1,4 +1,4 @@
-# Production sprite briefs — Skitter, Ballooner, Springtail
+# Production sprite briefs — Skitter, Ballooner, Buckler
 
 > **Status:** `plan`
 >
@@ -72,11 +72,11 @@ never be captioned as "the ballooning spider", and no binomial goes near it.
 - Reads as: light, floaty, delicate. Distinct axis: silver + slender +
   long-legged.
 
-## Springtail — amber trapdoor spider (glossy armour)
+## Buckler — amber trapdoor spider (glossy armour)
 
-"Springtail" is the game name, not a species (real springtails are
-Collembola — six-legged hexapods, not arachnids; do not draw one). The
-gameplay identity is the one-bounce **Impact Carapace**, so pick the
+"Buckler" is an invented spider, not a species — the profile was renamed
+from Springtail precisely so the art no longer has to carry a disclaimer
+(reasoning and claim strength live in the biology folio). The gameplay identity is the one-bounce **Impact Carapace**, so pick the
 armoured spider: a cork-lid trapdoor spider (*Ummidia*). Draw armour that
 reads as **sclerotized cuticle**, not as beetle plates or a visible spring —
 the bounce is fiction and the art must not argue for it.

@@ -20,7 +20,7 @@ Internal generated references are project assets rather than third-party works:
 |---|---|---|---|
 | `classic-garden-spider.png` before the anatomy edit (SHA-256 `bfe1e6cf…`) | OpenAI built-in image workflow under Menno's direction; generated output governed by the applicable OpenAI service terms | Project use, editing, chroma extraction, downscaling | None embedded |
 | `anchorite-burrowing-spider.png` (SHA-256 `9f1de779…`) | OpenAI built-in image workflow under Menno's direction; generated output governed by the applicable OpenAI service terms | Project use, editing, style reference, downscaling | None embedded |
-| Owner-approved Skitter, Ballooner, and Springtail candidates | OpenAI built-in image workflow under Menno's direction; generated output governed by the applicable OpenAI service terms | Project use, anatomy correction, chroma extraction, downscaling | None embedded |
+| Owner-approved Skitter, Ballooner, and Buckler candidates | OpenAI built-in image workflow under Menno's direction; generated output governed by the applicable OpenAI service terms | Project use, anatomy correction, chroma extraction, downscaling | None embedded |
 
 Real-world identity and taxonomy were checked against the cited factual sources
 in `docs/product/spider-biology-folio.md`. Those sources informed
