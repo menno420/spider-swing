@@ -61,7 +61,10 @@ Burst boost.
   1000-pixel shared
   web range, a 220-pixel aim-forgiveness band, manual release, Reel-In
   drain/regeneration/lockout, and multi-touch input that keeps UI touches out of
-  the web path. Every solid edge is a valid target.
+  the web path. Rails, walls and ceiling-grown hazards are valid web targets;
+  floor-grown hazards are lethal but do not answer taps, so a release tap aimed
+  at the usual spot cannot be captured as a Dive Pull. Diving to the floor
+  itself is unchanged.
 - One approved baseline preset, `balanced_baseline` (owner-approved 2026-07-31),
   plus two untuned forks kept for future work: `weighty_candidate` and
   `agile_candidate`. Only balanced has been played and tuned, so the two

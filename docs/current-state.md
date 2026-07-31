@@ -199,6 +199,19 @@ without a reported regression.
 
 ## In flight
 
+**Web anchors are now surface-typed (2026-07-31, owner).** Rails, walls and
+ceiling-grown hazards answer web taps; floor-grown hazards are lethal but not
+tappable. Owner evidence: every accidental Dive Pull came from an obstacle, not
+from the floor, because release taps and web taps are aimed at the same area
+while only dives use a different aiming point — so a hazard rising from the
+floor just below the spider converted releases into dives. Collision is
+untouched and diving to the floor is unchanged, so the Dive stays always
+available, which is its whole purpose. This also moves the implementation
+toward GDD §7.1 ("webs attach only to surfaces or anchor volumes marked as
+web-compatible") rather than away from it. Floating silk-suspended burrs are
+treated as ceiling-hung and stay tappable — the one case the owner's rule does
+not name; one flag flips it.
+
 **Baseline preset approved (2026-07-31, owner).** `balanced_baseline` is the
 approved physics baseline, satisfying one of issue #2's six exit-gate criteria.
 Record it precisely: it was not chosen over the other two, it is the only one

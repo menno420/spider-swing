@@ -821,11 +821,10 @@ func _append_leaf_cluster(
 		Vector2(center_x + 76.0, edge_y + direction * 42.0),
 		Vector2(center_x + 105.0, edge_y),
 	])
-	result.obstacles.append(_scaled_polygon(
-		polygon,
-		Vector2(center_x, edge_y),
-		scale,
-	))
+	result.append_obstacle(
+		_scaled_polygon(polygon, Vector2(center_x, edge_y), scale),
+		hanging,
+	)
 
 
 func _append_vine_fork(
@@ -835,7 +834,7 @@ func _append_vine_fork(
 	width: float,
 	height: float,
 ) -> void:
-	result.obstacles.append(PackedVector2Array([
+	result.append_obstacle(PackedVector2Array([
 		Vector2(center_x - width * 0.48, floor_y),
 		Vector2(center_x - width * 0.36, floor_y - height * 0.34),
 		Vector2(center_x - width * 0.50, floor_y - height * 0.58),
@@ -845,7 +844,7 @@ func _append_vine_fork(
 		Vector2(center_x + width * 0.46, floor_y - height * 0.73),
 		Vector2(center_x + width * 0.28, floor_y - height * 0.37),
 		Vector2(center_x + width * 0.48, floor_y),
-	]))
+	]), false)
 
 
 func _append_root_stump(
@@ -857,14 +856,14 @@ func _append_root_stump(
 	height: float,
 ) -> void:
 	var direction := 1.0 if hanging else -1.0
-	result.obstacles.append(PackedVector2Array([
+	result.append_obstacle(PackedVector2Array([
 		Vector2(center_x - width * 0.50, edge_y),
 		Vector2(center_x - width * 0.42, edge_y + direction * height * 0.28),
 		Vector2(center_x - width * 0.10, edge_y + direction * height),
 		Vector2(center_x + width * 0.12, edge_y + direction * height * 0.74),
 		Vector2(center_x + width * 0.43, edge_y + direction * height * 0.34),
 		Vector2(center_x + width * 0.50, edge_y),
-	]))
+	]), hanging)
 
 
 func _append_hanging_seed_pod(
@@ -874,7 +873,7 @@ func _append_hanging_seed_pod(
 	width: float,
 	height: float,
 ) -> void:
-	result.obstacles.append(PackedVector2Array([
+	result.append_obstacle(PackedVector2Array([
 		Vector2(center_x - width * 0.48, ceiling_y),
 		Vector2(center_x + width * 0.42, ceiling_y),
 		Vector2(center_x + width * 0.34, ceiling_y + height * 0.46),
@@ -882,7 +881,7 @@ func _append_hanging_seed_pod(
 		Vector2(center_x, ceiling_y + height),
 		Vector2(center_x - width * 0.20, ceiling_y + height * 0.82),
 		Vector2(center_x - width * 0.40, ceiling_y + height * 0.43),
-	]))
+	]), true)
 
 
 func _append_floating_seed_burr(
@@ -907,7 +906,7 @@ func _append_floating_seed_burr(
 		center + Vector2(0.0, half_height),
 		center + Vector2(-half_width * 0.70, half_height * 0.62),
 	])
-	result.obstacles.append(_scaled_polygon(polygon, center, scale))
+	result.append_obstacle(_scaled_polygon(polygon, center, scale), true)
 
 
 func _append_split_root_gate(
@@ -930,18 +929,18 @@ func _append_split_root_gate(
 	# These are not detached precision obstacles. Each root overlaps its lethal
 	# rail and tapers toward one broad opening. The single opening value controls
 	# the visible throat, collision edge, and verified steering envelope.
-	result.obstacles.append(PackedVector2Array([
+	result.append_obstacle(PackedVector2Array([
 		Vector2(root_left, ceiling_y - 4.0),
 		Vector2(root_right, ceiling_y - 4.0),
 		Vector2(throat_right, opening_top),
 		Vector2(throat_left, opening_top),
-	]))
-	result.obstacles.append(PackedVector2Array([
+	]), true)
+	result.append_obstacle(PackedVector2Array([
 		Vector2(throat_left, opening_bottom),
 		Vector2(throat_right, opening_bottom),
 		Vector2(root_right, floor_y + 4.0),
 		Vector2(root_left, floor_y + 4.0),
-	]))
+	]), false)
 
 
 func _scaled_polygon(
