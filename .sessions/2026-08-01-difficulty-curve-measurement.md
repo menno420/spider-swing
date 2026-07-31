@@ -82,6 +82,27 @@ was run as a throwaway script against `pattern_for_chunk`, not committed.
 No new contract was added — `simulate.gd` asserts nothing by design and sits
 outside the verify gate — so `EXPECTED_CHECK_COUNT` is untouched at 123.
 
+## Friction — guard recipe for the next slice in this chain
+
+**A local `bootstrap.py check --strict` exit 0 does not prove the session card
+will pass CI.** This card first carried an off-taxonomy `📊 Model:` task-class
+(`measurement — …`). Locally the kit reported it as a *model-line-class
+advisory* and exited 0 — with the default invocation and with CI's
+`--session-log <card>` form, and still exit 0 when the bad token was restored
+to confirm. CI turned the same card red, because the added-card gate escalates
+it: *"card … is newly ADDED by this PR (born-red heartbeat) — added-card gate:
+in-progress HOLDs until the card flips complete; grammar misses red."*
+
+The escalation is not locally reproducible, so the guard is procedural: the
+task-class segment must **prefix-match** one of the nine PL-004 classes
+(`docs-only | mechanical refactor | test writing | runtime bugfix |
+kernel/architecture design | review/verify | research | idea/planning |
+feature build`); trailing detail after the class is fine (`research — …`).
+Every remaining slice in this chain adds a card, so every one of them can hit
+this. Check the token by eye before pushing rather than trusting a green local
+gate. Anchors: `session-card-grammar` / `model-line-class` guards in
+`src/engine/guards.py`, taxonomy taught in `.sessions/README.md`.
+
 ## Verification
 
 `python3 tools/verify.py --require-godot` → **exit 0**, 123 contracts on pinned
@@ -117,7 +138,7 @@ load-bearing: 2.4% / 18.9% / 20.8% of chunks by zone, with no physics
 involvement at all. Slice 3's difficulty modes should reach for it first rather
 than inventing a new lever.
 
-- **📊 Model:** opus-5 · high · measurement — difficulty curve baseline
+- **📊 Model:** opus-5 · high · research — difficulty curve baseline
 
 ## Next slice
 
