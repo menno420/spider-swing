@@ -76,3 +76,6 @@ every future session and every future brief needs. A short section in
 
 Nothing queued for this session. The overnight session begins at slice 1,
 difficulty curve measurement.
+
+- **📊 Model:** opus-5 · high · idea/planning — brief re-scoped to the systems
+  and progression lane
