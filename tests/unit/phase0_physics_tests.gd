@@ -43,6 +43,7 @@ static func run() -> Dictionary:
 	passed += _test_obstacle_scales_change_authoritative_polygons(failures)
 	passed += _test_guided_opening_swings_safely_without_input_lock(failures)
 	passed += _test_one_rescue_is_consumed_before_death(failures)
+	passed += _test_dying_window_is_not_eaten_by_an_in_flight_tap(failures)
 	passed += _test_spider_profiles_and_glide_share_one_config(failures)
 	passed += _test_creator_pattern_drives_deterministic_chunks(failures)
 	passed += _test_course_stream_places_lower_anchor_windows(failures)
@@ -2097,6 +2098,47 @@ static func _test_one_rescue_is_consumed_before_death(
 	session._step_once()
 	if session._run.state != RunStateMachine.State.DYING:
 		failures.append("second lethal mistake did not continue into normal death")
+		session.free()
+		return 0
+	session.free()
+	return 1
+
+
+static func _test_dying_window_is_not_eaten_by_an_in_flight_tap(
+	failures: PackedStringArray,
+) -> int:
+	var session := SwingLabSession.new()
+	session._reset_run()
+	# Reach DYING the ordinary way: spend the one rescue, then die again.
+	session._world.web.release()
+	session._world.position.y = session._config.lower_world_boundary + 5.0
+	session._step_once()
+	session._world.rescue_shield_remaining = 0.0
+	session._world.position.y = session._config.lower_world_boundary + 5.0
+	session._step_once()
+	if session._run.state != RunStateMachine.State.DYING:
+		failures.append("could not reach DYING to exercise the confirmation window")
+		session.free()
+		return 0
+	# A tap already in flight when the run ended must not restart it — the
+	# window is the only chance the player has to see the cause.
+	session.request_web_tap(Vector2(400.0, 200.0))
+	if session._run.state != RunStateMachine.State.DYING:
+		failures.append("a tap during DYING restarted the run and ate the death confirmation")
+		session.free()
+		return 0
+	# The window must still expire on its own clock.
+	var steps := int(ceil(session._config.death_confirmation_seconds / FIXED_DELTA)) + 2
+	for _index in range(steps):
+		session._step_once()
+	if session._run.state != RunStateMachine.State.DEAD:
+		failures.append("the dying window did not expire into DEAD on its own")
+		session.free()
+		return 0
+	# And once DEAD, the advertised "tap anywhere to restart" must work.
+	session.request_web_tap(Vector2(400.0, 200.0))
+	if session._run.state != RunStateMachine.State.ACTIVE:
+		failures.append("a tap after death did not restart the run")
 		session.free()
 		return 0
 	session.free()

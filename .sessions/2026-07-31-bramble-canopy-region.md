@@ -83,7 +83,8 @@ visual proof.
   contract remains intact; no preset value changed.
 - `python3 tools/verify.py --require-godot` with exact
   `4.7.1.stable.official.a13da4feb`: architecture self-tests/live scan, import,
-  front-end boot, and **120/120 contracts** all pass.
+  front-end boot, and **121/121 contracts** all pass after integrating PR #63's
+  death-window protection and aimed-Burst ordering.
 - New proofs require deterministic Bramble variety across seeds, a blocked
   neutral centre, a clear Classic-sized high↔low guide, six loadable distinct
   assets, world-position foreground selection, ordinary-entry crossfade,

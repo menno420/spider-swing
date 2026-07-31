@@ -113,6 +113,16 @@ func _physics_process(_delta: float) -> void:
 
 
 func request_web_tap(world_target: Vector2) -> void:
+	if _run.state == RunStateMachine.State.DYING:
+		# The dying window exists so the player can read what killed them
+		# (`death_confirmation_seconds`, 0.45 s). At full pace the player taps
+		# continuously, so a tap already in flight when the run ends would
+		# otherwise consume the entire window and start the next run before the
+		# cause is legible — measured at roughly 80 ms of a 450 ms window in an
+		# owner device recording. DEAD is also the only state whose overlay
+		# offers "Tap anywhere to restart", so restarting from DYING contradicts
+		# the affordance the player is shown. Swallow the tap instead.
+		return
 	if _run.state != RunStateMachine.State.ACTIVE:
 		request_restart()
 		return

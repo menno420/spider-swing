@@ -146,7 +146,7 @@ without a reported regression.
 
 - Local source passes `python3 tools/verify.py` with the exact
   `4.7.1.stable.official.a13da4feb` Standard binary: clean import, front-end boot,
-  architecture scan, and **120/120** contracts. The declared suite contains 52
+  architecture scan, and **121/121** contracts. The declared suite contains 53
   deterministic physics checks, 11 spider-biology checks, 25 mobile GUI/layout
   checks, 21 front-end/settings/progression checks, and 11 bootstrap/build
   contracts.
