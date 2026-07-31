@@ -980,14 +980,9 @@ func _draw_finished_spider_sprite(
 	scale: float,
 	pose_scale: Vector2,
 ) -> bool:
-	var asset_id := ArtAssetCatalog.CLASSIC_SPIDER
-	match _snapshot.spider_id:
-		SpiderCatalog.CLASSIC:
-			asset_id = ArtAssetCatalog.CLASSIC_SPIDER
-		SpiderCatalog.ANCHORITE:
-			asset_id = ArtAssetCatalog.ANCHORITE_SPIDER
-		_:
-			return false
+	var asset_id := ArtAssetCatalog.spider_asset_id(_snapshot.spider_id)
+	if asset_id == &"":
+		return false
 	var texture := _art_texture(asset_id)
 	if texture == null:
 		return false

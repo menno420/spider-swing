@@ -15,6 +15,10 @@
 > belong to `docs/product/spider-biology-folio.md`, which wins over this file.
 > The Skitter anatomy below was wrong and has been fixed; do not produce art
 > from an older revision of this brief.
+>
+> **Executed 2026-07-31:** the owner approved all three generated candidates.
+> Their transparent runtime files, shared renderer routing, and reference
+> manifest ship with the Garden anatomy correction in PR #52.
 
 ## The set rules (non-negotiable for cohesion)
 
@@ -85,7 +89,7 @@ the bounce is fiction and the art must not argue for it.
 - Reads as: guarded, springy, armoured. Distinct axis: gloss + amber +
   compact.
 
-## Acceptance checklist (run before opening the PR)
+## Acceptance checklist (run before session close and merge)
 
 1. Source PNG is 384×181 with clean alpha (no chroma fringe; inspect edge
    pixels).

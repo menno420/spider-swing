@@ -271,13 +271,16 @@ static func _test_spider_presentation_is_interpolated_and_mipmapped(
 		failures.append("spider smoothing is not tied to Godot interpolation and mips")
 		return 0
 	if not source.contains("_draw_finished_spider_sprite") or \
-			not source.contains("ArtAssetCatalog.ANCHORITE_SPIDER"):
+			not source.contains("ArtAssetCatalog.spider_asset_id"):
 		failures.append(
-			"Anchorite is not routed through the finished spider renderer")
+			"the roster is not routed through the shared finished-spider renderer")
 		return 0
 	for import_path in [
 		"res://assets/runtime/characters/classic-garden-spider.png.import",
+		"res://assets/runtime/characters/skitter-magnolia-jumper.png.import",
 		"res://assets/runtime/characters/anchorite-burrowing-spider.png.import",
+		"res://assets/runtime/characters/ballooner-spider.png.import",
+		"res://assets/runtime/characters/springtail-trapdoor-spider.png.import",
 		"res://assets/runtime/collectibles/golden-forest-fly.png.import",
 	]:
 		var import_file := FileAccess.open(import_path, FileAccess.READ)
@@ -286,20 +289,46 @@ static func _test_spider_presentation_is_interpolated_and_mipmapped(
 		):
 			failures.append("minified moving art lacks mipmaps: %s" % import_path)
 			return 0
-	var anchorite_path := ArtAssetCatalog.texture_path(
-		ArtAssetCatalog.ANCHORITE_SPIDER,
-	)
-	var anchorite := load(anchorite_path) as Texture2D
-	if anchorite == null or anchorite.get_size() != Vector2(384.0, 181.0):
-		failures.append("Anchorite sprite lost its 384×181 source contract")
-		return 0
-	var anchorite_image := anchorite.get_image()
-	if anchorite_image == null or \
-			anchorite_image.get_pixel(0, 0).a > 0.01 or \
-			anchorite_image.get_pixel(383, 180).a > 0.01:
-		failures.append("Anchorite sprite does not retain transparent corners")
-		return 0
+	for spider_id: StringName in SpiderCatalog.ALL_IDS:
+		var asset_id := ArtAssetCatalog.spider_asset_id(spider_id)
+		var texture_path := ArtAssetCatalog.texture_path(asset_id)
+		var texture := load(texture_path) as Texture2D
+		if texture == null or texture.get_size() != Vector2(384.0, 181.0):
+			failures.append(
+				"%s sprite lost its 384×181 source contract" % spider_id)
+			return 0
+		var image := texture.get_image()
+		if image == null or not _transparent_frame_is_clean(image):
+			failures.append(
+				"%s sprite does not retain a transparent frame" % spider_id)
+			return 0
+		if _contains_visible_chroma_key(image):
+			failures.append(
+				"%s sprite retains visible magenta chroma key" % spider_id)
+			return 0
 	return 1
+
+
+static func _transparent_frame_is_clean(image: Image) -> bool:
+	for x in range(image.get_width()):
+		if image.get_pixel(x, 0).a > 0.01 or \
+				image.get_pixel(x, image.get_height() - 1).a > 0.01:
+			return false
+	for y in range(image.get_height()):
+		if image.get_pixel(0, y).a > 0.01 or \
+				image.get_pixel(image.get_width() - 1, y).a > 0.01:
+			return false
+	return true
+
+
+static func _contains_visible_chroma_key(image: Image) -> bool:
+	for y in range(image.get_height()):
+		for x in range(image.get_width()):
+			var pixel := image.get_pixel(x, y)
+			if pixel.a > 0.05 and pixel.r > 0.75 and \
+					pixel.g < 0.40 and pixel.b > 0.75:
+				return true
+	return false
 
 
 static func _test_double_tap_has_a_separate_burst_route(

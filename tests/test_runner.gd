@@ -4,9 +4,9 @@ extends SceneTree
 const MAIN_SCENE_PATH := "res://game/bootstrap/main.tscn"
 const EXPORT_PRESETS_PATH := "res://export_presets.cfg"
 const ANDROID_WORKFLOW_PATH := "res://.github/workflows/android-debug.yml"
-const BUILD_VERSION := "0.16.0-field-guide-test"
-const ANDROID_VERSION_CODE := 32
-const ANDROID_APP_NAME := "Spider Swing Field Guide (dev)"
+const BUILD_VERSION := "0.17.0-five-spider-art-test"
+const ANDROID_VERSION_CODE := 33
+const ANDROID_APP_NAME := "Spider Swing Five Spider Art (dev)"
 const EXPECTED_CHECK_COUNT := 107
 const REQUIRED_INPUT_ACTIONS := [
 	"web_action", "reel_in", "burst_action", "pause", "restart_run",

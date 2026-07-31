@@ -186,8 +186,10 @@ without a reported regression.
   grammar over that same geometry: a world-continuous mossy branch rail, rooted
   brambles, top-anchored thorn vines, broken root stumps, natural upper/lower
   growth around broad rail passages, three low-contrast forest depth layers, a
-  finished bright Garden Spider sprite, a finished broad charcoal-and-bronze
-  Anchorite sprite, and golden forest flies. Finished
+  finished five-profile spider roster, and golden forest flies. Garden is dark
+  and orange-banded; Skitter is slender translucent olive; Anchorite is broad
+  charcoal-and-bronze; Ballooner is pale and tiptoe-raised; Springtail is
+  compact glossy amber. Finished
   obstacle alpha replaces the prototype filled polygon in normal play.
   Wall-grown art overlaps a root-and-moss growth socket behind the rail. Broad
   shapes use aspect-preserving cover crops; tall narrow growth uses the complete
@@ -200,9 +202,10 @@ without a reported regression.
   attached web interpolate between consecutive fixed snapshots using Godot's
   render interpolation fraction; teleports snap, reduced motion disables the
   restrained action poses, and mipmaps improve the heavily downscaled spider
-  and fly without touching physics. Garden and Anchorite share one
-  right-facing 384×181 source contract and finished-sprite path; Anchorite
-  remains sized by its unchanged authoritative profile radius.
+  and fly without touching physics. All five profiles share one right-facing
+  384×181 RGBA contract, mipmapped finished-sprite path, and radius-scaled
+  renderer. Their 4-near + 2-far-front visible-leg convention preserves clear
+  2D depth while every authoritative profile radius remains unchanged.
 - No autoload singletons exist, and a test fails if one appears.
 
 **Verification**
@@ -621,15 +624,21 @@ without a reported regression.
 
 ## In flight
 
-The biological inspiration layer and Field Guide are open for review. The next
-owner evidence should cover seeded-region identity and checkpoint-practice
-integrity, reserve-Burst feel, and Anchorite species readability. Two naming
+The five-profile production-art roster and Garden anatomy correction are open
+for device review. The next owner evidence should cover species readability,
+contrast against each course region, pose deformation while swinging, seeded-
+region identity and checkpoint-practice integrity, and reserve-Burst feel. Two naming
 questions are the owner's alone and are parked, not blocking: whether Springtail
 keeps its fictional name plus the disclosure or is renamed, and whether the
 release roster uses fictional names throughout or promotes species names.
 
 ## Recently shipped (newest first)
 
+- **2026-07-31 — Five-spider production-art roster (PR #52, in flight).**
+  Corrects Garden to the owner-approved six-visible-leg side-profile convention,
+  adds owner-approved Skitter, Ballooner, and Springtail production sprites,
+  and routes all five profiles through one presentation-owned renderer without
+  changing collision, movement, upgrades, progression, or saves.
 - **2026-07-31 — Biological inspiration layer and Field Guide.** Adds a domain
   record per profile that separates what each spider is inspired by, what the
   real animal does, and what the game invents; surfaces it on the Garage card
@@ -656,7 +665,8 @@ release roster uses fictional names throughout or promotes species names.
   low, charcoal-and-bronze burrowing-spider sprite at the same finished
   384×181 source contract as Garden, routes both profiles through one
   presentation renderer, preserves authoritative Anchorite size/collision,
-  and leaves the other three procedural spider silhouettes unchanged.
+  and left the other three procedural silhouettes unchanged until PR #52
+  completed the roster.
 - **2026-07-30 — Headless simulation lab (PR #41).** Batch-runs the
   authoritative simulation through a seeded imperfect-player model and reports
   distance, death cause, and resource statistics by spider, skill tier,
