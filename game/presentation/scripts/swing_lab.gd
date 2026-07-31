@@ -511,7 +511,10 @@ func _draw_course(size: Vector2) -> void:
 				obstacle_bounds.position.x > size.x + 80.0:
 			obstacle_index += 1
 			continue
-		_draw_obstacle(obstacle, screen_obstacle)
+		var obstacle_kind := _snapshot.obstacle_kinds[obstacle_index] \
+			if obstacle_index < _snapshot.obstacle_kinds.size() \
+			else CourseObstacleCatalog.UNSPECIFIED
+		_draw_obstacle(obstacle, screen_obstacle, obstacle_kind)
 		obstacle_index += 1
 
 	if _uses_forest_art():
@@ -630,6 +633,7 @@ func _redraw_forest_boundary_edges(viewport_size: Vector2) -> void:
 func _draw_obstacle(
 	world_polygon: PackedVector2Array,
 	polygon: PackedVector2Array,
+	obstacle_kind: StringName = CourseObstacleCatalog.UNSPECIFIED,
 ) -> void:
 	var environment := _environment_theme()
 	if _uses_forest_art():
@@ -655,7 +659,24 @@ func _draw_obstacle(
 		var asset_id := ArtAssetCatalog.CANOPY_BRAMBLE \
 			if canopy_art else ArtAssetCatalog.FOREST_BRAMBLE
 		var flip_y := false
-		if canopy_art and detached:
+		var flip_x := false
+		if canopy_art and obstacle_kind in [
+			CourseObstacleCatalog.CANOPY_HOOK_VINE_LEFT,
+			CourseObstacleCatalog.CANOPY_HOOK_VINE_RIGHT,
+		]:
+			asset_id = ArtAssetCatalog.CANOPY_HOOK_VINE
+			flip_y = attached_to_ceiling
+			flip_x = obstacle_kind == \
+				CourseObstacleCatalog.CANOPY_HOOK_VINE_LEFT
+		elif canopy_art and obstacle_kind in [
+			CourseObstacleCatalog.CANOPY_LEAF_SHUTTER_LEFT,
+			CourseObstacleCatalog.CANOPY_LEAF_SHUTTER_RIGHT,
+		]:
+			asset_id = ArtAssetCatalog.CANOPY_LEAF_SHUTTER
+			flip_y = attached_to_ceiling
+			flip_x = obstacle_kind == \
+				CourseObstacleCatalog.CANOPY_LEAF_SHUTTER_LEFT
+		elif canopy_art and detached:
 			asset_id = ArtAssetCatalog.CANOPY_BRAMBLE
 		elif canopy_art and (tall_narrow or (hanging and not wide)):
 			asset_id = ArtAssetCatalog.CANOPY_SEED_POD
@@ -722,7 +743,7 @@ func _draw_obstacle(
 			if tall_narrow:
 				_draw_texture_uncropped_height(texture, art_bounds, flip_y)
 			else:
-				_draw_texture_cover(texture, art_bounds, flip_y)
+				_draw_texture_cover(texture, art_bounds, flip_y, flip_x)
 			if not detached:
 				_draw_forest_growth_socket(
 					world_polygon,
@@ -827,6 +848,7 @@ func _draw_texture_cover(
 	texture: Texture2D,
 	bounds: Rect2,
 	flip_y: bool = false,
+	flip_x: bool = false,
 ) -> void:
 	var texture_size := texture.get_size()
 	if texture_size.x <= 0.0 or texture_size.y <= 0.0 or \
@@ -843,8 +865,9 @@ func _draw_texture_cover(
 		var cropped_height := texture_size.x / target_aspect
 		source.position.y = (texture_size.y - cropped_height) * 0.5
 		source.size.y = cropped_height
+	var scale_x := -1.0 if flip_x else 1.0
 	var scale_y := -1.0 if flip_y else 1.0
-	draw_set_transform(bounds.get_center(), 0.0, Vector2(1.0, scale_y))
+	draw_set_transform(bounds.get_center(), 0.0, Vector2(scale_x, scale_y))
 	draw_texture_rect_region(
 		texture,
 		Rect2(-bounds.size * 0.5, bounds.size),

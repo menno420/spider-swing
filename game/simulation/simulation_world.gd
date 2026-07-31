@@ -22,6 +22,8 @@ var obstacles: Array[PackedVector2Array] = []
 ## lethal-but-untappable. Absent entries read as tappable so geometry built
 ## without the flag keeps its original behaviour.
 var obstacle_anchorable: PackedByteArray = PackedByteArray()
+## Presentation-only semantic kind copied with each authoritative polygon.
+var obstacle_kinds: Array[StringName] = []
 var fly_positions: PackedVector2Array = PackedVector2Array()
 var boost_positions: PackedVector2Array = PackedVector2Array()
 var run_flies: int = 0
@@ -87,10 +89,12 @@ func set_course_geometry(geometry: CourseGeometry) -> void:
 		boundary_surfaces.append(surface.duplicate())
 	obstacles.clear()
 	obstacle_anchorable.clear()
+	obstacle_kinds.clear()
 	for index in range(geometry.obstacles.size()):
 		obstacles.append(geometry.obstacles[index].duplicate())
 		obstacle_anchorable.append(
 			1 if geometry.is_obstacle_anchorable(index) else 0)
+		obstacle_kinds.append(geometry.obstacle_kind(index))
 	fly_positions.clear()
 	for fly: Vector2 in geometry.fly_positions:
 		if not _collected_pickups.has(_pickup_key(&"fly", fly)):

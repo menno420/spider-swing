@@ -41,6 +41,7 @@ var anchors: PackedVector2Array = PackedVector2Array()
 var surfaces: Array[PackedVector2Array] = []
 var boundary_surfaces: Array[PackedVector2Array] = []
 var obstacles: Array[PackedVector2Array] = []
+var obstacle_kinds: Array[StringName] = []
 var fly_positions: PackedVector2Array = PackedVector2Array()
 var boost_positions: PackedVector2Array = PackedVector2Array()
 var run_flies: int = 0

@@ -35,7 +35,7 @@ without a reported regression.
   bounded idempotent-settlement history. Schema 5 infers already-reached region
   checkpoints from a schema-4 standard best once; pre-20-level saves migrate
   proportionally once.
-- Build `0.20.0-bramble-canopy` (Android version code 37, package
+- Build `0.20.1-bramble-obstacles` (Android version code 38, package
   `com.menno420.spiderswing.dev`) retains the stable conventional public debug
   identity introduced by `0.19.0-depth-testing` in
   `.github/android/debug.keystore`. The workflow pins its file and certificate
@@ -77,14 +77,17 @@ without a reported regression.
   the checkpoint's safe opening and is authoritatively noncompetitive: no
   flies, best distance, later checkpoint, record, or future leaderboard
   eligibility.
-- Bramble Canopy is a complete visual region rather than a name and tint: an
-  open lime-lit backdrop, braided thorn rails, leafy bramble, hanging seed-pod
-  vines, sockets, and ambience replace Ancient Forest. Foreground art resolves
-  from obstacle world position and approaches from ahead; the backdrop
-  crossfades for 2.2 seconds or changes immediately under Reduced Motion.
-  Bramble-specific high↔low pairs block the neutral middle line but keep their
-  authored Classic-sized route clear. Silk Hollow still uses shared forest art
-  plus darker ambience and remains visually incomplete.
+- Bramble Canopy owns both presentation and obstacle vocabulary: an open lime-
+  lit backdrop, braided thorn rails, sockets, ambience, deep concave hook vines,
+  and diagonal giant-leaf shutters replace Ancient Forest. Its eight normal
+  pattern ids share no player-facing obstacle id with Ancient Forest; single
+  high/low routes and mirrored high↔low pairs block the neutral middle line but
+  keep their authored Garden-sized route clear. A semantic kind travels beside
+  each authoritative polygon and anchor flag so presentation selects inspected
+  art explicitly instead of inferring it from bounds. Foreground art resolves
+  from obstacle world position; the backdrop crossfades for 2.2 seconds or
+  changes immediately under Reduced Motion. Silk Hollow still uses shared
+  forest art plus darker ambience and remains visually incomplete.
 
 **Depth-testing access**
 
@@ -134,7 +137,7 @@ without a reported regression.
   contributes.
 - One shared Ancient-Forest-aligned UI theme covers the front end. Settings and
   Shop use a single native vertical scroller whose descendants pass drag input.
-  The finished five-spider roster, flies, Ancient Forest pack, and six-asset
+  The finished five-spider roster, flies, Ancient Forest pack, and eight-asset
   Bramble Canopy pack are presentation-owned over the same authoritative
   polygons. Missing art falls back to geometry; mipmapped spider/web rendering
   interpolates fixed snapshots and snaps teleports.
@@ -146,7 +149,7 @@ without a reported regression.
 
 - Local source passes `python3 tools/verify.py` with the exact
   `4.7.1.stable.official.a13da4feb` Standard binary: clean import, front-end boot,
-  architecture scan, and **121/121** contracts. The declared suite contains 53
+  architecture scan, and **124/124** contracts. The declared suite contains 56
   deterministic physics checks, 11 spider-biology checks, 25 mobile GUI/layout
   checks, 21 front-end/settings/progression checks, and 11 bootstrap/build
   contracts.
@@ -158,6 +161,10 @@ without a reported regression.
   have an explicit mobile commit path; pre-run `−`/`+` choices reach the real
   practice session; normal Play clears the overlay; and both surfaces gate
   correctly at 1280×720.
+- Bramble's content contract rejects any Ancient Forest pattern id, requires all
+  eight hook/shutter variants across representative seeds, preserves explicit
+  left/right art kinds through geometry snapshots, removes a neutral-centre
+  coast, and sweeps a conservative Garden-sized route between every guide.
 - `tools/check_architecture.py` passes all 14 self-test fixtures and the live
   source scan. `python3 bootstrap.py check --strict` passes all content checks;
   during implementation its only hold is the session card's deliberate
@@ -237,17 +244,22 @@ A/B feel, save survival across two stable-key builds, long-distance region
 identity, and the existing traversal checklist in the Swing Laboratory
 reference. The 5000 m recordings establish a healthy late-game distinction:
 Reel shapes an arc when the next route is read early, while Burst performs the
-fast late height correction. This build preserves those values and makes
-Bramble's advance cues and high↔low commitment clearer. The new Bramble APK
-still needs the decisive device visual/readability pass; Silk Hollow needs its
-own finished-art slice afterward.
+fast late height correction. PR #62 preserved those values and fixed the
+background/material transition, but its first device review rejected the
+obstacles as old roles under new skins. This build replaces that inherited pool
+with hook-vine and leaf-shutter geometry without retuning either control. Its
+APK still needs the decisive device obstacle/readability pass; Silk Hollow needs
+its own finished-art slice afterward.
 
 ## Recently shipped (newest first)
 
-- **2026-07-31 — Bramble Canopy region identity (PR #62 candidate).** The 5000 m
+- **2026-07-31 — Bramble obstacle identity (PR #69 candidate).** Normal Bramble
+  generation now owns eight hook/shutter patterns, matching explicit art kinds,
+  and no Ancient Forest obstacle ids; Garden-sized route sweeps remain clear.
+- **2026-07-31 — Bramble presentation identity (PR #62).** The 5000 m
   transition receives its own generated art pack and world-anchored foreground,
-  while signature deterministic pairs require a real high↔low route without
-  changing the approved physics baseline or upgrade values.
+  but the first device pass found its obstacle roles still too inherited; PR
+  #69 is the correction rather than overstating this pass as complete.
 - **2026-07-31 — Pre-run debug depth controls (PR #60 candidate).** Home now
   stages exact distance and temporary upgrades through large `−`/`+` before one
   no-awards test start; ordinary Play restores owned levels, and the in-run

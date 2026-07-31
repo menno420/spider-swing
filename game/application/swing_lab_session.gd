@@ -588,8 +588,13 @@ func _make_snapshot() -> SimulationSnapshot:
 	if _config.course_boundaries_enabled:
 		for boundary: PackedVector2Array in _world.boundary_surfaces:
 			snapshot.boundary_surfaces.append(boundary.duplicate())
-	for obstacle: PackedVector2Array in _world.obstacles:
-		snapshot.obstacles.append(obstacle.duplicate())
+	for obstacle_index in range(_world.obstacles.size()):
+		snapshot.obstacles.append(_world.obstacles[obstacle_index].duplicate())
+		snapshot.obstacle_kinds.append(
+			_world.obstacle_kinds[obstacle_index]
+				if obstacle_index < _world.obstacle_kinds.size()
+				else CourseObstacleCatalog.UNSPECIFIED
+		)
 	snapshot.fly_positions = _world.fly_positions.duplicate()
 	snapshot.boost_positions = _world.boost_positions.duplicate()
 	snapshot.run_flies = _world.run_flies
