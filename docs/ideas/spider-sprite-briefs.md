@@ -1,6 +1,6 @@
 # Production sprite briefs — Skitter, Ballooner, Springtail
 
-> **Status:** `ready-to-execute`
+> **Status:** `plan`
 >
 > Owner-requested (2026-07-31): the three remaining spiders need production
 > sprites that look **quite real** and each resemble a real species, with

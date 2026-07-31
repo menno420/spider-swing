@@ -115,6 +115,17 @@ as venue `any`.)
 kit-owned — they refresh at upgrade between the fence markers; local
 findings go here, below the fence.)
 
+- 2026-07-31 · wall · `owner-live` · **This Claude Code seat carries no
+  image-generation tool** · a full tool-registry search returned no
+  generator, and one attempted procedural (code-drawn) sprite was honestly
+  judged far below the finished painterly bar — the 2026-07-30 Anchorite
+  "built-in image generator" capability is **seat-scoped, not fleet-wide** ·
+  workaround: route sprite *generation* to an image-capable seat executing
+  `docs/ideas/spider-sprite-briefs.md`; this seat verifiably handles the
+  downstream pipeline (Pillow installs cleanly: chroma keying, alpha QA,
+  96×46 scale comparison, catalog wiring, contracts, PR) for any approved
+  source, including owner-uploaded images.
+
 - 2026-07-30 · capability · `owner-live` · **Generated character art can be
   converted into a production Godot sprite and proven through Android** · the
   built-in image generator plus one precise facial edit produced an
