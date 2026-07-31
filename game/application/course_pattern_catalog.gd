@@ -69,8 +69,8 @@ const DEEP_FOREST_PATTERNS := [
 ## Region two emphasizes fast vertical reading. It deliberately excludes the
 ## broad centre gate so difficulty comes from changing height, not precision.
 const BRAMBLE_CANOPY_PATTERNS := [
-	{"id": &"high_low_weave", "lane": &"weave", "difficulty": 4},
-	{"id": &"low_high_weave", "lane": &"weave", "difficulty": 4},
+	{"id": &"canopy_high_low", "lane": &"weave", "difficulty": 4},
+	{"id": &"canopy_low_high", "lane": &"weave", "difficulty": 4},
 	{"id": &"tall_vine", "lane": &"high", "difficulty": 4},
 	{"id": &"long_pod", "lane": &"low", "difficulty": 4},
 	{"id": &"vine_curtain", "lane": &"low", "difficulty": 4},
@@ -78,8 +78,8 @@ const BRAMBLE_CANOPY_PATTERNS := [
 	{"id": &"alternating_thorns", "lane": &"centre", "difficulty": 4},
 	{"id": &"fallen_stump", "lane": &"high", "difficulty": 3},
 	{"id": &"ceiling_stump", "lane": &"low", "difficulty": 3},
-	{"id": &"silk_burr_high", "lane": &"high", "difficulty": 4},
-	{"id": &"silk_burr_low", "lane": &"low", "difficulty": 4},
+	{"id": &"canopy_thorn_high", "lane": &"high", "difficulty": 4},
+	{"id": &"canopy_thorn_low", "lane": &"low", "difficulty": 4},
 ]
 
 ## Region three emphasizes exact lines around suspended hazards and rail-grown
@@ -205,9 +205,9 @@ static func _base_pattern_for_chunk(
 			posmod(local_chunk, 4) == 2:
 		return {
 			"id": (
-				&"high_low_weave"
-				if posmod(local_chunk + course_seed, 2) == 0
-				else &"low_high_weave"
+				&"canopy_high_low"
+					if posmod(local_chunk + course_seed, 2) == 0
+					else &"canopy_low_high"
 			),
 			"lane": &"weave",
 			"difficulty": 4,

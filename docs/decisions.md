@@ -650,3 +650,61 @@
 - provenance: Menno's 2026-07-31 device report that the distance chooser and
   free-level testing did not appear to work properly, followed by his direction
   to configure them before play with direct upgrade `−`/`+`
+
+## [D-0037] Promote balanced to the approved baseline, and record that it was never a comparison
+
+- status: decided
+- date: 2026-07-31
+- verdict: `SwingConfig.PRESET_BALANCED` becomes `balanced_baseline`, satisfying
+  the GDD §23 exit-gate item "the team approves one named physics preset as the
+  baseline". `weighty_candidate` and `agile_candidate` keep their names and stay
+  in `preset_names()`. Saves and `--preset=` invocations carrying the old
+  `balanced_candidate` id migrate through a new `SwingConfig.resolve_preset`,
+  which returns the empty name for anything genuinely unknown so callers can
+  distinguish migration from rejection. The Home preset rail now reads
+  BALANCED/BASELINE, WEIGHTY/UNTUNED, AGILE/UNTUNED.
+- why: The approval is real but narrower than the gate's wording implies, and
+  the difference matters. Balanced is not the winner of a three-way evaluation;
+  it is the only preset that was ever played, so it absorbed days of tuning
+  while the other two sat at the fork point. Recording it as a comparison would
+  be an inflated progress claim, and worse, it would make the other two read as
+  vetted alternatives — so a later session measuring balanced against agile
+  would interpret a tuning gap as a design signal. Naming the baseline still
+  earns its keep: without a committed reference, every observation over the
+  coming months of testing is measured against a config nobody agreed to.
+  `apply_preset` already fell through to balanced physics for unknown names, so
+  the rename was survivable by accident; routing it through `resolve_preset`
+  makes that deliberate and puts it under contract.
+- provenance: Menno, 2026-07-31 — "the balanced baseline should indeed be
+  promoted, it's honestly the only one I've been testing and adjusting, so right
+  now it's already much further ahead then it was at the time where those 3
+  presets were made"
+
+## [D-0038] Make distance regions materially different while preserving late-game control roles
+
+- status: decided
+- date: 2026-07-31
+- verdict: A distance-region transition must change a real presentation pack,
+  not only its HUD name and tint. Bramble Canopy is the first complete 5000 m
+  slice: its own far/mid backdrop, braided-thorn rails, growth sockets, bramble,
+  seed-pod vine, brighter palette, and ambience. Foreground art resolves from
+  each polygon's world position so it approaches from ahead; the backdrop
+  crossfades for 2.2 seconds on entry and switches immediately under Reduced
+  Motion. Its signature deterministic pairs extend through the neutral middle
+  line but retain a Classic-sized authored high↔low guide and recovery cadence.
+  No speed, Reel, Burst, targeting, upgrade, or economy value changes.
+- why: Four owner recordings at 5000 m with the level-20 debug overlay made the
+  mismatch unambiguous: the label said Bramble Canopy but the same Ancient
+  Forest background and obstacle family made the transition effectively
+  invisible, and several supposed height patterns could be cleared by staying
+  near centre. The same recordings show a useful high-speed role split rather
+  than a balance defect. Reel is strongest when the route is read early and the
+  player shapes the next arc; Burst supplies the much faster late vertical
+  correction when obstacles arrive roughly a second apart. Clear advance cues
+  should preserve that difference instead of slowing the game or making Reel a
+  second Burst. Silk Hollow still needs its own complete pack, and the authored
+  schedule currently has no new region after 10000 m; neither is falsely
+  claimed complete by this slice.
+- provenance: Menno's four 2026-07-31 5000 m Android recordings and his finding
+  that high-distance Reel becomes predictive while Burst becomes the main rapid
+  height-change tool

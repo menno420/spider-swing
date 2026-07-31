@@ -11,6 +11,7 @@ static func run() -> Dictionary:
 	var passed := 0
 
 	passed += _test_presets(failures)
+	passed += _test_baseline_preset_id_and_legacy_migration(failures)
 	passed += _test_reel_resource_baseline_and_resolution(failures)
 	passed += _test_gradual_speed_curve_reaches_full_pace_at_five_kilometres(
 		failures)
@@ -89,7 +90,42 @@ static func _test_presets(failures: PackedStringArray) -> int:
 				balanced.tight_corridor_start_distance, 20000.0) or \
 			not balanced.course_boundaries_lethal:
 		failures.append(
-			"balanced candidate lost its weaker base, pacing, or rail defaults")
+			"balanced baseline lost its weaker base, pacing, or rail defaults")
+		return 0
+	return 1
+
+
+static func _test_baseline_preset_id_and_legacy_migration(
+	failures: PackedStringArray,
+) -> int:
+	if SwingConfig.PRESET_BALANCED != &"balanced_baseline":
+		failures.append(
+			"the approved baseline preset must be named balanced_baseline")
+		return 0
+	# A save written before the 2026-07-31 promotion carries the old id. It has
+	# to land on the baseline deliberately, not by falling through an
+	# unknown-name default that happens to point at the same preset.
+	if SwingConfig.resolve_preset(&"balanced_candidate") \
+			!= SwingConfig.PRESET_BALANCED:
+		failures.append("legacy balanced_candidate no longer resolves to the baseline")
+		return 0
+	if SwingConfig.resolve_preset(&"weighty_candidate") \
+			!= SwingConfig.PRESET_WEIGHTY:
+		failures.append("a current preset id must resolve to itself")
+		return 0
+	if SwingConfig.resolve_preset(&"not_a_preset") != &"":
+		failures.append(
+			"an unknown preset must resolve to the empty name so callers can reject it")
+		return 0
+	var migrated := PlayerSettings.from_dictionary({
+		"swing_preset": "balanced_candidate",
+	})
+	if migrated.swing_preset != SwingConfig.PRESET_BALANCED:
+		failures.append("a pre-rename save did not migrate onto the baseline preset")
+		return 0
+	var kept := PlayerSettings.from_dictionary({"swing_preset": "agile_candidate"})
+	if kept.swing_preset != SwingConfig.PRESET_AGILE:
+		failures.append("migration clobbered a still-valid stored preset")
 		return 0
 	return 1
 
@@ -1610,8 +1646,12 @@ static func _test_course_regions_are_seeded_distinct_and_recoverable(
 		failures.append(
 			"checkpoint entry or later-region recovery cadence is unsafe")
 		return 0
-	if not bramble_ids.has(&"high_low_weave") or \
-			not bramble_ids.has(&"low_high_weave") or \
+	if not bramble_ids.has(&"canopy_high_low") or \
+			not bramble_ids.has(&"canopy_low_high") or \
+			not (
+				bramble_ids.has(&"canopy_thorn_high")
+					or bramble_ids.has(&"canopy_thorn_low")
+			) or \
 			bramble_ids.has(&"rooted_gate"):
 		failures.append(
 			"Bramble Canopy lost its high↔low identity")
@@ -1830,6 +1870,10 @@ static func _test_authored_weaves_and_small_silk_burrs_are_fair(
 	var pattern_ids := [
 		&"high_low_weave",
 		&"low_high_weave",
+		&"canopy_high_low",
+		&"canopy_low_high",
+		&"canopy_thorn_high",
+		&"canopy_thorn_low",
 		&"silk_burr_high",
 		&"silk_burr_low",
 	]
@@ -1840,75 +1884,107 @@ static func _test_authored_weaves_and_small_silk_burrs_are_fair(
 			failures.append("height-switch pattern entered the protected opening")
 			return 0
 	var found := {}
-	for chunk_index in range(22, 92):
-		var pattern_id := stream.pattern_id_for_chunk(chunk_index)
-		if pattern_id not in pattern_ids or found.has(pattern_id):
-			continue
-		var chunk_start := float(chunk_index) * CourseStream.CHUNK_WIDTH
-		var chunk_end := chunk_start + CourseStream.CHUNK_WIDTH
-		var geometry := stream.update_for_position(chunk_start + 1.0)
-		var obstacles: Array[PackedVector2Array] = []
-		var route_flies: Array[Vector2] = []
-		for obstacle: PackedVector2Array in geometry.obstacles:
-			var bounds := SolidGeometry.bounds(obstacle)
-			if bounds.get_center().x >= chunk_start and \
-					bounds.get_center().x < chunk_end:
-				obstacles.append(obstacle)
-		for fly: Vector2 in geometry.fly_positions:
-			if fly.x >= chunk_start and fly.x < chunk_end:
-				route_flies.append(fly)
-		for fly: Vector2 in route_flies:
-			for obstacle: PackedVector2Array in obstacles:
-				if SolidGeometry.circle_intersects_polygon(fly, 30.0, obstacle):
-					failures.append(
-						"%s guides its fly route into collision" % pattern_id)
+	for seed in [0, 7, 77]:
+		stream.reset(
+			10000.0, 0.94, 0.90, 1.12, [], true, 1.0, 1.0,
+			20000.0, seed,
+		)
+		for chunk_index in range(22, 130):
+			var pattern_id := stream.pattern_id_for_chunk(chunk_index)
+			if pattern_id not in pattern_ids or found.has(pattern_id):
+				continue
+			var chunk_start := float(chunk_index) * CourseStream.CHUNK_WIDTH
+			var chunk_end := chunk_start + CourseStream.CHUNK_WIDTH
+			var geometry := stream.update_for_position(chunk_start + 1.0)
+			var obstacles: Array[PackedVector2Array] = []
+			var route_flies: Array[Vector2] = []
+			for obstacle: PackedVector2Array in geometry.obstacles:
+				var bounds := SolidGeometry.bounds(obstacle)
+				if bounds.get_center().x >= chunk_start and \
+						bounds.get_center().x < chunk_end:
+					obstacles.append(obstacle)
+			for fly: Vector2 in geometry.fly_positions:
+				if fly.x >= chunk_start and fly.x < chunk_end:
+					route_flies.append(fly)
+			for fly: Vector2 in route_flies:
+				for obstacle: PackedVector2Array in obstacles:
+					if SolidGeometry.circle_intersects_polygon(
+						fly,
+						30.0,
+						obstacle,
+					):
+						failures.append(
+							"%s guides its fly route into collision" % pattern_id)
+						return 0
+			var is_weave := pattern_id in [
+			&"high_low_weave",
+			&"low_high_weave",
+			&"canopy_high_low",
+			&"canopy_low_high",
+		]
+			if is_weave:
+				if obstacles.size() != 2 or route_flies.size() != 7:
+					failures.append("%s lost its authored two-part cue" % pattern_id)
 					return 0
-		if pattern_id == &"high_low_weave" or \
-				pattern_id == &"low_high_weave":
-			if obstacles.size() != 2 or route_flies.size() != 7:
-				failures.append("%s lost its authored two-part cue" % pattern_id)
-				return 0
-			var first := obstacles[0]
-			var second := obstacles[1]
-			if SolidGeometry.bounds(first).get_center().x > \
+				var first := obstacles[0]
+				var second := obstacles[1]
+				if SolidGeometry.bounds(first).get_center().x > \
 					SolidGeometry.bounds(second).get_center().x:
-				var swap := first
-				first = second
-				second = swap
-			var first_bounds := SolidGeometry.bounds(first)
-			var second_bounds := SolidGeometry.bounds(second)
-			if second_bounds.get_center().x - first_bounds.get_center().x < 400.0:
-				failures.append(
-					"%s no longer gives a readable height-change runway" %
-						pattern_id)
-				return 0
-			var high_to_low := pattern_id == &"high_low_weave"
-			var first_is_floor := \
+					var swap := first
+					first = second
+					second = swap
+				var first_bounds := SolidGeometry.bounds(first)
+				var second_bounds := SolidGeometry.bounds(second)
+				if second_bounds.get_center().x - first_bounds.get_center().x < 400.0:
+					failures.append(
+						"%s no longer gives a readable height-change runway" %
+							pattern_id)
+					return 0
+				var high_to_low := pattern_id in [
+				&"high_low_weave",
+				&"canopy_high_low",
+			]
+				var first_is_floor := \
 				first_bounds.end.y >= CourseStream.FLOOR_Y - 0.01
-			var second_is_floor := \
+				var second_is_floor := \
 				second_bounds.end.y >= CourseStream.FLOOR_Y - 0.01
-			if first_is_floor != high_to_low or \
+				if first_is_floor != high_to_low or \
 					second_is_floor == high_to_low:
-				failures.append("%s obstacles do not alternate rail height" % pattern_id)
-				return 0
-			var floor_bounds := first_bounds if first_is_floor else second_bounds
-			var ceiling_bounds := second_bounds if first_is_floor else first_bounds
-			if floor_bounds.position.y - ceiling_bounds.end.y < 72.0 or \
-					maxf(first_bounds.size.y, second_bounds.size.y) > 252.0:
-				failures.append(
-					"%s no longer leaves a forgiving central transition band" %
-						pattern_id)
-				return 0
-			var route_delta := route_flies[-1].y - route_flies[0].y
-			if absf(route_delta) < 280.0 or \
+					failures.append(
+						"%s obstacles do not alternate rail height" % pattern_id)
+					return 0
+				var canopy_weave := pattern_id in [
+				&"canopy_high_low",
+				&"canopy_low_high",
+			]
+				if canopy_weave:
+					for obstacle: PackedVector2Array in obstacles:
+						var obstacle_x := \
+							SolidGeometry.bounds(obstacle).get_center().x
+						if not SolidGeometry.circle_intersects_polygon(
+						Vector2(obstacle_x, 398.0),
+						18.0,
+						obstacle,
+					):
+							failures.append(
+								"%s still leaves a neutral middle line" % pattern_id)
+							return 0
+				elif first_bounds.size.y > 252.0 or \
+						second_bounds.size.y > 252.0:
+					failures.append(
+						"%s no longer leaves a forgiving central transition band" %
+							pattern_id)
+					return 0
+				var route_delta := route_flies[-1].y - route_flies[0].y
+				if absf(route_delta) < 280.0 or \
 					(route_delta > 0.0) != high_to_low:
-				failures.append("%s does not clearly cue the required height change" %
-					pattern_id)
-				return 0
-			for sample_index in range(41):
-				var progress := float(sample_index) / 40.0
-				var eased := progress * progress * (3.0 - 2.0 * progress)
-				var route_sample := Vector2(
+					failures.append(
+						"%s does not clearly cue the required height change" % pattern_id)
+					return 0
+				for sample_index in range(41):
+					var progress := float(sample_index) / 40.0
+					var eased := progress * progress * (3.0 - 2.0 * progress)
+					var route_sample := Vector2(
 					lerpf(route_flies[0].x, route_flies[-1].x, progress),
 					lerpf(
 						route_flies[0].y,
@@ -1916,29 +1992,31 @@ static func _test_authored_weaves_and_small_silk_burrs_are_fair(
 						eased,
 					),
 				)
-				for obstacle: PackedVector2Array in obstacles:
-					if SolidGeometry.circle_intersects_polygon(
+					for obstacle: PackedVector2Array in obstacles:
+						if SolidGeometry.circle_intersects_polygon(
 						route_sample,
 						30.0,
 						obstacle,
 					):
-						failures.append(
-							"%s blocks its Classic-sized steering envelope" %
-								pattern_id)
-						return 0
-		else:
-			if obstacles.size() != 1 or route_flies.size() != 5:
-				failures.append("%s lost its single compact burr" % pattern_id)
-				return 0
-			var burr_bounds := SolidGeometry.bounds(obstacles[0])
-			if burr_bounds.size.x > 110.0 or burr_bounds.size.y > 96.0 or \
+							failures.append(
+								"%s blocks its Classic-sized steering envelope" %
+									pattern_id)
+							return 0
+			else:
+				if obstacles.size() != 1 or route_flies.size() != 5:
+					failures.append("%s lost its single compact burr" % pattern_id)
+					return 0
+				var burr_bounds := SolidGeometry.bounds(obstacles[0])
+				if burr_bounds.size.x > 110.0 or burr_bounds.size.y > 96.0 or \
 					burr_bounds.position.y <= CourseStream.CEILING_Y or \
 					burr_bounds.end.y >= CourseStream.FLOOR_Y:
-				failures.append("%s is no longer a small middle obstacle" % pattern_id)
-				return 0
-		found[pattern_id] = true
+					failures.append("%s is no longer a small middle obstacle" % pattern_id)
+					return 0
+			found[pattern_id] = true
 	if found.size() != pattern_ids.size():
-		failures.append("deterministic late course does not expose every new pattern")
+		failures.append(
+			"deterministic late course does not expose every new pattern: %s" %
+				[found.keys()])
 		return 0
 	return 1
 

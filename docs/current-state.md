@@ -35,7 +35,7 @@ without a reported regression.
   bounded idempotent-settlement history. Schema 5 infers already-reached region
   checkpoints from a schema-4 standard best once; pre-20-level saves migrate
   proportionally once.
-- Build `0.19.1-depth-control-repair` (Android version code 36, package
+- Build `0.20.0-bramble-canopy` (Android version code 37, package
   `com.menno420.spiderswing.dev`) retains the stable conventional public debug
   identity introduced by `0.19.0-depth-testing` in
   `.github/android/debug.keystore`. The workflow pins its file and certificate
@@ -50,7 +50,7 @@ without a reported regression.
 
 **Traversal and deterministic course**
 
-- One `SwingConfig` drives all traversal. The current Balanced candidate uses
+- One `SwingConfig` drives all traversal. The approved Balanced baseline uses
   1120 gravity, 1000 px web reach, a gentle 8% attach catch, speed-neutral Reel
   shortening at 320 px/s with a two-second level-zero meter, 85% automatic
   inward slack take-up, a 40% Anchor Burst with 80 px minimum travel, and a
@@ -70,11 +70,21 @@ without a reported regression.
   A 1000 m middle-hazard runway and independent 2000 m no-inward-rail period
   protect onboarding before deterministic contoured routes, root passages,
   weaves, and small silk burrs appear.
-- Endless-course identity changes every 5000 m: Ancient Forest, Bramble Canopy,
-  then Silk Hollow. Reaching 5000 m or 10000 m in a standard run persists that
-  checkpoint. Region Practice begins at the checkpoint's safe opening and is
-  authoritatively noncompetitive: no flies, best distance, later checkpoint,
-  record, or future leaderboard eligibility.
+- The authored endless-course schedule enters Ancient Forest at 0 m, Bramble
+  Canopy at 5000 m, and Silk Hollow at 10000 m; it currently remains Silk Hollow
+  after that rather than inventing unbuilt 15000 m+ regions. Reaching 5000 m or
+  10000 m in a standard run persists that checkpoint. Region Practice begins at
+  the checkpoint's safe opening and is authoritatively noncompetitive: no
+  flies, best distance, later checkpoint, record, or future leaderboard
+  eligibility.
+- Bramble Canopy is a complete visual region rather than a name and tint: an
+  open lime-lit backdrop, braided thorn rails, leafy bramble, hanging seed-pod
+  vines, sockets, and ambience replace Ancient Forest. Foreground art resolves
+  from obstacle world position and approaches from ahead; the backdrop
+  crossfades for 2.2 seconds or changes immediately under Reduced Motion.
+  Bramble-specific high↔low pairs block the neutral middle line but keep their
+  authored Classic-sized route clear. Silk Hollow still uses shared forest art
+  plus darker ambience and remains visually incomplete.
 
 **Depth-testing access**
 
@@ -124,10 +134,10 @@ without a reported regression.
   contributes.
 - One shared Ancient-Forest-aligned UI theme covers the front end. Settings and
   Shop use a single native vertical scroller whose descendants pass drag input.
-  The finished five-spider roster, flies, continuous branch rails, natural
-  obstacle art, and three forest depth layers are presentation-owned over the
-  same authoritative polygons. Missing art falls back to geometry; mipmapped
-  spider/web rendering interpolates fixed snapshots and snaps teleports.
+  The finished five-spider roster, flies, Ancient Forest pack, and six-asset
+  Bramble Canopy pack are presentation-owned over the same authoritative
+  polygons. Missing art falls back to geometry; mipmapped spider/web rendering
+  interpolates fixed snapshots and snaps teleports.
 - Graybox plus four environment looks remain visual-only. Collision outlines and
   target guides load off and can be enabled independently under DEBUG →
   OVERLAYS. Reduced motion freezes decorative movement and restrained poses.
@@ -136,8 +146,8 @@ without a reported regression.
 
 - Local source passes `python3 tools/verify.py` with the exact
   `4.7.1.stable.official.a13da4feb` Standard binary: clean import, front-end boot,
-  architecture scan, and **118/118** contracts. The declared suite contains 51
-  deterministic physics checks, 11 spider-biology checks, 24 mobile GUI/layout
+  architecture scan, and **120/120** contracts. The declared suite contains 52
+  deterministic physics checks, 11 spider-biology checks, 25 mobile GUI/layout
   checks, 21 front-end/settings/progression checks, and 11 bootstrap/build
   contracts.
 - New contracts prove stable signing cannot silently return to per-run key
@@ -165,8 +175,11 @@ without a reported regression.
 
 **Deliberately absent — scope boundaries, not gaps**
 
-- No approved movement baseline yet. Balanced, Weighty, and Agile remain named
-  candidates until Menno completes issue #2's real-device playtest.
+- Weighty and Agile are untuned. They are kept, not deleted, but they were
+  forked from an early Balanced and never revisited while Balanced was played
+  and tuned for days, so they are stale by an unmeasured margin and were never
+  evaluated against it. Treat a difference between them and the baseline as
+  missing tuning, not as a tuning signal.
 - No authored Phase-1 chunk pack, moving hazards, final economy, missions,
   production monetization, billing SDK, server entitlement, course sharing,
   moderation, analytics, ads, cloud save, or store publishing.
@@ -180,17 +193,42 @@ without a reported regression.
 
 ## In flight
 
-The open exit gate is still Menno's device playtest on issue #2. The first depth
-build mounted setup after play had already begun, so the repair makes Home own a
-debug-only pre-run setup with exact distance, large upgrade `−`/`+`, shortcuts,
-and one no-awards start. The in-run controls also gain explicit `GO` and
-focus-loss submission. It should update over the stable-key build without
-uninstalling. Owner evidence should cover exact far starts, `OWNED` versus
-`MAX`, save survival, long-distance region identity, and the existing traversal
-checklist.
+**Baseline preset approved (2026-07-31, owner).** `balanced_baseline` is the
+approved physics baseline, satisfying one of issue #2's six exit-gate criteria.
+Record it precisely: it was not chosen over the other two, it is the only one
+that was ever played. The other five criteria are unaffected.
+
+**Issue #2 stays open, and is expected to stay open for weeks or months.** It is
+the whole Phase 0 build with an owner-judged feel gate, not a test run that
+closes it. Owner testing so far concentrates on the Garden Spider, whose core
+mechanics behave correctly at the distances reached so far — but the owner is
+explicit that this is **not** a completion claim for that spider: comparing the
+baseline against upgrade levels, and behaviour at longer distances, are both
+substantially untested. No spider is finished; one is further along.
+
+The first depth build mounted setup after play had already begun, so the repair
+makes Home own a debug-only pre-run setup with exact distance, large upgrade
+`−`/`+`, shortcuts, and one no-awards start; the in-run controls also gain
+explicit `GO` and focus-loss submission. It updates over the stable-key build
+without uninstalling, and `OWNED` versus a selected upgrade level can be
+compared without wiping or granting progression.
+
+Owner evidence still to gather: exact far starts, `OWNED` versus `MAX`, upgrade
+A/B feel, save survival across two stable-key builds, long-distance region
+identity, and the existing traversal checklist in the Swing Laboratory
+reference. The 5000 m recordings establish a healthy late-game distinction:
+Reel shapes an arc when the next route is read early, while Burst performs the
+fast late height correction. This build preserves those values and makes
+Bramble's advance cues and high↔low commitment clearer. The new Bramble APK
+still needs the decisive device visual/readability pass; Silk Hollow needs its
+own finished-art slice afterward.
 
 ## Recently shipped (newest first)
 
+- **2026-07-31 — Bramble Canopy region identity (PR #62 candidate).** The 5000 m
+  transition receives its own generated art pack and world-anchored foreground,
+  while signature deterministic pairs require a real high↔low route without
+  changing the approved physics baseline or upgrade values.
 - **2026-07-31 — Pre-run debug depth controls (PR #60 candidate).** Home now
   stages exact distance and temporary upgrades through large `−`/`+` before one
   no-awards test start; ordinary Play restores owned levels, and the in-run

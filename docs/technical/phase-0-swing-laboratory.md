@@ -281,7 +281,9 @@ product decisions.
   coverage, independently scaled obstacle polygons, creator-pattern bounds, a
   three-lane Classic-sized steering-envelope sweep through root passages,
   high↔low weave envelopes, minimum cue spacing, a forgiving central transition
-  band, small detached-burr bounds, and a bounded
+  band in the shared patterns, Bramble-specific pairs that block the neutral
+  middle line while keeping their Classic-sized guide clear, small detached-burr
+  bounds, and a bounded
   seven-chunk window;
 - a one-second safe guided opening that remains interruptible from its first
   tick;
@@ -297,8 +299,10 @@ product decisions.
 - one gameplay intent for each Android touchscreen press even though the
   Control-based HUD keeps Godot touch-to-mouse emulation enabled;
 - fixed-rate trajectory equivalence at simulated 30/60/90/120 Hz render rates.
-- all eleven finished-art runtime textures load through one presentation-owned
-  catalog without changing authoritative course geometry.
+- all twenty finished-art runtime textures—including the six-asset Bramble
+  Canopy pack—load through one presentation-owned catalog without changing
+  authoritative course geometry; foreground region selection is world-anchored
+  and the backdrop transition honors Reduced Motion.
 - custom spider/web presentation interpolates fixed snapshots, snaps teleports,
   honors reduced motion, and uses mipmaps for heavily minified moving art.
 - an arbitrary debug start inherits practice settlement ownership and cannot
@@ -320,7 +324,8 @@ product decisions.
 
 ## Owner device playtest
 
-Install `0.19.1-depth-control-repair` over `0.19.0-depth-testing` without
+Install `0.20.0-bramble-canopy` over `0.19.0-depth-testing` or any later
+stable-key build without
 uninstalling; both use the stable signer and the update should preserve the save.
 Only a device that never installed `0.19.0` or later needs the one final
 uninstall from the old throwaway-signer era.

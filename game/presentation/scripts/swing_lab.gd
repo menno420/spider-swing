@@ -26,6 +26,7 @@ const FOREST_RAIL_WORLD_REPEAT := 768.0
 const FOREST_RAIL_SEGMENT_OVERLAP := 38.0
 const MOTION_TELEPORT_THRESHOLD := 240.0
 const REGION_BANNER_DURATION := 2.8
+const REGION_VISUAL_TRANSITION_DURATION := 2.2
 
 var _snapshot: SimulationSnapshot
 var _previous_spider_position := Vector2.ZERO
@@ -54,6 +55,9 @@ var _art_textures: Dictionary = {}
 var _region_banner_remaining: float = 0.0
 var _region_banner_name: String = ""
 var _region_banner_focus: String = ""
+var _region_visual_transition_from: StringName = \
+	CourseRegionCatalog.VISUAL_OLD_GROWTH
+var _region_visual_transition_remaining: float = 0.0
 
 
 func _ready() -> void:
@@ -74,11 +78,18 @@ func configure_player_options(
 	_show_control_hints = show_control_hints
 	_reduced_motion = reduced_motion
 	_show_debug_tools = show_debug_tools
+	if _reduced_motion:
+		_region_visual_transition_remaining = 0.0
 	queue_redraw()
 
 
 func present(snapshot: SimulationSnapshot) -> void:
-	var region_changed := _snapshot == null or \
+	var had_snapshot := _snapshot != null
+	var previous_visual_profile := \
+		CourseRegionCatalog.VISUAL_OLD_GROWTH
+	if had_snapshot:
+		previous_visual_profile = _snapshot.region_visual_profile
+	var region_changed := not had_snapshot or \
 		_snapshot.region_id != snapshot.region_id
 	if _snapshot == null or snapshot.tick < _motion_tick or \
 			_current_spider_position.distance_to(snapshot.position) > \
@@ -101,6 +112,14 @@ func present(snapshot: SimulationSnapshot) -> void:
 		_region_banner_name = snapshot.region_name
 		_region_banner_focus = snapshot.region_focus
 		_region_banner_remaining = REGION_BANNER_DURATION
+		_region_visual_transition_from = previous_visual_profile
+		if had_snapshot and \
+				previous_visual_profile != snapshot.region_visual_profile and \
+				not _reduced_motion:
+			_region_visual_transition_remaining = \
+				REGION_VISUAL_TRANSITION_DURATION
+		else:
+			_region_visual_transition_remaining = 0.0
 	queue_redraw()
 
 
@@ -187,6 +206,10 @@ func _process(delta: float) -> void:
 		0.0,
 		_region_banner_remaining - delta,
 	)
+	_region_visual_transition_remaining = maxf(
+		0.0,
+		_region_visual_transition_remaining - delta,
+	)
 	if _snapshot == null:
 		return
 	if not _reduced_motion:
@@ -238,28 +261,21 @@ func _draw_parallax(size: Vector2) -> void:
 	)
 	var parallax_x := 0.0 if _reduced_motion else _camera_x
 	if _uses_forest_art():
-		_draw_forest_backdrop_layer(
-			ArtAssetCatalog.FOREST_BACKDROP_FAR,
-			size,
-			parallax_x,
-			0.035,
-			Color(0.58, 0.68, 0.58, 0.72),
-		)
-		_draw_forest_backdrop_layer(
-			ArtAssetCatalog.FOREST_BACKDROP_MID,
-			size,
-			parallax_x,
-			0.10,
-			Color(0.62, 0.70, 0.60, 0.36),
-		)
-		_draw_forest_backdrop_layer(
-			ArtAssetCatalog.FOREST_BACKDROP_NEAR,
-			size,
-			parallax_x,
-			0.22,
-			Color(0.52, 0.62, 0.48, 0.24),
-		)
-		_draw_region_ambience(size, parallax_x)
+		var profile := CourseRegionCatalog.VISUAL_OLD_GROWTH \
+			if _snapshot == null else _snapshot.region_visual_profile
+		if _region_visual_transition_remaining > 0.0 and \
+				_region_visual_transition_from != profile:
+			var blend := 1.0 - _region_visual_transition_remaining / \
+				REGION_VISUAL_TRANSITION_DURATION
+			_draw_region_backdrop(
+				_region_visual_transition_from,
+				size,
+				parallax_x,
+				1.0 - blend,
+			)
+			_draw_region_backdrop(profile, size, parallax_x, blend)
+		else:
+			_draw_region_backdrop(profile, size, parallax_x, 1.0)
 		return
 	var far_offset := fposmod(-parallax_x * 0.08, 240.0)
 	for index in range(-1, 8):
@@ -289,6 +305,55 @@ func _draw_parallax(size: Vector2) -> void:
 	for x in range(-120, int(size.x) + 120, 120):
 		draw_line(Vector2(float(x) + grid_offset, 0.0),
 			Vector2(float(x) + grid_offset, size.y), grid_color, 1.0)
+
+
+func _draw_region_backdrop(
+	profile: StringName,
+	size: Vector2,
+	parallax_x: float,
+	alpha: float,
+) -> void:
+	if alpha <= 0.0:
+		return
+	if profile == CourseRegionCatalog.VISUAL_CANOPY:
+		_draw_forest_backdrop_layer(
+			ArtAssetCatalog.CANOPY_BACKDROP_FAR,
+			size,
+			parallax_x,
+			0.035,
+			Color(0.68, 0.83, 0.58, 0.94 * alpha),
+		)
+		_draw_forest_backdrop_layer(
+			ArtAssetCatalog.CANOPY_BACKDROP_MID,
+			size,
+			parallax_x,
+			0.11,
+			Color(0.75, 0.90, 0.62, 0.58 * alpha),
+		)
+		_draw_region_ambience(size, parallax_x, profile, alpha)
+		return
+	_draw_forest_backdrop_layer(
+		ArtAssetCatalog.FOREST_BACKDROP_FAR,
+		size,
+		parallax_x,
+		0.035,
+		Color(0.58, 0.68, 0.58, 0.72 * alpha),
+	)
+	_draw_forest_backdrop_layer(
+		ArtAssetCatalog.FOREST_BACKDROP_MID,
+		size,
+		parallax_x,
+		0.10,
+		Color(0.62, 0.70, 0.60, 0.36 * alpha),
+	)
+	_draw_forest_backdrop_layer(
+		ArtAssetCatalog.FOREST_BACKDROP_NEAR,
+		size,
+		parallax_x,
+		0.22,
+		Color(0.52, 0.62, 0.48, 0.24 * alpha),
+	)
+	_draw_region_ambience(size, parallax_x, profile, alpha)
 
 
 func _draw_forest_backdrop_layer(
@@ -322,17 +387,19 @@ func _draw_forest_backdrop_layer(
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
-func _draw_region_ambience(size: Vector2, parallax_x: float) -> void:
-	if _snapshot == null:
-		return
-	var profile := _snapshot.region_visual_profile
+func _draw_region_ambience(
+	size: Vector2,
+	parallax_x: float,
+	profile: StringName,
+	alpha: float = 1.0,
+) -> void:
 	if profile == CourseRegionCatalog.VISUAL_OLD_GROWTH:
 		return
 	var motion := 0.0 if _reduced_motion else _motion_time
 	if profile == CourseRegionCatalog.VISUAL_CANOPY:
 		draw_rect(
 			Rect2(Vector2.ZERO, size),
-			Color(0.03, 0.20, 0.12, 0.13),
+			Color(0.03, 0.20, 0.12, 0.13 * alpha),
 		)
 		var offset := fposmod(-parallax_x * 0.16, 190.0)
 		for index in range(-1, 9):
@@ -341,19 +408,19 @@ func _draw_region_ambience(size: Vector2, parallax_x: float) -> void:
 			draw_line(
 				Vector2(x, 0.0),
 				Vector2(x + sin(motion * 0.7 + index) * 8.0, thread_end),
-				Color(WEB, 0.13),
+				Color(WEB, 0.13 * alpha),
 				1.2,
 				true,
 			)
 			draw_circle(
 				Vector2(x + 34.0, 90.0 + float(posmod(index, 3)) * 86.0),
 				5.0 + float(posmod(index, 2)) * 2.0,
-				Color(0.60, 0.88, 0.55, 0.16),
+				Color(0.60, 0.88, 0.55, 0.16 * alpha),
 			)
 		return
 	draw_rect(
 		Rect2(Vector2.ZERO, size),
-		Color(0.04, 0.09, 0.19, 0.23),
+		Color(0.04, 0.09, 0.19, 0.23 * alpha),
 	)
 	var offset := fposmod(-parallax_x * 0.11, 250.0)
 	for index in range(-1, 7):
@@ -369,14 +436,14 @@ func _draw_region_ambience(size: Vector2, parallax_x: float) -> void:
 			0.1,
 			PI - 0.1,
 			24,
-			Color(WEB, 0.10),
+			Color(WEB, 0.10 * alpha),
 			1.3,
 			true,
 		)
 		draw_circle(
 			center + Vector2(0.0, -76.0 - pulse),
 			5.0,
-			Color(0.62, 0.88, 0.96, 0.23),
+			Color(0.62, 0.88, 0.96, 0.23 * alpha),
 		)
 
 
@@ -489,7 +556,11 @@ func _draw_continuous_forest_profile(
 	world_polygon: PackedVector2Array,
 	screen_polygon: PackedVector2Array,
 ) -> void:
-	var texture := _art_texture(ArtAssetCatalog.FOREST_RAIL_TILE)
+	var profile := _visual_profile_for_world_polygon(world_polygon)
+	var rail_asset := ArtAssetCatalog.CANOPY_RAIL_TILE \
+		if profile == CourseRegionCatalog.VISUAL_CANOPY \
+		else ArtAssetCatalog.FOREST_RAIL_TILE
+	var texture := _art_texture(rail_asset)
 	if texture == null or screen_polygon.size() < 4:
 		return
 	# Boundary polygons store the playable profile first and the outer thickness
@@ -563,6 +634,8 @@ func _draw_obstacle(
 	var environment := _environment_theme()
 	if _uses_forest_art():
 		var world_bounds := _polygon_bounds(world_polygon)
+		var profile := _visual_profile_for_world_polygon(world_polygon)
+		var canopy_art := profile == CourseRegionCatalog.VISUAL_CANOPY
 		var screen_bounds := _polygon_bounds(polygon)
 		var attached_to_ceiling := \
 			world_bounds.position.y <= CourseStream.CEILING_Y + 2.0
@@ -579,9 +652,17 @@ func _draw_obstacle(
 		var hanging := top_points >= bottom_points and not detached
 		var wide := screen_bounds.size.x > screen_bounds.size.y * 1.15
 		var tall_narrow := screen_bounds.size.y > screen_bounds.size.x * 1.35
-		var asset_id := ArtAssetCatalog.FOREST_BRAMBLE
+		var asset_id := ArtAssetCatalog.CANOPY_BRAMBLE \
+			if canopy_art else ArtAssetCatalog.FOREST_BRAMBLE
 		var flip_y := false
-		if detached:
+		if canopy_art and detached:
+			asset_id = ArtAssetCatalog.CANOPY_BRAMBLE
+		elif canopy_art and (tall_narrow or (hanging and not wide)):
+			asset_id = ArtAssetCatalog.CANOPY_SEED_POD
+			flip_y = attached_to_floor
+		elif canopy_art and hanging:
+			flip_y = true
+		elif detached:
 			asset_id = ArtAssetCatalog.FOREST_BRAMBLE
 		elif world_polygon.size() == 6 and not tall_narrow:
 			asset_id = ArtAssetCatalog.FOREST_ROOT_STUMP
@@ -688,7 +769,11 @@ func _draw_forest_growth_socket(
 	screen_polygon: PackedVector2Array,
 	hanging: bool,
 ) -> void:
-	var texture := _art_texture(ArtAssetCatalog.FOREST_GROWTH_SOCKET)
+	var profile := _visual_profile_for_world_polygon(world_polygon)
+	var socket_asset := ArtAssetCatalog.CANOPY_GROWTH_SOCKET \
+		if profile == CourseRegionCatalog.VISUAL_CANOPY \
+		else ArtAssetCatalog.FOREST_GROWTH_SOCKET
+	var texture := _art_texture(socket_asset)
 	if texture == null:
 		return
 	var world_bounds := _polygon_bounds(world_polygon)
@@ -1644,6 +1729,16 @@ func _art_texture(asset_id: StringName) -> Texture2D:
 func _uses_forest_art() -> bool:
 	return StringName(_environment_theme()["id"]) == \
 		EnvironmentThemeCatalog.ANCIENT_FOREST
+
+
+func _visual_profile_for_world_polygon(
+	world_polygon: PackedVector2Array,
+) -> StringName:
+	var world_x := _polygon_bounds(world_polygon).get_center().x
+	var distance := maxf(0.0, world_x - CourseStream.START_X)
+	return StringName(
+		CourseRegionCatalog.region_for_distance(distance)["visual_profile"],
+	)
 
 
 func _environment_theme() -> Dictionary:

@@ -24,6 +24,7 @@ static func run() -> Dictionary:
 	passed += _test_environment_theme_packs_are_visual_only(failures)
 	passed += _test_region_ambience_and_practice_status_are_presentation_only(
 		failures)
+	passed += _test_bramble_canopy_uses_world_anchored_art_pack(failures)
 	passed += _test_finished_forest_has_no_legacy_obstacle_backing(failures)
 	passed += _test_forest_obstacles_join_the_rails_without_gate_distortion(
 		failures,
@@ -684,11 +685,11 @@ static func _test_environment_theme_packs_are_visual_only(
 			failures.append("environment texture is not a 384 px runtime tile")
 			return 0
 	var art_paths := ArtAssetCatalog.texture_paths()
-	var expected_art_count := 8 + SpiderCatalog.ALL_IDS.size() + 1
+	var expected_art_count := 14 + SpiderCatalog.ALL_IDS.size() + 1
 	if art_paths.size() != expected_art_count:
 		failures.append(
-			"art catalog does not expose eight forest layers, one asset per "
-			+ "spider profile, and the fly")
+			"art catalog does not expose the old-growth and Bramble Canopy "
+			+ "packs, one asset per spider profile, and the fly")
 		return 0
 	for path: String in art_paths:
 		if not ResourceLoader.exists(path):
@@ -826,6 +827,93 @@ static func _test_region_ambience_and_practice_status_are_presentation_only(
 		failures.append(
 			"region ambience, practice status, or reduced-motion guard is missing")
 		return 0
+	return 1
+
+
+static func _test_bramble_canopy_uses_world_anchored_art_pack(
+	failures: PackedStringArray,
+) -> int:
+	var view := SwingLabView.new()
+	view._load_art_textures()
+	for asset_id: StringName in [
+		ArtAssetCatalog.CANOPY_RAIL_TILE,
+		ArtAssetCatalog.CANOPY_GROWTH_SOCKET,
+		ArtAssetCatalog.CANOPY_BRAMBLE,
+		ArtAssetCatalog.CANOPY_SEED_POD,
+		ArtAssetCatalog.CANOPY_BACKDROP_FAR,
+		ArtAssetCatalog.CANOPY_BACKDROP_MID,
+	]:
+		if view._art_texture(asset_id) == null:
+			failures.append("Bramble Canopy runtime art failed to load: %s" % asset_id)
+			view.free()
+			return 0
+	var boundary_x := CourseStream.START_X + \
+		CourseRegionCatalog.REGION_LENGTH_PIXELS
+	var old_growth_polygon := PackedVector2Array([
+		Vector2(boundary_x - 80.0, 100.0),
+		Vector2(boundary_x - 20.0, 100.0),
+		Vector2(boundary_x - 20.0, 140.0),
+		Vector2(boundary_x - 80.0, 140.0),
+	])
+	var canopy_polygon := PackedVector2Array([
+		Vector2(boundary_x + 20.0, 100.0),
+		Vector2(boundary_x + 80.0, 100.0),
+		Vector2(boundary_x + 80.0, 140.0),
+		Vector2(boundary_x + 20.0, 140.0),
+	])
+	if view._visual_profile_for_world_polygon(old_growth_polygon) != \
+			CourseRegionCatalog.VISUAL_OLD_GROWTH or \
+			view._visual_profile_for_world_polygon(canopy_polygon) != \
+				CourseRegionCatalog.VISUAL_CANOPY:
+		failures.append(
+			"Bramble foreground art switches globally instead of by world position")
+		view.free()
+		return 0
+	var old_growth := SimulationSnapshot.new()
+	old_growth.tick = 1
+	old_growth.region_id = CourseRegionCatalog.ANCIENT_FOREST
+	old_growth.region_visual_profile = CourseRegionCatalog.VISUAL_OLD_GROWTH
+	view.present(old_growth)
+	var canopy := SimulationSnapshot.new()
+	canopy.tick = 2
+	canopy.region_id = CourseRegionCatalog.BRAMBLE_CANOPY
+	canopy.region_visual_profile = CourseRegionCatalog.VISUAL_CANOPY
+	view.present(canopy)
+	if view._region_visual_transition_from != \
+			CourseRegionCatalog.VISUAL_OLD_GROWTH or \
+			not is_equal_approx(
+				view._region_visual_transition_remaining,
+				SwingLabView.REGION_VISUAL_TRANSITION_DURATION,
+			):
+		failures.append("ordinary 5000 m entry did not arm the backdrop crossfade")
+		view.free()
+		return 0
+	view.configure_player_options(true, true, true)
+	if not is_zero_approx(view._region_visual_transition_remaining):
+		failures.append("Reduced Motion did not finish the region transition")
+		view.free()
+		return 0
+	var direct_start := SwingLabView.new()
+	direct_start.present(canopy)
+	if not is_zero_approx(direct_start._region_visual_transition_remaining):
+		failures.append("a direct 5000 m start fades from a region never mounted")
+		direct_start.free()
+		view.free()
+		return 0
+	direct_start.free()
+	var source_file := FileAccess.open(
+		"res://game/presentation/scripts/swing_lab.gd",
+		FileAccess.READ,
+	)
+	var source := "" if source_file == null else source_file.get_as_text()
+	if not source.contains("REGION_VISUAL_TRANSITION_DURATION") or \
+			not source.contains("ArtAssetCatalog.CANOPY_RAIL_TILE") or \
+			not source.contains("ArtAssetCatalog.CANOPY_SEED_POD"):
+		failures.append(
+			"Bramble backdrop transition or region obstacle routing is missing")
+		view.free()
+		return 0
+	view.free()
 	return 1
 
 

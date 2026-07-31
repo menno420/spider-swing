@@ -347,7 +347,7 @@ func _build_settings() -> void:
 	preset_rail.name = "SwingPresetRail"
 	preset_rail.add_theme_constant_override("separation", 10)
 	content.add_child(preset_rail)
-	var preset_labels := ["BALANCED\nSTEADY", "WEIGHTY\nMOMENTUM", "AGILE\nQUICK"]
+	var preset_labels := ["BALANCED\nBASELINE", "WEIGHTY\nUNTUNED", "AGILE\nUNTUNED"]
 	for preset_index in range(preset_labels.size()):
 		var preset_button := _button(
 			StringName("SwingPreset%d" % preset_index),
@@ -360,7 +360,9 @@ func _build_settings() -> void:
 		preset_rail.add_child(preset_button)
 		_preset_buttons[preset_index] = preset_button
 	content.add_child(_setting_description(
-		"This selects the active Phase 0 candidate when Play starts."))
+		"Balanced is the approved baseline. The other two were forked early and "
+		+ "never tuned — they are kept for future work, not offered as tested "
+		+ "alternatives."))
 
 	_hints_toggle = _toggle("Show control hints")
 	_hints_toggle.toggled.connect(_on_hints_toggled)
