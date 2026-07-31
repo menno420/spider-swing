@@ -1,0 +1,1 @@
+- `claude/agent-bramble-obstacle-identity` · **Make Bramble Canopy obstacles genuinely distinct after owner device review** · course pattern catalog/stream, Bramble obstacle presentation assets, contracts, build identity, living docs · 2026-07-31
