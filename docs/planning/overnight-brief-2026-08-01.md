@@ -14,6 +14,25 @@ review the running build in the morning, not the diffs.
 ChatGPT is working in parallel on visuals from its own brief. Assume the repo
 moves under you: `main` moved three times under open PRs on 2026-07-31.
 
+**The split is by domain, not by code versus art.**
+
+- **Yours: systems and progression.** Campaign levels, upgrade mechanics,
+  missions, currencies and rewards, difficulty modes, measurement, and new
+  mechanic ideas grounded in it.
+- **Not yours: zones.** Environments, obstacles, zone-specific mechanics and all
+  art belong to the ChatGPT sessions. One is improving 5 000–10 000 m now;
+  another takes 10 000 m upward. 0–5 000 m is good enough for now.
+
+You also have no image generation, so you could not do the art half regardless.
+If zone work blocks something of yours, write the question down and move on —
+do not build into that lane.
+
+**Scope note worth knowing.** `docs/current-state.md` lists missions and the
+final economy under "Deliberately absent — scope boundaries, not gaps", because
+Phase 0 excluded them. The owner has now asked for them, so that boundary is
+moving on purpose. When missions or currency land, update that section in the
+same PR rather than leaving the ledger contradicting the tree.
+
 ## Non-negotiables
 
 1. **Do not change physics values.** `balanced_baseline` was owner-approved on
@@ -80,45 +99,59 @@ made it work is specific, and the details below are the ones that carry it.
 Each slice is one PR. Stop a slice when it is green and landed, then take the
 next. Do not batch.
 
-**Slice 1 — ADR: deterministic moving parts.**
-Design only, no gameplay code. How a moving hazard expresses position as a
-function of chunk index, seed and tick; how it interacts with the web
-constraint; how the fixed-rate trajectory contracts stay true. This unblocks
-everything else, so do it first even though it ships no content.
+Measurement comes first because it is cheap and three later slices lean on it.
 
-**Slice 2 — Moving-anchor proof in the simulator.**
-The riskiest unknown in the whole plan: attaching to a *moving* pivot without
-the constraint injecting energy. Prove it headlessly with
-`tools/simulate.gd` before any zone depends on it. If it cannot be made
-energy-safe, say so plainly and Zone 4 loses its signature mechanic — that is a
-real answer, not a failure.
-
-**Slice 3 — Difficulty curve measurement.**
+**Slice 1 — Difficulty curve measurement.**
 Use `tools/simulate.gd --start-m=` across 5 000 / 10 000 / 15 000 / 20 000 with
 fixed seeds and several skill levels. Report deaths-per-kilometre and death
-causes per band. This turns "the curve is flat past 5 km" from an argument into
-a number, and it is the baseline every later zone is judged against. Commit the
-numbers.
+causes per band. This is the baseline that difficulty modes, the upgrade audit
+and any economy tuning are judged against. Commit the numbers.
 
-**Slice 4 — Zone 4 skeleton: Ruined Arboretum.**
-Append the region, add its pattern set, wire its visual identity. Static
-hazards only — broken beams and collapsed frames. No moving parts yet. Playable
-and readable at 15 000 m.
+**Slice 2 — Campaign teaching tier.**
+The gap is named precisely in the approved campaign decision in
+`docs/decisions.md`: the tutorial explains Reel, Burst and Dive across six
+static steps and then never asks the player to perform any of them. Build short
+levels that each *require* one verb — one you cannot finish without reeling, one
+without a Burst, one without a Dive. Existing art, existing course geometry.
+Rewards are cosmetics and stars, never flies, routed through the existing
+settlement path.
 
-**Slice 5 — Zone 4 moving parts.**
-Hanging panes and slow rotors on deterministic phases, per the ADR. Phase-gated
-gaps. Only if Slice 2 succeeded.
+**Slice 3 — Difficulty modes.**
+Already settled in the ledger, so this is implementation. Separate best distance
+per mode; only Standard is leaderboard-eligible; difficulty changes **which
+content the stream may serve and how much recovery the player gets, never the
+physics**.
 
-**Slice 6 — Upgrade audit against measured numbers.**
-With Slice 3's baseline, check which existing upgrade tracks actually change
-outcomes and which are noise. Refine or propose additions grounded in the
-measurements, not in intuition. Do not add upgrades that no measurement asked
-for.
+**Slice 4 — Upgrade audit and refinement.**
+With Slice 1's baseline, measure which existing upgrade tracks actually change
+outcomes and which are noise. Refine, or add tracks the measurements ask for. Do
+not add upgrades on intuition.
 
-**Slice 7 onward — Zone 5, Storm Ridge.** Only after Zone 4 is felt on device.
+**Slice 5 — Currency and reward model.**
+Design then implement. Flies are the only currency today; the campaign adds
+stars and cosmetics, and rewards must never be flies. Make the whole economy
+coherent on paper first — what each currency is for, what it buys, what cannot
+be bought — then implement. This is where the "final economy" scope boundary
+moves, so update `docs/current-state.md` with it.
+
+**Slice 6 — Missions.**
+Design first, in its own slice, because missions were deliberately out of Phase 0
+and there is no existing shape to extend. What a mission is, how it is offered,
+how it completes, how it settles, and how it avoids becoming a second progression
+system competing with upgrades. Implement only after the design lands.
+
+**Slice 7 — Ideas, measured.**
+A standing slice: propose new mechanics or refinements grounded in what the
+measurements actually showed, with the evidence attached. Write them into a
+document; do not build them unprompted. Good input for the owner's morning.
 
 If you run out of backlog, do not invent scope. Re-arm, write what you would do
 next in the session card, and stop.
+
+**Available on request, not queued:** the moving-anchor question — can the web
+constraint hold a *moving* anchor without injecting energy — is a simulator
+question in your competence that the zone lane depends on. Do not take it unless
+asked; note it if it comes up.
 
 ## Design source
 
