@@ -332,7 +332,7 @@ ephemerally signed dev app, then check:
     begin off, can be enabled independently, and return off in a new run;
 22. deliberately hit a lethal obstacle once and verify `RESCUE READY` becomes
     `RESCUE SPENT`; the next lethal hit must end the run;
-23. compare all five Garage profiles, especially Skitter's smaller collision
+23. compare all five Garage profiles, especially the Magnolia Green Jumper's smaller collision
     radius, Anchorite's weight, Ballooner's visible bounded glide, and
     Buckler's charged moderate rail bounce;
 24. on maxed Balanced Flow, confirm the description says automatic take-up

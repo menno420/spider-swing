@@ -503,3 +503,31 @@
   ceremony the project can sustain.
 - provenance: Menno's 2026-07-31 direction on real-name priority, field-guide
   value, source verification, and image licensing
+
+## [D-0031] Use the real name where one exists; otherwise name the science
+
+- status: decided
+- date: 2026-07-31
+- verdict: A profile uses a real spider's name whenever that spider is real and
+  has a name a player can read and say. Where no usable real name exists, invent
+  a good one — and the Field Guide then owes the player the science instead:
+  `drawn_from` lists every real spider the profile borrows from, with the
+  accepted name, its authority where verified, its family, and **what that
+  animal actually contributes**. One invented spider may deliberately combine
+  several real ones, each supplying a different part. A contract fails the build
+  if an invented name ships without that list or if an entry omits its
+  contribution. Applied: Skitter becomes **Magnolia Green Jumper** because
+  *Lyssomanes viridis* has a usable common name; Buckler keeps its invented name
+  because *Cyclocosmia* has no settled English common name and the profile
+  blends *Ummidia*'s body and trapdoor with *Cyclocosmia*'s hardened disc.
+- why: D-0030 set real-first as the priority but left the remedy for the
+  invented cases unstated, which is where the educational value actually lives.
+  Naming the contributing species — and which part each one gave — turns an
+  invented profile from a gap in the teaching into a route into it: a player who
+  likes Buckler can be shown two real spiders instead of none. Making
+  `drawn_from` a list rather than a single reference is what lets a combined
+  identity stay honest, because no single animal has to be stretched to cover a
+  blend.
+- provenance: Menno's 2026-07-31 direction on inventing names only where needed,
+  explaining the scientific names in the field guide, and combining several real
+  spiders into one

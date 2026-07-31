@@ -1927,7 +1927,7 @@ static func _test_spider_profiles_and_glide_share_one_config(
 	SpiderCatalog.apply_to_config(buckler, progress)
 	if agile.player_collision_radius >= 18.0 or \
 			agile.horizontal_drive_acceleration <= 470.0:
-		failures.append("Skitter lost its smaller, more agile profile")
+		failures.append("Magnolia Green Jumper lost its smaller, more agile profile")
 		return 0
 	if heavy.player_collision_radius <= 18.0 or heavy.gravity <= 1120.0 or \
 			heavy.reel_retraction_rate <= SwingConfig.BASE_REEL_RETRACTION_RATE:

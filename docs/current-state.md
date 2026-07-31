@@ -151,7 +151,7 @@ without a reported regression.
   90% for detached floating hazards, with 112% gate openings. All three are
   independently tunable and feed the same polygons to collision and rendering.
 - `SpiderCatalog` defines five comparison profiles over one `SwingConfig`:
-  balanced Garden Spider, smaller/faster Skitter, heavier Anchorite, and
+  balanced Garden Spider, smaller/faster Magnolia Green Jumper, heavier Anchorite, and
   bounded-glide Ballooner, plus Buckler's one-charge moderate rail bounce.
   Each exposes an explicit trade-off, the same five core fly-funded tracks, and
   two identity tracks. Every track has 20 small levels; levels 5/10/15/20 grant
@@ -191,7 +191,7 @@ without a reported regression.
   brambles, top-anchored thorn vines, broken root stumps, natural upper/lower
   growth around broad rail passages, three low-contrast forest depth layers, a
   finished five-profile spider roster, and golden forest flies. Garden is dark
-  and orange-banded; Skitter is slender translucent olive; Anchorite is broad
+  and orange-banded; Magnolia Green Jumper is slender translucent olive; Anchorite is broad
   charcoal-and-bronze; Ballooner is pale and tiptoe-raised; Buckler is
   compact glossy amber. Finished
   obstacle alpha replaces the prototype filled polygon in normal play.
@@ -642,46 +642,25 @@ reasoning.
 
 ## Recently shipped (newest first)
 
-- **2026-07-31 — Real-spider-first policy and image sourcing.** Sets
-  the priority order for profile identity — `species`, then `composite`, then
-  `behaviour`, and `fictional` only where nothing real fits — so an invented
-  mechanic no longer implies an invented name. Shipped art is generated,
-  public-domain/CC0 verified per file, or owner-produced; anything needing
-  attribution or per-use permission is avoided rather than negotiated. Agent
-  verification against trustworthy sources is the sufficient standard for a
-  claim, with no separate approval gate. Re-audited the five profiles against
-  the new order: Garden Spider, Anchorite, and Ballooner settled; Skitter and
-  Buckler now open owner questions in `docs/owner-questions.md`.
-
-- **2026-07-31 — Second research report verified and folded in.** The owner's
-  longer report reproduced all five approved mappings independently, but ships
-  84 citation keys with no register defining them. Nine of its claims were
-  re-verified against WSC, peer-reviewed papers, and a wildlife authority;
-  results — including what was *not* checked — are logged in
-  `docs/product/spider-biology-verification-2026-07-31.md`. Adopted:
-  *Cyclocosmia*'s burrow-plugging disc as Buckler's armour reference (a door,
-  not a shield), *Erigone atra* as Ballooner's documented example, two taxonomy
-  corrections (*Sicarius* → *Hexophthalma*, *Deinopis* → *Asianopis*), and four
-  verified backlog candidates.
-
-- **2026-07-31 — Buckler rename and first-class fictional spiders.**
-  Renames the guarded-recovery profile from Springtail, whose name belonged to
-  Collembola and made a disclaimer do work an invented name does for free, and
-  adds the folio section stating that invented spiders belong in this game with
-  the four rules for inventing well. The persisted id stays `springtail` — a
-  pre-rename save was verified to load, resolve to Buckler, and keep both
-  identity upgrade levels, so no migration was needed. Its biology record now
-  discloses the animal itself as invented and corrects why small animals really
-  survive falls.
-
-- **2026-07-31 — Biological inspiration layer and Field Guide.** Adds a domain
-  record per profile that separates what each spider is inspired by, what the
-  real animal does, and what the game invents; surfaces it on the Garage card
-  and in a new FIELD GUIDE route; corrects the Skitter sprite brief, whose
-  "compact, short-legged" direction contradicted the slender *Lyssomanes
-  viridis* it names; and lands the approved mappings, editorial rules, and
-  parked candidate backlog in `docs/product/spider-biology-folio.md`. No
-  physics, collision, economy, or upgrade value changed.
+- **2026-07-31 — Spider identity: biology layer, Field Guide, and the naming
+  rule.** `SpiderBiologyCatalog` keeps one record per profile — inspiration,
+  claim strength, real trait, an explicit statement of what the game invents,
+  a myth correction, and cited sources — sharing no key with `SpiderCatalog`, so
+  taxonomy can be corrected without touching a tuned number or saved
+  progression. A scrollable FIELD GUIDE route off the Garage renders it, keeping
+  game identity, inspiration, real biology and game adaptation on separate
+  lines. **Naming rule:** a real spider with a usable name always wins; where
+  none exists the name is invented and `drawn_from` must then list every real
+  spider it borrows from *and what each contributes*, so one invented spider can
+  honestly combine several. Skitter became **Magnolia Green Jumper**; Springtail
+  — a name belonging to Collembola, not spiders — became **Buckler**, which now
+  names *Ummidia* (body and hinged trapdoor) and *Cyclocosmia* (hardened
+  abdominal disc). Persisted ids are unchanged; a pre-rename save was verified to
+  load with both identity upgrade levels intact. Eleven biology contracts guard
+  it. Art is generated or unencumbered; agent verification against trustworthy
+  sources is the sufficient standard for a claim. Reasoning, sources and the
+  decision trail live in `docs/product/spider-biology-folio.md` and the dated
+  verification log beside it.
 - **2026-07-30 — Seeded regions and checkpoint practice (PR #48).** Divides
   the endless course into three reproducible 5,000 m identities with distinct
   curated pools and bounded recovery cadence, adds presentation-owned region

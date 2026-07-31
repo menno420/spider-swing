@@ -35,37 +35,39 @@ build if one goes missing.
 - `composite` — several relatives blended; no species-level claim.
 - `behaviour` — a behaviour recorded across many families, not a taxon.
 - `fictional` — an invented animal. **The last resort, not the default** (§3):
-  used only when no real spider fits. Real biology may still guide the art, and
-  the disclosure must say the spider itself is invented, not merely that a stat
-  is tuned.
+  used only when no real spider fits. Real biology may still guide the art, the
+  disclosure must say the spider itself is invented, and `drawn_from` must name
+  every real spider it borrows from and what each contributes.
 
 ## 2. Approved mappings
 
-### Re-audit against the real-first priority (2026-07-31)
+### The naming rule, and the five audited against it (2026-07-31)
 
-D-0030 changes the order in which claim strengths are considered, so every
-profile was re-checked against it. Two names are now open questions for the
-owner; three are settled.
+**A real spider with a usable name always wins.** Where no usable real name
+exists, invent a good one — and then the Field Guide owes the player the
+science: every real spider the profile borrows from, named, **and what each one
+contributes**. One invented spider may combine several real ones; that is the
+point, not a compromise.
 
-| Profile | Does a real spider with a usable name fit? | Verdict |
+| Profile | Name origin | Resolution |
 |---|---|---|
-| **Garden Spider** | Yes, and it already uses one — garden orb-weaver | **Settled.** Real naming already |
-| **Skitter** | Yes — *Lyssomanes viridis*, the **magnolia green jumper** | **Open.** "Skitter" is invented where a usable real name exists |
-| **Anchorite** | No single one; a deliberate blend of burrowing mygalomorphs | **Settled** as `composite`, which D-0030 explicitly permits |
-| **Ballooner** | No — ballooning is shared across families, so no species can own it | **Settled** as `behaviour` |
-| **Buckler** | Yes — ***Cyclocosmia***, whose abdomen genuinely is an armoured disc | **Open.** Invented name where a real armoured spider exists |
+| **Garden Spider** | real | "Garden spider" is a real common name for Araneidae |
+| **Magnolia Green Jumper** | real | Renamed from "Skitter" — *Lyssomanes viridis* has a usable common name, so the invented one had no justification |
+| **Anchorite** | invented | No single species; a deliberate blend of two theraphosids, each named with its contribution |
+| **Ballooner** | invented | Ballooning is shared across families, so no species can own it; *Erigone atra* named as the documented example |
+| **Buckler** | invented | *Cyclocosmia* has no settled English common name a player would recognise, and the profile is a blend of two genera |
 
-The two open ones are branding, so they are the owner's call and are recorded in
-`docs/owner-questions.md` rather than guessed at. The reasoning either way:
+`drawn_from` is therefore a **list**, and each entry carries a `contributes`
+string. Buckler is the clearest case:
 
-- A fictional *mechanic* never forced a fictional *name* — Garden Spider proves
-  that. Under D-0030, Buckler's rebound being invented is **not** sufficient
-  grounds for an invented name when *Cyclocosmia* exists and is genuinely
-  armoured.
-- Against renaming: "Skitter" and "Buckler" are short, readable, and already
-  shipped; real common names are longer and *Cyclocosmia* has no settled English
-  common name a player would recognise.
+- *Ummidia* Thorell, 1875 — the compact glossy body and hinged trapdoor
+- *Cyclocosmia* Ausserer, 1871 — the hardened abdominal disc
 
+Neither animal alone is Buckler. Both are real, both are named, and the guide
+says which part came from where. A contract
+(`_test_invented_names_name_the_science_they_borrow`) fails the build if an
+invented name ships without that list, or if any entry omits what it
+contributes.
 
 ### Garden Spider — `composite`
 
@@ -84,7 +86,7 @@ The two open ones are branding, so they are the owner's call and are recorded in
   capture web at all.
 - **Sources:** WSC v27; NHM London, *Spider webs*.
 
-### Skitter — `species`
+### Magnolia Green Jumper — `species`
 
 - **Inspired by:** magnolia green jumper, *Lyssomanes viridis* (Walckenaer, 1837),
   family Salticidae.
@@ -97,6 +99,8 @@ The two open ones are branding, so they are the owner's call and are recorded in
 - **Correction carried:** *Lyssomanes* is long-legged and slender for a jumping
   spider. **This contradicts the pre-existing sprite brief** and is the reason
   `docs/ideas/spider-sprite-briefs.md` was corrected before production.
+- **Naming history:** called **Skitter** until 2026-07-31. A usable real common
+  name existed, so under the naming rule the invented one had no justification.
 - **Sources:** WSC v27.
 
 ### Anchorite — `composite`

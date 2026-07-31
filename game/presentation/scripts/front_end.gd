@@ -399,6 +399,10 @@ func _build_garage() -> void:
 			68.0,
 		)
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		# Real common names are longer than the invented ones they replaced;
+		# 17 keeps the widest ("Magnolia Green Jumper", plus its selected tick)
+		# inside the narrower grid column.
+		button.add_theme_font_size_override("font_size", 17)
 		button.pressed.connect(_on_spider_profile.bind(spider_id))
 		grid.add_child(button)
 		_profile_buttons[spider_id] = button
@@ -747,13 +751,17 @@ func _field_guide_entry(spider_id: StringName) -> Control:
 	))
 	body.add_child(_field_guide_line(
 		"INSPIRED BY · %s" % bio.get("inspired_by", ""), CYAN))
-	var scientific := SpiderBiologyCatalog.scientific_line(spider_id)
-	if not scientific.is_empty():
-		var qualifier := (
-			"" if inspiration == SpiderBiologyCatalog.SPECIES else "reference · "
-		)
+	# An invented name owes the player the science it borrowed. A real name
+	# already carries it, so that entry states the animal's own binomial.
+	var drawn_from := SpiderBiologyCatalog.drawn_from_line(spider_id)
+	if not drawn_from.is_empty():
 		body.add_child(_field_guide_line(
-			"%s%s · %s" % [qualifier, scientific, bio.get("family", "")],
+			"%s · %s" % [
+				"ABILITIES DRAWN FROM"
+				if SpiderBiologyCatalog.has_invented_name(spider_id)
+				else "SCIENTIFIC NAME",
+				drawn_from,
+			],
 			MUTED,
 		))
 	body.add_child(_field_guide_line(

@@ -46,7 +46,7 @@ const PROFILES := [
 	},
 	{
 		"id": SKITTER,
-		"name": "Skitter",
+		"name": "Magnolia Green Jumper",
 		"role": "SMALL · AGILE",
 		"description": "A compact spider that changes pace quickly and fits tighter gaps.",
 		"tradeoff": "Shorter, softer Bursts demand more deliberate anchor timing.",

@@ -37,7 +37,7 @@ real without introducing another button, charge, or hidden control rule.
 | Spider | Identity tracks |
 | --- | --- |
 | Garden Spider | Balanced Flow; Garden Rhythm |
-| Skitter | Compact Stance; Quick Feet |
+| Magnolia Green Jumper | Compact Stance; Quick Feet |
 | Anchorite | Momentum Core; Pendulum Mass |
 | Ballooner | Long Silk Sail; Featherline |
 | Buckler | Impact Carapace; Elastic Guard |

@@ -30,6 +30,7 @@ static func run() -> Dictionary:
 	passed += _test_ballooner_is_behaviour_and_denies_flight(failures)
 	passed += _test_sources_resolve_to_citable_entries(failures)
 	passed += _test_no_source_is_registered_but_uncited(failures)
+	passed += _test_invented_names_name_the_science_they_borrow(failures)
 	passed += _test_biology_carries_no_tuning_values(failures)
 	passed += _test_garage_summary_shows_the_classification(failures)
 	return {"passed": passed, "failures": failures}
@@ -199,6 +200,50 @@ static func _test_no_source_is_registered_but_uncited(
 			failures.append("source %s is registered but nothing cites it" %
 				source_id)
 			return 0
+	return 1
+
+
+## D-0031: a real spider with a usable name always wins. Where a name had to be
+## invented, the player is owed the science instead — every real spider the
+## profile borrows from, named, and what each one actually contributes. One
+## invented spider may combine several real ones; that is the point of a list.
+static func _test_invented_names_name_the_science_they_borrow(
+	failures: PackedStringArray,
+) -> int:
+	for spider_id: StringName in SpiderCatalog.ALL_IDS:
+		var item := SpiderBiologyCatalog.record(spider_id)
+		var origin := StringName(item["name_origin"])
+		if origin not in SpiderBiologyCatalog.NAME_ORIGINS:
+			failures.append("%s has unknown name origin %s" % [spider_id, origin])
+			return 0
+		var borrowed: Array = item["drawn_from"]
+		if borrowed.is_empty():
+			failures.append("%s names no real spider at all" % spider_id)
+			return 0
+		for entry: Dictionary in borrowed:
+			for key: String in ["name", "family", "contributes"]:
+				if str(entry.get(key, "")).is_empty():
+					failures.append("%s borrows from an entry missing %s" % [
+						spider_id, key])
+					return 0
+		if origin == SpiderBiologyCatalog.NAME_INVENTED:
+			if not SpiderBiologyCatalog.has_invented_name(spider_id):
+				failures.append("%s invented-name lookup disagrees with its record"
+					% spider_id)
+				return 0
+			var line := SpiderBiologyCatalog.drawn_from_line(spider_id)
+			for entry: Dictionary in borrowed:
+				if not line.contains(str(entry["name"])):
+					failures.append("%s omits %s from its borrowed list" % [
+						spider_id, entry["name"]])
+					return 0
+		# A species-level record names exactly the one animal it claims to be.
+		if StringName(item["inspiration"]) == SpiderBiologyCatalog.SPECIES:
+			if borrowed.size() != 1 or \
+					str(borrowed[0]["name"]) != str(item["accepted_name"]):
+				failures.append("%s claims a species but borrows elsewhere" %
+					spider_id)
+				return 0
 	return 1
 
 

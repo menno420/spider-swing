@@ -12,30 +12,6 @@
 
 ## Open
 
-### OQ-1 · Should Skitter and Buckler take real spider names?
-
-The real-first policy says a real spider with a usable name wins. Two profiles now sit against
-that rule:
-
-- **Skitter** → *Lyssomanes viridis*, the **magnolia green jumper**. A real,
-  usable name exists.
-- **Buckler** → ***Cyclocosmia***, whose abdomen genuinely is an armoured disc
-  used to plug its burrow. Real and armoured, but no settled English common name
-  a player would recognise. "Ravine trapdoor spider" and "hourglass spider" are
-  both in use.
-
-Garden Spider already uses real naming. Anchorite (`composite`) and Ballooner
-(`behaviour`) are settled — the policy explicitly permits both.
-
-**Current default:** names unchanged pending an answer. Changing either is a
-display-name edit; the persisted ids are internal and no saved progression is at
-risk.
-
-**Worth weighing:** short invented names read well on a small Garage card and
-are already shipped in production art briefs. Real names carry the educational
-point directly but are longer — "Magnolia Green Jumper" is three words where
-"Skitter" is one.
-
 ### OQ-2 · Should the Field Guide also be reachable from Home?
 
 It ships reachable from the Garage, next to the spider it describes, which keeps
@@ -45,6 +21,20 @@ card.
 **Current default:** Garage-only.
 
 ## Answered
+
+### OQ-1 · Should Skitter and Buckler take real spider names? — *answered 2026-07-31*
+
+**Rule:** use the real name when a spider is real and has a usable one. When it
+does not, invent a good name — and the Field Guide then names the scientific
+name(s) the profile draws its abilities from, including when several real
+spiders each contribute one part.
+
+- **Skitter → Magnolia Green Jumper.** *Lyssomanes viridis* has a usable common
+  name, so the invented one had no justification.
+- **Buckler stays Buckler.** *Cyclocosmia* has no settled English common name a
+  player would recognise, and the profile blends two genera. Its guide entry now
+  names both, with what each contributes.
+
 
 ### OQ-3 · Springtail's name — *answered 2026-07-31*
 

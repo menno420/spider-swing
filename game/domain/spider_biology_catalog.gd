@@ -24,6 +24,13 @@ const INSPIRATION_TYPES: Array[StringName] = [
 	SPECIES, COMPOSITE, BEHAVIOUR, FICTIONAL,
 ]
 
+## Where the profile's player-facing name comes from. A real spider with a
+## usable name always wins (D-0031); a name is invented only when no usable real
+## one exists, and an invented name must then name the science it borrows from.
+const NAME_REAL := &"real"
+const NAME_INVENTED := &"invented"
+const NAME_ORIGINS: Array[StringName] = [NAME_REAL, NAME_INVENTED]
+
 ## Accepted names follow the World Spider Catalog; store the review date with
 ## them so a stale record is visible rather than silently trusted.
 const NAME_AUTHORITY := "World Spider Catalog v27"
@@ -71,6 +78,11 @@ const SOURCES := {
 const RECORDS := {
 	&"classic": {
 		"inspiration": COMPOSITE,
+		"name_origin": NAME_REAL,
+		"drawn_from": [
+			{"name": "Araneus diadematus", "authority": "Clerck, 1757",
+				"family": "Araneidae", "contributes": "the orb web and the body"},
+		],
 		"inspired_by": "Garden orb-weavers (family Araneidae)",
 		"reference_name": "Araneus diadematus",
 		"reference_authority": "Clerck, 1757",
@@ -93,6 +105,12 @@ const RECORDS := {
 	},
 	&"skitter": {
 		"inspiration": SPECIES,
+		"name_origin": NAME_REAL,
+		"drawn_from": [
+			{"name": "Lyssomanes viridis", "authority": "(Walckenaer, 1837)",
+				"family": "Salticidae",
+				"contributes": "this profile is that one species, not a blend"},
+		],
 		"inspired_by": "Magnolia green jumper",
 		"reference_name": "Lyssomanes viridis",
 		"reference_authority": "(Walckenaer, 1837)",
@@ -115,6 +133,15 @@ const RECORDS := {
 	},
 	&"anchorite": {
 		"inspiration": COMPOSITE,
+		"name_origin": NAME_INVENTED,
+		"drawn_from": [
+			{"name": "Aphonopelma chalcodes", "authority": "",
+				"family": "Theraphosidae",
+				"contributes": "the heavy grounded body and desert burrow"},
+			{"name": "Tliltocatl albopilosus", "authority": "",
+				"family": "Theraphosidae",
+				"contributes": "the dense curled hair"},
+		],
 		"inspired_by": "Burrowing mygalomorphs — tarantula and trapdoor body plans",
 		"reference_name": "Theraphosidae and trapdoor families",
 		"reference_authority": "",
@@ -136,6 +163,12 @@ const RECORDS := {
 	},
 	&"ballooner": {
 		"inspiration": BEHAVIOUR,
+		"name_origin": NAME_INVENTED,
+		"drawn_from": [
+			{"name": "Erigone atra", "authority": "",
+				"family": "Linyphiidae",
+				"contributes": "the ballooning launch, tiptoe and all"},
+		],
 		"inspired_by": "Ballooning — silk dispersal recorded across many families",
 		"reference_name": "",
 		"reference_authority": "",
@@ -161,6 +194,15 @@ const RECORDS := {
 	},
 	&"springtail": {
 		"inspiration": FICTIONAL,
+		"name_origin": NAME_INVENTED,
+		"drawn_from": [
+			{"name": "Ummidia", "authority": "Thorell, 1875",
+				"family": "Halonoproctidae",
+				"contributes": "the compact glossy body and hinged trapdoor"},
+			{"name": "Cyclocosmia", "authority": "Ausserer, 1871",
+				"family": "Halonoproctidae",
+				"contributes": "the hardened abdominal disc"},
+		],
 		"inspired_by": "Cork-lid trapdoor spiders",
 		"reference_name": "Ummidia",
 		"reference_authority": "Thorell, 1875",
@@ -222,6 +264,36 @@ static func scientific_line(profile_id: StringName) -> String:
 	if authority.is_empty():
 		return name_text
 	return "%s %s" % [name_text, authority]
+
+
+## The scientific names a profile borrows from, formatted for display. An
+## invented name must always resolve to at least one of these — that is the
+## trade the player is owed for a name that is not a real animal's.
+static func drawn_from_line(profile_id: StringName) -> String:
+	var item := record(profile_id)
+	if item.is_empty():
+		return ""
+	var parts := PackedStringArray()
+	for entry: Dictionary in item["drawn_from"]:
+		var authority := str(entry["authority"])
+		var named := (
+			str(entry["name"]) if authority.is_empty()
+			else "%s %s" % [entry["name"], authority]
+		)
+		var contributes := str(entry.get("contributes", ""))
+		parts.append(
+			named if contributes.is_empty()
+			else "%s — %s" % [named, contributes]
+		)
+	# Publishers and binomials both contain commas; a bullet keeps the list
+	# readable when one profile combines several animals.
+	return "   ·   ".join(parts)
+
+
+static func has_invented_name(profile_id: StringName) -> bool:
+	var item := record(profile_id)
+	return not item.is_empty() and \
+		StringName(item["name_origin"]) == NAME_INVENTED
 
 
 static func sources_for(profile_id: StringName) -> Array[Dictionary]:
