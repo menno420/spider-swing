@@ -139,4 +139,4 @@ Give each shipped region an enforceable pattern-ownership contract: shared
 renderer and validation primitives are reusable, but the player-facing obstacle
 family ids and signature route grammar may not leak across region boundaries.
 
-- **📊 Model:** gpt-5.6-sol · high · owner-device follow-up build
+- **📊 Model:** gpt-5.6-sol · high · feature build
