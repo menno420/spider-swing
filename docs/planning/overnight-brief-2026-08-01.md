@@ -14,6 +14,15 @@ review the running build in the morning, not the diffs.
 ChatGPT is working in parallel on visuals from its own brief. Assume the repo
 moves under you: `main` moved three times under open PRs on 2026-07-31.
 
+**You produce code, documents and measurements. You do not produce art or
+audio** — you have no image generation, and pretending otherwise wastes a
+slice. Where a feature needs art, build the mechanical half and define the seam
+ChatGPT fills. That seam already exists: `visual_profile` on each region
+(`VISUAL_OLD_GROWTH` / `VISUAL_CANOPY` / `VISUAL_HOLLOW`) branches the renderer,
+so a zone can be mechanically complete and playable on existing art while its
+own art is produced separately. Ship the geometry, the pattern set, the anchor
+typing and the density curve; leave the pixels.
+
 ## Non-negotiables
 
 1. **Do not change physics values.** `balanced_baseline` was owner-approved on
@@ -80,42 +89,56 @@ made it work is specific, and the details below are the ones that carry it.
 Each slice is one PR. Stop a slice when it is green and landed, then take the
 next. Do not batch.
 
-**Slice 1 — ADR: deterministic moving parts.**
-Design only, no gameplay code. How a moving hazard expresses position as a
-function of chunk index, seed and tick; how it interacts with the web
-constraint; how the fixed-rate trajectory contracts stay true. This unblocks
-everything else, so do it first even though it ships no content.
+The order puts the owner's stated priority first — campaign levels, mechanics,
+upgrades — with the cheap measurement ahead of the work it informs. Zone work is
+last because its visual half belongs to ChatGPT.
 
-**Slice 2 — Moving-anchor proof in the simulator.**
-The riskiest unknown in the whole plan: attaching to a *moving* pivot without
-the constraint injecting energy. Prove it headlessly with
-`tools/simulate.gd` before any zone depends on it. If it cannot be made
-energy-safe, say so plainly and Zone 4 loses its signature mechanic — that is a
-real answer, not a failure.
+**Slice 1 — Difficulty curve measurement.**
+Cheap, and it unblocks two later slices. Use `tools/simulate.gd --start-m=`
+across 5 000 / 10 000 / 15 000 / 20 000 with fixed seeds and several skill
+levels. Report deaths-per-kilometre and death causes per band. This turns "the
+curve is flat past 5 km" from an argument into a number and gives difficulty
+modes and the upgrade audit a baseline. Commit the numbers.
 
-**Slice 3 — Difficulty curve measurement.**
-Use `tools/simulate.gd --start-m=` across 5 000 / 10 000 / 15 000 / 20 000 with
-fixed seeds and several skill levels. Report deaths-per-kilometre and death
-causes per band. This turns "the curve is flat past 5 km" from an argument into
-a number, and it is the baseline every later zone is judged against. Commit the
-numbers.
+**Slice 2 — Campaign teaching tier.**
+What the owner asked for first, and pure code. The approved campaign decision
+in `docs/decisions.md` names the gap precisely:
+the tutorial explains Reel, Burst and Dive across six static steps and then
+never asks the player to perform any of them. Build short levels that each
+require one verb — a level you cannot finish without reeling, one you cannot
+finish without a Burst, one you cannot finish without a Dive. Use existing art
+and existing course geometry. Per that same decision: rewards are cosmetics and stars,
+never flies, and the campaign must route through the existing settlement path.
 
-**Slice 4 — Zone 4 skeleton: Ruined Arboretum.**
-Append the region, add its pattern set, wire its visual identity. Static
-hazards only — broken beams and collapsed frames. No moving parts yet. Playable
-and readable at 15 000 m.
+**Slice 3 — Difficulty modes.**
+The approved difficulty decision in `docs/decisions.md` already settled the
+shape, so this is implementation, not design.
+Separate best distance per mode; only Standard is leaderboard-eligible;
+difficulty changes **which content the stream may serve and how much recovery
+the player gets, never the physics**. The approved preset stays authoritative —
+if a mode seems to need a physics change, that is a finding, not a change.
 
-**Slice 5 — Zone 4 moving parts.**
-Hanging panes and slow rotors on deterministic phases, per the ADR. Phase-gated
-gaps. Only if Slice 2 succeeded.
+**Slice 4 — Upgrade audit against measured numbers.**
+With Slice 1's baseline, measure which existing upgrade tracks actually change
+outcomes and which are noise. Refine, or propose additions grounded in the
+measurements. Do not add upgrades that no measurement asked for.
 
-**Slice 6 — Upgrade audit against measured numbers.**
-With Slice 3's baseline, check which existing upgrade tracks actually change
-outcomes and which are noise. Refine or propose additions grounded in the
-measurements, not in intuition. Do not add upgrades that no measurement asked
-for.
+**Slice 5 — ADR: deterministic moving parts.**
+Design only. How a moving hazard expresses position as a function of chunk
+index, seed and tick; how it interacts with the web constraint; how the
+fixed-rate trajectory contracts stay true. Required before any moving part.
 
-**Slice 7 onward — Zone 5, Storm Ridge.** Only after Zone 4 is felt on device.
+**Slice 6 — Moving-anchor proof in the simulator.**
+The riskiest unknown in the zone plan: attaching to a *moving* pivot without the
+constraint injecting energy. Prove it headlessly with `tools/simulate.gd`. If it
+cannot be made energy-safe, say so plainly — Zone 4 loses its signature mechanic
+and that is a real answer, not a failure.
+
+**Slice 7 — Zone 4 mechanical half: Ruined Arboretum.**
+Region entry, pattern set, hazard geometry with anchor typing declared per
+hazard, density curve. Playable at 15 000 m on existing visual profiles. Do not
+attempt its art; ChatGPT delivers that against the design doc and it lands at
+the `visual_profile` seam.
 
 If you run out of backlog, do not invent scope. Re-arm, write what you would do
 next in the session card, and stop.
