@@ -16,6 +16,35 @@ _None. Every recorded fork has an answer below._
 
 ## Answered
 
+### OQ-6 · Difficulty modes, campaign shape, rewards, and audio sourcing — *answered 2026-07-31*
+
+Four product directions, settled ahead of the work so a future session does not
+guess. Reasoning and constraints live in the decision ledger.
+
+- **Campaign purpose: both, staged.** Early levels teach one mechanic each;
+  later levels combine them into challenges. Build the teaching tier first —
+  attempting both at once tends to do neither well.
+- **Difficulty and records: separate best per mode; only Standard competes.**
+  Relaxed and Harsh each keep their own best distance so progress still feels
+  real, but only Standard is eligible for a future leaderboard.
+- **Campaign rewards: cosmetics and stars only, no flies.** Campaign levels are
+  fixed-seed and repeatable, so paying currency would make them the optimal
+  farm and force an endless-economy rebalance.
+- **Audio: generated SFX, CC0 ambience and music.** Generate the spider and web
+  sounds where set consistency matters most; source ambience and music where
+  quality is harder to synthesise. Every CC0 file's licence is verified per file
+  and recorded in the manifest.
+
+### OQ-7 · Who merges — *answered 2026-07-31*
+
+**Agents merge their own work once green.** The owner does not review diffs; he
+reviews the running build. This was already the working agreement — agents
+"land or clearly park their own PRs" — and is restated here because a session
+asked him to gate a merge, which is not his job. Consequence worth holding
+onto: with no human diff review, contracts and CI are the entire safety net, so
+claims must be measured rather than asserted.
+
+
 ### OQ-2 · Should the Field Guide be reachable from Home? — *answered 2026-07-31*
 
 **Yes — its own button on Home, for discoverability.** It stays reachable from
