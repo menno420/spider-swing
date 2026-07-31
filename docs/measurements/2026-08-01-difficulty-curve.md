@@ -1,6 +1,6 @@
 # Difficulty curve measurement — 2026-08-01
 
-> **Status:** `measurement`
+> **Status:** `reference`
 >
 > Baseline for slices that follow. Diagnostic instrumentation, not a gate and
 > not a feel oracle: it reports what a scripted bot does, not what the owner
