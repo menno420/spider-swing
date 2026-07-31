@@ -158,6 +158,10 @@ without a reported regression.
   `5835c002…`, and `keytool` independently reported the pinned certificate
   `83ff0bc2…`; its completed `substrate-gate` also passed. Android export is not
   a required merge check because SDK downloads are an external dependency.
+- PR #60 implementation head `34b8d5d1…` passed `game-quality` run 30656982928
+  and Android run 30656983045. Artifact 8803635374's downloaded ZIP matched
+  GitHub's `cb9cb31d…` digest; its intact APK matched `7a9aa69d…`, embeds that
+  source/build identity, and reports the pinned `83ff0bc2…` certificate.
 
 **Deliberately absent — scope boundaries, not gaps**
 
@@ -187,6 +191,10 @@ checklist.
 
 ## Recently shipped (newest first)
 
+- **2026-07-31 — Pre-run debug depth controls (PR #60 candidate).** Home now
+  stages exact distance and temporary upgrades through large `−`/`+` before one
+  no-awards test start; ordinary Play restores owned levels, and the in-run
+  controls remain available for live adjustments.
 - **2026-07-31 — Debug depth-testing access.** Stable debug signing, exact
   arbitrary-distance practice starts, and a session-only selectable upgrade
   overlay make persistent far-course and progression testing possible without

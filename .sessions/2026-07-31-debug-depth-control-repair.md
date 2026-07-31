@@ -44,8 +44,10 @@ The overlay did not plainly say that `MAX` temporarily resolves all seven tracks
 and buys nothing. Existing contracts separately emitted adapter signals and
 called services, so they did not cover the owner workflow end to end.
 
-## Candidate shipped on this branch
+## Shipped
 
+- Commit `34b8d5d1a9a98d8f1a8bef434bb4535d0a9ebc6b` on PR #60 carries the
+  exact locally verified implementation tree.
 - `InputRouter` now gives typed distance a visible 48-pixel `GO`, Enter/Done,
   and focus-loss commit paths; presets and `−`/`+` synchronize the field.
 - Home now exposes a gated `DEBUG TEST RUN` route. It stages exact distance with
@@ -65,7 +67,7 @@ called services, so they did not cover the owner workflow end to end.
 - Build candidate `0.19.1-depth-control-repair`, Android version code 36 and
   app label `Spider Swing Depth Controls (dev)`, retains the stable signer.
 
-## Verification so far
+## Verification
 
 - Official Godot `4.7.1.stable.official.a13da4feb` Standard: architecture
   fixtures/scan, import, boot, and **118/118** contracts pass.
@@ -77,6 +79,43 @@ called services, so they did not cover the owner workflow end to end.
 - A three-frame headless 1280×720 Front End measurement encloses the 1088×533
   pre-run card, two 534-pixel columns, 64-pixel `−`/`+`, and 68-pixel start
   action without overflow.
+- `game-quality` run
+  [30656982928](https://github.com/menno420/spider-swing/actions/runs/30656982928)
+  passed the official-engine gate on exact source `34b8d5d1…`.
+- `android-debug` run
+  [30656983045](https://github.com/menno420/spider-swing/actions/runs/30656983045)
+  passed every identity, stable-key, export, APK-validity, version, and signer
+  assertion and produced
+  [artifact 8803635374](https://github.com/menno420/spider-swing/actions/runs/30656983045/artifacts/8803635374).
+  Its 61,797,497-byte ZIP independently matched GitHub's SHA-256
+  `cb9cb31d…`; the intact 62,202,652-byte APK has SHA-256 `7a9aa69d…`, embeds
+  source `34b8d5d1…`, and reports certificate SHA-256 `83ff0bc2…`, exactly the
+  pinned stable debug signer.
+- `python3 bootstrap.py check --strict` reports only the designed hold while
+  this card remains `in-progress`; the final flip removes it before merge.
+
+## Decide-and-flag
+
+The pre-run overlay remains one shared selected-spider level rather than free
+purchases or seven separately persisted cheats. That preserves the requested
+fast owned-versus-upgraded A/B test while keeping ownership, costs, save codecs,
+and settlement untouched. No owner decision remains open for implementation;
+the remaining ask is the real-device feel and interaction gate below.
+
+## Owner device gate
+
+Install artifact 8803635374 over any `0.19.0-depth-testing` or later stable-key
+build without uninstalling. Enable Debug Tools, return Home, open `DEBUG TEST
+RUN`, set an off-grid distance, switch upgrades through `−`/`+`, `OWNED`, and
+`MAX`, then start. Confirm the HUD says the run awards nothing, the requested
+geometry appears, and a later ordinary Play uses exact owned levels. Issue #2's
+device traversal/feel judgment remains the product gate.
+
+## PR
+
+[PR #60](https://github.com/menno420/spider-swing/pull/60) is ready and green
+for implementation/Android proof; its only red check is the deliberate
+`in-progress` lifecycle hold. Terminal state is recorded after the final flip.
 
 ## 💡 Idea
 
