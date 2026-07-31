@@ -1,0 +1,1 @@
+- `agent/fix-debug-depth-controls` · **Debug depth control repair** — reproduce and repair arbitrary-distance starts and the session-only upgrade overlay without changing balance · `game/application`, `game/presentation`, `game/domain/tuning_catalog.gd`, tests, session/docs · 2026-07-31
