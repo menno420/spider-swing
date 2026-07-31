@@ -14,7 +14,7 @@ extends SceneTree
 ##   --skill=intermediate novice | intermediate | expert | all
 ##   --spider=classic     classic | skitter | anchorite | ballooner |
 ##                        buckler | all
-##   --preset=balanced_candidate  named SwingConfig preset
+##   --preset=balanced_baseline   named SwingConfig preset
 ##   --upgrades=0         0..20, applied to EVERY track of the selected spider
 ##   --seed=1             base seed for the bot-imperfection RNG
 ##   --course-seed=1337   first production course seed
@@ -428,7 +428,7 @@ func _parse_options(arguments: PackedStringArray) -> Dictionary:
 		"runs": 20,
 		"skill": "intermediate",
 		"spider": "classic",
-		"preset": "balanced_candidate",
+		"preset": str(SwingConfig.PRESET_BALANCED),
 		"upgrades": 0,
 		"seed": 1,
 		"course_seed": 1337,

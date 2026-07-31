@@ -62,8 +62,11 @@ Burst boost.
   web range, a 220-pixel aim-forgiveness band, manual release, Reel-In
   drain/regeneration/lockout, and multi-touch input that keeps UI touches out of
   the web path. Every solid edge is a valid target.
-- Three named tuning candidates: `balanced_candidate`, `weighty_candidate`, and
-  `agile_candidate`.
+- One approved baseline preset, `balanced_baseline` (owner-approved 2026-07-31),
+  plus two untuned forks kept for future work: `weighty_candidate` and
+  `agile_candidate`. Only balanced has been played and tuned, so the two
+  candidates are stale relative to the baseline and were never evaluated against
+  it — they are not vetted alternatives.
 - A deterministic bounded course stream with a 1000 m learning runway before
   detached middle hazards and a separate 2000 m default protection period in
   which the lethal ceiling/floor rails never move inward. One shared route plan

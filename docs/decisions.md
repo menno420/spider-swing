@@ -621,3 +621,32 @@
   rather than visual assumptions.
 - provenance: Menno's 2026-07-31 depth-testing request for arbitrary course
   access and non-persistent free upgrades
+
+## [D-0036] Promote balanced to the approved baseline, and record that it was never a comparison
+
+- status: decided
+- date: 2026-07-31
+- verdict: `SwingConfig.PRESET_BALANCED` becomes `balanced_baseline`, satisfying
+  the GDD §23 exit-gate item "the team approves one named physics preset as the
+  baseline". `weighty_candidate` and `agile_candidate` keep their names and stay
+  in `preset_names()`. Saves and `--preset=` invocations carrying the old
+  `balanced_candidate` id migrate through a new `SwingConfig.resolve_preset`,
+  which returns the empty name for anything genuinely unknown so callers can
+  distinguish migration from rejection. The Home preset rail now reads
+  BALANCED/BASELINE, WEIGHTY/UNTUNED, AGILE/UNTUNED.
+- why: The approval is real but narrower than the gate's wording implies, and
+  the difference matters. Balanced is not the winner of a three-way evaluation;
+  it is the only preset that was ever played, so it absorbed days of tuning
+  while the other two sat at the fork point. Recording it as a comparison would
+  be an inflated progress claim, and worse, it would make the other two read as
+  vetted alternatives — so a later session measuring balanced against agile
+  would interpret a tuning gap as a design signal. Naming the baseline still
+  earns its keep: without a committed reference, every observation over the
+  coming months of testing is measured against a config nobody agreed to.
+  `apply_preset` already fell through to balanced physics for unknown names, so
+  the rename was survivable by accident; routing it through `resolve_preset`
+  makes that deliberate and puts it under contract.
+- provenance: Menno, 2026-07-31 — "the balanced baseline should indeed be
+  promoted, it's honestly the only one I've been testing and adjusting, so right
+  now it's already much further ahead then it was at the time where those 3
+  presets were made"
