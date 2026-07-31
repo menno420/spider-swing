@@ -119,4 +119,5 @@ marker — the run HUD noting a non-baseline preset the way debug runs already
 announce that they award nothing — would make that visible without adding a
 setting. The precedent exists in `RUN_PRACTICE`; this would reuse it.
 
-- **📊 Model:** opus-5 · high · one preset id, its migration, and the records
+- **📊 Model:** opus-5 · high · mechanical refactor — one preset id, its
+  migration shim, its contract, and the records
