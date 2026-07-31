@@ -111,6 +111,26 @@ Format: `- YYYY-MM-DD · capability|wall · <venue> · finding · evidence · wo
 `any`; older five-field lines without a venue token stay valid — read them
 as venue `any`.)
 
+- 2026-07-31 · capability · `owner-live` · **A domain-distinct generated
+  obstacle vocabulary survives the full Android path.** · PR #69 exact source
+  `4fb5cce4ff7b1abdf39f27593a317bca5b756101` passed 124 contracts in
+  [game-quality run
+  30667529686](https://github.com/menno420/spider-swing/actions/runs/30667529686).
+  [Android run
+  30667529691](https://github.com/menno420/spider-swing/actions/runs/30667529691)
+  embedded both explicit hook-vine and leaf-shutter texture imports in
+  [artifact
+  8807542392](https://github.com/menno420/spider-swing/actions/runs/30667529691/artifacts/8807542392).
+  The downloaded 64,949,162-byte ZIP matched GitHub's SHA-256
+  `f4b166b08dfe1ea0a8e70a78d65ca2e8424ceff01cd240bb36337590d483791a`;
+  its 65,358,715-byte APK matched
+  `aaad94c103349e6812ca2074571c3ce90d9dfcd6dbb1322d2247c40141c4d9a5`,
+  named the exact source/build/package, and carried the pinned certificate
+  SHA-256 `83ff0bc2…`. · Generate on a disposable chroma key, record prompts and
+  hashes, inspect at phone scale, carry semantic art kinds beside collision
+  polygons, then require exact-engine and source-identified Android proofs;
+  owner-device motion-scale acceptance remains separate.
+
 - 2026-07-31 · capability · owner-live · **Branch rulesets are readable AND writable
   agent-side over direct egress** — required status checks are not an owner-only
   setting. `main` carried no ruleset at all, so `auto-merge-enabler.yml` had been

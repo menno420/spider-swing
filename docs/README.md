@@ -22,7 +22,7 @@
 | [`product/name-status.md`](product/name-status.md) | Why "Spider Swing" is a codename, and what naming/trademark/store review remains. |
 | [`product/spider-biology-folio.md`](product/spider-biology-folio.md) | **Spider identity source of truth.** The naming rule (real name first, otherwise name the science), the approved mapping per profile, editorial voice, art and image-sourcing rules, and the parked candidate backlog. |
 | [`product/spider-biology-verification-2026-07-31.md`](product/spider-biology-verification-2026-07-31.md) | Dated verification log for the second deep-research report — what was re-checked, against what, and what was deliberately not adopted. |
-| [`product/zone-progression.md`](product/zone-progression.md) | **Zone source of truth.** The axis each 5000 m zone owns, its hazards, mechanics, density curve and the one sentence a playtester must say. Zones 1–3 are shipped and frozen; 4–8 are designed and not yet built. |
+| [`product/zone-progression.md`](product/zone-progression.md) | **Zone source of truth.** The axis each 5000 m zone owns, its hazards, mechanics, density curve and the one sentence a playtester must say. Zones 4–8 have an implementation candidate; their human success sentences remain device-playtest gates. |
 | [`planning/overnight-brief-2026-08-01.md`](planning/overnight-brief-2026-08-01.md) | Slice backlog and standing constraints for the unattended overnight session that builds zones 4+. |
 | [`owner-questions.md`](owner-questions.md) | Open owner-only forks, each with the default the work proceeds under, plus the answered ones. |
 
@@ -33,6 +33,16 @@
 | [`technical/repository-layout.md`](technical/repository-layout.md) | What lives where, and what is committed vs generated. |
 | [`technical/testing.md`](technical/testing.md) | The two gates, how to run them locally, what CI enforces. |
 | [`technical/substrate-kit-provenance.md`](technical/substrate-kit-provenance.md) | How the vendored Substrate Kit got here; how to re-verify the pin. |
+| [`technical/simulation-lab.md`](technical/simulation-lab.md) | The headless batch-run lab — what it can and cannot answer, and how to measure a difficulty curve with it. |
+
+## Measurements
+
+Dated, reproducible instrumentation output. Diagnostic, never a gate; re-measure
+and diff rather than trusting a number forever.
+
+| Document | What it is |
+| --- | --- |
+| [`measurements/2026-08-01-difficulty-curve.md`](measurements/2026-08-01-difficulty-curve.md) | Deaths per kilometre, survival, death causes and resource pressure across 0–20 km and three skill tiers — the baseline difficulty modes, the upgrade audit and economy tuning are judged against. |
 
 ### Architecture decisions
 

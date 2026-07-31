@@ -28,7 +28,7 @@ godot --headless --path . --script res://tools/simulate.gd -- \
 | `--course-seed=N` | 1337 | First production course-order seed |
 | `--course-seeds=N` | 1 | Consecutive course seeds rotated independently across runs |
 | `--max-seconds=S` | 240 | Simulated-time cap; a capped run reports `timeout` (alive), never a death |
-| `--start-m=N` | 0 | Warp the start N metres into the course at that distance's pace — tests late-game regimes without surviving to them |
+| `--start-m=N` | 0 | Warp the start N metres into the course at that distance's pace — tests late-game regimes without surviving to them. Every per-km rate normalizes on distance *travelled*, so a warped band stays comparable with an unwarped one |
 | `--reel-style=` | `adaptive` | `adaptive` · `tap` · `hold` — how the bot spends Reel |
 | `--save-bursts=` | `on` | `on` · `off` — emergency Burst when no web can save it |
 | `--moving-anchor-proof` | off | Run the ADR 0004 moving-pivot energy probe against the production `WebConstraint`, then exit |
@@ -76,7 +76,34 @@ version because numbers are only comparable within one bot model.
 Each row records its course seed, death region, and active pattern. Summaries
 include death-region and death-pattern histograms. Late-game `--start-m` runs
 now use the same safe start-distance reset and guided opening as production
-checkpoint practice. The delayed command queue also permits only one pending
+checkpoint practice.
+
+**Rates normalize on ground travelled.** Every row carries `start_m` and
+`travelled_m` (`distance_m - start_m`), and every per-kilometre summary rate
+divides by travelled kilometres rather than absolute course position. Warping
+to 10 000 m and dying 380 m later is 380 m of exposure, not 10 380 m of it;
+before this, a warped batch's `flies_per_km` was understated by the warp ratio
+(0.9/km reported where the true rate was 24.2/km). Summaries also report
+`deaths_per_km` — counting the rescued death as well as the terminal one —
+with its Poisson standard error `deaths_per_km_se`, so a later comparison can
+tell a real shift from sample size. At `--start-m=0` travelled distance equals
+absolute distance, so unwarped numbers are unchanged.
+
+## Measuring the difficulty curve
+
+`tools/difficulty_curve.py` drives the lab once per distance band across every
+skill tier and renders the deaths-per-km, survival, death-cause and
+resource-pressure tables:
+
+```bash
+python3 tools/difficulty_curve.py --runs=40 --course-seeds=8 \
+  --bands=0,5000,10000,15000,20000 --out=docs/measurements/<date>-curve.md
+```
+
+It finds Godot the same way `tools/verify.py` does and asserts nothing. The
+committed baseline is
+[`docs/measurements/2026-08-01-difficulty-curve.md`](../measurements/2026-08-01-difficulty-curve.md);
+re-measure and diff against it rather than treating those numbers as permanent. The delayed command queue also permits only one pending
 web or Burst intent at a time, preventing repeated pre-delivery decisions from
 turning an accepted attachment into a stale release.
 

@@ -87,11 +87,11 @@ Run directly:
 godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-97 checks, grouped so one subsystem failure never hides the rest:
+133 checks, grouped so one subsystem failure never hides the rest:
 
 - engine, main-scene, input-action, 60 Hz, renderer/viewport, Android preset,
   inward-dependency, and no-autoload bootstrap contracts;
-- forty-nine deterministic physics contracts, including extended arbitrary-point
+- fifty-five deterministic physics contracts, including extended arbitrary-point
   solid attachment, larger aim forgiveness, momentum preservation, speed-neutral
   Reel and automatic take-up, a bounded 2.0-second/520-pixel base Reel budget,
   deterministic non-compounding Reel upgrade resolution, runtime full-meter
@@ -116,9 +116,17 @@ godot --headless --path . --script res://tests/test_runner.gd
   5/10/15/20 breakthroughs, level-zero preservation,
   bounded glide and impact-shell recovery, creator-pattern bounds, swept
   pickups, runtime pull tuning, and
-  identical trajectories from
+  exact off-grid polygons plus identity/anchor/motion descriptors through every
+  owned late zone, and identical trajectories from
   simulated 30/60/90/120 Hz render loops;
-- twenty-two mobile HUD contracts proving large separated Reel and Burst controls,
+- ten zone-progression contracts proving the append-only 5 km schedule, explicit
+  hazard eligibility, pure seeded phase sampling, swept moving collision,
+  energy-safe moving-pivot binding, all documented density thresholds, typed
+  highway/sticky/rotten anchors, audio-first Mist cues, and a current 13-asset
+  source/runtime/25% alpha plus silhouette audit;
+- eleven spider-biology contracts keep profile identity and disclosures separate
+  from balance data;
+- twenty-five mobile HUD contracts proving large separated Reel and Burst controls,
   DEBUG, and Menu are event-consuming
   Buttons, GUI geometry shares one layout source, accepted actions drive visual
   and haptic feedback, UI actions do not leak into web input, debug tools can be
@@ -130,7 +138,7 @@ godot --headless --path . --script res://tests/test_runner.gd
   interpolation, mipmapped moving art, restrained/reduced-motion-safe action
   poses, region ambience and persistent practice status remain presentation-only,
   and world input waits for Godot GUI handling;
-- sixteen front-end contracts proving Home starts before gameplay,
+- twenty-one front-end contracts proving Home starts before gameplay,
   Play/Garage/Shop/Tutorial/Course Lab/Region Practice/Settings route correctly,
   the six tutorial
   steps cover live mechanics, Settings
@@ -147,7 +155,8 @@ godot --headless --path . --script res://tests/test_runner.gd
   run. Checkpoint migration and practice settlement tests prove reached regions
   round-trip while practice grants no flies and cannot update best distance.
 
-The physics group lives in `tests/unit/phase0_physics_tests.gd`, mobile input in
+The physics group lives in `tests/unit/phase0_physics_tests.gd`, zone content in
+`tests/unit/zone_progression_tests.gd`, mobile input in
 `tests/unit/mobile_hud_layout_tests.gd`, and the front-end flow in
 `tests/integration/front_end_flow_tests.gd`. The trajectory fixture is
 `tests/fixtures/phase0_trace.json`.
@@ -212,7 +221,6 @@ overwritten on the next upgrade.
 
 Keep simulation checks deterministic: fixed seeds and recorded input traces in
 `tests/fixtures/`, never wall-clock timing. Register suites in
-`tests/test_runner.gd`. The remaining GDD §22.2 targets arrive with their owning
-phases: production chunk validation and moving-hazard coverage in Phase 1, settlement
-idempotence in Phase 2. The Phase 0.8 polygon stream and static collision checks
-are intentionally smaller test seams, not the Phase 1 content system.
+`tests/test_runner.gd`. New moving content must extend ADR 0004's pure phase,
+swept-contact, off-grid descriptor, and moving-anchor contracts rather than add
+a second animation or physics authority.

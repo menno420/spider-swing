@@ -685,11 +685,11 @@ static func _test_environment_theme_packs_are_visual_only(
 			failures.append("environment texture is not a 384 px runtime tile")
 			return 0
 	var art_paths := ArtAssetCatalog.texture_paths()
-	var expected_art_count := 14 + SpiderCatalog.ALL_IDS.size() + 1
+	var expected_art_count := 16 + 13 + SpiderCatalog.ALL_IDS.size() + 1
 	if art_paths.size() != expected_art_count:
 		failures.append(
-			"art catalog does not expose the old-growth and Bramble Canopy "
-			+ "packs, one asset per spider profile, and the fly")
+			"art catalog does not expose the zone packs, one asset per spider "
+			+ "profile, and the fly")
 		return 0
 	for path: String in art_paths:
 		if not ResourceLoader.exists(path):
@@ -840,6 +840,8 @@ static func _test_bramble_canopy_uses_world_anchored_art_pack(
 		ArtAssetCatalog.CANOPY_GROWTH_SOCKET,
 		ArtAssetCatalog.CANOPY_BRAMBLE,
 		ArtAssetCatalog.CANOPY_SEED_POD,
+		ArtAssetCatalog.CANOPY_HOOK_VINE,
+		ArtAssetCatalog.CANOPY_LEAF_SHUTTER,
 		ArtAssetCatalog.CANOPY_BACKDROP_FAR,
 		ArtAssetCatalog.CANOPY_BACKDROP_MID,
 	]:
@@ -908,7 +910,9 @@ static func _test_bramble_canopy_uses_world_anchored_art_pack(
 	var source := "" if source_file == null else source_file.get_as_text()
 	if not source.contains("REGION_VISUAL_TRANSITION_DURATION") or \
 			not source.contains("ArtAssetCatalog.CANOPY_RAIL_TILE") or \
-			not source.contains("ArtAssetCatalog.CANOPY_SEED_POD"):
+			not source.contains("ArtAssetCatalog.CANOPY_HOOK_VINE") or \
+			not source.contains("ArtAssetCatalog.CANOPY_LEAF_SHUTTER") or \
+			not source.contains("CourseObstacleCatalog.CANOPY_HOOK_VINE_LEFT"):
 		failures.append(
 			"Bramble backdrop transition or region obstacle routing is missing")
 		view.free()

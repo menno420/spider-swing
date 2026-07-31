@@ -66,34 +66,114 @@ const DEEP_FOREST_PATTERNS := [
 	{"id": &"recovery_pair", "lane": &"high", "difficulty": 4},
 ]
 
-## Region two emphasizes fast vertical reading. It deliberately excludes the
-## broad centre gate so difficulty comes from changing height, not precision.
+## Region two emphasizes fast vertical reading through a vocabulary it owns.
+## None of these ids are inherited from Ancient Forest: the device-reviewed
+## material swap was not enough while the underlying obstacle roles remained
+## stumps, pods, curtains, and ordinary alternating rail growth.
 const BRAMBLE_CANOPY_PATTERNS := [
-	{"id": &"canopy_high_low", "lane": &"weave", "difficulty": 4},
-	{"id": &"canopy_low_high", "lane": &"weave", "difficulty": 4},
-	{"id": &"tall_vine", "lane": &"high", "difficulty": 4},
-	{"id": &"long_pod", "lane": &"low", "difficulty": 4},
-	{"id": &"vine_curtain", "lane": &"low", "difficulty": 4},
-	{"id": &"bramble_steps", "lane": &"high", "difficulty": 4},
-	{"id": &"alternating_thorns", "lane": &"centre", "difficulty": 4},
-	{"id": &"fallen_stump", "lane": &"high", "difficulty": 3},
-	{"id": &"ceiling_stump", "lane": &"low", "difficulty": 3},
-	{"id": &"canopy_thorn_high", "lane": &"high", "difficulty": 4},
-	{"id": &"canopy_thorn_low", "lane": &"low", "difficulty": 4},
+	{"id": &"canopy_hook_high", "lane": &"high", "difficulty": 4},
+	{"id": &"canopy_hook_low", "lane": &"low", "difficulty": 4},
+	{"id": &"canopy_leaf_high", "lane": &"high", "difficulty": 4},
+	{"id": &"canopy_leaf_low", "lane": &"low", "difficulty": 4},
+	{"id": &"canopy_hook_high_low", "lane": &"weave", "difficulty": 4},
+	{"id": &"canopy_hook_low_high", "lane": &"weave", "difficulty": 4},
+	{"id": &"canopy_shutter_high_low", "lane": &"weave", "difficulty": 4},
+	{"id": &"canopy_shutter_low_high", "lane": &"weave", "difficulty": 4},
 ]
 
 ## Region three emphasizes exact lines around suspended hazards and rail-grown
 ## openings. A fixed recovery pocket follows every short precision set.
 const SILK_HOLLOW_PATTERNS := [
-	{"id": &"silk_burr_high", "lane": &"high", "difficulty": 4},
-	{"id": &"silk_burr_low", "lane": &"low", "difficulty": 4},
-	{"id": &"rooted_gate", "lane": &"centre", "difficulty": 4},
-	{"id": &"staggered_s", "lane": &"centre", "difficulty": 4},
-	{"id": &"stump_and_vine", "lane": &"centre", "difficulty": 4},
-	{"id": &"recovery_pair", "lane": &"high", "difficulty": 4},
-	{"id": &"alternating_thorns", "lane": &"centre", "difficulty": 4},
-	{"id": &"high_low_weave", "lane": &"weave", "difficulty": 4},
-	{"id": &"low_high_weave", "lane": &"weave", "difficulty": 4},
+	{"id": &"hollow_cocoon_chute", "lane": &"low", "difficulty": 4},
+	{"id": &"hollow_spindle_gate", "lane": &"centre", "difficulty": 4},
+	{"id": &"hollow_thread_eye", "lane": &"centre", "difficulty": 4},
+	{"id": &"hollow_lattice_high", "lane": &"high", "difficulty": 4},
+	{"id": &"hollow_lattice_low", "lane": &"low", "difficulty": 4},
+	{"id": &"hollow_droplet_needles", "lane": &"high", "difficulty": 4},
+	{"id": &"hollow_orb_cluster", "lane": &"low", "difficulty": 4},
+	{"id": &"hollow_twin_sacs", "lane": &"centre", "difficulty": 4},
+	{"id": &"hollow_suspended_bridge", "lane": &"high", "difficulty": 4},
+]
+
+## Ruined Arboretum opens with seven static/drip silhouettes before any lethal
+## part moves. Its full pool adds phase gates without shrinking the visible
+## cycle below the CI-enforced diversity floor.
+const ARBORETUM_OPENING_PATTERNS := [
+	{"id": &"arboretum_beam_high", "lane": &"high", "difficulty": 4},
+	{"id": &"arboretum_beam_low", "lane": &"low", "difficulty": 4},
+	{"id": &"arboretum_drip_arch_high", "lane": &"high", "difficulty": 4},
+	{"id": &"arboretum_drip_arch_low", "lane": &"low", "difficulty": 4},
+	{"id": &"arboretum_frame_rest_high", "lane": &"high", "difficulty": 4},
+	{"id": &"arboretum_frame_rest_low", "lane": &"low", "difficulty": 4},
+	{"id": &"arboretum_beam_corridor", "lane": &"centre", "difficulty": 4},
+]
+
+const RUINED_ARBORETUM_PATTERNS := [
+	{"id": &"arboretum_pane_high", "lane": &"high", "difficulty": 5},
+	{"id": &"arboretum_pane_low", "lane": &"low", "difficulty": 5},
+	{"id": &"arboretum_rotor_high", "lane": &"high", "difficulty": 5},
+	{"id": &"arboretum_rotor_low", "lane": &"low", "difficulty": 5},
+	{"id": &"arboretum_collapsed_high", "lane": &"high", "difficulty": 4},
+	{"id": &"arboretum_collapsed_low", "lane": &"low", "difficulty": 4},
+	{"id": &"arboretum_pane_pair", "lane": &"centre", "difficulty": 5},
+	{"id": &"arboretum_rotor_pane", "lane": &"centre", "difficulty": 5},
+	{"id": &"arboretum_timed_gate", "lane": &"centre", "difficulty": 5},
+	{"id": &"arboretum_broken_span", "lane": &"high", "difficulty": 4},
+	{"id": &"arboretum_drip_rotor", "lane": &"low", "difficulty": 5},
+]
+
+const STORM_RIDGE_PATTERNS := [
+	{"id": &"ridge_spire_high", "lane": &"high", "difficulty": 5},
+	{"id": &"ridge_spire_low", "lane": &"low", "difficulty": 5},
+	{"id": &"ridge_scree_high", "lane": &"high", "difficulty": 5},
+	{"id": &"ridge_wind_tree_high", "lane": &"high", "difficulty": 5},
+	{"id": &"ridge_wind_tree_low", "lane": &"low", "difficulty": 5},
+	{"id": &"ridge_gust_arch", "lane": &"centre", "difficulty": 5},
+	{"id": &"ridge_split_spires", "lane": &"centre", "difficulty": 5},
+	{"id": &"ridge_lightning_high", "lane": &"high", "difficulty": 6},
+	{"id": &"ridge_lightning_low", "lane": &"low", "difficulty": 6},
+	{"id": &"ridge_scree_chute", "lane": &"high", "difficulty": 5},
+	{"id": &"ridge_open_gust", "lane": &"centre", "difficulty": 4},
+]
+
+const WEB_CITY_PATTERNS := [
+	{"id": &"city_highway_high", "lane": &"high", "difficulty": 4},
+	{"id": &"city_highway_low", "lane": &"low", "difficulty": 4},
+	{"id": &"city_highway_diagonal", "lane": &"centre", "difficulty": 4},
+	{"id": &"city_sticky_high", "lane": &"high", "difficulty": 5},
+	{"id": &"city_sticky_low", "lane": &"low", "difficulty": 5},
+	{"id": &"city_egg_arch", "lane": &"centre", "difficulty": 5},
+	{"id": &"city_resident_high", "lane": &"high", "difficulty": 6},
+	{"id": &"city_resident_low", "lane": &"low", "difficulty": 6},
+	{"id": &"city_torn_high", "lane": &"high", "difficulty": 5},
+	{"id": &"city_torn_low", "lane": &"low", "difficulty": 5},
+	{"id": &"city_crossroads", "lane": &"centre", "difficulty": 5},
+]
+
+const ASHEN_HOLLOW_PATTERNS := [
+	{"id": &"ashen_sound_char_high", "lane": &"high", "difficulty": 5},
+	{"id": &"ashen_sound_char_low", "lane": &"low", "difficulty": 5},
+	{"id": &"ashen_rotten_high", "lane": &"high", "difficulty": 6},
+	{"id": &"ashen_rotten_low", "lane": &"low", "difficulty": 6},
+	{"id": &"ashen_ember_high", "lane": &"high", "difficulty": 6},
+	{"id": &"ashen_ember_low", "lane": &"low", "difficulty": 6},
+	{"id": &"ashen_collapsing_high", "lane": &"high", "difficulty": 6},
+	{"id": &"ashen_collapsing_low", "lane": &"low", "difficulty": 6},
+	{"id": &"ashen_bone_gate", "lane": &"centre", "difficulty": 5},
+	{"id": &"ashen_char_pair", "lane": &"centre", "difficulty": 5},
+	{"id": &"ashen_ember_corridor", "lane": &"centre", "difficulty": 6},
+]
+
+const DEEP_MIST_PATTERNS := [
+	{"id": &"mist_echo_spire_high", "lane": &"high", "difficulty": 6},
+	{"id": &"mist_echo_spire_low", "lane": &"low", "difficulty": 6},
+	{"id": &"mist_lone_beam", "lane": &"high", "difficulty": 6},
+	{"id": &"mist_scree_shelf", "lane": &"high", "difficulty": 6},
+	{"id": &"mist_cocoon", "lane": &"low", "difficulty": 6},
+	{"id": &"mist_standing_char", "lane": &"low", "difficulty": 6},
+	{"id": &"mist_root_gap", "lane": &"centre", "difficulty": 6},
+	{"id": &"mist_high_gap", "lane": &"high", "difficulty": 6},
+	{"id": &"mist_low_gap", "lane": &"low", "difficulty": 6},
 ]
 
 
@@ -181,33 +261,37 @@ static func _base_pattern_for_chunk(
 				- float(region["start_distance"])
 		) / CHUNK_WIDTH),
 	)
-	if bool(region["checkpoint"]) and local_chunk == 0:
+	if bool(region.get("checkpoint", false) or region.get("safe_entry", false)) \
+			and local_chunk == 0:
 		return RECOVERY_PATTERN.duplicate(true)
 	var recovery_interval := 6 \
 		if region_id == CourseRegionCatalog.BRAMBLE_CANOPY else 5
 	if region_id != CourseRegionCatalog.ANCIENT_FOREST and \
 			posmod(local_chunk, recovery_interval) == recovery_interval - 1:
 		return RECOVERY_PATTERN.duplicate(true)
-	if (
-		region_id == CourseRegionCatalog.ANCIENT_FOREST
-		and distance_at_chunk >= MASTERY_START_DISTANCE
-		and posmod(chunk_index, 8) == 7
-	) or (
-		region_id == CourseRegionCatalog.SILK_HOLLOW
-		and posmod(local_chunk, 7) == 4
-	):
+	if region_id == CourseRegionCatalog.ANCIENT_FOREST and \
+			distance_at_chunk >= MASTERY_START_DISTANCE and \
+			posmod(chunk_index, 8) == 7:
 		return {
 			"id": &"tight_rail",
 			"lane": &"tight",
 			"difficulty": 4,
 		}
+	if region_id == CourseRegionCatalog.SILK_HOLLOW and \
+			posmod(local_chunk, 7) == 4:
+		return SILK_HOLLOW_PATTERNS[2].duplicate(true)
+	if region_id == CourseRegionCatalog.RUINED_ARBORETUM and \
+			distance_at_chunk >= 185000.0 and posmod(local_chunk, 10) == 3:
+		# The paired rotor/pane lesson is authored into the slot immediately
+		# before the existing recovery cadence (local chunk 4 modulo 5).
+		return RUINED_ARBORETUM_PATTERNS[7].duplicate(true)
 	if region_id == CourseRegionCatalog.BRAMBLE_CANOPY and \
 			posmod(local_chunk, 4) == 2:
 		return {
 			"id": (
-				&"canopy_high_low"
+				&"canopy_shutter_high_low"
 					if posmod(local_chunk + course_seed, 2) == 0
-					else &"canopy_low_high"
+					else &"canopy_shutter_low_high"
 			),
 			"lane": &"weave",
 			"difficulty": 4,
@@ -240,6 +324,20 @@ static func _patterns_for_distance(distance_at_chunk: float) -> Array:
 		return BRAMBLE_CANOPY_PATTERNS
 	if region_id == CourseRegionCatalog.SILK_HOLLOW:
 		return SILK_HOLLOW_PATTERNS
+	if region_id == CourseRegionCatalog.RUINED_ARBORETUM:
+		var region_start := float(CourseRegionCatalog.region_for_id(
+			CourseRegionCatalog.RUINED_ARBORETUM)["start_distance"])
+		return ARBORETUM_OPENING_PATTERNS \
+			if distance_at_chunk < region_start + 15000.0 \
+			else RUINED_ARBORETUM_PATTERNS
+	if region_id == CourseRegionCatalog.STORM_RIDGE:
+		return STORM_RIDGE_PATTERNS
+	if region_id == CourseRegionCatalog.WEB_CITY:
+		return WEB_CITY_PATTERNS
+	if region_id == CourseRegionCatalog.ASHEN_HOLLOW:
+		return ASHEN_HOLLOW_PATTERNS
+	if region_id == CourseRegionCatalog.DEEP_MIST:
+		return DEEP_MIST_PATTERNS
 	if distance_at_chunk < CONTROL_START_DISTANCE:
 		return []
 	if distance_at_chunk < MASTERY_START_DISTANCE:

@@ -2,8 +2,10 @@
 
 > **Status:** `owner-guidance`
 >
-> Owner-approved direction (2026-07-31). Zones 1–3 are **shipped and frozen**;
-> zones 4–8 are designed here and not yet built. This document is the source of
+> Owner-approved direction (2026-07-31). Zones 1–3 are **shipped** and their
+> stable ids/ranges are frozen for save compatibility; owner-rejected content
+> remains correctable. Zones 4–8 have an implementation candidate in PR #73.
+> This document remains the source of
 > truth for zone identity, hazards and mechanics. Balance numbers live in
 > `SwingConfig` and the pattern catalog, never here.
 >
@@ -23,18 +25,21 @@ ends up feeling like a re-skin.
 | # | Zone | Range (m) | Axis it owns | State |
 |---|---|---|---|---|
 | 1 | Ancient Forest | 0–5 000 | Teaching — wide recovery rhythm | **shipped** |
-| 2 | Bramble Canopy | 5 000–10 000 | Vertical displacement | **shipped** |
+| 2 | Bramble Canopy | 5 000–10 000 | Vertical displacement | **shipped · device-corrected** |
 | 3 | Silk Hollow | 10 000–15 000 | Precision around suspended hazards | **shipped** |
-| 4 | Ruined Arboretum | 15 000–20 000 | **Timing** — the world moves | design |
-| 5 | Storm Ridge | 20 000–25 000 | **External force** — your arc is fought | design |
-| 6 | Web City | 25 000–30 000 | **Route choice** — the world offers help | design |
-| 7 | Ashen Hollow | 30 000–35 000 | **Trust** — anchors fail | design |
-| 8 | Deep Mist | 35 000+ | **Information** — you cannot see it coming | design |
+| 4 | Ruined Arboretum | 15 000–20 000 | **Timing** — the world moves | implementation candidate |
+| 5 | Storm Ridge | 20 000–25 000 | **External force** — your arc is fought | implementation candidate |
+| 6 | Web City | 25 000–30 000 | **Route choice** — the world offers help | implementation candidate |
+| 7 | Ashen Hollow | 30 000–35 000 | **Trust** — anchors fail | implementation candidate |
+| 8 | Deep Mist | 35 000+ | **Information** — you cannot see it coming | implementation candidate |
 
-Zones 1–3 are frozen. Their ids (`ancient_forest`, `bramble_canopy`,
-`silk_hollow`) key persisted checkpoints, so renaming them breaks saves. Past
-15 000 m the catalog currently clamps to Silk Hollow forever; zones 4–8 are an
-append to `REGIONS`, not a restructure.
+Zones 1–3 have frozen ids and ranges. Their ids (`ancient_forest`,
+`bramble_canopy`, `silk_hollow`) key persisted checkpoints, so renaming them
+breaks saves. That is not permission to freeze content the owner has tested and
+rejected: Bramble's first visual pass kept the old obstacle roles under new art,
+so its normal pool now owns hook-vine and diagonal leaf-shutter families that
+Ancient Forest cannot select. Zones 4–8 append to `REGIONS`; they do not
+restructure or renumber the persisted entries.
 
 ## Constraints any zone must satisfy
 
@@ -320,4 +325,23 @@ This is a recommendation, not a decision — flagged for the owner.
 5. **Zones 7 and 8** — designed here; build after 4–6 are felt on device.
 
 Zones 4–8 are additive: append to `REGIONS`, add a `*_PATTERNS` set per zone,
-and extend the pattern-band logic. None of it touches zones 1–3.
+and extend the pattern-band logic. Ancient Forest and Bramble Canopy geometry
+remain owned by their existing builders.
+
+## Implementation evidence (PR #73)
+
+- ADR 0004 binds all authored motion to pure fixed-tick phase descriptors.
+- `CourseGeometry` carries obstacle eligibility, typed safe anchors, harmless
+  phase decorations, visual identity, and immutable motion specifications.
+- `tools/simulate.gd --moving-anchor-proof` passes the production moving-pivot
+  solver for twenty complete cycles without accumulating relative energy.
+- Every region pool contains at least seven patterns and admits multiple
+  coprime seeded strides; the 133-contract suite covers each density gate and
+  mechanic above without changing the approved Balanced physics values.
+- The full-color captures and 25% black-silhouette sort test live under
+  `docs/visual/zones/`; all thirteen generated assets pass source, runtime, and
+  gameplay-scale transparency/fringe inspection.
+
+The success sentences above remain human device-playtest exit criteria. An
+automated contract can prove the mechanic exists and stays deterministic; it
+cannot claim that a playtester actually said the sentence.

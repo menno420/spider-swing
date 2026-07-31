@@ -708,3 +708,30 @@
 - provenance: Menno's four 2026-07-31 5000 m Android recordings and his finding
   that high-distance Reel becomes predictive while Burst becomes the main rapid
   height-change tool
+
+## [D-0039] A region owns obstacle silhouettes and route grammar, not just material
+
+- status: decided
+- date: 2026-07-31
+- verdict: D-0038's Bramble background, rails, transition, palette, and
+  predictive-Reel/reactive-Burst interpretation stand, but its claim that the
+  region was complete does not. Normal Bramble generation may no longer select
+  any Ancient Forest player-facing pattern id. It owns eight static patterns
+  over two new obstacle families: deep concave hook vines and diagonal giant-
+  leaf shutters, each mirrored into single high/low routes and authored
+  high↔low pairs. A domain-level semantic kind travels beside each authoritative
+  polygon and anchor flag so presentation selects matching art explicitly
+  instead of guessing from bounding-box proportions. Stable region ids and
+  ranges remain frozen for saves; owner-rejected content is not frozen against
+  correction.
+- why: Menno's first device view of PR #62 saw new skins over effectively the
+  same stumps, pods, mounds, and alternating rail-growth roles. That is exactly
+  how a region becomes a re-skin even when its pixels are new. Replacing the
+  vocabulary makes the change readable through both silhouette and play: hooks
+  create concave wall pockets, leaf shutters create broad diagonal barricades,
+  and neither appears in Ancient Forest. The same seeded director, recovery
+  cadence, Garden-sized steering-envelope proof, physics, speed, Reel, Burst,
+  upgrades, and settlement remain authoritative.
+- provenance: Menno's 2026-07-31 device verdict that the newly skinned
+  obstacles were still pretty much the same and must be genuinely different so
+  Bramble feels like a new area

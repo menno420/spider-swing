@@ -19,6 +19,8 @@ const CANOPY_RAIL_TILE := &"canopy_rail_tile"
 const CANOPY_GROWTH_SOCKET := &"canopy_growth_socket"
 const CANOPY_BRAMBLE := &"canopy_bramble"
 const CANOPY_SEED_POD := &"canopy_seed_pod"
+const CANOPY_HOOK_VINE := &"canopy_hook_vine"
+const CANOPY_LEAF_SHUTTER := &"canopy_leaf_shutter"
 const CANOPY_BACKDROP_FAR := &"canopy_backdrop_far"
 const CANOPY_BACKDROP_MID := &"canopy_backdrop_mid"
 const CLASSIC_SPIDER := &"classic_spider"
@@ -29,6 +31,19 @@ const BALLOONER_SPIDER := &"ballooner_spider"
 # filename to SHA256, and no player sees either. The profile is Buckler.
 const BUCKLER_SPIDER := &"springtail_spider"
 const GOLDEN_FLY := &"golden_fly"
+const HOLLOW_BACKDROP := &"hollow_backdrop"
+const HOLLOW_COCOON := &"hollow_cocoon"
+const ARBORETUM_BACKDROP := &"arboretum_backdrop"
+const ARBORETUM_PANE := &"arboretum_pane"
+const STORM_BACKDROP := &"storm_backdrop"
+const STORM_SPIRE := &"storm_spire"
+const WEB_CITY_BACKDROP := &"web_city_backdrop"
+const WEB_CITY_RESIDENT := &"web_city_resident"
+const ASHEN_BACKDROP := &"ashen_backdrop"
+const ASHEN_ROTTEN := &"ashen_rotten"
+const ASHEN_SOUND := &"ashen_sound"
+const MIST_BACKDROP := &"mist_backdrop"
+const MIST_LIT_BEAM := &"mist_lit_beam"
 
 const ASSETS := {
 	FOREST_RAIL_TILE:
@@ -55,6 +70,10 @@ const ASSETS := {
 		"res://assets/runtime/bramble-canopy/canopy-thorn-bramble.png",
 	CANOPY_SEED_POD:
 		"res://assets/runtime/bramble-canopy/canopy-seed-pod-vine.png",
+	CANOPY_HOOK_VINE:
+		"res://assets/runtime/bramble-canopy/canopy-hook-vine.png",
+	CANOPY_LEAF_SHUTTER:
+		"res://assets/runtime/bramble-canopy/canopy-leaf-shutter.png",
 	CANOPY_BACKDROP_FAR:
 		"res://assets/runtime/bramble-canopy/bramble-backdrop-far.webp",
 	CANOPY_BACKDROP_MID:
@@ -71,6 +90,32 @@ const ASSETS := {
 		"res://assets/runtime/characters/springtail-trapdoor-spider.png",
 	GOLDEN_FLY:
 		"res://assets/runtime/collectibles/golden-forest-fly.png",
+	HOLLOW_BACKDROP:
+		"res://assets/runtime/zone-art/silk-hollow-backdrop.png",
+	HOLLOW_COCOON:
+		"res://assets/runtime/zone-art/silk-hollow-cocoon-cluster.png",
+	ARBORETUM_BACKDROP:
+		"res://assets/runtime/zone-art/ruined-arboretum-backdrop.png",
+	ARBORETUM_PANE:
+		"res://assets/runtime/zone-art/ruined-arboretum-pane.png",
+	STORM_BACKDROP:
+		"res://assets/runtime/zone-art/storm-ridge-backdrop.png",
+	STORM_SPIRE:
+		"res://assets/runtime/zone-art/storm-ridge-spire.png",
+	WEB_CITY_BACKDROP:
+		"res://assets/runtime/zone-art/web-city-backdrop.png",
+	WEB_CITY_RESIDENT:
+		"res://assets/runtime/zone-art/web-city-resident.png",
+	ASHEN_BACKDROP:
+		"res://assets/runtime/zone-art/ashen-hollow-backdrop.png",
+	ASHEN_ROTTEN:
+		"res://assets/runtime/zone-art/ashen-hollow-rotten-branch.png",
+	ASHEN_SOUND:
+		"res://assets/runtime/zone-art/ashen-hollow-sound-branch.png",
+	MIST_BACKDROP:
+		"res://assets/runtime/zone-art/deep-mist-backdrop.png",
+	MIST_LIT_BEAM:
+		"res://assets/runtime/zone-art/deep-mist-lit-beam.png",
 }
 
 const SPIDER_ASSET_IDS := {

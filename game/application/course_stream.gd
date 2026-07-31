@@ -25,9 +25,12 @@ const WEAVE_FIRST_OFFSET_X := 400.0
 const WEAVE_SECOND_OFFSET_X := 820.0
 const WEAVE_ROUTE_END_OFFSET_X := 900.0
 const WEAVE_GROWTH_HEIGHT := 235.0
-const CANOPY_WEAVE_GROWTH_HEIGHT := 315.0
 const WEAVE_FLOOR_WIDTH := 156.0
 const WEAVE_CEILING_WIDTH := 142.0
+const CANOPY_HOOK_WIDTH := 360.0
+const CANOPY_HOOK_HEIGHT := 330.0
+const CANOPY_LEAF_WIDTH := 410.0
+const CANOPY_LEAF_HEIGHT := 300.0
 
 var _geometry := CourseGeometry.new()
 var _middle_hazard_start_distance: float = 10000.0
@@ -102,6 +105,7 @@ func _build_range(first: int, last: int) -> CourseGeometry:
 	var result := CourseGeometry.new()
 	result.first_chunk_index = first
 	result.last_chunk_index = last
+	result.course_seed = _course_seed
 	for chunk_index in range(first, last + 1):
 		_append_chunk(result, chunk_index)
 	return result
@@ -170,6 +174,7 @@ func _append_chunk(result: CourseGeometry, chunk_index: int) -> void:
 			pattern_id,
 			StringName(route["lane"]),
 			distance_at_chunk,
+			chunk_index,
 		)
 
 	if chunk_index >= 3 and posmod(chunk_index, 5) == 3:
@@ -223,6 +228,14 @@ func _boundary_profile(
 	route_lane: StringName,
 	is_ceiling: bool,
 ) -> PackedVector2Array:
+	var zone_profile := ZoneCourseBuilder.boundary_profile(
+		start_x,
+		base_y,
+		route_lane,
+		is_ceiling,
+	)
+	if not zone_profile.is_empty():
+		return zone_profile
 	var profile := PackedVector2Array([
 		Vector2(start_x, base_y),
 		Vector2(start_x + 240.0, base_y),
@@ -311,7 +324,8 @@ func _route_plan(
 		_course_seed,
 	)
 	var lane := StringName(pattern.get("lane", ROUTE_CENTRE))
-	if pattern_id == &"tight_rail" and allow_tight_corridor:
+	if pattern_id in [&"tight_rail", &"hollow_thread_eye"] and \
+			allow_tight_corridor:
 		lane = ROUTE_TIGHT
 	elif lane == ROUTE_TIGHT:
 		lane = ROUTE_CENTRE
@@ -321,8 +335,10 @@ func _route_plan(
 			"guide_y": 370.0,
 			"guide_end_x": 690.0,
 		}
-	if pattern_id == &"high_low_weave" or \
-			pattern_id == &"canopy_high_low":
+	if pattern_id == &"high_low_weave" or pattern_id in [
+		&"canopy_hook_high_low",
+		&"canopy_shutter_high_low",
+	]:
 		return {
 			"lane": ROUTE_WEAVE,
 			"guide_y": CEILING_Y + 135.0,
@@ -330,8 +346,10 @@ func _route_plan(
 			"guide_end_x": WEAVE_ROUTE_END_OFFSET_X,
 			"guide_count": 7,
 		}
-	if pattern_id == &"low_high_weave" or \
-			pattern_id == &"canopy_low_high":
+	if pattern_id == &"low_high_weave" or pattern_id in [
+		&"canopy_hook_low_high",
+		&"canopy_shutter_low_high",
+	]:
 		return {
 			"lane": ROUTE_WEAVE,
 			"guide_y": FLOOR_Y - 135.0,
@@ -390,10 +408,24 @@ func _append_middle_challenge(
 	pattern_id: StringName,
 	route_lane: StringName,
 	distance_at_chunk: float,
+	chunk_index: int,
 ) -> void:
 	# Every challenge keeps a usable lower or upper rail before the hazard. Its
 	# fly trail communicates the intended route without making it mandatory.
 	# Small hazards grow by at most 16%; the broad passage opening never shrinks.
+	if ZoneCourseBuilder.handles(pattern_id):
+		ZoneCourseBuilder.append_challenge(
+			result,
+			start_x,
+			ceiling_y,
+			floor_y,
+			pattern_id,
+			route_lane,
+			distance_at_chunk,
+			chunk_index,
+			_course_seed,
+		)
+		return
 	var growth := _obstacle_growth_scale(distance_at_chunk)
 	match pattern_id:
 		&"floor_vine":
@@ -455,12 +487,9 @@ func _append_middle_challenge(
 				105.0 * _floating_obstacle_scale * growth,
 				165.0 * _floating_obstacle_scale * growth,
 			)
-		&"high_low_weave", &"canopy_high_low":
+		&"high_low_weave":
 			var floor_x := start_x + WEAVE_FIRST_OFFSET_X
 			var ceiling_x := start_x + WEAVE_SECOND_OFFSET_X
-			var growth_height := CANOPY_WEAVE_GROWTH_HEIGHT \
-				if pattern_id == &"canopy_high_low" \
-				else WEAVE_GROWTH_HEIGHT
 			_append_root_stump(
 				result,
 				floor_x,
@@ -468,7 +497,7 @@ func _append_middle_challenge(
 					start_x, floor_x, floor_y, route_lane, false),
 				false,
 				WEAVE_FLOOR_WIDTH * _floating_obstacle_scale * growth,
-				growth_height * _floating_obstacle_scale * growth,
+				WEAVE_GROWTH_HEIGHT * _floating_obstacle_scale * growth,
 			)
 			_append_hanging_seed_pod(
 				result,
@@ -476,21 +505,18 @@ func _append_middle_challenge(
 				_boundary_edge_y_at(
 					start_x, ceiling_x, ceiling_y, route_lane, true),
 				WEAVE_CEILING_WIDTH * _floating_obstacle_scale * growth,
-				growth_height * _floating_obstacle_scale * growth,
+				WEAVE_GROWTH_HEIGHT * _floating_obstacle_scale * growth,
 			)
-		&"low_high_weave", &"canopy_low_high":
+		&"low_high_weave":
 			var ceiling_x := start_x + WEAVE_FIRST_OFFSET_X
 			var floor_x := start_x + WEAVE_SECOND_OFFSET_X
-			var growth_height := CANOPY_WEAVE_GROWTH_HEIGHT \
-				if pattern_id == &"canopy_low_high" \
-				else WEAVE_GROWTH_HEIGHT
 			_append_hanging_seed_pod(
 				result,
 				ceiling_x,
 				_boundary_edge_y_at(
 					start_x, ceiling_x, ceiling_y, route_lane, true),
 				WEAVE_CEILING_WIDTH * _floating_obstacle_scale * growth,
-				growth_height * _floating_obstacle_scale * growth,
+				WEAVE_GROWTH_HEIGHT * _floating_obstacle_scale * growth,
 			)
 			_append_root_stump(
 				result,
@@ -499,15 +525,66 @@ func _append_middle_challenge(
 					start_x, floor_x, floor_y, route_lane, false),
 				false,
 				WEAVE_FLOOR_WIDTH * _floating_obstacle_scale * growth,
-				growth_height * _floating_obstacle_scale * growth,
+				WEAVE_GROWTH_HEIGHT * _floating_obstacle_scale * growth,
 			)
-		&"canopy_thorn_high", &"canopy_thorn_low":
-			var high_route := pattern_id == &"canopy_thorn_high"
-			_append_floating_seed_burr(
+		&"canopy_hook_high", &"canopy_hook_low":
+			var high_route := pattern_id == &"canopy_hook_high"
+			var hanging := not high_route
+			var x := start_x + 650.0
+			_append_canopy_hook_vine(
 				result,
-				Vector2(start_x + 650.0, 510.0 if high_route else 286.0),
-				88.0,
-				68.0,
+				x,
+				_boundary_edge_y_at(
+					start_x,
+					x,
+					ceiling_y if hanging else floor_y,
+					route_lane,
+					hanging,
+				),
+				hanging,
+				CANOPY_HOOK_WIDTH,
+				CANOPY_HOOK_HEIGHT,
+				_floating_obstacle_scale * growth,
+			)
+		&"canopy_leaf_high", &"canopy_leaf_low":
+			var high_route := pattern_id == &"canopy_leaf_high"
+			var hanging := not high_route
+			var x := start_x + 630.0
+			_append_canopy_leaf_shutter(
+				result,
+				x,
+				_boundary_edge_y_at(
+					start_x,
+					x,
+					ceiling_y if hanging else floor_y,
+					route_lane,
+					hanging,
+				),
+				hanging,
+				CANOPY_LEAF_WIDTH,
+				CANOPY_LEAF_HEIGHT,
+				_floating_obstacle_scale * growth,
+			)
+		&"canopy_hook_high_low", &"canopy_hook_low_high":
+			var high_to_low := pattern_id == &"canopy_hook_high_low"
+			_append_canopy_hook_pair(
+				result,
+				start_x,
+				ceiling_y,
+				floor_y,
+				route_lane,
+				high_to_low,
+				_floating_obstacle_scale * growth,
+			)
+		&"canopy_shutter_high_low", &"canopy_shutter_low_high":
+			var high_to_low := pattern_id == &"canopy_shutter_high_low"
+			_append_canopy_shutter_pair(
+				result,
+				start_x,
+				ceiling_y,
+				floor_y,
+				route_lane,
+				high_to_low,
 				_floating_obstacle_scale * growth,
 			)
 		&"silk_burr_high", &"silk_burr_low":
@@ -882,6 +959,187 @@ func _append_hanging_seed_pod(
 		Vector2(center_x - width * 0.20, ceiling_y + height * 0.82),
 		Vector2(center_x - width * 0.40, ceiling_y + height * 0.43),
 	]), true)
+
+
+func _append_canopy_hook_pair(
+	result: CourseGeometry,
+	start_x: float,
+	ceiling_y: float,
+	floor_y: float,
+	route_lane: StringName,
+	high_to_low: bool,
+	scale: float,
+) -> void:
+	var first_x := start_x + WEAVE_FIRST_OFFSET_X
+	var second_x := start_x + WEAVE_SECOND_OFFSET_X
+	var first_hanging := not high_to_low
+	var second_hanging := high_to_low
+	_append_canopy_hook_vine(
+		result,
+		first_x,
+		_boundary_edge_y_at(
+			start_x,
+			first_x,
+			ceiling_y if first_hanging else floor_y,
+			route_lane,
+			first_hanging,
+		),
+		first_hanging,
+		CANOPY_HOOK_WIDTH,
+		CANOPY_HOOK_HEIGHT,
+		scale,
+		true,
+	)
+	_append_canopy_hook_vine(
+		result,
+		second_x,
+		_boundary_edge_y_at(
+			start_x,
+			second_x,
+			ceiling_y if second_hanging else floor_y,
+			route_lane,
+			second_hanging,
+		),
+		second_hanging,
+		CANOPY_HOOK_WIDTH,
+		CANOPY_HOOK_HEIGHT,
+		scale,
+		false,
+	)
+
+
+func _append_canopy_shutter_pair(
+	result: CourseGeometry,
+	start_x: float,
+	ceiling_y: float,
+	floor_y: float,
+	route_lane: StringName,
+	high_to_low: bool,
+	scale: float,
+) -> void:
+	var first_x := start_x + WEAVE_FIRST_OFFSET_X
+	var second_x := start_x + WEAVE_SECOND_OFFSET_X
+	var first_hanging := not high_to_low
+	var second_hanging := high_to_low
+	_append_canopy_leaf_shutter(
+		result,
+		first_x,
+		_boundary_edge_y_at(
+			start_x,
+			first_x,
+			ceiling_y if first_hanging else floor_y,
+			route_lane,
+			first_hanging,
+		),
+		first_hanging,
+		CANOPY_LEAF_WIDTH,
+		CANOPY_LEAF_HEIGHT,
+		scale,
+		true,
+	)
+	_append_canopy_leaf_shutter(
+		result,
+		second_x,
+		_boundary_edge_y_at(
+			start_x,
+			second_x,
+			ceiling_y if second_hanging else floor_y,
+			route_lane,
+			second_hanging,
+		),
+		second_hanging,
+		CANOPY_LEAF_WIDTH,
+		CANOPY_LEAF_HEIGHT,
+		scale,
+		false,
+	)
+
+
+func _append_canopy_hook_vine(
+	result: CourseGeometry,
+	center_x: float,
+	edge_y: float,
+	hanging: bool,
+	width: float,
+	height: float,
+	scale: float,
+	curl_left: bool = false,
+) -> void:
+	var direction := 1.0 if hanging else -1.0
+	var horizontal := -1.0 if curl_left else 1.0
+	var polygon := PackedVector2Array([
+		Vector2(center_x + horizontal * width * -0.50, edge_y),
+		Vector2(center_x + horizontal * width * -0.46, edge_y + direction * height * 0.40),
+		Vector2(center_x + horizontal * width * -0.32, edge_y + direction * height * 0.74),
+		Vector2(center_x + horizontal * width * -0.10, edge_y + direction * height * 0.96),
+		Vector2(center_x + horizontal * width * 0.20, edge_y + direction * height),
+		Vector2(center_x + horizontal * width * 0.50, edge_y + direction * height * 0.86),
+		Vector2(center_x + horizontal * width * 0.58, edge_y + direction * height * 0.66),
+		Vector2(center_x + horizontal * width * 0.46, edge_y + direction * height * 0.53),
+		Vector2(center_x + horizontal * width * 0.30, edge_y + direction * height * 0.52),
+		Vector2(center_x + horizontal * width * 0.12, edge_y + direction * height * 0.62),
+		Vector2(center_x + horizontal * width * -0.02, edge_y + direction * height * 0.52),
+		Vector2(center_x + horizontal * width * 0.05, edge_y + direction * height * 0.30),
+		Vector2(center_x + horizontal * width * 0.40, edge_y + direction * height * 0.10),
+		Vector2(center_x + horizontal * width * 0.50, edge_y),
+	])
+	result.append_obstacle(
+		_scaled_polygon(polygon, Vector2(center_x, edge_y), scale),
+		hanging,
+		CourseObstacleCatalog.CANOPY_HOOK_VINE_LEFT \
+			if curl_left \
+			else CourseObstacleCatalog.CANOPY_HOOK_VINE_RIGHT,
+	)
+
+
+func _append_canopy_leaf_shutter(
+	result: CourseGeometry,
+	center_x: float,
+	edge_y: float,
+	hanging: bool,
+	width: float,
+	height: float,
+	scale: float,
+	lean_left: bool = false,
+) -> void:
+	var direction := 1.0 if hanging else -1.0
+	var horizontal := -1.0 if lean_left else 1.0
+	var polygon := PackedVector2Array([
+		Vector2(center_x + horizontal * width * -0.50, edge_y),
+		Vector2(center_x + horizontal * width * 0.38, edge_y),
+		Vector2(
+			center_x + horizontal * width * 0.55,
+			edge_y + direction * height * 0.22,
+		),
+		Vector2(
+			center_x + horizontal * width * 0.62,
+			edge_y + direction * height * 0.48,
+		),
+		Vector2(
+			center_x + horizontal * width * 0.58,
+			edge_y + direction * height * 0.78,
+		),
+		Vector2(
+			center_x + horizontal * width * 0.50,
+			edge_y + direction * height,
+		),
+		Vector2(
+			center_x + horizontal * width * 0.25,
+			edge_y + direction * height * 0.92,
+		),
+		Vector2(center_x, edge_y + direction * height * 0.98),
+		Vector2(
+			center_x + horizontal * width * -0.25,
+			edge_y + direction * height * 0.48,
+		),
+	])
+	result.append_obstacle(
+		_scaled_polygon(polygon, Vector2(center_x, edge_y), scale),
+		hanging,
+		CourseObstacleCatalog.CANOPY_LEAF_SHUTTER_LEFT \
+			if lean_left \
+			else CourseObstacleCatalog.CANOPY_LEAF_SHUTTER_RIGHT,
+	)
 
 
 func _append_floating_seed_burr(

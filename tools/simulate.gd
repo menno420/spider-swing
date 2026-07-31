@@ -23,7 +23,11 @@ extends SceneTree
 ##                        which means "still alive", not a death)
 ##   --start-m=0          warp the run start this many metres into the course
 ##                        at the pace curve's speed for that distance — for
-##                        testing late-game regimes without surviving to them
+##                        testing late-game regimes without surviving to them.
+##                        Every per-kilometre rate is normalized on distance
+##                        *travelled* (`distance_m - start_m`), never on the
+##                        absolute course position, so a warped band's rates
+##                        stay comparable with an unwarped one's.
 ##   --reel-style=adaptive  adaptive | tap | hold — how the bot spends Reel
 ##   --save-bursts=on     on | off — emergency Burst when no web can save it
 ##   --moving-anchor-proof  run the deterministic moving-pivot energy probe and
@@ -116,11 +120,11 @@ func _initialize() -> void:
 		quit(2)
 		return
 
-	print("[simulate] bot model v%d · preset=%s upgrades=%d runs=%d seed=%d course=%d..%d cap=%ds reel-style=%s save-bursts=%s" % [
+	print("[simulate] bot model v%d · preset=%s upgrades=%d runs=%d seed=%d course=%d..%d cap=%ds start=%dm reel-style=%s save-bursts=%s" % [
 		BOT_MODEL_VERSION, options["preset"], options["upgrades"],
 		options["runs"], options["seed"], options["course_seed"],
 		int(options["course_seed"]) + int(options["course_seeds"]) - 1,
-		options["max_seconds"],
+		options["max_seconds"], options["start_m"],
 		options["reel_style"], "on" if bool(options["save_bursts"]) else "off",
 	])
 
@@ -237,6 +241,7 @@ func _summarize(
 	point: Dictionary,
 ) -> Dictionary:
 	var distances: Array[float] = []
+	var travelled: Array[float] = []
 	var causes: Dictionary = {}
 	var bands: Dictionary = {}
 	var regions: Dictionary = {}
@@ -245,17 +250,24 @@ func _summarize(
 		"flies": 0.0, "reel_empties": 0.0, "bursts": 0.0, "dives": 0.0,
 		"attaches": 0.0, "seconds": 0.0, "reel_time_s": 0.0,
 		"reel_energy_spent": 0.0, "time_empty_s": 0.0, "save_bursts": 0.0,
+		"travelled_m": 0.0, "deaths": 0.0,
 	}
 	var rescues := 0
 	var pull_deaths := 0
+	var timeouts := 0
 	var rescue_distance_total := 0.0
 	for row: Dictionary in rows:
 		var distance := float(row["distance_m"])
 		distances.append(distance)
+		travelled.append(float(row["travelled_m"]))
 		var cause := str(row["cause"])
 		causes[cause] = int(causes.get(cause, 0)) + 1
-		if cause != "timeout":
-			var band := _band_label(distance)
+		if cause == "timeout":
+			timeouts += 1
+		else:
+			# Bands describe how far the run got *from where it started*, so a
+			# warped band reads the same way an unwarped one does.
+			var band := _band_label(float(row["travelled_m"]))
 			bands[band] = int(bands.get(band, 0)) + 1
 			var region := str(row["region"])
 			var pattern := str(row["pattern"])
@@ -269,10 +281,11 @@ func _summarize(
 		if bool(row["death_during_pull"]):
 			pull_deaths += 1
 	distances.sort()
+	travelled.sort()
 	var count := maxi(1, rows.size())
-	var total_km := 0.0
-	for distance: float in distances:
-		total_km += distance / 1000.0
+	# Rates normalize on ground actually covered. Warping to 15 000 m and dying
+	# 300 m later is 300 m of exposure, not 15 300 m of it.
+	var total_km := float(totals["travelled_m"]) / 1000.0
 	return {
 		"spider": str(spider),
 		"skill": str(skill),
@@ -283,6 +296,22 @@ func _summarize(
 		"distance_p10_m": _percentile(distances, 0.10),
 		"distance_p90_m": _percentile(distances, 0.90),
 		"distance_max_m": 0.0 if distances.is_empty() else distances[-1],
+		"travelled_mean_m": _mean(travelled),
+		"travelled_median_m": _percentile(travelled, 0.5),
+		"travelled_p10_m": _percentile(travelled, 0.10),
+		"travelled_p90_m": _percentile(travelled, 0.90),
+		"travelled_total_km": total_km,
+		"deaths": int(totals["deaths"]),
+		"deaths_per_km": 0.0 if total_km <= 0.0
+			else float(totals["deaths"]) / total_km,
+		# Poisson standard error on the rate: deaths are counted events, so the
+		# count's error is sqrt(count) and the rate's is rate/sqrt(count). A
+		# later slice comparing against this baseline needs to know which
+		# band-to-band wobble is signal and which is sample size.
+		"deaths_per_km_se": 0.0 if total_km <= 0.0 or totals["deaths"] <= 0.0
+			else (float(totals["deaths"]) / total_km) /
+				sqrt(float(totals["deaths"])),
+		"timeout_runs": timeouts,
 		"mean_seconds": float(totals["seconds"]) / count,
 		"mean_flies": float(totals["flies"]) / count,
 		"flies_per_km": 0.0 if total_km <= 0.0
@@ -318,6 +347,14 @@ func _print_summary(summary: Dictionary) -> void:
 		summary["distance_mean_m"], summary["distance_median_m"],
 		summary["distance_p10_m"], summary["distance_p90_m"],
 		summary["distance_max_m"]])
+	print("  travelled m mean %7.1f · median %7.1f · p10 %7.1f · p90 %7.1f · %.2f km total" % [
+		summary["travelled_mean_m"], summary["travelled_median_m"],
+		summary["travelled_p10_m"], summary["travelled_p90_m"],
+		summary["travelled_total_km"]])
+	print("  difficulty  %.2f ±%.2f deaths/km (%d death(s) over %.2f km) · %d timeout run(s)" % [
+		summary["deaths_per_km"], summary["deaths_per_km_se"],
+		summary["deaths"], summary["travelled_total_km"],
+		summary["timeout_runs"]])
 	print("  per run     %.1fs · %.1f flies (%.1f/km) · %.1f webs · %.1f bursts (%.1f saves) · %.1f dives" % [
 		summary["mean_seconds"], summary["mean_flies"],
 		summary["flies_per_km"], summary["mean_attaches"],
@@ -671,7 +708,8 @@ func _write_json(
 ) -> void:
 	var payload := {
 		"format": "spider-swing-simulation-lab",
-		"version": 2,
+		# v3 adds travelled-distance normalization and the deaths-per-km rate.
+		"version": 3,
 		"bot_model": BOT_MODEL_VERSION,
 		"options": options,
 		"summaries": summaries,
@@ -718,6 +756,7 @@ class RunDriver:
 	var reel_band_scale := 1.0
 	var burst_reach := 460.0
 	var course_seed := 1337
+	var start_m := 0.0
 
 	func setup(
 		active_config: SwingConfig,
@@ -734,6 +773,7 @@ class RunDriver:
 		reel_style = style
 		save_bursts_enabled = defensive_bursts
 		course_seed = course_seed_value
+		start_m = start_offset_px / PIXELS_PER_METRE
 		_derive_adaptations()
 		stream.reset(
 			config.middle_hazard_start_distance,
@@ -848,10 +888,21 @@ class RunDriver:
 	func _result(cause: StringName, died_during_pull: bool) -> Dictionary:
 		var region := CourseRegionCatalog.region_for_distance(
 			world.distance_pixels)
+		var distance_m := world.distance_pixels / PIXELS_PER_METRE
+		# A rescued death is still a death the player made; counting only the
+		# terminal one would halve the rate wherever the rescue life is on.
+		var deaths := 0
+		if rescue_used:
+			deaths += 1
+		if cause != &"timeout":
+			deaths += 1
 		return {
 			"seed": int(rng.seed),
 			"course_seed": course_seed,
-			"distance_m": world.distance_pixels / PIXELS_PER_METRE,
+			"distance_m": distance_m,
+			"start_m": start_m,
+			"travelled_m": maxf(0.0, distance_m - start_m),
+			"deaths": deaths,
 			"seconds": world.tick * FIXED_DELTA,
 			"cause": str(cause),
 			"flies": world.run_flies,

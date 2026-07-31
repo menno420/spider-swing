@@ -6,6 +6,8 @@ const START_POSITION := Vector2(220.0, 390.0)
 const START_VELOCITY := Vector2(360.0, -30.0)
 const PULL_CLEARANCE := 10.0
 const GUIDED_ANCHOR_Y := 112.0
+const FIXED_DELTA := 1.0 / 60.0
+const HIGHWAY_ANCHOR_SPEED := 410.0
 
 var config: SwingConfig
 var position: Vector2 = START_POSITION
@@ -16,12 +18,23 @@ var furthest_x: float = START_POSITION.x
 var tick: int = 0
 var anchors: PackedVector2Array = PackedVector2Array()
 var surfaces: Array[PackedVector2Array] = []
+var surface_ids: Array[StringName] = []
+var surface_anchor_classes: Array[StringName] = []
+var surface_visual_ids: Array[StringName] = []
+var decorations: Array[PackedVector2Array] = []
+var decoration_ids: Array[StringName] = []
+var decoration_visual_ids: Array[StringName] = []
 var boundary_surfaces: Array[PackedVector2Array] = []
 var obstacles: Array[PackedVector2Array] = []
 ## Parallel to `obstacles`: 1 when the hazard answers web taps, 0 when it is
 ## lethal-but-untappable. Absent entries read as tappable so geometry built
 ## without the flag keeps its original behaviour.
 var obstacle_anchorable: PackedByteArray = PackedByteArray()
+## Presentation-only semantic kind copied with each authoritative polygon.
+var obstacle_kinds: Array[StringName] = []
+var obstacle_ids: Array[StringName] = []
+var obstacle_anchor_classes: Array[StringName] = []
+var obstacle_visual_ids: Array[StringName] = []
 var fly_positions: PackedVector2Array = PackedVector2Array()
 var boost_positions: PackedVector2Array = PackedVector2Array()
 var run_flies: int = 0
@@ -46,6 +59,31 @@ var _commands: Array[InputCommand] = []
 var _collected_pickups: Dictionary = {}
 var _burst_cooldown_suppressed: bool = false
 var _run_start_x: float = START_POSITION.x
+var _course_seed: int = 0
+var _base_surfaces: Array[PackedVector2Array] = []
+var _surface_motion_specs: Array[Dictionary] = []
+var _surface_source_keys: Array[String] = []
+var _next_surfaces: Array[PackedVector2Array] = []
+var _base_decorations: Array[PackedVector2Array] = []
+var _decoration_motion_specs: Array[Dictionary] = []
+var _next_decorations: Array[PackedVector2Array] = []
+var _decoration_active: PackedByteArray = PackedByteArray()
+var _next_decoration_active: PackedByteArray = PackedByteArray()
+var _base_obstacles: Array[PackedVector2Array] = []
+var _obstacle_motion_specs: Array[Dictionary] = []
+var _obstacle_source_keys: Array[String] = []
+var _next_obstacles: Array[PackedVector2Array] = []
+var _obstacle_active: PackedByteArray = PackedByteArray()
+var _next_obstacle_active: PackedByteArray = PackedByteArray()
+var _web_anchor_source_key: String = ""
+var _web_anchor_source_kind: StringName = &""
+var _web_anchor_class: StringName = CourseGeometry.ANCHOR_FIXED
+var _web_anchor_offset: Vector2 = Vector2.ZERO
+var _web_anchor_expiry_tick: int = -1
+var _web_anchor_attached_tick: int = -1
+var _web_anchor_initial_position: Vector2 = Vector2.ZERO
+var _spent_anchor_sources: Dictionary = {}
+var _emitted_zone_cues: Dictionary = {}
 
 
 func reset(
@@ -64,6 +102,9 @@ func reset(
 	tick = 0
 	run_flies = 0
 	_collected_pickups.clear()
+	_spent_anchor_sources.clear()
+	_emitted_zone_cues.clear()
+	_clear_web_anchor_binding()
 	set_course_geometry(geometry)
 	burst_cooldown_remaining = 0.0
 	burst_charges = config.burst_charge_capacity
@@ -78,19 +119,58 @@ func reset(
 
 
 func set_course_geometry(geometry: CourseGeometry) -> void:
+	_course_seed = geometry.course_seed
 	anchors = geometry.aim_guides.duplicate()
-	surfaces.clear()
-	for surface: PackedVector2Array in geometry.surfaces:
-		surfaces.append(surface.duplicate())
+	_base_surfaces.clear()
+	surface_ids.clear()
+	surface_anchor_classes.clear()
+	surface_visual_ids.clear()
+	_surface_motion_specs.clear()
+	_surface_source_keys.clear()
+	for index in range(geometry.surfaces.size()):
+		var surface := geometry.surfaces[index].duplicate()
+		_base_surfaces.append(surface)
+		surface_ids.append(geometry.surface_id(index))
+		surface_anchor_classes.append(geometry.surface_anchor_class(index))
+		surface_visual_ids.append(geometry.surface_visual_id(index))
+		_surface_motion_specs.append(geometry.surface_motion_spec(index))
+		_surface_source_keys.append(_source_key(
+			&"surface", geometry.surface_id(index), surface,
+			geometry.surface_motion_spec(index)))
+	_base_decorations.clear()
+	decoration_ids.clear()
+	decoration_visual_ids.clear()
+	_decoration_motion_specs.clear()
+	for index in range(geometry.decorations.size()):
+		_base_decorations.append(geometry.decorations[index].duplicate())
+		decoration_ids.append(geometry.decoration_id(index))
+		decoration_visual_ids.append(geometry.decoration_visual_id(index))
+		_decoration_motion_specs.append(geometry.decoration_motion_spec(index))
 	boundary_surfaces.clear()
 	for surface: PackedVector2Array in geometry.boundary_surfaces:
 		boundary_surfaces.append(surface.duplicate())
-	obstacles.clear()
+	_base_obstacles.clear()
 	obstacle_anchorable.clear()
+	obstacle_kinds.clear()
+	obstacle_ids.clear()
+	obstacle_anchor_classes.clear()
+	obstacle_visual_ids.clear()
+	_obstacle_motion_specs.clear()
+	_obstacle_source_keys.clear()
 	for index in range(geometry.obstacles.size()):
-		obstacles.append(geometry.obstacles[index].duplicate())
+		var obstacle := geometry.obstacles[index].duplicate()
+		_base_obstacles.append(obstacle)
 		obstacle_anchorable.append(
 			1 if geometry.is_obstacle_anchorable(index) else 0)
+		obstacle_kinds.append(geometry.obstacle_kind(index))
+		obstacle_ids.append(geometry.obstacle_id(index))
+		obstacle_anchor_classes.append(geometry.obstacle_anchor_class(index))
+		obstacle_visual_ids.append(geometry.obstacle_visual_id(index))
+		_obstacle_motion_specs.append(geometry.obstacle_motion_spec(index))
+		_obstacle_source_keys.append(_source_key(
+			&"obstacle", geometry.obstacle_id(index), obstacle,
+			geometry.obstacle_motion_spec(index)))
+	_sample_course_motion()
 	fly_positions.clear()
 	for fly: Vector2 in geometry.fly_positions:
 		if not _collected_pickups.has(_pickup_key(&"fly", fly)):
@@ -99,6 +179,195 @@ func set_course_geometry(geometry: CourseGeometry) -> void:
 	for boost: Vector2 in geometry.boost_positions:
 		if not _collected_pickups.has(_pickup_key(&"boost", boost)):
 			boost_positions.append(boost)
+
+
+func _sample_course_motion() -> void:
+	surfaces.clear()
+	_next_surfaces.clear()
+	for index in range(_base_surfaces.size()):
+		var sample := CourseMotion.sample_polygon(
+			_base_surfaces[index], _surface_motion_specs[index], tick, FIXED_DELTA)
+		surfaces.append(PackedVector2Array(sample["current"]))
+		_next_surfaces.append(PackedVector2Array(sample["next"]))
+	decorations.clear()
+	_next_decorations.clear()
+	_decoration_active.clear()
+	_next_decoration_active.clear()
+	for index in range(_base_decorations.size()):
+		var sample := CourseMotion.sample_polygon(
+			_base_decorations[index], _decoration_motion_specs[index],
+			tick, FIXED_DELTA)
+		decorations.append(PackedVector2Array(sample["current"]))
+		_next_decorations.append(PackedVector2Array(sample["next"]))
+		_decoration_active.append(1 if bool(sample["active"]) else 0)
+		_next_decoration_active.append(1 if bool(sample["next_active"]) else 0)
+	obstacles.clear()
+	_next_obstacles.clear()
+	_obstacle_active.clear()
+	_next_obstacle_active.clear()
+	for index in range(_base_obstacles.size()):
+		var sample := CourseMotion.sample_polygon(
+			_base_obstacles[index], _obstacle_motion_specs[index], tick, FIXED_DELTA)
+		obstacles.append(PackedVector2Array(sample["current"]))
+		_next_obstacles.append(PackedVector2Array(sample["next"]))
+		_obstacle_active.append(1 if bool(sample["active"]) else 0)
+		_next_obstacle_active.append(1 if bool(sample["next_active"]) else 0)
+
+
+func _commit_next_course_motion() -> void:
+	surfaces.clear()
+	for polygon: PackedVector2Array in _next_surfaces:
+		surfaces.append(polygon.duplicate())
+	decorations.clear()
+	for polygon: PackedVector2Array in _next_decorations:
+		decorations.append(polygon.duplicate())
+	_decoration_active = _next_decoration_active.duplicate()
+	obstacles.clear()
+	for polygon: PackedVector2Array in _next_obstacles:
+		obstacles.append(polygon.duplicate())
+	_obstacle_active = _next_obstacle_active.duplicate()
+
+
+func _source_key(
+	kind: StringName,
+	content_id: StringName,
+	polygon: PackedVector2Array,
+	motion_spec: Dictionary,
+) -> String:
+	var bounds := SolidGeometry.bounds(polygon)
+	var centre := bounds.position + bounds.size * 0.5
+	return "%s:%s:%d:%.3f:%.3f" % [
+		kind,
+		content_id,
+		int(motion_spec.get("chunk_index", -1)),
+		centre.x,
+		centre.y,
+	]
+
+
+func _polygon_centre(polygon: PackedVector2Array) -> Vector2:
+	if polygon.is_empty():
+		return Vector2.ZERO
+	var bounds := SolidGeometry.bounds(polygon)
+	return bounds.position + bounds.size * 0.5
+
+
+func _prepare_web_anchor(events: Array[SimulationEvent]) -> void:
+	if not web.attached:
+		_clear_web_anchor_binding(true)
+		return
+	if _web_anchor_expiry_tick >= 0 and tick >= _web_anchor_expiry_tick:
+		var failed_class := _web_anchor_class
+		var failed_position := web.anchor
+		_clear_web_anchor_binding(true)
+		web.release()
+		events.append(SimulationEvent.make(
+			SimulationEvent.Kind.ANCHOR_FAILED,
+			failed_position,
+			"Collapsing span failed" if \
+				failed_class == CourseGeometry.ANCHOR_COLLAPSING \
+				else "Rotten branch broke",
+			{"anchor_class": failed_class},
+		))
+		return
+	if _web_anchor_source_key.is_empty():
+		return
+	var current := _bound_source_polygon(false)
+	if current.is_empty():
+		web.release()
+		_clear_web_anchor_binding()
+		return
+	if _web_anchor_class != CourseGeometry.ANCHOR_HIGHWAY:
+		web.anchor = _polygon_centre(current) + _web_anchor_offset
+
+
+func _web_anchor_motion(delta: float) -> Dictionary:
+	if not web.attached or _web_anchor_source_key.is_empty():
+		return {"next_anchor": web.anchor, "velocity": Vector2.ZERO}
+	var current := _bound_source_polygon(false)
+	var next := _bound_source_polygon(true)
+	if current.is_empty() or next.is_empty():
+		return {"next_anchor": web.anchor, "velocity": Vector2.ZERO}
+	var current_anchor := _polygon_centre(current) + _web_anchor_offset
+	var next_anchor := _polygon_centre(next) + _web_anchor_offset
+	if _web_anchor_class == CourseGeometry.ANCHOR_HIGHWAY:
+		var bounds := SolidGeometry.bounds(current)
+		var elapsed_ticks := maxi(0, tick - _web_anchor_attached_tick)
+		current_anchor = _web_anchor_initial_position
+		current_anchor.x = minf(
+			bounds.end.x - 12.0,
+			_web_anchor_initial_position.x + \
+				float(elapsed_ticks) * HIGHWAY_ANCHOR_SPEED * delta,
+		)
+		next_anchor = current_anchor
+		next_anchor.x = minf(
+			bounds.end.x - 12.0,
+			current_anchor.x + HIGHWAY_ANCHOR_SPEED * delta,
+		)
+		web.anchor = current_anchor
+	return {
+		"next_anchor": next_anchor,
+		"velocity": (next_anchor - current_anchor) / maxf(delta, 0.000001),
+	}
+
+
+func _bound_source_polygon(next_tick: bool) -> PackedVector2Array:
+	if _web_anchor_source_kind == &"surface":
+		var surface_index := _surface_source_keys.find(_web_anchor_source_key)
+		if surface_index < 0:
+			return PackedVector2Array()
+		return (
+			_next_surfaces[surface_index]
+			if next_tick else surfaces[surface_index]
+		)
+	if _web_anchor_source_kind == &"obstacle":
+		var obstacle_index := _obstacle_source_keys.find(_web_anchor_source_key)
+		if obstacle_index < 0:
+			return PackedVector2Array()
+		return (
+			_next_obstacles[obstacle_index]
+			if next_tick else obstacles[obstacle_index]
+		)
+	return PackedVector2Array()
+
+
+func _bind_web_anchor(metadata: Dictionary, selected_anchor: Vector2) -> void:
+	_clear_web_anchor_binding(true)
+	var source_key := str(metadata.get("source_key", ""))
+	if source_key.is_empty():
+		return
+	_web_anchor_source_key = source_key
+	_web_anchor_source_kind = StringName(metadata.get("source_kind", &""))
+	_web_anchor_class = StringName(metadata.get(
+		"anchor_class", CourseGeometry.ANCHOR_FIXED))
+	_web_anchor_attached_tick = tick
+	_web_anchor_initial_position = selected_anchor
+	var source := _bound_source_polygon(false)
+	if not source.is_empty():
+		_web_anchor_offset = selected_anchor - _polygon_centre(source)
+	var motion_spec: Dictionary = metadata.get("motion_spec", {})
+	if _web_anchor_class in [
+		CourseGeometry.ANCHOR_ROTTEN,
+		CourseGeometry.ANCHOR_COLLAPSING,
+	]:
+		_web_anchor_expiry_tick = tick + maxi(
+			1, int(motion_spec.get("lifetime_ticks", 60)))
+
+
+func _clear_web_anchor_binding(mark_spent: bool = false) -> void:
+	if mark_spent and not _web_anchor_source_key.is_empty() and \
+			_web_anchor_class in [
+				CourseGeometry.ANCHOR_ROTTEN,
+				CourseGeometry.ANCHOR_COLLAPSING,
+			]:
+		_spent_anchor_sources[_web_anchor_source_key] = true
+	_web_anchor_source_key = ""
+	_web_anchor_source_kind = &""
+	_web_anchor_class = CourseGeometry.ANCHOR_FIXED
+	_web_anchor_offset = Vector2.ZERO
+	_web_anchor_expiry_tick = -1
+	_web_anchor_attached_tick = -1
+	_web_anchor_initial_position = Vector2.ZERO
 
 
 func set_burst_cooldown_suppressed(active: bool) -> void:
@@ -114,6 +383,9 @@ func queue_command(command: InputCommand) -> void:
 
 func step(delta: float) -> Array[SimulationEvent]:
 	var events: Array[SimulationEvent] = []
+	_sample_course_motion()
+	_prepare_web_anchor(events)
+	_emit_zone_cues(events)
 	rescue_shield_remaining = maxf(0.0, rescue_shield_remaining - delta)
 	if _burst_cooldown_suppressed:
 		burst_cooldown_remaining = 0.0
@@ -146,6 +418,10 @@ func step(delta: float) -> Array[SimulationEvent]:
 			velocity, distance_pixels, delta, config, gravity_scale)
 		velocity = motor_result["velocity"]
 		target_speed = float(motor_result["target_speed"])
+		velocity += ZoneMechanics.wind_acceleration(
+			distance_pixels, _course_seed, tick, web.attached) * delta
+		if web.attached and _web_anchor_class == CourseGeometry.ANCHOR_STICKY:
+			velocity = ZoneMechanics.apply_sticky_bleed(velocity, delta)
 
 		if web.advance_resource(delta, config):
 			events.append(SimulationEvent.make(
@@ -154,7 +430,15 @@ func step(delta: float) -> Array[SimulationEvent]:
 				"Reel energy empty",
 			))
 
-		var constraint_result := web.solve(position, velocity, delta, config)
+		var anchor_motion := _web_anchor_motion(delta)
+		var constraint_result := web.solve_moving_anchor(
+			position,
+			velocity,
+			delta,
+			config,
+			Vector2(anchor_motion["next_anchor"]),
+			Vector2(anchor_motion["velocity"]),
+		)
 		position = constraint_result["position"]
 		velocity = constraint_result["velocity"]
 		var contact := _first_obstacle_contact(previous_position, position)
@@ -172,6 +456,7 @@ func step(delta: float) -> Array[SimulationEvent]:
 	furthest_x = maxf(furthest_x, position.x)
 	distance_pixels = maxf(0.0, furthest_x - START_POSITION.x)
 	tick += 1
+	_commit_next_course_motion()
 
 	if hit_obstacle:
 		return events
@@ -193,6 +478,79 @@ func step(delta: float) -> Array[SimulationEvent]:
 	return events
 
 
+func _emit_zone_cues(events: Array[SimulationEvent]) -> void:
+	_emit_storm_gust_cue(events)
+	for index in range(obstacles.size()):
+		if index >= obstacle_ids.size() or obstacle_ids[index].is_empty():
+			continue
+		var key := _obstacle_source_keys[index]
+		if _emitted_zone_cues.has(key):
+			continue
+		var bounds := SolidGeometry.bounds(obstacles[index])
+		var lead := bounds.position.x - position.x
+		if lead < 700.0 or lead > 820.0:
+			continue
+		var cue := &""
+		var message := ""
+		var region_id := StringName(
+			CourseRegionCatalog.region_for_distance(distance_pixels)["id"])
+		if region_id == CourseRegionCatalog.DEEP_MIST:
+			cue = &"mist_echo"
+			message = "Echo ahead"
+		elif region_id == CourseRegionCatalog.RUINED_ARBORETUM and \
+				not _obstacle_motion_specs[index].is_empty():
+			cue = &"glass_phase"
+			message = "Moving gap ahead"
+		elif region_id == CourseRegionCatalog.ASHEN_HOLLOW and \
+				obstacle_anchor_classes[index] in [
+					CourseGeometry.ANCHOR_ROTTEN,
+					CourseGeometry.ANCHOR_COLLAPSING,
+				]:
+			cue = &"rotten_crack"
+			message = "Weak anchor ahead"
+		elif region_id == CourseRegionCatalog.STORM_RIDGE and \
+				obstacle_ids[index] == &"ridge_lightning":
+			cue = &"storm_charge"
+			message = "Charged spire ahead"
+		if cue.is_empty():
+			continue
+		_emitted_zone_cues[key] = true
+		events.append(SimulationEvent.make(
+			SimulationEvent.Kind.HAZARD_CUE,
+			Vector2(bounds.position.x, bounds.get_center().y),
+			message,
+			{"cue": cue, "lead_pixels": lead},
+		))
+
+
+func _emit_storm_gust_cue(events: Array[SimulationEvent]) -> void:
+	if distance_pixels < ZoneMechanics.FIRST_GUST_PIXELS or \
+			distance_pixels >= ZoneMechanics.STORM_END_PIXELS:
+		return
+	var current := ZoneMechanics.gust_strength(
+		distance_pixels, _course_seed, tick)
+	var previous := ZoneMechanics.gust_strength(
+		distance_pixels, _course_seed, tick - 1)
+	if current < 0.16 or previous >= 0.16:
+		return
+	var distance_cell := floori(
+		(distance_pixels - ZoneMechanics.STORM_START_PIXELS) / 960.0)
+	var phase_tick := tick + CourseMotion.phase_offset_ticks(
+		distance_cell, _course_seed, ZoneMechanics.GUST_PERIOD_TICKS, 41)
+	var cycle := floori(float(phase_tick) / \
+		float(ZoneMechanics.GUST_PERIOD_TICKS))
+	var key := "storm_gust:%d:%d" % [distance_cell, cycle]
+	if _emitted_zone_cues.has(key):
+		return
+	_emitted_zone_cues[key] = true
+	events.append(SimulationEvent.make(
+		SimulationEvent.Kind.HAZARD_CUE,
+		position + Vector2(760.0, -80.0),
+		"Gust rising",
+		{"cue": &"storm_gust", "lead_pixels": 760.0},
+	))
+
+
 func left_kill_boundary() -> float:
 	return furthest_x - config.camera_left_kill_distance
 
@@ -201,12 +559,24 @@ func nearest_solid_point(target: Vector2) -> Dictionary:
 	var best_distance := INF
 	var best := Vector2.ZERO
 	var best_kind: StringName = &""
-	for surface: PackedVector2Array in surfaces:
-		var candidate := SolidGeometry.closest_point_on_polygon(target, surface)
+	var best_source_kind: StringName = &""
+	var best_source_key := ""
+	var best_anchor_class: StringName = CourseGeometry.ANCHOR_FIXED
+	var best_motion_spec: Dictionary = {}
+	for index in range(surfaces.size()):
+		var source_key := _surface_source_keys[index]
+		if _spent_anchor_sources.has(source_key):
+			continue
+		var candidate := SolidGeometry.closest_point_on_polygon(
+			target, surfaces[index])
 		if bool(candidate["found"]) and float(candidate["distance"]) < best_distance:
 			best_distance = float(candidate["distance"])
 			best = candidate["point"]
 			best_kind = &"surface"
+			best_source_kind = &"surface"
+			best_source_key = source_key
+			best_anchor_class = surface_anchor_classes[index]
+			best_motion_spec = _surface_motion_specs[index].duplicate(true)
 	if config.course_boundaries_enabled:
 		for surface: PackedVector2Array in boundary_surfaces:
 			var candidate := SolidGeometry.closest_point_on_polygon(target, surface)
@@ -214,13 +584,21 @@ func nearest_solid_point(target: Vector2) -> Dictionary:
 				best_distance = float(candidate["distance"])
 				best = candidate["point"]
 				best_kind = &"boundary"
+				best_source_kind = &""
+				best_source_key = ""
+				best_anchor_class = CourseGeometry.ANCHOR_FIXED
+				best_motion_spec = {}
 	for index in range(obstacles.size()):
 		# Floor-grown hazards are lethal but not tappable. A release tap and a
 		# web tap are aimed at the same area, so a hazard rising from the floor
 		# just below the spider used to convert releases into Dive Pulls. Only
 		# the anchor search skips them; `_collision_at` still sees every
 		# obstacle, so nothing became safe to touch.
-		if not _obstacle_anchorable(index):
+		if not _obstacle_anchorable(index) or \
+				(index < _obstacle_active.size() and _obstacle_active[index] == 0):
+			continue
+		var source_key := _obstacle_source_keys[index]
+		if _spent_anchor_sources.has(source_key):
 			continue
 		var candidate := SolidGeometry.closest_point_on_polygon(
 			target, obstacles[index])
@@ -228,11 +606,19 @@ func nearest_solid_point(target: Vector2) -> Dictionary:
 			best_distance = float(candidate["distance"])
 			best = candidate["point"]
 			best_kind = &"obstacle"
+			best_source_kind = &"obstacle"
+			best_source_key = source_key
+			best_anchor_class = obstacle_anchor_classes[index]
+			best_motion_spec = _obstacle_motion_specs[index].duplicate(true)
 	return {
 		"found": best_distance <= config.surface_snap_distance,
 		"anchor": best,
 		"distance": best_distance,
 		"kind": best_kind,
+		"source_kind": best_source_kind,
+		"source_key": best_source_key,
+		"anchor_class": best_anchor_class,
+		"motion_spec": best_motion_spec,
 	}
 
 
@@ -246,8 +632,11 @@ func _collides_with_obstacle(center: Vector2) -> bool:
 	return bool(_collision_at(center)["found"])
 
 
-func _collision_at(center: Vector2) -> Dictionary:
-	for obstacle: PackedVector2Array in obstacles:
+func _collision_at(center: Vector2, motion_fraction: float = 0.0) -> Dictionary:
+	for index in range(obstacles.size()):
+		var obstacle := _obstacle_polygon_at(index, motion_fraction)
+		if obstacle.is_empty():
+			continue
 		if not SolidGeometry.circle_intersects_polygon(
 			center,
 			config.player_collision_radius,
@@ -271,6 +660,31 @@ func _collision_at(center: Vector2) -> Dictionary:
 		"normal": Vector2.ZERO,
 		"kind": &"",
 	}
+
+
+func _obstacle_polygon_at(
+	index: int,
+	motion_fraction: float,
+) -> PackedVector2Array:
+	var current_active := index >= _obstacle_active.size() or \
+		_obstacle_active[index] != 0
+	var next_active := index >= _next_obstacle_active.size() or \
+		_next_obstacle_active[index] != 0
+	if not current_active and not next_active:
+		return PackedVector2Array()
+	if not current_active:
+		return _next_obstacles[index]
+	if not next_active:
+		return obstacles[index]
+	var current := obstacles[index]
+	var next := _next_obstacles[index]
+	if current.size() != next.size() or is_zero_approx(motion_fraction):
+		return current
+	var polygon := PackedVector2Array()
+	for point_index in range(current.size()):
+		polygon.append(current[point_index].lerp(
+			next[point_index], clampf(motion_fraction, 0.0, 1.0)))
+	return polygon
 
 
 func _collision_details(
@@ -301,10 +715,12 @@ func _first_obstacle_contact(start: Vector2, finish: Vector2) -> Dictionary:
 		return {"found": false, "position": finish}
 	var motion := finish - start
 	var maximum_step := maxf(config.player_collision_radius * 0.5, 4.0)
-	var samples := maxi(1, ceili(motion.length() / maximum_step))
+	var sweep_length := maxf(motion.length(), _maximum_obstacle_motion())
+	var samples := maxi(1, ceili(sweep_length / maximum_step))
 	for sample in range(1, samples + 1):
-		var candidate := start.lerp(finish, float(sample) / float(samples))
-		var collision := _collision_at(candidate)
+		var progress := float(sample) / float(samples)
+		var candidate := start.lerp(finish, progress)
+		var collision := _collision_at(candidate, progress)
 		if bool(collision["found"]):
 			collision["position"] = candidate
 			return collision
@@ -315,6 +731,21 @@ func _first_obstacle_contact(start: Vector2, finish: Vector2) -> Dictionary:
 		"normal": Vector2.ZERO,
 		"kind": &"",
 	}
+
+
+func _maximum_obstacle_motion() -> float:
+	var maximum := 0.0
+	for index in range(mini(obstacles.size(), _next_obstacles.size())):
+		var current := obstacles[index]
+		var next := _next_obstacles[index]
+		if current.size() != next.size():
+			continue
+		for point_index in range(current.size()):
+			maximum = maxf(
+				maximum,
+				current[point_index].distance_to(next[point_index]),
+			)
+	return maximum
 
 
 func _try_surface_bounce(
@@ -341,6 +772,7 @@ func _try_surface_bounce(
 	)
 	surface_bounce_ready = false
 	web.release()
+	_clear_web_anchor_binding(true)
 	events.append(SimulationEvent.make(
 		SimulationEvent.Kind.SURFACE_BOUNCED,
 		contact["surface_point"],
@@ -417,6 +849,8 @@ func _consume_web_tap(
 			events,
 			StringName(nearest["kind"]),
 			true,
+			false,
+			nearest,
 		)
 		return
 
@@ -432,6 +866,7 @@ func _consume_web_tap(
 				StringName(nearest["kind"]),
 				false,
 				true,
+				nearest,
 			)
 			return
 		_release_web(events)
@@ -452,6 +887,9 @@ func _consume_web_tap(
 		selected_anchor,
 		events,
 		StringName(nearest["kind"]),
+		false,
+		false,
+		nearest,
 	)
 
 
@@ -461,10 +899,12 @@ func _try_attach(
 	surface_kind: StringName = &"",
 	recovery: bool = false,
 	retarget: bool = false,
+	anchor_metadata: Dictionary = {},
 ) -> void:
 	var result := web.try_attach(position, selected_anchor, config)
 	match result:
 		WebConstraint.AttachResult.ATTACHED:
+			_bind_web_anchor(anchor_metadata, selected_anchor)
 			if recovery:
 				_interrupt_pull(events, false)
 			var dive_rearmed := not dive_ready
@@ -474,8 +914,14 @@ func _try_attach(
 			dive_ready = true
 			surface_bounce_ready = config.surface_bounce_enabled
 			glide_remaining = config.glide_duration
+			var timed_anchor := _web_anchor_class in [
+				CourseGeometry.ANCHOR_ROTTEN,
+				CourseGeometry.ANCHOR_COLLAPSING,
+			]
 			var message := "Recovery web attached" if recovery else (
 				"Web retargeted" if retarget else "Web attached")
+			if timed_anchor:
+				message = "Weak span holding · release before it breaks"
 			if dive_rearmed:
 				message += " · Dive ready"
 			if bounce_rearmed:
@@ -488,10 +934,22 @@ func _try_attach(
 					"interrupted_pull": recovery,
 					"retargeted": retarget,
 					"surface_kind": surface_kind,
+					"anchor_class": _web_anchor_class,
 					"dive_rearmed": dive_rearmed,
 					"surface_bounce_rearmed": bounce_rearmed,
 				},
 			))
+			if timed_anchor:
+				events.append(SimulationEvent.make(
+					SimulationEvent.Kind.HAZARD_CUE,
+					selected_anchor,
+					"The anchor cracks",
+					{
+						"cue": &"rotten_crack",
+						"lifetime_ticks": maxi(
+							0, _web_anchor_expiry_tick - tick),
+					},
+				))
 		WebConstraint.AttachResult.OUT_OF_RANGE:
 			events.append(SimulationEvent.make(
 				SimulationEvent.Kind.OUT_OF_RANGE,
@@ -687,6 +1145,7 @@ func _start_pull(
 	pull_distance_remaining = requested_travel
 	pull_duration_remaining = duration
 	web.release()
+	_clear_web_anchor_binding(true)
 	return true
 
 
@@ -738,6 +1197,7 @@ func _release_web(events: Array[SimulationEvent]) -> void:
 	if not web.attached:
 		return
 	web.release()
+	_clear_web_anchor_binding(true)
 	events.append(SimulationEvent.make(
 		SimulationEvent.Kind.RELEASED,
 		position,
@@ -867,6 +1327,7 @@ func _collision_death_event(contact: Dictionary) -> SimulationEvent:
 
 func rescue_after_death() -> SimulationEvent:
 	web.release()
+	_clear_web_anchor_binding(true)
 	_cancel_pull()
 	burst_cooldown_remaining = 0.0
 	burst_charges = config.burst_charge_capacity

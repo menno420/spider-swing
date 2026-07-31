@@ -52,6 +52,12 @@ endpoints; it does not drive physics (GDD § 17.2).
   stretched circular gate sprite. Three independently scrolling, mirrored
   forest-depth layers replace the abstract circle/tree backdrop at deliberately
   lower contrast than the spider, flies, web, and lethal silhouettes.
+  Bramble Canopy's normal stream does not reuse those obstacle roles. Each deep
+  hook vine or diagonal giant-leaf shutter carries a domain semantic kind beside
+  its authoritative polygon and anchor flag; presentation maps that kind to an
+  inspected alpha asset and mirrors it to match the authored direction. Bounds-
+  based selection remains only the conservative fallback for untyped creator or
+  legacy laboratory geometry.
 
 `SwingLabView` manually interpolates its custom-drawn spider and attached web
 between consecutive fixed-step snapshots using Godot's physics interpolation

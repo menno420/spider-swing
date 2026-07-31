@@ -121,6 +121,14 @@ routes, flies, and recovery timing. Later chunks vary:
   selected obstacle;
 - sparse Burst Frenzy pickups.
 
+At 5000 m, Bramble Canopy stops selecting that Ancient Forest obstacle pool.
+Its normal vocabulary is eight Bramble-owned ids over two new silhouettes:
+deep sideways hook vines with concave pockets and broad diagonal leaf shutters.
+Single high/low forms and mirrored high↔low pairs keep the region's vertical-
+displacement axis while changing both geometry and route grammar. A semantic
+kind travels beside each polygon and anchor flag so presentation selects the
+matching inspected sprite explicitly; it never changes collision or lethality.
+
 Obstacle polygons are lethal on contact and also valid anchors. Course rails are
 attachable structural surfaces, lethal by default, and independently
 configurable as visible or absent and safe or lethal. DEBUG → OVERLAYS can draw
@@ -299,10 +307,14 @@ product decisions.
 - one gameplay intent for each Android touchscreen press even though the
   Control-based HUD keeps Godot touch-to-mouse emulation enabled;
 - fixed-rate trajectory equivalence at simulated 30/60/90/120 Hz render rates.
-- all twenty finished-art runtime textures—including the six-asset Bramble
+- all twenty-two finished-art runtime textures—including the eight-asset Bramble
   Canopy pack—load through one presentation-owned catalog without changing
   authoritative course geometry; foreground region selection is world-anchored
   and the backdrop transition honors Reduced Motion.
+- Bramble's normal pool contains no Ancient Forest pattern id; representative
+  seeds expose every hook/shutter variant, semantic art kinds survive geometry
+  copies and snapshots, every obstacle interrupts the neutral centre line, and
+  a conservative level-zero Garden route sweep remains clear.
 - custom spider/web presentation interpolates fixed snapshots, snaps teleports,
   honors reduced motion, and uses mipmaps for heavily minified moving art.
 - an arbitrary debug start inherits practice settlement ownership and cannot
@@ -324,7 +336,7 @@ product decisions.
 
 ## Owner device playtest
 
-Install `0.20.0-bramble-canopy` over `0.19.0-depth-testing` or any later
+Install `0.20.1-bramble-obstacles` over `0.19.0-depth-testing` or any later
 stable-key build without uninstalling; both use the stable signer and the update
 should preserve the save.
 Only a device that never installed `0.19.0` or later needs the one final
@@ -352,11 +364,13 @@ Before the traversal checklist, prove the new depth-access gate:
 - start at 4900 m and cross 5000 m normally: braided green rails and canopy
   hazards should approach from the right before the lime-lit backdrop replaces
   Ancient Forest, while Reduced Motion makes the backdrop switch immediate;
-- start directly at 5000 m and confirm the complete Bramble pack appears at
-  once. Its authored pair should demand a visible high↔low commitment rather
-  than a neutral centre line. Compare `OWNED` and `MAX`: Reel should reward an
-  early route read and arc setup, while Burst remains the faster late height
-  correction. This is a role check, not a request to make both controls equal;
+- start directly at 5000 m and confirm the Bramble pack appears at once. Normal
+  hazards must now read as deep sideways hook vines and enormous diagonal leaf
+  shutters—not green versions of the old mound, stump, or hanging pod. Mirrored
+  pairs should demand a visible high↔low commitment rather than a neutral
+  centre line. Compare `OWNED` and `MAX`: Reel should reward an early route read
+  and arc setup, while Burst remains the faster late height correction. This is
+  a role check, not a request to make both controls equal;
 - at 10000 m, record Silk Hollow's gameplay separately. Its dedicated
   background/obstacle pack is not built yet, and the current stream remains
   Silk Hollow after 10000 m; do not count either limitation as a Bramble
