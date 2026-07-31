@@ -19,6 +19,7 @@ static func run() -> Dictionary:
 	passed += _test_legacy_upgrade_levels_migrate_proportionally(failures)
 	passed += _test_garage_shop_and_creator_are_real_routes(failures)
 	passed += _test_garage_uses_spider_cosmetic_rails(failures)
+	passed += _test_field_guide_separates_biology_from_game(failures)
 	passed += _test_shop_exposes_seven_mobile_readable_tracks(failures)
 	passed += _test_shop_explains_breakthrough_bonuses(failures)
 	passed += _test_upgrades_and_creator_edits_use_progression_service(failures)
@@ -409,6 +410,61 @@ static func _test_garage_shop_and_creator_are_real_routes(
 			view.front_end_button(&"CreatorPlay") == null or \
 			view.front_end_button(&"CourseSlot0") == null:
 		failures.append("Course Lab is not a functional editable Home route")
+		view.free()
+		return 0
+	view.free()
+	return 1
+
+
+static func _test_field_guide_separates_biology_from_game(
+	failures: PackedStringArray,
+) -> int:
+	var state := FrontEndState.new()
+	state.configure(PlayerSettings.defaults(), PlayerProgress.defaults())
+	var view := FrontEndView.new()
+	view.bind_state(state)
+	view.front_end_button(&"Garage").pressed.emit()
+	var strip := view.find_child("GarageInspiration", true, false) as Label
+	if strip == null or not strip.text.begins_with("INSPIRED BY"):
+		failures.append("Garage does not name what the selected spider is inspired by")
+		view.free()
+		return 0
+	view.front_end_button(&"GarageFieldGuide").pressed.emit()
+	if state.screen != FrontEndState.Screen.FIELD_GUIDE:
+		failures.append("Garage does not route to the Field Guide")
+		view.free()
+		return 0
+	var scroll := view.find_child("FieldGuideScroll", true, false) \
+		as ScrollContainer
+	if scroll == null or \
+			scroll.horizontal_scroll_mode != ScrollContainer.SCROLL_MODE_DISABLED:
+		failures.append("the Field Guide is not a vertical touch scroller")
+		view.free()
+		return 0
+	for spider_id: StringName in SpiderCatalog.ALL_IDS:
+		var entry_name := "FieldGuideEntry%s" % str(spider_id).to_pascal_case()
+		var entry := view.find_child(entry_name, true, false) as Control
+		if entry == null:
+			failures.append("the Field Guide omits %s" % spider_id)
+			view.free()
+			return 0
+		# Inspiration, real biology, and the game's invention must each be
+		# present and separately labelled; a merged claim is the failure mode
+		# this screen exists to prevent.
+		var found := {"INSPIRED BY": false, "REAL SPIDER": false,
+			"IN THIS GAME": false}
+		for label: Node in entry.find_children("*", "Label", true, false):
+			for marker: String in found:
+				if (label as Label).text.begins_with(marker):
+					found[marker] = true
+		for marker: String in found:
+			if not found[marker]:
+				failures.append("%s entry has no %s line" % [spider_id, marker])
+				view.free()
+				return 0
+	view.front_end_button(&"FieldGuideBack").pressed.emit()
+	if state.screen != FrontEndState.Screen.GARAGE:
+		failures.append("the Field Guide does not return to the Garage")
 		view.free()
 		return 0
 	view.free()

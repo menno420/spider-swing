@@ -29,6 +29,7 @@ enum Screen {
 	SHOP,
 	CREATOR,
 	PRACTICE,
+	FIELD_GUIDE,
 }
 
 const TUTORIAL_STEPS := [
@@ -135,6 +136,11 @@ func show_garage() -> void:
 
 func show_shop() -> void:
 	screen = Screen.SHOP
+	changed.emit()
+
+
+func show_field_guide() -> void:
+	screen = Screen.FIELD_GUIDE
 	changed.emit()
 
 

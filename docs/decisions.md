@@ -378,3 +378,28 @@
   competitive records later.
 - provenance: Menno's 2026-07-30 gameplay-versatility, region, randomness, and
   checkpoint-practice direction
+
+## [D-0026] Separate biological inspiration from balance and disclose the fiction
+
+- status: decided
+- date: 2026-07-31
+- verdict: A `SpiderBiologyCatalog` in the domain layer holds one record per
+  playable profile — inspiration, claim strength (species, composite,
+  behaviour, or fictional), observed real-world trait, explicit statement of
+  what the game invents, myth correction, and cited sources with a review date.
+  It shares no key with `SpiderCatalog` and no profile carries prose. Only a
+  `species` claim may state an accepted binomial. The Garage names the
+  inspiration on the selected spider's card and routes to a Field Guide that
+  keeps the four layers visibly separate; contracts fail the build if a profile
+  loses its record or its disclosure.
+- why: The five profiles are already presented with real-spider names and
+  real-spider art, which teaches biology whether or not the game intends to.
+  Two claims were wrong as shipped: Springtail names an animal that is not a
+  spider, and Ballooner's steerable glide reads as spider flight. Fixing that
+  in the profile copy would have entangled balance text with taxonomy, so the
+  claim lives in its own table that a World Spider Catalog correction can edit
+  without touching a tuned number, a profile id, or saved progression. Storing
+  claim strength is what lets a composite stay a composite instead of drifting
+  into false species precision.
+- provenance: Menno's 2026-07-31 deep-research report on real spider diversity
+  and educational game design

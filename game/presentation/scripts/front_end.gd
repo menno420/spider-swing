@@ -20,6 +20,7 @@ var _garage: Control
 var _shop: Control
 var _creator: Control
 var _practice: Control
+var _field_guide: Control
 var _tutorial_preview: TutorialPreview
 var _tutorial_kicker: Label
 var _tutorial_title: Label
@@ -36,6 +37,7 @@ var _garage_role: Label
 var _garage_description: Label
 var _garage_tradeoff: Label
 var _garage_stats: Label
+var _garage_inspiration: Label
 var _garage_style_buttons: Dictionary = {}
 var _garage_web_buttons: Dictionary = {}
 var _garage_silk_preview: SilkPreview
@@ -85,6 +87,7 @@ func ensure_interface() -> void:
 	_build_shop()
 	_build_creator()
 	_build_practice()
+	_build_field_guide()
 
 
 func front_end_button(button_name: StringName) -> Button:
@@ -422,6 +425,15 @@ func _build_garage() -> void:
 	_garage_stats = _label("", 14, CYAN)
 	_garage_stats.custom_minimum_size.y = 40.0
 	detail.add_child(_garage_stats)
+	_garage_inspiration = _label("", 13, MUTED)
+	_garage_inspiration.name = "GarageInspiration"
+	_garage_inspiration.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_garage_inspiration.custom_minimum_size.y = 30.0
+	detail.add_child(_garage_inspiration)
+	var field_guide := _button(&"GarageFieldGuide", "FIELD GUIDE", ORANGE, 42.0)
+	field_guide.add_theme_font_size_override("font_size", 16)
+	field_guide.pressed.connect(_on_field_guide)
+	detail.add_child(field_guide)
 	detail.add_child(_compact_heading("BODY PALETTE"))
 	var style_rail := HBoxContainer.new()
 	style_rail.name = "SpiderStyleRail"
@@ -650,6 +662,108 @@ func _build_practice() -> void:
 	content.add_child(note)
 
 
+func _build_field_guide() -> void:
+	_field_guide = _full_screen(&"FieldGuide")
+	var back := _button(&"FieldGuideBack", "‹  GARAGE", CYAN, 50.0)
+	back.pressed.connect(_on_garage)
+	_place(back, _field_guide, 0.025, 0.035, 0.18, 0.11)
+	var card := _panel(PANEL)
+	_place(card, _field_guide, 0.14, 0.08, 0.86, 0.94)
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 10)
+	_fill_with_margin(content, card, 24.0)
+	content.add_child(_label("SPIDER FIELD GUIDE", 32, INK))
+	var frame_note := _paragraph(
+		"Each spider in this game names what inspired it, what the real animal "
+		+ "does, and what the game invents. Those are three different things and "
+		+ "this page never mixes them.")
+	frame_note.name = "FieldGuideFrame"
+	frame_note.add_theme_font_size_override("font_size", 16)
+	frame_note.custom_minimum_size.y = 46.0
+	content.add_child(frame_note)
+	var scroll := ScrollContainer.new()
+	scroll.name = "FieldGuideScroll"
+	SpiderUiTheme.configure_touch_scroll(scroll)
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content.add_child(scroll)
+	var entries := VBoxContainer.new()
+	entries.add_theme_constant_override("separation", 12)
+	entries.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(entries)
+	for spider_id: StringName in SpiderCatalog.ALL_IDS:
+		entries.add_child(_field_guide_entry(spider_id))
+	SpiderUiTheme.enable_descendant_drag_bubbling(scroll)
+	var provenance := _label(
+		"Accepted names follow %s. Records reviewed %s." % [
+			SpiderBiologyCatalog.NAME_AUTHORITY,
+			SpiderBiologyCatalog.REVIEWED_ON,
+		],
+		14,
+		MUTED,
+	)
+	provenance.name = "FieldGuideProvenance"
+	provenance.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	content.add_child(provenance)
+
+
+func _field_guide_entry(spider_id: StringName) -> Control:
+	var profile_item := SpiderCatalog.profile(spider_id)
+	var bio := SpiderBiologyCatalog.record(spider_id)
+	var inspiration := StringName(bio.get("inspiration", &""))
+	var accent := ORANGE if inspiration == SpiderBiologyCatalog.FICTIONAL else GREEN
+	var row := _panel(Color(PANEL_SOFT, 0.96), 16, accent)
+	row.name = "FieldGuideEntry%s" % str(spider_id).to_pascal_case()
+	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var body := VBoxContainer.new()
+	body.add_theme_constant_override("separation", 4)
+	_fill_with_margin(body, row, 16.0)
+	var header := HBoxContainer.new()
+	header.add_theme_constant_override("separation", 12)
+	body.add_child(header)
+	var title := _label(str(profile_item["name"]).to_upper(), 22, INK)
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(title)
+	header.add_child(_label(
+		SpiderBiologyCatalog.inspiration_label(inspiration),
+		14,
+		accent,
+	))
+	body.add_child(_field_guide_line(
+		"INSPIRED BY · %s" % bio.get("inspired_by", ""), CYAN))
+	var scientific := SpiderBiologyCatalog.scientific_line(spider_id)
+	if not scientific.is_empty():
+		var qualifier := (
+			"" if inspiration == SpiderBiologyCatalog.SPECIES else "reference · "
+		)
+		body.add_child(_field_guide_line(
+			"%s%s · %s" % [qualifier, scientific, bio.get("family", "")],
+			MUTED,
+		))
+	body.add_child(_field_guide_line(
+		"REAL SPIDER · %s" % bio.get("real_trait", ""), INK))
+	body.add_child(_field_guide_line(
+		"IN THIS GAME · %s" % bio.get("game_adaptation", ""), YELLOW))
+	var correction := str(bio.get("correction", ""))
+	if not correction.is_empty():
+		body.add_child(_field_guide_line(
+			"GOOD TO KNOW · %s" % correction, ORANGE))
+	var citations := PackedStringArray()
+	for source: Dictionary in SpiderBiologyCatalog.sources_for(spider_id):
+		citations.append(str(source["publisher"]))
+	if not citations.is_empty():
+		body.add_child(_field_guide_line(
+			"SOURCES · %s" % ", ".join(citations), MUTED))
+	return row
+
+
+func _field_guide_line(text_value: String, color: Color) -> Label:
+	var label := _label(text_value, 15, color)
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	return label
+
+
 func _render() -> void:
 	if _state == null:
 		return
@@ -660,6 +774,7 @@ func _render() -> void:
 	_shop.visible = _state.screen == FrontEndState.Screen.SHOP
 	_creator.visible = _state.screen == FrontEndState.Screen.CREATOR
 	_practice.visible = _state.screen == FrontEndState.Screen.PRACTICE
+	_field_guide.visible = _state.screen == FrontEndState.Screen.FIELD_GUIDE
 	if _tutorial.visible:
 		var step := _state.current_tutorial_step()
 		_tutorial_kicker.text = str(step.get("kicker", ""))
@@ -760,6 +875,7 @@ func _render_garage() -> void:
 			web_variant == _state.progress.selected_web_variant,
 			_web_variant_color(web_variant),
 		)
+	_garage_inspiration.text = SpiderBiologyCatalog.garage_summary(selected)
 	_garage_silk_preview.show_variant(_state.progress.selected_web_variant)
 
 
@@ -869,6 +985,11 @@ func _on_garage() -> void:
 func _on_shop() -> void:
 	if _state != null:
 		_state.show_shop()
+
+
+func _on_field_guide() -> void:
+	if _state != null:
+		_state.show_field_guide()
 
 
 func _on_creator() -> void:

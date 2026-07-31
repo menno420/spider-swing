@@ -9,6 +9,12 @@
 > approved Garden Spider and Anchorite sprites is the route. Execute in an
 > image-generation-capable session; integration/QA can be done by any
 > session.
+>
+> **Corrected 2026-07-31** against the owner's deep-research report. Identity
+> claims — which species, how strong the claim, what may be said about it —
+> belong to `docs/product/spider-biology-folio.md`, which wins over this file.
+> The Skitter anatomy below was wrong and has been fixed; do not produce art
+> from an older revision of this brief.
 
 ## The set rules (non-negotiable for cohesion)
 
@@ -27,20 +33,32 @@
 
 The owner's own reference research (Grok session, 2026-07-31) landed here
 and it is the right call: a real, common, leaf-coloured jumping spider.
+This is the one profile carrying a **species-level** claim, so the anatomy
+has to survive a reference check.
 
-- Compact, short-legged, big-headed **jumping spider** proportions; body
-  clearly smaller than Garden's.
-- **Pale translucent olive-green** overall — glassy, lightly-furred legs
-  (contrast with Garden's heavy dark fur).
-- Two oversized dark anterior eyes with strong speculars; a **red-orange
-  crest** between the eyes; **pale/white facial mask** below them.
+- **Slender and long-legged** for a jumping spider — *Lyssomanes* is not the
+  stocky salticid build. Delicate, lightly-furred limbs held in a wide alert
+  stance; body clearly smaller than Garden's, legs proportionally longer.
+- **Pale translucent olive-green** overall — glassy, almost backlit (contrast
+  with Garden's heavy dark fur).
+- Big-headed salticid face with two oversized dark anterior eyes and strong
+  speculars; **verify the red-orange crest and pale facial mask against
+  reference for the sex being drawn** before committing — the facial markings
+  are sex-variable.
 - Reads as: small, quick, alert. Trade-off text: "changes pace quickly,
   fits tighter gaps."
+
+> **Superseded direction:** an earlier revision of this brief said "compact,
+> short-legged". That is a different genus and would have made a
+> species-labelled sprite anatomically wrong. Slender wins.
 
 ## Ballooner — tiptoeing ballooning spider (money-spider/crab-spider build)
 
 Real ballooning spiders launch from a "tiptoe" stance, spinnerets up,
-riding silk. Make that the identity.
+riding silk. Make that the identity — **the behaviour, not a species**.
+Ballooning happens across many families and mostly in small spiders and
+spiderlings, so this sprite is a readable symbol for a behaviour. It must
+never be captioned as "the ballooning spider", and no binomial goes near it.
 
 - **Slender, light** body; the **longest and finest legs** in the set, in a
   raised tiptoe posture (mid-launch feel even in the static pose).
@@ -52,9 +70,12 @@ riding silk. Make that the identity.
 
 ## Springtail — amber trapdoor spider (glossy armour)
 
-"Springtail" is the game name, not a species (real springtails are not
-spiders — do not draw one). The gameplay identity is the one-bounce
-**Impact Carapace**, so pick the armoured spider: a trapdoor spider.
+"Springtail" is the game name, not a species (real springtails are
+Collembola — six-legged hexapods, not arachnids; do not draw one). The
+gameplay identity is the one-bounce **Impact Carapace**, so pick the
+armoured spider: a cork-lid trapdoor spider (*Ummidia*). Draw armour that
+reads as **sclerotized cuticle**, not as beetle plates or a visible spring —
+the bounce is fiction and the art must not argue for it.
 
 - **Stout, compact** body with a visibly **glossy, hard sclerotized
   carapace** — polished highlights where the others have matte fur.
@@ -77,6 +98,14 @@ spiders — do not draw one). The gameplay identity is the one-bounce
    Android artifact embeds the textures.
 4. Owner device review judges species readability, contrast, and edge
    quality — the same gate Anchorite is currently under.
+5. Each finished sprite has a reference manifest: for every image consulted,
+   record URL, creator, licence, access date, permitted transformations, and
+   the attribution string. Wikimedia licences are per-file; museum imagery is
+   not automatically reusable; figures in open-access papers can still be
+   separately copyrighted.
+6. The species claim in `game/domain/spider_biology_catalog.gd` still matches
+   the delivered art. If the sprite drifted to a composite, downgrade the
+   record's `inspiration` rather than shipping false precision.
 
 ## What already failed (do not repeat)
 
