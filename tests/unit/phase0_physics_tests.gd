@@ -11,6 +11,7 @@ static func run() -> Dictionary:
 	var passed := 0
 
 	passed += _test_presets(failures)
+	passed += _test_baseline_preset_id_and_legacy_migration(failures)
 	passed += _test_reel_resource_baseline_and_resolution(failures)
 	passed += _test_gradual_speed_curve_reaches_full_pace_at_five_kilometres(
 		failures)
@@ -89,7 +90,42 @@ static func _test_presets(failures: PackedStringArray) -> int:
 				balanced.tight_corridor_start_distance, 20000.0) or \
 			not balanced.course_boundaries_lethal:
 		failures.append(
-			"balanced candidate lost its weaker base, pacing, or rail defaults")
+			"balanced baseline lost its weaker base, pacing, or rail defaults")
+		return 0
+	return 1
+
+
+static func _test_baseline_preset_id_and_legacy_migration(
+	failures: PackedStringArray,
+) -> int:
+	if SwingConfig.PRESET_BALANCED != &"balanced_baseline":
+		failures.append(
+			"the approved baseline preset must be named balanced_baseline")
+		return 0
+	# A save written before the 2026-07-31 promotion carries the old id. It has
+	# to land on the baseline deliberately, not by falling through an
+	# unknown-name default that happens to point at the same preset.
+	if SwingConfig.resolve_preset(&"balanced_candidate") \
+			!= SwingConfig.PRESET_BALANCED:
+		failures.append("legacy balanced_candidate no longer resolves to the baseline")
+		return 0
+	if SwingConfig.resolve_preset(&"weighty_candidate") \
+			!= SwingConfig.PRESET_WEIGHTY:
+		failures.append("a current preset id must resolve to itself")
+		return 0
+	if SwingConfig.resolve_preset(&"not_a_preset") != &"":
+		failures.append(
+			"an unknown preset must resolve to the empty name so callers can reject it")
+		return 0
+	var migrated := PlayerSettings.from_dictionary({
+		"swing_preset": "balanced_candidate",
+	})
+	if migrated.swing_preset != SwingConfig.PRESET_BALANCED:
+		failures.append("a pre-rename save did not migrate onto the baseline preset")
+		return 0
+	var kept := PlayerSettings.from_dictionary({"swing_preset": "agile_candidate"})
+	if kept.swing_preset != SwingConfig.PRESET_AGILE:
+		failures.append("migration clobbered a still-valid stored preset")
 		return 0
 	return 1
 

@@ -19,9 +19,9 @@ static func defaults() -> PlayerSettings:
 
 static func from_dictionary(data: Dictionary) -> PlayerSettings:
 	var settings := PlayerSettings.new()
-	var requested_preset := StringName(str(
-		data.get("swing_preset", SwingConfig.PRESET_BALANCED)))
-	if requested_preset in SwingConfig.preset_names():
+	var requested_preset := SwingConfig.resolve_preset(StringName(str(
+		data.get("swing_preset", SwingConfig.PRESET_BALANCED))))
+	if requested_preset != &"":
 		settings.swing_preset = requested_preset
 	settings.show_control_hints = bool(data.get("show_control_hints", true))
 	settings.reduced_motion = bool(data.get("reduced_motion", false))

@@ -165,8 +165,11 @@ without a reported regression.
 
 **Deliberately absent — scope boundaries, not gaps**
 
-- No approved movement baseline yet. Balanced, Weighty, and Agile remain named
-  candidates until Menno completes issue #2's real-device playtest.
+- Weighty and Agile are untuned. They are kept, not deleted, but they were
+  forked from an early Balanced and never revisited while Balanced was played
+  and tuned for days, so they are stale by an unmeasured margin and were never
+  evaluated against it. Treat a difference between them and the baseline as
+  missing tuning, not as a tuning signal.
 - No authored Phase-1 chunk pack, moving hazards, final economy, missions,
   production monetization, billing SDK, server entitlement, course sharing,
   moderation, analytics, ads, cloud save, or store publishing.
@@ -180,14 +183,30 @@ without a reported regression.
 
 ## In flight
 
-The open exit gate is still Menno's device playtest on issue #2. The first depth
-build mounted setup after play had already begun, so the repair makes Home own a
-debug-only pre-run setup with exact distance, large upgrade `−`/`+`, shortcuts,
-and one no-awards start. The in-run controls also gain explicit `GO` and
-focus-loss submission. It should update over the stable-key build without
-uninstalling. Owner evidence should cover exact far starts, `OWNED` versus
-`MAX`, save survival, long-distance region identity, and the existing traversal
-checklist.
+**Baseline preset approved (2026-07-31, owner).** `balanced_baseline` is the
+approved physics baseline, satisfying one of issue #2's six exit-gate criteria.
+Record it precisely: it was not chosen over the other two, it is the only one
+that was ever played. The other five criteria are unaffected.
+
+**Issue #2 stays open, and is expected to stay open for weeks or months.** It is
+the whole Phase 0 build with an owner-judged feel gate, not a test run that
+closes it. Owner testing so far concentrates on the Garden Spider, whose core
+mechanics behave correctly at the distances reached so far — but the owner is
+explicit that this is **not** a completion claim for that spider: comparing the
+baseline against upgrade levels, and behaviour at longer distances, are both
+substantially untested. No spider is finished; one is further along.
+
+The first depth build mounted setup after play had already begun, so the repair
+makes Home own a debug-only pre-run setup with exact distance, large upgrade
+`−`/`+`, shortcuts, and one no-awards start; the in-run controls also gain
+explicit `GO` and focus-loss submission. It updates over the stable-key build
+without uninstalling, and `OWNED` versus a selected upgrade level can be
+compared without wiping or granting progression.
+
+Owner evidence still to gather: exact far starts, `OWNED` versus `MAX`, upgrade
+A/B feel, save survival across two stable-key builds, long-distance region
+identity, and the existing traversal checklist in the Swing Laboratory
+reference.
 
 ## Recently shipped (newest first)
 

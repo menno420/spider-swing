@@ -2,14 +2,32 @@ extends Resource
 class_name SwingConfig
 ## Versioned Phase 0 gameplay configuration.
 ##
-## Every physics value named by GDD §6.6 has one home here. Candidate presets
-## are deliberately not called "baseline": only the owner can approve that
-## label after real-device playtesting.
+## Every physics value named by GDD §6.6 has one home here.
+##
+## `balanced_baseline` is the approved baseline (owner, 2026-07-31 — the GDD §23
+## exit-gate item "the team approves one named physics preset as the baseline").
+## Read the approval precisely: it is NOT the outcome of a three-way comparison.
+## Balanced is the only preset that was ever played and tuned, so it has drifted
+## a long way from the shared starting point the three were forked from, while
+## `weighty_candidate` and `agile_candidate` sat untouched. They stay in the set
+## as candidates — deliberately not deleted — but they are STALE relative to the
+## baseline and were never evaluated against it. Do not present them as vetted
+## alternatives, and do not treat a difference between them and the baseline as
+## a tuning signal; it is mostly just the tuning balanced received and they did
+## not. Re-forking them from the baseline is a real piece of future work.
 
 const SCHEMA_VERSION := 10
-const PRESET_BALANCED := &"balanced_candidate"
+const PRESET_BALANCED := &"balanced_baseline"
 const PRESET_WEIGHTY := &"weighty_candidate"
 const PRESET_AGILE := &"agile_candidate"
+
+## Preset ids that shipped before the baseline promotion, mapped to their
+## current id. Saved settings and `--preset=` invocations from before
+## 2026-07-31 carry `balanced_candidate`; they must keep resolving to the same
+## physics rather than silently falling back through an unknown-name path.
+const LEGACY_PRESET_IDS := {
+	&"balanced_candidate": PRESET_BALANCED,
+}
 const BASE_REEL_RETRACTION_RATE := 320.0
 const BASE_REEL_ENERGY_CAPACITY := 60.0
 const BASE_REEL_DRAIN_RATE := 30.0
@@ -88,6 +106,19 @@ const BASE_REEL_EMPTY_LOCKOUT := 0.75
 
 static func preset_names() -> PackedStringArray:
 	return PackedStringArray([PRESET_BALANCED, PRESET_WEIGHTY, PRESET_AGILE])
+
+
+## Map a stored or command-line preset id onto a current one.
+##
+## Returns `&""` for a name that is neither current nor a known legacy id, so
+## callers can tell "this save predates the rename" (migrate it) apart from
+## "this is not a preset at all" (reject it). `apply_preset` would quietly land
+## both cases on balanced physics anyway; routing through here keeps that
+## outcome deliberate and testable rather than a side effect of its `_:` arm.
+static func resolve_preset(name: StringName) -> StringName:
+	if name in preset_names():
+		return name
+	return LEGACY_PRESET_IDS.get(name, &"")
 
 
 static func from_preset(name: StringName) -> SwingConfig:
