@@ -7,7 +7,7 @@ const ANDROID_WORKFLOW_PATH := "res://.github/workflows/android-debug.yml"
 const BUILD_VERSION := "0.18.0-buckler-test"
 const ANDROID_VERSION_CODE := 34
 const ANDROID_APP_NAME := "Spider Swing Buckler (dev)"
-const EXPECTED_CHECK_COUNT := 107
+const EXPECTED_CHECK_COUNT := 108
 const REQUIRED_INPUT_ACTIONS := [
 	"web_action", "reel_in", "burst_action", "pause", "restart_run",
 	"toggle_debug"]

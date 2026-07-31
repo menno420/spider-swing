@@ -100,16 +100,27 @@ build if one goes missing.
   or steered flight.
 - **Correction carried:** ballooning is shared across families, not one
   species' ability.
-- **Sources:** Morley & Robert 2018, *Current Biology*; Cho et al. 2021.
+- **Documented example:** *Erigone atra* (Linyphiidae), one of the most-recorded
+  ballooning spiders in Europe. Named as an example only — the record stays
+  `behaviour` and claims no species.
+- **Sources:** Morley & Robert 2018, *Current Biology*; Cho et al. 2021;
+  Weyman 1994 (*Erigone* ballooning).
 - **Note:** ballooning is overwhelmingly a behaviour of small spiders and
   spiderlings. The adult silver showpiece in the art brief is a readability
   choice; it must never be captioned as "the ballooning spider."
 
 ### Buckler — `fictional`
 
-- **Inspired by:** cork-lid trapdoor spiders, *Ummidia* Thorell, 1875, family
-  Halonoproctidae. **Buckler is an invented spider** — a buckler is a small
-  round shield made to absorb one blow, which is exactly the profile's identity.
+- **Inspired by:** cork-lid trapdoor spiders, *Ummidia*, and their relative
+  *Cyclocosmia* Ausserer, 1871 — both Halonoproctidae. **Buckler is an invented
+  spider** — a buckler is a small round shield made to absorb one blow, which is
+  exactly the profile's identity.
+- **Armour reference:** *Cyclocosmia*'s abdomen ends in a hardened, ribbed disc
+  that the spider uses to plug its own burrow (phragmosis). It is the strongest
+  real armour story available to this profile, and it also sharpens the
+  disclosure: the disc is a **door, not a shield** — it seals a burrow behind
+  the animal rather than protecting it from an impact. Verified 2026-07-31; see
+  `spider-biology-verification-2026-07-31.md`.
 - **Real trait:** compact mygalomorphs with a hard glossy carapace that build a
   silk-lined burrow closed by a hinged door and ambush from behind it.
 - **Game adaptation:** the animal is invented and so is the rebound. A hardened
@@ -118,10 +129,11 @@ build if one goes missing.
 - **Correction carried:** armour is not why small animals survive falls — low
   mass and high air resistance are. This corrects the exact misconception the
   mechanic would otherwise plant.
-- **Sources:** WSC v27.
+- **Sources:** WSC v27; Godwin & Bond 2018 (Halonoproctidae); AMNH
+  *Novitates* 2580 (*Cyclocosmia* revision).
 - **Naming history:** this profile was called **Springtail** until 2026-07-31.
   That name belongs to Collembola — six-legged hexapods, not arachnids — and a
-  disclaimer was doing work an invented name does for free. See D-0027. The
+  disclaimer was doing work an invented name does for free. See D-0028. The
   persisted id stays `springtail` because it keys saved progression; no player
   ever sees it.
 
@@ -236,10 +248,11 @@ motor is rejected outright.**
 
 ### Temporary modes or pickups, never permanent powers
 
-Net cast (*Deinopis*); stored web-tension release (*Hyptiotes*); bolas
-precision lure (*Mastophora*); spitting entanglement (*Scytodes*); ballooning
-updraft as an environment trigger rather than a species power; vibration route
-preview (*Portia*). Each would be a short window with setup cost — none may
+Net cast (*Deinopis* / *Asianopis* — see the taxonomy note below); stored
+web-tension release (*Hyptiotes*, and *Theridiosoma gemmosum*, whose web snaps
+from a tensioned cone back to a flat disc); bolas precision lure (*Mastophora*);
+spitting entanglement (*Scytodes*); ballooning updraft as an environment trigger
+rather than a species power; vibration route preview (*Portia*). Each would be a short window with setup cost — none may
 become a ranged attack, because that changes the control grammar from traversal
 to combat.
 
@@ -251,6 +264,34 @@ intertidal *Desis*; desert wheel and flic-flac escapes; flower crab spiders;
 ant-mimicking jumpers; pelican spiders; cave *Trogloraptor*; peacock spiders;
 *Bagheera kiplingi*; uloborids and cribellate silk. These add diversity without
 roster inflation, which is the point.
+
+### Taxonomy corrections carried forward
+
+Two names used in the first research report are superseded. A future session
+must not reuse them:
+
+- **Six-eyed sand spiders.** The southern African species moved from *Sicarius*
+  to ***Hexophthalma*** when that genus was revalidated in 2017 — *H. hahni*,
+  *H. damarensis*. *Sicarius* remains valid for the South American species.
+- **Net-casting spiders.** Asian and Australasian species moved from *Deinopis*
+  to ***Asianopis*** (Lin, Shao, Hänggi, Caleb, Koh, Jäger & Li 2020, *ZooKeys*
+  890) — so the Australian net-caster is ***Asianopis subrufa***, not *Deinopis
+  subrufa*. *Deinopis* is retained for other species, including the American
+  *D. spinosa*.
+
+Both verified 2026-07-31; see `spider-biology-verification-2026-07-31.md`.
+
+### Verified additions to the backlog
+
+Re-verified independently because the second research report's own citations do
+not resolve. Each is an idea, not scope:
+
+| Candidate | What is actually documented | Fit |
+|---|---|---|
+| *Toxeus magnus* | An ant-mimicking jumping spider whose mothers feed young a nutritive secretion, with care continuing past sub-adulthood (Chen et al. 2018, *Science*) | Field guide — a genuine myth-breaker about what spiders do |
+| *Theridiosoma gemmosum* | Tensions its orb into a cone and releases it at flying prey, detected by airborne vibration | Temporary pickup alongside *Hyptiotes*; a second, distinct tension mechanism |
+| *Thwaitesia argentiopunctata* | Reflective guanine platelet arrays give a mirrored abdomen. The patches reportedly change size; treat that as reported, not established | Cosmetic — the strongest visual in the whole atlas |
+| *Adelocosa anops* | Eyeless cave wolf spider, Kōloa basin, Kauaʻi; US-listed endangered since 2000; hunts by touch and builds no capture web | Cave biome inhabitant and a conservation entry |
 
 ### Rejected
 

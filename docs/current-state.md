@@ -642,6 +642,17 @@ reasoning.
 
 ## Recently shipped (newest first)
 
+- **2026-07-31 — Second research report verified and folded in.** The owner's
+  longer report reproduced all five approved mappings independently, but ships
+  84 citation keys with no register defining them. Nine of its claims were
+  re-verified against WSC, peer-reviewed papers, and a wildlife authority;
+  results — including what was *not* checked — are logged in
+  `docs/product/spider-biology-verification-2026-07-31.md`. Adopted:
+  *Cyclocosmia*'s burrow-plugging disc as Buckler's armour reference (a door,
+  not a shield), *Erigone atra* as Ballooner's documented example, two taxonomy
+  corrections (*Sicarius* → *Hexophthalma*, *Deinopis* → *Asianopis*), and four
+  verified backlog candidates.
+
 - **2026-07-31 — Buckler rename and first-class fictional spiders.**
   Renames the guarded-recovery profile from Springtail, whose name belonged to
   Collembola and made a disclaimer do work an invented name does for free, and

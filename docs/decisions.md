@@ -450,3 +450,26 @@
   needed it.
 - provenance: Menno's 2026-07-31 direction that the game should be fun and
   educational without excluding fictional spiders, plus the rename request
+
+## [D-0029] Re-verify research claims before they reach shipped biology data
+
+- status: decided
+- date: 2026-07-31
+- verdict: A research document is an input, not a source. When a supplied report
+  cites claims by keys that resolve to nothing, its claims are independently
+  re-verified — against the World Spider Catalog, a peer-reviewed paper, or a
+  museum or health authority — before any of them enter
+  `SpiderBiologyCatalog`, and each check is logged with its verdict in a dated
+  verification record under `docs/product/`. Claims that were not checked are
+  recorded as unchecked and are not adopted.
+- why: The second deep-research report (2026-07-31) carries 84 bracketed
+  citation keys and no register defining them; the first report's working
+  source list did not survive the rewrite. Its content is largely good — it
+  independently reproduced all five approved mappings — but "largely good"
+  is not a citation, and the folio already promises that every shipped source
+  resolves. Re-verification cost one session and produced a better Buckler
+  mapping plus two taxonomy corrections that would otherwise have shipped
+  wrong. Logging the negative results matters as much as the positive ones: an
+  unchecked claim that looks checked is the failure this entry prevents.
+- provenance: Menno's 2026-07-31 request to verify the second report's claims
+  as far as possible and document what is valuable

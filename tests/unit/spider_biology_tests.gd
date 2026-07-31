@@ -29,6 +29,7 @@ static func run() -> Dictionary:
 	passed += _test_fictional_profiles_name_themselves_as_invented(failures)
 	passed += _test_ballooner_is_behaviour_and_denies_flight(failures)
 	passed += _test_sources_resolve_to_citable_entries(failures)
+	passed += _test_no_source_is_registered_but_uncited(failures)
 	passed += _test_biology_carries_no_tuning_values(failures)
 	passed += _test_garage_summary_shows_the_classification(failures)
 	return {"passed": passed, "failures": failures}
@@ -178,6 +179,26 @@ static func _test_sources_resolve_to_citable_entries(
 			if not str(source["url"]).begins_with("https://"):
 				failures.append("%s cites a non-resolvable url" % spider_id)
 				return 0
+	return 1
+
+
+## The second research report (2026-07-31) shipped 84 citation keys and no
+## register defining them, which is what makes a citation decorative. Guard both
+## directions: a cited id must resolve, and a registered source must be cited by
+## something — an orphan entry is a source nobody checked.
+static func _test_no_source_is_registered_but_uncited(
+	failures: PackedStringArray,
+) -> int:
+	var cited := {}
+	for spider_id: StringName in SpiderCatalog.ALL_IDS:
+		for source_id: StringName in SpiderBiologyCatalog.record(
+			spider_id)["sources"]:
+			cited[source_id] = true
+	for source_id: StringName in SpiderBiologyCatalog.SOURCES:
+		if not cited.has(source_id):
+			failures.append("source %s is registered but nothing cites it" %
+				source_id)
+			return 0
 	return 1
 
 
