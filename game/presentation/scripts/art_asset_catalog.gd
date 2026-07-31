@@ -16,7 +16,10 @@ const FOREST_BACKDROP_FAR := &"forest_backdrop_far"
 const FOREST_BACKDROP_MID := &"forest_backdrop_mid"
 const FOREST_BACKDROP_NEAR := &"forest_backdrop_near"
 const CLASSIC_SPIDER := &"classic_spider"
+const SKITTER_SPIDER := &"skitter_spider"
 const ANCHORITE_SPIDER := &"anchorite_spider"
+const BALLOONER_SPIDER := &"ballooner_spider"
+const SPRINGTAIL_SPIDER := &"springtail_spider"
 const GOLDEN_FLY := &"golden_fly"
 
 const ASSETS := {
@@ -38,15 +41,42 @@ const ASSETS := {
 		"res://assets/runtime/forest-biome/forest-backdrop-near.png",
 	CLASSIC_SPIDER:
 		"res://assets/runtime/characters/classic-garden-spider.png",
+	SKITTER_SPIDER:
+		"res://assets/runtime/characters/skitter-magnolia-jumper.png",
 	ANCHORITE_SPIDER:
 		"res://assets/runtime/characters/anchorite-burrowing-spider.png",
+	BALLOONER_SPIDER:
+		"res://assets/runtime/characters/ballooner-spider.png",
+	SPRINGTAIL_SPIDER:
+		"res://assets/runtime/characters/springtail-trapdoor-spider.png",
 	GOLDEN_FLY:
 		"res://assets/runtime/collectibles/golden-forest-fly.png",
+}
+
+const SPIDER_ASSET_IDS := {
+	SpiderCatalog.CLASSIC: CLASSIC_SPIDER,
+	SpiderCatalog.SKITTER: SKITTER_SPIDER,
+	SpiderCatalog.ANCHORITE: ANCHORITE_SPIDER,
+	SpiderCatalog.BALLOONER: BALLOONER_SPIDER,
+	SpiderCatalog.SPRINGTAIL: SPRINGTAIL_SPIDER,
 }
 
 
 static func texture_path(asset_id: StringName) -> String:
 	return str(ASSETS.get(asset_id, ""))
+
+
+static func spider_asset_id(profile_id: StringName) -> StringName:
+	return StringName(SPIDER_ASSET_IDS.get(profile_id, &""))
+
+
+static func spider_style_tint(style: StringName) -> Color:
+	match style:
+		PlayerProgress.STYLE_AMBER:
+			return Color(1.0, 0.90, 0.72, 1.0)
+		PlayerProgress.STYLE_COMET:
+			return Color(0.73, 0.88, 1.0, 1.0)
+	return Color.WHITE
 
 
 static func texture_paths() -> PackedStringArray:

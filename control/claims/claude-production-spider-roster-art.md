@@ -1,1 +1,0 @@
-- `claude/production-spider-roster-art` · **correct Garden anatomy and integrate approved Skitter, Ballooner, and Springtail production sprites** · assets/runtime/characters, ArtAssetCatalog, SwingLabView, sprite contracts, docs/build identity · 2026-07-31

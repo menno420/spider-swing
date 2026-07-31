@@ -403,3 +403,19 @@
   into false species precision.
 - provenance: Menno's 2026-07-31 deep-research report on real spider diversity
   and educational game design
+
+## [D-0027] Occlude two far-side rear legs in every 2D spider sprite
+
+- status: decided
+- date: 2026-07-31
+- verdict: A right-facing production sprite shows four complete near-side
+  walking legs and only the two far-side front legs, recessed behind the
+  cephalothorax. Both far-side rear legs are fully hidden by the body. The
+  character remains biologically eight-legged; six visible legs are the shared
+  2D readability convention, not an anatomy claim.
+- why: Forcing all eight legs into a 96×46 side-profile footprint repeatedly
+  created a false five-on-one-side read, even when the raw endpoint count was
+  eight. Deliberate occlusion matches natural depth, keeps limb roots legible at
+  phone scale, and gives every roster asset one testable composition rule.
+- provenance: Menno's direct anatomy review and approval of the corrected
+  Skitter sprite, followed by the Garden correction and five-roster art session

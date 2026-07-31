@@ -115,6 +115,22 @@ as venue `any`.)
 kit-owned — they refresh at upgrade between the fence markers; local
 findings go here, below the fence.)
 
+- 2026-07-31 · capability · `owner-live` · **This Codex Work seat can generate,
+  edit, key, inspect, integrate, and Android-prove production character art** ·
+  the built-in image workflow corrected Garden's leg topology; the local soft-
+  matte/despill helper converted Garden plus three owner-approved candidates to
+  exact 384×181 RGBA; source and 96×46 checks found transparent frame edges and
+  no visible key; PR #52 `game-quality` run
+  [30632785741](https://github.com/menno420/spider-swing/actions/runs/30632785741)
+  passed all 107 contracts at exact source `89434f47…`; Android run
+  [30632785775](https://github.com/menno420/spider-swing/actions/runs/30632785775)
+  embedded all five imported textures in verified
+  [artifact 8794039474](https://github.com/menno420/spider-swing/actions/runs/30632785775/artifacts/8794039474)
+  (ZIP SHA-256 `0dee328a…`, APK SHA-256 `9f213e62…`) · this capability is
+  explicitly seat-scoped and does not contradict the Claude Code seat's
+  no-image-generator wall below; use the chroma-key workflow, record reference
+  provenance, and inspect both source and gameplay scale before integration.
+
 - 2026-07-31 · wall · `owner-live` · **This Claude Code seat carries no
   image-generation tool** · a full tool-registry search returned no
   generator, and one attempted procedural (code-drawn) sprite was honestly

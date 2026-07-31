@@ -429,6 +429,18 @@ static func _test_field_guide_separates_biology_from_game(
 		failures.append("Garage does not name what the selected spider is inspired by")
 		view.free()
 		return 0
+	var garage_preview := view.find_child(
+		"GarageSpiderPreview",
+		true,
+		false,
+	) as TextureRect
+	if garage_preview == null or garage_preview.texture == null or \
+			garage_preview.texture.resource_path != ArtAssetCatalog.texture_path(
+				ArtAssetCatalog.spider_asset_id(SpiderCatalog.CLASSIC),
+			):
+		failures.append("Garage does not preview the selected production sprite")
+		view.free()
+		return 0
 	view.front_end_button(&"GarageFieldGuide").pressed.emit()
 	if state.screen != FrontEndState.Screen.FIELD_GUIDE:
 		failures.append("Garage does not route to the Field Guide")
@@ -465,6 +477,18 @@ static func _test_field_guide_separates_biology_from_game(
 	view.front_end_button(&"FieldGuideBack").pressed.emit()
 	if state.screen != FrontEndState.Screen.GARAGE:
 		failures.append("the Field Guide does not return to the Garage")
+		view.free()
+		return 0
+	view.front_end_button(&"GarageBack").pressed.emit()
+	view.front_end_button(&"Shop").pressed.emit()
+	var shop_preview := view.find_child(
+		"ShopSpiderPreview",
+		true,
+		false,
+	) as TextureRect
+	if shop_preview == null or shop_preview.texture == null or \
+			shop_preview.texture.resource_path != garage_preview.texture.resource_path:
+		failures.append("Shop does not reuse the selected production sprite")
 		view.free()
 		return 0
 	view.free()
