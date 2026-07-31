@@ -57,7 +57,7 @@ static func run() -> Dictionary:
 	passed += _test_contoured_rails_are_continuous_and_varied(failures)
 	passed += _test_obstacle_collision_is_authoritative(failures)
 	passed += _test_boundary_lethality_is_a_toggle(failures)
-	passed += _test_springtail_impact_shell_is_bounded(failures)
+	passed += _test_buckler_impact_shell_is_bounded(failures)
 	passed += _test_collectibles_are_swept_and_not_respawned(failures)
 	passed += _test_burst_frenzy_suppresses_only_cooldown(failures)
 	passed += _test_attach_release_does_not_inject_energy(failures)
@@ -675,9 +675,9 @@ static func _test_upgrade_catalog_has_shared_core_and_breakthroughs(
 			&"glide_duration", 1.0],
 		[SpiderCatalog.BALLOONER, &"ballooner_reach",
 			&"web_maximum_length", 1.0],
-		[SpiderCatalog.SPRINGTAIL, &"springtail_shell",
+		[SpiderCatalog.BUCKLER, &"springtail_shell",
 			&"surface_bounce_max_impact_speed", 1.0],
-		[SpiderCatalog.SPRINGTAIL, &"springtail_bounce",
+		[SpiderCatalog.BUCKLER, &"springtail_bounce",
 			&"surface_bounce_retention", 1.0],
 	]
 	for expectation: Array in identity_expectations:
@@ -1922,9 +1922,9 @@ static func _test_spider_profiles_and_glide_share_one_config(
 	progress.selected_spider_id = SpiderCatalog.BALLOONER
 	var glider := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 	SpiderCatalog.apply_to_config(glider, progress)
-	progress.selected_spider_id = SpiderCatalog.SPRINGTAIL
-	var springtail := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
-	SpiderCatalog.apply_to_config(springtail, progress)
+	progress.selected_spider_id = SpiderCatalog.BUCKLER
+	var buckler := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	SpiderCatalog.apply_to_config(buckler, progress)
 	if agile.player_collision_radius >= 18.0 or \
 			agile.horizontal_drive_acceleration <= 470.0:
 		failures.append("Skitter lost its smaller, more agile profile")
@@ -1937,9 +1937,9 @@ static func _test_spider_profiles_and_glide_share_one_config(
 		failures.append("Ballooner does not resolve to a real detached glide")
 		return 0
 	if SpiderCatalog.ALL_IDS.size() != 5 or \
-			not springtail.surface_bounce_enabled or \
-			springtail.horizontal_drive_acceleration >= 470.0:
-		failures.append("Springtail lost its bounded recovery trade-off")
+			not buckler.surface_bounce_enabled or \
+			buckler.horizontal_drive_acceleration >= 470.0:
+		failures.append("Buckler lost its bounded recovery trade-off")
 		return 0
 	var world := SimulationWorld.new()
 	world.reset(glider, _test_geometry())
@@ -2011,11 +2011,11 @@ static func _test_boundary_lethality_is_a_toggle(
 	return 1
 
 
-static func _test_springtail_impact_shell_is_bounded(
+static func _test_buckler_impact_shell_is_bounded(
 	failures: PackedStringArray,
 ) -> int:
 	var progress := PlayerProgress.defaults()
-	progress.selected_spider_id = SpiderCatalog.SPRINGTAIL
+	progress.selected_spider_id = SpiderCatalog.BUCKLER
 	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 	SpiderCatalog.apply_to_config(config, progress)
 	config.gravity = 0.0001
@@ -2035,7 +2035,7 @@ static func _test_springtail_impact_shell_is_bounded(
 	if not _contains_event(events, SimulationEvent.Kind.SURFACE_BOUNCED) or \
 			_contains_event(events, SimulationEvent.Kind.DEATH_REQUESTED) or \
 			spent.surface_bounce_ready or spent.velocity.y >= 0.0:
-		failures.append("charged Springtail did not survive one moderate rail hit")
+		failures.append("charged Buckler did not survive one moderate rail hit")
 		return 0
 	spent.position = Vector2(360.0, 620.0)
 	spent.velocity = Vector2(120.0, 600.0)

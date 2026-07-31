@@ -42,8 +42,12 @@ without a reported regression.
   explicit statement of what the game invents, a myth correction where one is
   needed, and cited sources with an accepted-name authority and review date.
   Only a species-level claim states a binomial, so Garden Spider and Anchorite
-  stay honest composites, Ballooner stays behaviour-level, and Springtail is
-  labelled a fictional name that corrects the Collembola confusion. The Garage
+  stay honest composites, Ballooner stays behaviour-level, and Buckler is
+  labelled an invented spider whose disclosure names itself as invented.
+  Invented profiles are first-class: the folio's "designing fictional
+  spiders" section sets the four rules — fiction is never the exciting tier, it
+  never borrows a real animal's name, it still says what it borrowed, and it
+  carries a correction for the misconception it creates. The Garage
   detail card names the selected spider's inspiration and routes to a scrollable
   FIELD GUIDE screen that keeps game identity, inspiration, real biology, and
   game adaptation on separate lines. Nine contracts fail the build if a profile
@@ -148,7 +152,7 @@ without a reported regression.
   independently tunable and feed the same polygons to collision and rendering.
 - `SpiderCatalog` defines five comparison profiles over one `SwingConfig`:
   balanced Garden Spider, smaller/faster Skitter, heavier Anchorite, and
-  bounded-glide Ballooner, plus Springtail's one-charge moderate rail bounce.
+  bounded-glide Ballooner, plus Buckler's one-charge moderate rail bounce.
   Each exposes an explicit trade-off, the same five core fly-funded tracks, and
   two identity tracks. Every track has 20 small levels; levels 5/10/15/20 grant
   one extra deterministic tuning step. Schema 5 retains the proportional
@@ -172,7 +176,7 @@ without a reported regression.
   retained percentage, Burst cooldown, Burst/Dive percentages and durations,
   rope damping, rail presence/lethality, edge/floating/gate geometry sizes,
   starting/maximum speed and exact full-speed distance, shaped-route clearance,
-  the inward-rail start distance and tight-gap size, guided opening, one-run rescue, Springtail impact
+  the inward-rail start distance and tight-gap size, guided opening, one-run rescue, Buckler impact
   response, the middle-hazard start, and boost duration.
 - Settings is a readable vertical scroll surface with larger type and 58–68-pixel
   controls, verified by runtime contracts and designed around the owner's
@@ -307,7 +311,7 @@ without a reported regression.
   continuous contoured rails, seeded 5000 m region catalogs with fixed recovery
   cadence and non-record checkpoint starts, a deterministic distance-banded pattern catalog,
   full Classic-sized high↔low weave envelopes, bounded silk-burr geometry,
-  upgradeable minimum Burst travel, and bounded Springtail impacts. A three-lane
+  upgradeable minimum Burst travel, and bounded Buckler impacts. A three-lane
   route sweep proves a Classic-sized spider
   clears both rail-grown roots across the passage's full width at every
   supported Creator opening; the mobile group proves both overlays begin off
@@ -370,7 +374,7 @@ without a reported regression.
   `bc582e25a2a2fd7d6da18ed2cf127cc568b834ca`. The added contracts prove the
   exact 5000 m pace curve, continuous open/tight rail profiles, upgradable
   minimum Burst travel, three five-level paths for all five spiders, and
-  Springtail's spent/rearmed moderate-impact shell while retaining lethal
+  Buckler's spent/rearmed moderate-impact shell while retaining lethal
   obstacles, hard impacts, and pull collisions.
 - PR #20 `game-quality` run
   [30447006504](https://github.com/menno420/spider-swing/actions/runs/30447006504)
@@ -624,11 +628,22 @@ without a reported regression.
 The biological inspiration layer and Field Guide are open for review. The next
 owner evidence should cover seeded-region identity and checkpoint-practice
 integrity, reserve-Burst feel, and Anchorite species readability. Two naming
-questions are the owner's alone and are parked, not blocking: whether Springtail
-keeps its fictional name plus the disclosure or is renamed, and whether the
-release roster uses fictional names throughout or promotes species names.
+question is the owner's alone and is parked, not blocking: whether the release
+roster uses fictional names throughout or promotes species names. The Springtail
+naming question is resolved — it is now Buckler; the biology folio carries
+the reasoning.
 
 ## Recently shipped (newest first)
+
+- **2026-07-31 — Buckler rename and first-class fictional spiders.**
+  Renames the guarded-recovery profile from Springtail, whose name belonged to
+  Collembola and made a disclaimer do work an invented name does for free, and
+  adds the folio section stating that invented spiders belong in this game with
+  the four rules for inventing well. The persisted id stays `springtail` — a
+  pre-rename save was verified to load, resolve to Buckler, and keep both
+  identity upgrade levels, so no migration was needed. Its biology record now
+  discloses the animal itself as invented and corrects why small animals really
+  survive falls.
 
 - **2026-07-31 — Biological inspiration layer and Field Guide.** Adds a domain
   record per profile that separates what each spider is inspired by, what the

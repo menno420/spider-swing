@@ -1,6 +1,6 @@
 # Spider biology folio — approved mappings for the current five
 
-> **Status:** `binding` for identity claims · `ideas` for §5 candidates
+> **Status:** `binding` for identity claims · `ideas` for §6 candidates
 >
 > The authoritative record of what each playable profile is inspired by, what
 > the real animal does, and what this game invents. `game/domain/spider_biology_catalog.gd`
@@ -34,7 +34,9 @@ build if one goes missing.
   this level may state an accepted binomial.
 - `composite` — several relatives blended; no species-level claim.
 - `behaviour` — a behaviour recorded across many families, not a taxon.
-- `fictional` — invented name; real biology may still guide the art.
+- `fictional` — an invented animal. Welcome here (see §3); real biology may
+  still guide the art, and the disclosure must say the spider itself is
+  invented, not merely that a stat is tuned.
 
 ## 2. Approved mappings
 
@@ -103,25 +105,85 @@ build if one goes missing.
   spiderlings. The adult silver showpiece in the art brief is a readability
   choice; it must never be captioned as "the ballooning spider."
 
-### Springtail — `fictional`
+### Buckler — `fictional`
 
 - **Inspired by:** cork-lid trapdoor spiders, *Ummidia* Thorell, 1875, family
-  Halonoproctidae. The **name is invented** and stays that way until the owner
-  decides otherwise.
+  Halonoproctidae. **Buckler is an invented spider** — a buckler is a small
+  round shield made to absorb one blow, which is exactly the profile's identity.
 - **Real trait:** compact mygalomorphs with a hard glossy carapace that build a
   silk-lined burrow closed by a hinged door and ambush from behind it.
-- **Game adaptation:** surviving and rebounding from one rail impact is
-  invented. A hardened carapace resists drying out and predators at the burrow
-  door; it is not impact armour.
-- **Correction carried:** real springtails (Collembola) are six-legged
-  hexapods, not arachnids, and jump with a tail-like furca.
+- **Game adaptation:** the animal is invented and so is the rebound. A hardened
+  carapace resists drying out and predators at the burrow door; it is not impact
+  armour.
+- **Correction carried:** armour is not why small animals survive falls — low
+  mass and high air resistance are. This corrects the exact misconception the
+  mechanic would otherwise plant.
 - **Sources:** WSC v27.
-- **Open owner decision:** keep the name plus this disclosure (current, and the
-  cheapest honest option), or rename the profile later. Both are one-line
-  changes; the profile id `springtail` is internal and stays either way so no
-  saved progression is touched.
+- **Naming history:** this profile was called **Springtail** until 2026-07-31.
+  That name belongs to Collembola — six-legged hexapods, not arachnids — and a
+  disclaimer was doing work an invented name does for free. See D-0027. The
+  persisted id stays `springtail` because it keys saved progression; no player
+  ever sees it.
 
-## 3. Editorial voice
+## 3. Designing fictional spiders
+
+**Invented spiders belong in this game.** The product is fun first and
+educational second, and `fictional` is a first-class claim strength, not a
+grudging exception. Read the rest of this folio as *how to invent well*, never
+as *only real species allowed*.
+
+The reasoning is worth stating plainly, because it is the opposite of the
+intuition: **fiction is not what costs an educational game its credibility —
+undisclosed fiction is.** A wholly invented spider is the *safest* content the
+game can ship, because there is no real animal a player can walk away holding a
+wrong fact about. The genuinely risky content is a half-accurate real species,
+which is why Garden Spider and Anchorite are composites rather than named
+species. A labelled invention costs a player nothing and teaches by contrast:
+knowing which one is made up is what makes the real ones land.
+
+### The four rules
+
+1. **Fiction must not be the exciting tier.** If real spiders are the starters
+   and invented ones are the rewards, the game quietly teaches that reality is
+   the boring part. It is not. Real spiders cast nets held in their front legs,
+   spit glue in a zigzag, cartwheel down dunes to escape, and build underwater
+   air bells they breathe from. Most of that is stranger than what anyone would
+   invent. Invented profiles sit *alongside* that, never above it.
+2. **Never borrow a real animal's name.** This is the only way fiction actually
+   misinforms, and it is what the Springtail rename fixed. An invented mechanic
+   on an invented name is free. An invented mechanic on a real animal's name
+   makes a disclaimer carry weight it should not have to. The same applies to
+   invented Latin binomials and real-sounding common-name patterns — a
+   `-back`, `-weaver`, or `-jumper` suffix reads as a documented species.
+   Check any candidate name against the World Spider Catalog before it ships.
+3. **An invented spider still says what it borrowed.** "Invented for this game
+   — the glossy shell is drawn from cork-lid trapdoor spiders; the bounce is
+   not something any spider does" is a better card than either pure fantasy or
+   a dry fact. The `inspired_by` field works exactly the same for a fictional
+   profile as for a real one.
+4. **Give it an honest correction too.** A fictional profile is the *best* place
+   for a myth correction, because the invention creates a specific
+   misconception and the entry can answer it directly. Buckler invents impact
+   armour, so its correction explains what actually lets small animals survive
+   falls.
+
+### The pattern worth chasing
+
+Use fiction as the **on-ramp**, not the destination. An invented spider built
+around one exaggerated real trait becomes a doorway to the animal that inspired
+it — a player who enjoys a fictional net-caster is a player who will read the
+*Deinopis* entry. That is fiction serving the education instead of competing
+with it, and it scales: every parked candidate in §6 could arrive first as an
+invented profile and later as a field-guide entry about the real thing.
+
+### What is still rejected
+
+Not fiction — only dishonesty. A fictional profile may not claim an accepted
+name, may not cite sources for invented behaviour, and may not present a
+medically significant real species as a power fantasy. And no profile, invented
+or real, may require a second motor.
+
+## 4. Editorial voice
 
 - Write "can", "has been observed", "in this species", "in these experiments".
   Avoid "designed to", "knows", "decides", and universal claims.
@@ -136,7 +198,7 @@ build if one goes missing.
   correct amount.
 - Younger readers get shorter text, not less accurate text.
 
-## 4. Art and reference rules
+## 5. Art and reference rules
 
 The production contract in `docs/ideas/spider-sprite-briefs.md` stands. This
 folio adds the identity rules that outlive any single brief:
@@ -156,7 +218,7 @@ folio adds the identity rules that outlive any single brief:
   per-file. Museum imagery is not automatically reusable. Figures in open-access
   papers can still be separately copyrighted.
 
-## 5. Parked candidates — ideas, not scope
+## 6. Parked candidates — ideas, not scope
 
 Phase 0's owner-judged feel gate (issue #2) is open. Nothing below is planned,
 promised or estimated; this section exists so the research is not lost and so a
@@ -170,7 +232,7 @@ motor is rejected outright.**
 | Flattie, *Selenops* spp. | Directed aerial descent — real righting and steering during a fall | Weaker Reel/Burst, wider laterigrade body | Nothing but the gate; fits the existing detached-state modifier |
 | Fishing spider, *Dolomedes triton* | Water-surface travel and launch; airflow sensing | No benefit on dry routes | A water biome existing at all |
 | Diving-bell spider, *Argyroneta aquatica* | Underwater endurance via air-bell pockets | Buoyancy, drag, dependence on air structures | A water biome; better biome-locked than a starter |
-| Trapdoor guardian, *Ummidia* composite | One deliberate guarded setup window | Slow correction, large body | Overlaps Springtail — use as its mapping, not a second profile |
+| Trapdoor guardian, *Ummidia* composite | One deliberate guarded setup window | Slow correction, large body | Overlaps Buckler — use as its mapping, not a second profile |
 
 ### Temporary modes or pickups, never permanent powers
 
@@ -198,7 +260,7 @@ silhouettes. Wheel/flic-flac spiders as ordinary traversal. Colony and maternal
 behaviour reduced to a solo stat buff. Taxonomy copied into game data without
 review provenance.
 
-## 6. Maintenance
+## 7. Maintenance
 
 - `SpiderBiologyCatalog.REVIEWED_ON` and `NAME_AUTHORITY` travel with the data.
   When the World Spider Catalog moves a genus, correct the record and bump the

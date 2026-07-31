@@ -403,3 +403,34 @@
   into false species precision.
 - provenance: Menno's 2026-07-31 deep-research report on real spider diversity
   and educational game design
+
+## [D-0027] Rename Springtail to Buckler and make invented spiders first-class
+
+- status: decided
+- date: 2026-07-31
+- verdict: The guarded-recovery profile is renamed **Buckler** — a small round
+  shield made to absorb one blow. Its biological record stays `fictional` and
+  now discloses that the animal itself is invented; its correction explains that
+  low mass and air resistance, not armour, are why small animals survive falls.
+  The persisted profile id stays `springtail` because it keys saved profile
+  selection and the springtail_shell / springtail_bounce upgrade levels; no
+  player sees it and renaming it would cost a save migration for nothing. The
+  folio gains a "designing fictional spiders" section stating that invented
+  spiders belong in this game, with four rules: fiction is never the exciting
+  tier, it never borrows a real animal's name, it still says what it borrowed,
+  and it carries a correction for the misconception it creates.
+- why: The owner's product is fun first and educational second, and the previous
+  session's folio read as though only real species were welcome — a tone the
+  owner corrected directly. Fiction is not what costs an educational game its
+  credibility; undisclosed fiction is, and a wholly invented spider is safer
+  than a half-accurate real one because no real animal can be misremembered.
+  Springtail was the single case where fiction genuinely misinformed: it
+  borrowed the name of Collembola, six-legged hexapods that are not arachnids,
+  and made a disclaimer do work an invented name does for free. Buckler names no
+  animal, matches the compact round amber carapace and the one-hit Impact
+  Carapace mechanic, and sits in the same archaic register as Anchorite.
+  D-0026 established the biology layer; this entry sets its policy on
+  invented content and applies that policy to the one profile that
+  needed it.
+- provenance: Menno's 2026-07-31 direction that the game should be fun and
+  educational without excluding fictional spiders, plus the rename request

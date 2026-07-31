@@ -93,7 +93,7 @@ static func _test_tutorial_covers_current_mechanics(
 		"minimum Burst travel",
 		"40% Dive Pull",
 		"lethal by default",
-		"Springtail",
+		"Buckler",
 		"upper web",
 		"ends the run",
 		"MENU",

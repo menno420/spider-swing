@@ -40,7 +40,7 @@ real without introducing another button, charge, or hidden control rule.
 | Skitter | Compact Stance; Quick Feet |
 | Anchorite | Momentum Core; Pendulum Mass |
 | Ballooner | Long Silk Sail; Featherline |
-| Springtail | Impact Carapace; Elastic Guard |
+| Buckler | Impact Carapace; Elastic Guard |
 
 The previous five-level save format migrates proportionally: old level 1 becomes
 new level 4, and old level 5 becomes new level 20. Unknown track IDs are ignored.

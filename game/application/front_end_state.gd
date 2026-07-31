@@ -85,7 +85,7 @@ const TUTORIAL_STEPS := [
 			+ "The solid ceiling and floor are lethal by default, but reshape "
 			+ "around most obstacles to create high, low, and occasional tight "
 			+ "routes. A lethal mistake can spend your one visible RESCUE. "
-			+ "Springtail also has one moderate rail bounce that an upper web "
+			+ "Buckler also has one moderate rail bounce that an upper web "
 			+ "recharges. A hard impact or obstacle still ends the run. Tap after "
 			+ "death to restart, or use MENU.",
 		"tip": "Follow the changing corridor and save recovery mechanics for real mistakes.",

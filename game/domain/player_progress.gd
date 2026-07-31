@@ -28,7 +28,7 @@ var unlocked_spider_ids: Array[StringName] = [
 	SpiderCatalog.SKITTER,
 	SpiderCatalog.ANCHORITE,
 	SpiderCatalog.BALLOONER,
-	SpiderCatalog.SPRINGTAIL,
+	SpiderCatalog.BUCKLER,
 ]
 var selected_spider_id: StringName = SpiderCatalog.CLASSIC
 var upgrade_levels: Dictionary = {}

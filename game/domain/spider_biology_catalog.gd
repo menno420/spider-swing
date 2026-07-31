@@ -148,19 +148,20 @@ const RECORDS := {
 		"reference_authority": "Thorell, 1875",
 		"accepted_name": "",
 		"family": "Halonoproctidae",
-		"hook": "Springtail is a game name. Real springtails are not spiders.",
+		"hook": "An invented spider, built on a real spider's armour.",
 		"real_trait":
 			"The look is taken from cork-lid trapdoor spiders: compact "
 			+ "mygalomorphs with a hard, glossy carapace that build a silk-lined "
 			+ "burrow closed by a hinged door and ambush from behind it.",
 		"game_adaptation":
-			"Surviving and rebounding from one rail impact is invented. A "
+			"Buckler is an invented spider — no animal carries this name. "
+			+ "Surviving and rebounding from one rail impact is invented too. A "
 			+ "hardened carapace resists drying out and predators at the burrow "
 			+ "door; it is not impact armour.",
 		"correction":
-			"Real springtails (Collembola) are six-legged hexapods, not "
-			+ "arachnids, and jump with a tail-like furca. This profile borrows "
-			+ "the name only.",
+			"Armour is not why small animals survive falls. Low mass and high "
+			+ "air resistance are — which is why a spider can drop from a height "
+			+ "that would injure something much larger.",
 		"sources": [&"wsc"],
 	},
 }

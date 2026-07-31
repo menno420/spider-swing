@@ -26,7 +26,7 @@ static func run() -> Dictionary:
 	passed += _test_every_record_classifies_its_claim(failures)
 	passed += _test_every_record_discloses_the_game_invention(failures)
 	passed += _test_only_species_records_claim_an_accepted_name(failures)
-	passed += _test_springtail_corrects_the_non_spider_name(failures)
+	passed += _test_fictional_profiles_name_themselves_as_invented(failures)
 	passed += _test_ballooner_is_behaviour_and_denies_flight(failures)
 	passed += _test_sources_resolve_to_citable_entries(failures)
 	passed += _test_biology_carries_no_tuning_values(failures)
@@ -111,16 +111,32 @@ static func _test_only_species_records_claim_an_accepted_name(
 	return 1
 
 
-static func _test_springtail_corrects_the_non_spider_name(
+static func _test_fictional_profiles_name_themselves_as_invented(
 	failures: PackedStringArray,
 ) -> int:
-	var item := SpiderBiologyCatalog.record(SpiderCatalog.SPRINGTAIL)
-	if StringName(item["inspiration"]) != SpiderBiologyCatalog.FICTIONAL:
-		failures.append("Springtail is not labelled a fictional name")
-		return 0
-	var correction := str(item["correction"]).to_lower()
-	if not correction.contains("collembola") or not correction.contains("not"):
-		failures.append("Springtail does not correct the non-spider name")
+	# Invented spiders are welcome (D-0027). What is not welcome is an invented
+	# spider a player could mistake for a documented one, so the disclosure has
+	# to say the animal itself is invented — not merely that a stat is tuned.
+	var fictional := 0
+	for spider_id: StringName in SpiderCatalog.ALL_IDS:
+		var item := SpiderBiologyCatalog.record(spider_id)
+		if StringName(item["inspiration"]) != SpiderBiologyCatalog.FICTIONAL:
+			continue
+		fictional += 1
+		var disclosure := str(item["game_adaptation"]).to_lower()
+		if not disclosure.contains("invented spider"):
+			failures.append(
+				"%s is fictional but does not say the spider is invented" %
+					spider_id)
+			return 0
+		var display_name := str(SpiderCatalog.profile(spider_id)["name"])
+		if not disclosure.contains(display_name.to_lower()):
+			failures.append(
+				"%s does not disclaim its own name" % spider_id)
+			return 0
+	if fictional != 1:
+		failures.append("expected exactly one fictional profile, found %d" %
+			fictional)
 		return 0
 	return 1
 

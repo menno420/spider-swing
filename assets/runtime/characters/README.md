@@ -12,5 +12,5 @@ authoritative collision radius. Both are imported with mipmaps because the
 384-pixel sources are normally drawn at roughly one quarter of that size.
 Presentation interpolates fixed-step positions and applies only restrained
 action-state pose scaling; DEBUG still shows the exact collision circle. Skitter,
-Ballooner, and Springtail retain their distinct procedural silhouettes until they
+Ballooner, and Buckler retain their distinct procedural silhouettes until they
 receive equally deliberate art.
