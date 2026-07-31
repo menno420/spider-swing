@@ -1,27 +1,25 @@
 # Spider Swing · status
-updated: 2026-07-31T21:47:19Z
-phase: Phase 0.25 Bramble obstacle-identity correction — PR #69 complete
+updated: 2026-07-31T23:42:00Z
+phase: Zones 3–8 silhouette and mechanic identity — PR #73 review-ready
 health: green
 kit: v1.20.2 · check: green · engaged: yes
 last-shipped: PR #69 gives Bramble an exclusive hook-vine/leaf-shutter vocabulary
-blockers: Phase 1 and further numeric tuning remain product-gated on issue #2 device playtesting
+blockers: zone feel remains product-gated on the owner device playtest
 orders: acked= done=
-⚑ needs-owner: PR #69 Android obstacle-identity device pass
+⚑ needs-owner: PR #73 zone success-sentence device pass
 
 ⚑ OWNER-ACTION
-WHAT: Install the PR #69 debug APK and confirm Bramble's hook vines and giant leaf shutters feel like genuinely different obstacles at 5000 m.
-WHERE: https://github.com/menno420/spider-swing/actions/runs/30667529691/artifacts/8807542392
-HOW: Install over the current stable-key debug build; enable Debug Tools; open DEBUG TEST RUN; set distance to 5000 m and upgrades to MAX; then play through several hook and shutter singles and high↔low pairs.
+WHAT: Install the PR #73 debug APK and play one representative run in Silk Hollow and each of Zones 4–8, checking the frozen one-sentence acceptance test for every place.
+WHERE: https://github.com/menno420/spider-swing/actions/runs/30673502921/artifacts/8809628376
+HOW: Install over the current stable-key build without uninstalling; confirm BUILD 0.21.0-zones-4-8; enable Debug Tools; start at 10000, 15000, 20000, 25000, 30000, and 35000 m; use Balanced levels and judge the zone-progression success sentence after each run.
 RISK: ↩️ reversible — install any later stable-key debug APK over this one; do not uninstall, so saved data remains.
-WHY-IT-MATTERS: This is the decisive real-device check that the new area changes obstacle silhouette and route decisions rather than only repainting old hazards.
-UNBLOCKS: Acceptance of Bramble's obstacle identity and the same region-ownership standard for later 5000 m areas.
-VERIFIED-NEEDED: Exact Godot 4.7.1, 124/124 contracts, phone-scale texture inspection, GitHub quality checks, Android export, embedded-asset inspection, provenance, and signer verification all pass; this seat's headless Godot renderer cannot produce framebuffer pixels, so only a real device can judge motion-scale readability and feel.
+WHY-IT-MATTERS: Exact geometry and silhouette tests prove the regions differ structurally, but only a device run at 76 m/s can prove the warning budget and intended feeling survive motion and touch input.
+UNBLOCKS: Owner acceptance of Silk Hollow's new identity and the complete 15000 m+ zone sequence.
+VERIFIED-NEEDED: Exact Godot 4.7.1, 134/134 contracts, deterministic moving-anchor proof, eight full-size captures, eight 25% silhouettes, 13-asset alpha/fringe audit, GitHub quality, Android export, build identity, package manifest, and stable signer all pass.
 
-WITHDRAWN: The PR #62 artifact ask is closed. Menno's device verdict accepted
-the presentation direction but rejected the obstacles as old roles under new
-skins. A new owner action will name only PR #69's source-identified replacement
-artifact after its Android proof is green.
-notes: PR #69 replaces Bramble's inherited obstacle pool with explicit hook-vine
-and leaf-shutter geometry/art only. Exact Godot, 124 contracts, GitHub quality,
-Android export/assets/provenance, and signer proof are green. Physics, speed,
-Reel, Burst, upgrades, economy, persistence, and settlement remain unchanged.
+notes: PR #73 appends Ruined Arboretum, Storm Ridge, Web City, Ashen Hollow,
+and Deep Mist without changing Balanced physics, difficulty, campaign, upgrades,
+missions, currencies, saves, settlement, Bramble patterns, or Bramble art. Moving
+parts are pure seeded tick phases; the production moving-anchor proof is
+energy-safe. The maximum silhouette IoU is 0.497 and every owned zone is below
+0.488 against every other zone.

@@ -22,7 +22,7 @@
 | [`product/name-status.md`](product/name-status.md) | Why "Spider Swing" is a codename, and what naming/trademark/store review remains. |
 | [`product/spider-biology-folio.md`](product/spider-biology-folio.md) | **Spider identity source of truth.** The naming rule (real name first, otherwise name the science), the approved mapping per profile, editorial voice, art and image-sourcing rules, and the parked candidate backlog. |
 | [`product/spider-biology-verification-2026-07-31.md`](product/spider-biology-verification-2026-07-31.md) | Dated verification log for the second deep-research report — what was re-checked, against what, and what was deliberately not adopted. |
-| [`product/zone-progression.md`](product/zone-progression.md) | **Zone source of truth.** The axis each 5000 m zone owns, its hazards, mechanics, density curve and the one sentence a playtester must say. Zones 1–3 are shipped and frozen; 4–8 are designed and not yet built. |
+| [`product/zone-progression.md`](product/zone-progression.md) | **Zone source of truth.** The axis each 5000 m zone owns, its hazards, mechanics, density curve and the one sentence a playtester must say. Zones 4–8 have an implementation candidate; their human success sentences remain device-playtest gates. |
 | [`planning/overnight-brief-2026-08-01.md`](planning/overnight-brief-2026-08-01.md) | Slice backlog and standing constraints for the unattended overnight session that builds zones 4+. |
 | [`owner-questions.md`](owner-questions.md) | Open owner-only forks, each with the default the work proceeds under, plus the answered ones. |
 
@@ -53,6 +53,7 @@ Binding. Superseded rather than deleted.
 | [`0001`](technical/adr/0001-engine-and-runtime.md) | Godot 4.7.1 Standard, GDScript, Compatibility renderer, 60 Hz fixed step. |
 | [`0002`](technical/adr/0002-simulation-and-event-boundaries.md) | Inward layering and deterministic event flow. |
 | [`0003`](technical/adr/0003-android-build-strategy.md) | Debug-only Android CI now; production signing later, owner-controlled. |
+| [`0004`](technical/adr/0004-deterministic-moving-parts.md) | Pure fixed-tick motion, swept moving collision, and energy-safe moving web anchors. |
 
 ## Substrate-generated living ledgers
 

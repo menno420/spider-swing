@@ -21,15 +21,16 @@ failure never hides the rest.
 | --- | --- |
 | `test_runner.gd` | Headless entry point and bootstrap/build contracts. |
 | `unit/phase0_physics_tests.gd` | Fixed-step movement, web, rope actions, course, collision, and trajectory contracts. |
+| `unit/zone_progression_tests.gd` | Zones 3–8 geometry, deterministic motion, density gates, anchor classes, cues, and visual-audit contracts. |
 | `unit/mobile_hud_layout_tests.gd` | GUI ownership, shared hit geometry, gesture separation, and action-feedback wiring. |
 | `integration/front_end_flow_tests.gd` | Home, Tutorial, Settings, persistence, and run-mounting contracts. |
 | `fixtures/` | Deterministic inputs — fixed seeds, recorded input traces, save files. |
 
 ## What exists now
 
-116 runtime contracts: eleven bootstrap/build checks plus fifty-one
-deterministic physics, eleven spider-biology, twenty-three mobile HUD, and twenty
-front-end checks. The bootstrap group pins the public stable debug signer and
+133 runtime contracts: eleven bootstrap/build checks plus fifty-five
+deterministic physics, ten zone-progression, eleven spider-biology, twenty-five
+mobile HUD, and twenty-one front-end checks. The bootstrap group pins the public stable debug signer and
 rejects per-run key generation. The physics group proves continuous
 solid targeting, larger aim forgiveness, momentum-preserving release,
 speed-neutral Reel and automatic take-up, the two-second base resource plus the
@@ -41,8 +42,13 @@ independent rail lethality, swept pickups, authoritative polygon collisions, a
 three-lane steering-envelope sweep through every rail-grown root passage, and
 seeded 5000 m region identities with bounded recovery cadence, safe non-record
 checkpoint starts, an arbitrary no-awards debug start, and exact seeded geometry
-equivalence between a late start and traversal from zero, plus equivalent trajectories through
-simulated 30/60/90/120 Hz render loops. The HUD group proves the 228×228 thumb
+equivalence between late starts in every owned zone and traversal from zero,
+including exact identity/anchor/motion descriptors, plus equivalent trajectories
+through simulated 30/60/90/120 Hz render loops. The zone group proves the
+append-only 5 km schedule, pattern-pool diversity, explicit tap eligibility,
+pure periodic phase motion, swept moving collision, moving-pivot binding, each
+documented density gate, highway/sticky/timed anchor semantics, Mist's audio
+lead, and the current 25% silhouette/alpha audit. The HUD group proves the 228×228 thumb
 targets, event consumption, shared geometry, gesture separation, success
 feedback, independent off-by-default collision/web-guide diagnostics, a
 sprite-only finished forest obstacle policy, mipmapped 384×181 transparent art

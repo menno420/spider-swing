@@ -58,6 +58,8 @@ var _region_banner_focus: String = ""
 var _region_visual_transition_from: StringName = \
 	CourseRegionCatalog.VISUAL_OLD_GROWTH
 var _region_visual_transition_remaining: float = 0.0
+var _cue_player: AudioStreamPlayer
+var _cue_playback: AudioStreamGeneratorPlayback
 
 
 func _ready() -> void:
@@ -66,6 +68,7 @@ func _ready() -> void:
 	texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
 	_load_environment_textures()
 	_load_art_textures()
+	_prepare_cue_audio()
 	set_process(true)
 	queue_redraw()
 
@@ -172,6 +175,11 @@ func present_event(event: SimulationEvent) -> void:
 				SimulationEvent.Kind.BURST_UNAVAILABLE, \
 				SimulationEvent.Kind.DIVE_UNAVAILABLE:
 			_feedback_color = YELLOW
+		SimulationEvent.Kind.ANCHOR_FAILED:
+			_feedback_color = RED
+		SimulationEvent.Kind.HAZARD_CUE:
+			_feedback_color = YELLOW
+			_play_zone_cue(StringName(event.data.get("cue", &"mist_echo")))
 		SimulationEvent.Kind.FLY_COLLECTED:
 			_feedback_color = YELLOW
 		SimulationEvent.Kind.BOOST_COLLECTED:
@@ -241,6 +249,10 @@ func _draw() -> void:
 	)
 	_draw_parallax(size)
 	_draw_course(size)
+	if _zone_lightning_active():
+		# Illumination is the strike's bargain: the lethal beat briefly reveals
+		# the whole corridor, while web/player feedback remains drawn on top.
+		draw_rect(Rect2(Vector2.ZERO, size), Color(0.88, 0.95, 1.0, 0.13))
 	if _snapshot == null:
 		_draw_text(Vector2(32.0, 58.0), "Loading Swing Laboratory…", 24, WEB)
 		return
@@ -260,7 +272,7 @@ func _draw_parallax(size: Vector2) -> void:
 		environment["background_deep"] as Color,
 	)
 	var parallax_x := 0.0 if _reduced_motion else _camera_x
-	if _uses_forest_art():
+	if _uses_curated_zone_art():
 		var profile := CourseRegionCatalog.VISUAL_OLD_GROWTH \
 			if _snapshot == null else _snapshot.region_visual_profile
 		if _region_visual_transition_remaining > 0.0 and \
@@ -314,6 +326,17 @@ func _draw_region_backdrop(
 	alpha: float,
 ) -> void:
 	if alpha <= 0.0:
+		return
+	var zone_asset := _zone_backdrop_asset(profile)
+	if not zone_asset.is_empty():
+		_draw_forest_backdrop_layer(
+			zone_asset,
+			size,
+			parallax_x,
+			0.065,
+			Color(1.0, 1.0, 1.0, 0.78 * alpha),
+		)
+		_draw_region_ambience(size, parallax_x, profile, alpha)
 		return
 	if profile == CourseRegionCatalog.VISUAL_CANOPY:
 		_draw_forest_backdrop_layer(
@@ -418,48 +441,131 @@ func _draw_region_ambience(
 				Color(0.60, 0.88, 0.55, 0.16 * alpha),
 			)
 		return
-	draw_rect(
-		Rect2(Vector2.ZERO, size),
-		Color(0.04, 0.09, 0.19, 0.23 * alpha),
-	)
-	var offset := fposmod(-parallax_x * 0.11, 250.0)
-	for index in range(-1, 7):
-		var center := Vector2(
-			offset + float(index) * 250.0,
-			130.0 + float(posmod(index, 3)) * 120.0,
+	if profile == CourseRegionCatalog.VISUAL_HOLLOW:
+		draw_rect(Rect2(Vector2.ZERO, size), Color(0.20, 0.10, 0.04, 0.18 * alpha))
+		return
+	if profile == CourseRegionCatalog.VISUAL_ARBORETUM:
+		draw_rect(Rect2(Vector2.ZERO, size), Color(0.08, 0.14, 0.12, 0.14 * alpha))
+		return
+	if profile == CourseRegionCatalog.VISUAL_STORM:
+		draw_rect(Rect2(Vector2.ZERO, size), Color(0.04, 0.07, 0.14, 0.30 * alpha))
+		var storm_motion := _zone_phase_seconds(600, 61)
+		var gust := 0.0 if _snapshot == null else \
+			ZoneMechanics.gust_strength(
+				_snapshot.distance_pixels, _snapshot.seed, _snapshot.tick)
+		var rain_offset := fposmod(
+			-parallax_x * 0.31 + storm_motion * 190.0, 92.0)
+		for index in range(-2, 18):
+			var x := rain_offset + index * 92.0
+			draw_line(
+				Vector2(x, 0.0), Vector2(x - 190.0 - gust * 96.0, size.y),
+				Color(0.75, 0.87, 0.94, (0.20 + gust * 0.16) * alpha),
+				2.0 + gust * 0.8, true)
+		return
+	if profile == CourseRegionCatalog.VISUAL_WEB_CITY:
+		draw_rect(Rect2(Vector2.ZERO, size), Color(0.02, 0.02, 0.08, 0.26 * alpha))
+		return
+	if profile == CourseRegionCatalog.VISUAL_ASHEN:
+		var ash_drift_active := _snapshot != null and \
+			_snapshot.distance_pixels >= 315000.0
+		draw_rect(
+			Rect2(Vector2.ZERO, size),
+			Color(
+				0.10,
+				0.07,
+				0.06,
+				(0.28 if ash_drift_active else 0.10) * alpha,
+			),
 		)
-		var pulse := 0.0 if _reduced_motion else \
-			sin(motion * 0.8 + float(index)) * 2.5
-		draw_arc(
-			center,
-			76.0 + pulse,
-			0.1,
-			PI - 0.1,
-			24,
-			Color(WEB, 0.10 * alpha),
-			1.3,
-			true,
-		)
-		draw_circle(
-			center + Vector2(0.0, -76.0 - pulse),
-			5.0,
-			Color(0.62, 0.88, 0.96, 0.23 * alpha),
-		)
+		if not ash_drift_active:
+			return
+		var ash_motion := _zone_phase_seconds(420, 79)
+		for index in range(18):
+			var ember := Vector2(
+				fposmod(index * 137.0 - parallax_x * 0.18, size.x + 80.0) - 40.0,
+				fposmod(index * 83.0 + ash_motion * 31.0, size.y),
+			)
+			draw_circle(ember, 1.8, Color(1.0, 0.34, 0.08, 0.48 * alpha))
+		return
+	if profile == CourseRegionCatalog.VISUAL_MIST:
+		draw_rect(Rect2(Vector2.ZERO, size), Color(0.72, 0.76, 0.77, 0.38 * alpha))
+
+
+func _zone_phase_seconds(period_ticks: int, phase_salt: int) -> float:
+	if _snapshot == null:
+		return 0.0
+	var chunk_index := floori(
+		(_camera_x + LabLayout.REFERENCE_SIZE.x * 0.5) / CourseStream.CHUNK_WIDTH)
+	var phase_tick := _snapshot.tick + CourseMotion.phase_offset_ticks(
+		chunk_index, _snapshot.seed, period_ticks, phase_salt)
+	return float(posmod(phase_tick, period_ticks)) / 60.0
+
+
+func _zone_lightning_active() -> bool:
+	if _snapshot == null or _snapshot.region_visual_profile != \
+			CourseRegionCatalog.VISUAL_STORM:
+		return false
+	for index in range(_snapshot.obstacle_visual_ids.size()):
+		if _snapshot.obstacle_visual_ids[index] != \
+				ZoneCourseBuilder.V_RIDGE_LIGHTNING:
+			continue
+		if index >= _snapshot.obstacle_active.size() or \
+				_snapshot.obstacle_active[index] != 0:
+			return true
+	return false
 
 
 func _draw_course(size: Vector2) -> void:
 	if _snapshot == null:
 		return
 
-	for surface: PackedVector2Array in _snapshot.surfaces:
+	for surface_index in range(_snapshot.surfaces.size()):
+		var surface: PackedVector2Array = _snapshot.surfaces[surface_index]
 		var screen_surface := _polygon_to_screen(surface)
 		var surface_bounds := _polygon_bounds(screen_surface)
 		if surface_bounds.end.x < -80.0 or \
 				surface_bounds.position.x > size.x + 80.0:
 			continue
-		draw_colored_polygon(screen_surface, Color(0.07, 0.26, 0.29, 0.96))
+		var anchor_class := _snapshot.surface_anchor_classes[surface_index] \
+			if surface_index < _snapshot.surface_anchor_classes.size() \
+			else CourseGeometry.ANCHOR_FIXED
+		var surface_color := _zone_surface_color(anchor_class)
+		draw_colored_polygon(screen_surface, surface_color)
+		_draw_closed_polyline(
+			screen_surface,
+			Color(0.82, 1.0, 1.0, 0.94),
+			4.0 if anchor_class == CourseGeometry.ANCHOR_MOVING_PIVOT else 2.5,
+		)
+		if anchor_class == CourseGeometry.ANCHOR_STICKY:
+			var bounds := _polygon_bounds(screen_surface)
+			for bead_index in range(4):
+				draw_circle(
+					Vector2(lerpf(bounds.position.x, bounds.end.x,
+						(float(bead_index) + 0.5) / 4.0), bounds.get_center().y),
+					6.0, Color("ffc07a"))
 		if _snapshot.collision_outlines_visible:
 			_draw_closed_polyline(screen_surface, CYAN, 2.0)
+
+	for decoration_index in range(_snapshot.decorations.size()):
+		if decoration_index < _snapshot.decoration_active.size() and \
+				_snapshot.decoration_active[decoration_index] == 0:
+			continue
+		var decoration := _polygon_to_screen(
+			_snapshot.decorations[decoration_index])
+		var decoration_bounds := _polygon_bounds(decoration)
+		if decoration_bounds.end.x < -40.0 or \
+				decoration_bounds.position.x > size.x + 40.0:
+			continue
+		var visual_id := _snapshot.decoration_visual_ids[decoration_index] \
+			if decoration_index < _snapshot.decoration_visual_ids.size() else &""
+		if visual_id == ZoneCourseBuilder.V_ARBORETUM_DRIP:
+			draw_line(
+				decoration_bounds.get_center() + Vector2.UP * 22.0,
+				decoration_bounds.get_center() + Vector2.UP * 6.0,
+				Color(0.68, 0.92, 0.91, 0.34), 1.5, true)
+			draw_colored_polygon(decoration, Color(0.67, 0.92, 0.91, 0.72))
+			_draw_closed_polyline(
+				decoration, Color(0.88, 1.0, 1.0, 0.88), 1.5)
 
 	for boundary: PackedVector2Array in _snapshot.boundary_surfaces:
 		var screen_boundary := _polygon_to_screen(boundary)
@@ -476,12 +582,20 @@ func _draw_course(size: Vector2) -> void:
 		var fill := Color(0.20, 0.16, 0.09, 0.96) \
 			if _snapshot.course_boundaries_lethal \
 			else Color(0.07, 0.25, 0.22, 0.96)
-		_draw_environment_polygon(
-			boundary,
-			screen_boundary,
-			environment["material_tint"] as Color,
-			fill,
-		)
+		if _uses_forest_art():
+			_draw_environment_polygon(
+				boundary,
+				screen_boundary,
+				environment["material_tint"] as Color,
+				fill,
+			)
+		else:
+			var zone_colors := _zone_boundary_colors(
+				_snapshot.region_visual_profile)
+			fill = zone_colors["fill"]
+			outline = zone_colors["edge"]
+			draw_colored_polygon(screen_boundary, fill)
+			_draw_closed_polyline(screen_boundary, outline, 3.0)
 		if _snapshot.collision_outlines_visible:
 			_draw_closed_polyline(
 				screen_boundary,
@@ -504,6 +618,16 @@ func _draw_course(size: Vector2) -> void:
 
 	var obstacle_index := 0
 	while obstacle_index < _snapshot.obstacles.size():
+		if obstacle_index < _snapshot.obstacle_rest_polygons.size() and \
+				_snapshot.obstacle_rest_polygons[obstacle_index] != \
+				_snapshot.obstacles[obstacle_index]:
+			var rest := _polygon_to_screen(
+				_snapshot.obstacle_rest_polygons[obstacle_index])
+			_draw_closed_polyline(rest, Color(0.78, 0.92, 0.90, 0.24), 2.0)
+		if obstacle_index < _snapshot.obstacle_active.size() and \
+				_snapshot.obstacle_active[obstacle_index] == 0:
+			obstacle_index += 1
+			continue
 		var obstacle: PackedVector2Array = _snapshot.obstacles[obstacle_index]
 		var screen_obstacle := _polygon_to_screen(obstacle)
 		var obstacle_bounds := _polygon_bounds(screen_obstacle)
@@ -511,10 +635,7 @@ func _draw_course(size: Vector2) -> void:
 				obstacle_bounds.position.x > size.x + 80.0:
 			obstacle_index += 1
 			continue
-		var obstacle_kind := _snapshot.obstacle_kinds[obstacle_index] \
-			if obstacle_index < _snapshot.obstacle_kinds.size() \
-			else CourseObstacleCatalog.UNSPECIFIED
-		_draw_obstacle(obstacle, screen_obstacle, obstacle_kind)
+		_draw_obstacle(obstacle, screen_obstacle, obstacle_index)
 		obstacle_index += 1
 
 	if _uses_forest_art():
@@ -633,9 +754,15 @@ func _redraw_forest_boundary_edges(viewport_size: Vector2) -> void:
 func _draw_obstacle(
 	world_polygon: PackedVector2Array,
 	polygon: PackedVector2Array,
-	obstacle_kind: StringName = CourseObstacleCatalog.UNSPECIFIED,
+	obstacle_index: int,
 ) -> void:
+	var obstacle_kind := _snapshot.obstacle_kinds[obstacle_index] \
+		if obstacle_index < _snapshot.obstacle_kinds.size() \
+		else CourseObstacleCatalog.UNSPECIFIED
 	var environment := _environment_theme()
+	if not _uses_forest_art():
+		_draw_zone_obstacle(world_polygon, polygon, obstacle_index)
+		return
 	if _uses_forest_art():
 		var world_bounds := _polygon_bounds(world_polygon)
 		var profile := _visual_profile_for_world_polygon(world_polygon)
@@ -783,6 +910,157 @@ func _draw_obstacle(
 			Color(OBSTACLE, 0.72),
 			6.0,
 		)
+
+
+func _draw_zone_obstacle(
+	world_polygon: PackedVector2Array,
+	polygon: PackedVector2Array,
+	obstacle_index: int,
+) -> void:
+	var visual_id := _snapshot.obstacle_visual_ids[obstacle_index] \
+		if obstacle_index < _snapshot.obstacle_visual_ids.size() else &""
+	var anchorable := obstacle_index >= _snapshot.obstacle_anchorable.size() or \
+		_snapshot.obstacle_anchorable[obstacle_index] != 0
+	var colors := _zone_obstacle_colors(
+		_snapshot.region_visual_profile, anchorable, visual_id)
+	var visibility := 1.0
+	if _snapshot.region_visual_profile == CourseRegionCatalog.VISUAL_MIST and \
+			not anchorable:
+		var lead_x := _polygon_bounds(polygon).get_center().x
+		visibility = clampf((960.0 - lead_x) / 280.0, 0.10, 1.0)
+	var fill: Color = colors["fill"]
+	var edge: Color = colors["edge"]
+	fill.a *= visibility
+	edge.a *= visibility
+	draw_colored_polygon(polygon, fill)
+	_draw_closed_polyline(polygon, edge, 3.5 if anchorable else 4.0)
+
+	var asset_id := _zone_obstacle_asset(visual_id)
+	if asset_id.is_empty():
+		return
+	var bounds := _polygon_bounds(polygon)
+	if asset_id == ArtAssetCatalog.WEB_CITY_RESIDENT and \
+			minf(bounds.size.x, bounds.size.y) < 30.0:
+		return
+	var texture := _art_texture(asset_id)
+	if texture == null:
+		return
+	var art_bounds := bounds.grow(10.0)
+	if asset_id in [
+		ArtAssetCatalog.ARBORETUM_PANE,
+		ArtAssetCatalog.STORM_SPIRE,
+	]:
+		art_bounds = Rect2(
+			bounds.get_center() - Vector2(maxf(132.0, bounds.size.x),
+				maxf(260.0, bounds.size.y)) * 0.5,
+			Vector2(maxf(132.0, bounds.size.x), maxf(260.0, bounds.size.y)),
+		)
+	elif asset_id == ArtAssetCatalog.WEB_CITY_RESIDENT:
+		art_bounds = Rect2(bounds.get_center() - Vector2(92.0, 92.0),
+			Vector2(184.0, 184.0))
+	elif asset_id in [ArtAssetCatalog.ASHEN_ROTTEN, ArtAssetCatalog.ASHEN_SOUND]:
+		art_bounds = art_bounds.grow(18.0)
+	_draw_texture_contain(texture, art_bounds, Color(1.0, 1.0, 1.0, visibility))
+
+
+func _zone_obstacle_asset(visual_id: StringName) -> StringName:
+	match visual_id:
+		ZoneCourseBuilder.V_HOLLOW_COCOON, ZoneCourseBuilder.V_HOLLOW_SPINDLE:
+			return ArtAssetCatalog.HOLLOW_COCOON
+		ZoneCourseBuilder.V_ARBORETUM_PANE:
+			return ArtAssetCatalog.ARBORETUM_PANE
+		ZoneCourseBuilder.V_RIDGE_SPIRE:
+			return ArtAssetCatalog.STORM_SPIRE
+		ZoneCourseBuilder.V_CITY_RESIDENT:
+			return ArtAssetCatalog.WEB_CITY_RESIDENT
+		ZoneCourseBuilder.V_ASH_ROTTEN:
+			return ArtAssetCatalog.ASHEN_ROTTEN
+		ZoneCourseBuilder.V_ASH_SOUND:
+			return ArtAssetCatalog.ASHEN_SOUND
+		ZoneCourseBuilder.V_MIST_LIT:
+			return ArtAssetCatalog.MIST_LIT_BEAM
+		_:
+			return &""
+
+
+func _zone_obstacle_colors(
+	profile: StringName,
+	anchorable: bool,
+	visual_id: StringName,
+) -> Dictionary:
+	var fill := Color("56352c")
+	var edge := Color("f3d7b0") if anchorable else Color("ff765d")
+	match profile:
+		CourseRegionCatalog.VISUAL_ARBORETUM:
+			fill = Color("263c3a")
+			edge = Color("bceee2") if anchorable else Color("f4fbff")
+		CourseRegionCatalog.VISUAL_STORM:
+			fill = Color("293847")
+			edge = Color("d8efff") if anchorable else Color("ffb35c")
+		CourseRegionCatalog.VISUAL_WEB_CITY:
+			fill = Color("25223a")
+			edge = Color("edfaff") if anchorable else Color("ff684f")
+		CourseRegionCatalog.VISUAL_ASHEN:
+			fill = Color("242022")
+			edge = Color("d9f7ff") if anchorable else Color("ff6d31")
+		CourseRegionCatalog.VISUAL_MIST:
+			fill = Color("778184")
+			edge = Color("7df4ff") if anchorable else Color("bcc3c4")
+	if visual_id in [ZoneCourseBuilder.V_RIDGE_LIGHTNING, ZoneCourseBuilder.V_ASH_EMBER]:
+		fill = Color("ff9b3d")
+		edge = Color("fff2b0")
+	return {"fill": fill, "edge": edge}
+
+
+func _zone_surface_color(anchor_class: StringName) -> Color:
+	match anchor_class:
+		CourseGeometry.ANCHOR_MOVING_PIVOT:
+			return Color("35b8a8")
+		CourseGeometry.ANCHOR_HIGHWAY:
+			return Color("d9f7ff")
+		CourseGeometry.ANCHOR_STICKY:
+			return Color("a86648")
+		_:
+			return Color(0.07, 0.26, 0.29, 0.96)
+
+
+func _zone_boundary_colors(profile: StringName) -> Dictionary:
+	match profile:
+		CourseRegionCatalog.VISUAL_HOLLOW:
+			return {"fill": Color("3b241d"), "edge": Color("e8cda7")}
+		CourseRegionCatalog.VISUAL_ARBORETUM:
+			return {"fill": Color("243633"), "edge": Color("87c4ae")}
+		CourseRegionCatalog.VISUAL_STORM:
+			return {"fill": Color("202c3a"), "edge": Color("c5e6f5")}
+		CourseRegionCatalog.VISUAL_WEB_CITY:
+			return {"fill": Color("151628"), "edge": Color("dffaff")}
+		CourseRegionCatalog.VISUAL_ASHEN:
+			return {"fill": Color("1c1819"), "edge": Color("a89c94")}
+		CourseRegionCatalog.VISUAL_MIST:
+			return {"fill": Color("6c7476"), "edge": Color("b9c2c3")}
+		_:
+			return {"fill": Color("33291d"), "edge": Color("f06449")}
+
+
+func _draw_texture_contain(
+	texture: Texture2D,
+	bounds: Rect2,
+	modulate: Color = Color.WHITE,
+) -> void:
+	var texture_size := texture.get_size()
+	if texture_size.x <= 0.0 or texture_size.y <= 0.0:
+		return
+	var scale := minf(
+		bounds.size.x / texture_size.x,
+		bounds.size.y / texture_size.y,
+	)
+	var draw_size := texture_size * scale
+	draw_texture_rect(
+		texture,
+		Rect2(bounds.get_center() - draw_size * 0.5, draw_size),
+		false,
+		modulate,
+	)
 
 
 func _draw_forest_growth_socket(
@@ -1745,13 +2023,87 @@ func _load_art_textures() -> void:
 			_art_textures[asset_id] = texture
 
 
+func _prepare_cue_audio() -> void:
+	var generator := AudioStreamGenerator.new()
+	generator.mix_rate = 22050.0
+	generator.buffer_length = 0.35
+	_cue_player = AudioStreamPlayer.new()
+	_cue_player.stream = generator
+	_cue_player.volume_db = -10.0
+	add_child(_cue_player)
+	_cue_player.play()
+	_cue_playback = _cue_player.get_stream_playback() as \
+		AudioStreamGeneratorPlayback
+
+
+func _play_zone_cue(cue: StringName) -> void:
+	if _cue_playback == null:
+		return
+	var start_hz := 410.0
+	var end_hz := 270.0
+	var duration := 0.18
+	if cue == &"glass_phase":
+		start_hz = 940.0
+		end_hz = 1280.0
+		duration = 0.14
+	elif cue == &"rotten_crack":
+		start_hz = 180.0
+		end_hz = 72.0
+		duration = 0.16
+	elif cue == &"storm_gust":
+		start_hz = 120.0
+		end_hz = 340.0
+		duration = 0.24
+	elif cue == &"storm_charge":
+		start_hz = 520.0
+		end_hz = 1560.0
+		duration = 0.18
+	var mix_rate := 22050.0
+	var frame_count := floori(duration * mix_rate)
+	var phase := 0.0
+	for index in range(frame_count):
+		var progress := float(index) / float(maxi(1, frame_count - 1))
+		var frequency := lerpf(start_hz, end_hz, progress)
+		phase += TAU * frequency / mix_rate
+		var envelope := sin(PI * progress) * (1.0 - progress * 0.35)
+		var sample := sin(phase) * envelope * 0.24
+		_cue_playback.push_frame(Vector2(sample, sample))
+
+
 func _art_texture(asset_id: StringName) -> Texture2D:
 	return _art_textures.get(asset_id) as Texture2D
 
 
 func _uses_forest_art() -> bool:
+	if not _uses_curated_zone_art() or _snapshot == null:
+		return false
+	return _snapshot.region_visual_profile in [
+		CourseRegionCatalog.VISUAL_OLD_GROWTH,
+		CourseRegionCatalog.VISUAL_CANOPY,
+	]
+
+
+func _uses_curated_zone_art() -> bool:
 	return StringName(_environment_theme()["id"]) == \
 		EnvironmentThemeCatalog.ANCIENT_FOREST
+
+
+func _zone_backdrop_asset(profile: StringName) -> StringName:
+	match profile:
+		CourseRegionCatalog.VISUAL_HOLLOW:
+			return ArtAssetCatalog.HOLLOW_BACKDROP
+		CourseRegionCatalog.VISUAL_ARBORETUM:
+			return ArtAssetCatalog.ARBORETUM_BACKDROP
+		CourseRegionCatalog.VISUAL_STORM:
+			return ArtAssetCatalog.STORM_BACKDROP
+		CourseRegionCatalog.VISUAL_WEB_CITY:
+			return ArtAssetCatalog.WEB_CITY_BACKDROP
+		CourseRegionCatalog.VISUAL_ASHEN:
+			return ArtAssetCatalog.ASHEN_BACKDROP
+		CourseRegionCatalog.VISUAL_MIST:
+			return ArtAssetCatalog.MIST_BACKDROP
+		_:
+			return &""
 
 
 func _visual_profile_for_world_polygon(

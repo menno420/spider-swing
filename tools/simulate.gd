@@ -30,6 +30,8 @@ extends SceneTree
 ##                        stay comparable with an unwarped one's.
 ##   --reel-style=adaptive  adaptive | tap | hold — how the bot spends Reel
 ##   --save-bursts=on     on | off — emergency Burst when no web can save it
+##   --moving-anchor-proof  run the deterministic moving-pivot energy probe and
+##                          exit without running the player-model batch
 ##   --sweep=SPEC         parameter grid, e.g.
 ##                        `reel_rate:260:440:4` or
 ##                        `reel_rate:260:440:4,pull_cooldown:1.2:2.4:3`
@@ -96,6 +98,11 @@ const SKILL_PROFILES := {
 
 func _initialize() -> void:
 	var options := _parse_options(OS.get_cmdline_user_args())
+	if bool(options["moving_anchor_proof"]):
+		var proof := _run_moving_anchor_proof()
+		print("[simulate] moving-anchor proof\n%s" % JSON.stringify(proof, "  "))
+		quit(0 if bool(proof["passed"]) else 1)
+		return
 	var skills := _expand(options["skill"], SKILL_PROFILES.keys())
 	var spiders := _expand(options["spider"], SpiderCatalog.ALL_IDS)
 	if skills.is_empty() or spiders.is_empty():
@@ -474,10 +481,14 @@ func _parse_options(arguments: PackedStringArray) -> Dictionary:
 		"start_m": 0,
 		"reel_style": "adaptive",
 		"save_bursts": true,
+		"moving_anchor_proof": false,
 		"sweep": "",
 		"json": "",
 	}
 	for argument: String in arguments:
+		if argument == "--moving-anchor-proof":
+			options["moving_anchor_proof"] = true
+			continue
 		if not argument.begins_with("--") or not argument.contains("="):
 			continue
 		var key := argument.substr(2, argument.find("=") - 2)
@@ -518,6 +529,175 @@ func _parse_options(arguments: PackedStringArray) -> Dictionary:
 			_:
 				printerr("[simulate] ignoring unknown option --%s" % key)
 	return options
+
+
+## Diagnostic proof for ADR 0004. The first case is strict translation
+## covariance: a support moving at constant velocity must produce exactly the
+## static solution in support-relative coordinates. The second case runs the
+## intended slow bounded pivot for twenty complete cycles under baseline
+## gravity and requires its relative-speed envelope not to grow over time.
+func _run_moving_anchor_proof() -> Dictionary:
+	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	config.automatic_take_up_enabled = false
+	var translation := _translation_covariance_probe(config)
+	var periodic := _periodic_pivot_probe(config)
+	var passed := (
+		float(translation["maximum_position_error_px"]) <= 0.001
+		and float(translation["maximum_velocity_error_px_s"]) <= 0.001
+		and float(periodic["late_to_early_peak_ratio"]) <= 1.05
+		and float(periodic["moving_to_static_peak_ratio"]) <= 1.35
+		and float(periodic["maximum_rope_overrun_px"])
+			<= config.rope_elasticity_allowance
+				+ config.attachment_correction_cap * FIXED_DELTA
+				+ 0.01
+	)
+	return {
+		"passed": passed,
+		"baseline": str(config.preset_name),
+		"fixed_hz": 60,
+		"translation_covariance": translation,
+		"periodic_pivot": periodic,
+	}
+
+
+func _translation_covariance_probe(config: SwingConfig) -> Dictionary:
+	var static_web := WebConstraint.new()
+	var moving_web := WebConstraint.new()
+	static_web.reset(config)
+	moving_web.reset(config)
+	var static_anchor := Vector2.ZERO
+	var support_velocity := Vector2(86.0, -24.0)
+	var static_position := Vector2(0.0, 360.0)
+	var moving_position := static_position
+	var static_velocity := Vector2(285.0, 0.0)
+	var moving_velocity := static_velocity + support_velocity
+	static_web.try_attach(static_position, static_anchor, config)
+	moving_web.try_attach(moving_position, static_anchor, config)
+	var maximum_position_error := 0.0
+	var maximum_velocity_error := 0.0
+	for probe_tick in range(720):
+		static_velocity += Vector2.DOWN * config.gravity * FIXED_DELTA
+		moving_velocity += Vector2.DOWN * config.gravity * FIXED_DELTA
+		var static_result := static_web.solve(
+			static_position,
+			static_velocity,
+			FIXED_DELTA,
+			config,
+		)
+		static_position = static_result["position"]
+		static_velocity = static_result["velocity"]
+		var next_anchor := support_velocity * FIXED_DELTA * float(probe_tick + 1)
+		var moving_result := moving_web.solve_moving_anchor(
+			moving_position,
+			moving_velocity,
+			FIXED_DELTA,
+			config,
+			next_anchor,
+			support_velocity,
+		)
+		moving_position = moving_result["position"]
+		moving_velocity = moving_result["velocity"]
+		maximum_position_error = maxf(
+			maximum_position_error,
+			(static_position - (moving_position - next_anchor)).length(),
+		)
+		maximum_velocity_error = maxf(
+			maximum_velocity_error,
+			(static_velocity - (moving_velocity - support_velocity)).length(),
+		)
+	return {
+		"ticks": 720,
+		"support_speed_px_s": support_velocity.length(),
+		"maximum_position_error_px": maximum_position_error,
+		"maximum_velocity_error_px_s": maximum_velocity_error,
+	}
+
+
+func _periodic_pivot_probe(config: SwingConfig) -> Dictionary:
+	const PERIOD_TICKS := 300
+	const CYCLES := 20
+	var moving_web := WebConstraint.new()
+	var static_web := WebConstraint.new()
+	moving_web.reset(config)
+	static_web.reset(config)
+	var origin := Vector2(0.0, -38.0)
+	var first_sample := CourseMotion.pendulum_anchor(
+		origin, 38.0, deg_to_rad(42.0), PERIOD_TICKS,
+		157, 1337, 0, FIXED_DELTA, 4)
+	var moving_position := Vector2(first_sample["position"]) + \
+		Vector2(0.0, 360.0)
+	var static_position := Vector2(0.0, 360.0)
+	var moving_velocity := Vector2(285.0, 0.0)
+	var static_velocity := moving_velocity
+	moving_web.try_attach(
+		moving_position,
+		Vector2(first_sample["position"]),
+		config,
+	)
+	static_web.try_attach(static_position, Vector2.ZERO, config)
+	var moving_cycle_peaks: Array[float] = []
+	var static_peak := 0.0
+	var moving_peak := 0.0
+	var maximum_overrun := 0.0
+	for cycle in range(CYCLES):
+		var cycle_peak := 0.0
+		for local_tick in range(PERIOD_TICKS):
+			var probe_tick := cycle * PERIOD_TICKS + local_tick
+			var sample := CourseMotion.pendulum_anchor(
+				origin, 38.0, deg_to_rad(42.0), PERIOD_TICKS,
+				157, 1337, probe_tick, FIXED_DELTA, 4)
+			moving_velocity += Vector2.DOWN * config.gravity * FIXED_DELTA
+			static_velocity += Vector2.DOWN * config.gravity * FIXED_DELTA
+			var moving_result := moving_web.solve_moving_anchor(
+				moving_position,
+				moving_velocity,
+				FIXED_DELTA,
+				config,
+				Vector2(sample["next_position"]),
+				Vector2(sample["velocity"]),
+			)
+			moving_position = moving_result["position"]
+			moving_velocity = moving_result["velocity"]
+			var static_result := static_web.solve(
+				static_position,
+				static_velocity,
+				FIXED_DELTA,
+				config,
+			)
+			static_position = static_result["position"]
+			static_velocity = static_result["velocity"]
+			var relative_speed := (
+				moving_velocity - Vector2(sample["velocity"])
+			).length()
+			cycle_peak = maxf(cycle_peak, relative_speed)
+			moving_peak = maxf(moving_peak, relative_speed)
+			static_peak = maxf(static_peak, static_velocity.length())
+			maximum_overrun = maxf(
+				maximum_overrun,
+				moving_position.distance_to(Vector2(sample["next_position"]))
+					- moving_web.rope_length,
+			)
+		moving_cycle_peaks.append(cycle_peak)
+	var early_peak := 0.0
+	var late_peak := 0.0
+	for index in range(5):
+		early_peak = maxf(early_peak, moving_cycle_peaks[index])
+		late_peak = maxf(
+			late_peak,
+			moving_cycle_peaks[moving_cycle_peaks.size() - 1 - index],
+		)
+	return {
+		"cycles": CYCLES,
+		"period_ticks": PERIOD_TICKS,
+		"pivot_radius_px": 38.0,
+		"pivot_amplitude_degrees": 42.0,
+		"maximum_relative_speed_px_s": moving_peak,
+		"static_maximum_speed_px_s": static_peak,
+		"moving_to_static_peak_ratio": moving_peak / maxf(static_peak, 0.001),
+		"late_to_early_peak_ratio": late_peak / maxf(early_peak, 0.001),
+		"maximum_rope_overrun_px": maximum_overrun,
+		"cycle_peaks_px_s": moving_cycle_peaks,
+	}
 
 
 func _write_json(

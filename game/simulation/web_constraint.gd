@@ -111,12 +111,33 @@ func solve(
 	delta: float,
 	config: SwingConfig,
 ) -> Dictionary:
+	return solve_moving_anchor(
+		position,
+		velocity,
+		delta,
+		config,
+		anchor,
+		Vector2.ZERO,
+	)
+
+
+## Solve the same maximum-length constraint in a moving support's reference
+## frame. `next_anchor` and `anchor_velocity` come from the pure fixed-tick
+## phase evaluator; no transform is accumulated here.
+func solve_moving_anchor(
+	position: Vector2,
+	velocity: Vector2,
+	delta: float,
+	config: SwingConfig,
+	next_anchor: Vector2,
+	anchor_velocity: Vector2,
+) -> Dictionary:
 	tension = 0.0
 	var predicted := position + velocity * delta
 	if not attached:
 		return {"position": predicted, "velocity": velocity}
 
-	var offset := predicted - anchor
+	var offset := predicted - next_anchor
 	var distance := offset.length()
 	# Retain a configurable share of new inward movement exactly once. Static
 	# slack does not keep shrinking on later ticks, so a percentage below 100%
@@ -131,11 +152,13 @@ func solve(
 
 	if distance <= 0.0001:
 		_last_distance_to_anchor = distance
+		anchor = next_anchor
 		return {"position": predicted, "velocity": velocity}
 
 	var allowed_length := rope_length + config.rope_elasticity_allowance
 	if distance <= allowed_length:
 		_last_distance_to_anchor = distance
+		anchor = next_anchor
 		return {"position": predicted, "velocity": velocity}
 
 	var radial_direction := offset / distance
@@ -144,16 +167,19 @@ func solve(
 	var correction := minf(excess, maximum_correction)
 	predicted -= radial_direction * correction
 
-	var outward_speed := velocity.dot(radial_direction)
+	var relative_velocity := velocity - anchor_velocity
+	var outward_speed := relative_velocity.dot(radial_direction)
 	if outward_speed > 0.0:
-		velocity -= radial_direction * outward_speed
+		relative_velocity -= radial_direction * outward_speed
 
 	var damping_factor := maxf(0.0, 1.0 - config.rope_damping * delta)
-	velocity *= damping_factor
+	relative_velocity *= damping_factor
+	velocity = relative_velocity + anchor_velocity
 	tension = (
 		(outward_speed * config.spider_mass / maxf(delta, 0.0001))
 		+ (excess * config.spider_mass / maxf(delta * delta, 0.0001))
 	)
+	anchor = next_anchor
 	_last_distance_to_anchor = predicted.distance_to(anchor)
 
 	return {"position": predicted, "velocity": velocity}

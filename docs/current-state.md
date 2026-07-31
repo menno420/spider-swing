@@ -35,7 +35,7 @@ without a reported regression.
   bounded idempotent-settlement history. Schema 5 infers already-reached region
   checkpoints from a schema-4 standard best once; pre-20-level saves migrate
   proportionally once.
-- Build `0.20.1-bramble-obstacles` (Android version code 38, package
+- Build `0.21.0-zones-4-8` (Android version code 39, package
   `com.menno420.spiderswing.dev`) retains the stable conventional public debug
   identity introduced by `0.19.0-depth-testing` in
   `.github/android/debug.keystore`. The workflow pins its file and certificate
@@ -71,23 +71,22 @@ without a reported regression.
   protect onboarding before deterministic contoured routes, root passages,
   weaves, and small silk burrs appear.
 - The authored endless-course schedule enters Ancient Forest at 0 m, Bramble
-  Canopy at 5000 m, and Silk Hollow at 10000 m; it currently remains Silk Hollow
-  after that rather than inventing unbuilt 15000 m+ regions. Reaching 5000 m or
-  10000 m in a standard run persists that checkpoint. Region Practice begins at
-  the checkpoint's safe opening and is authoritatively noncompetitive: no
-  flies, best distance, later checkpoint, record, or future leaderboard
-  eligibility.
+  Canopy at 5000 m, Silk Hollow at 10000 m, Ruined Arboretum at 15000 m, Storm
+  Ridge at 20000 m, Web City at 25000 m, Ashen Hollow at 30000 m, and Deep Mist
+  at 35000 m. The appended zones have safe entries but deliberately add no
+  campaign/checkpoint ownership. Existing 5000 m and 10000 m Region Practice
+  remains authoritatively noncompetitive: no flies, best distance, later
+  checkpoint, record, or future leaderboard eligibility.
 - Bramble Canopy owns both presentation and obstacle vocabulary: an open lime-
   lit backdrop, braided thorn rails, sockets, ambience, deep concave hook vines,
   and diagonal giant-leaf shutters replace Ancient Forest. Its eight normal
-  pattern ids share no player-facing obstacle id with Ancient Forest; single
-  high/low routes and mirrored high↔low pairs block the neutral middle line but
-  keep their authored Garden-sized route clear. A semantic kind travels beside
-  each authoritative polygon and anchor flag so presentation selects inspected
-  art explicitly instead of inferring it from bounds. Foreground art resolves
-  from obstacle world position; the backdrop crossfades for 2.2 seconds or
-  changes immediately under Reduced Motion. Silk Hollow still uses shared
-  forest art plus darker ambience and remains visually incomplete.
+  pattern ids share no player-facing obstacle id with Ancient Forest; a semantic
+  kind travels beside each polygon and anchor flag so presentation selects the
+  inspected art explicitly. Foreground art resolves from obstacle world
+  position; the backdrop crossfades for 2.2 seconds or changes immediately
+  under Reduced Motion. Silk Hollow now replaces shared forest silhouettes with
+  concave silk membranes, suspended cocoons, ceiling/floor-grown spindles,
+  lattices, and a supported thread-eye precision gap.
 
 **Depth-testing access**
 
@@ -147,12 +146,12 @@ without a reported regression.
 
 **Verification**
 
-- Local source passes `python3 tools/verify.py` with the exact
-  `4.7.1.stable.official.a13da4feb` Standard binary: clean import, front-end boot,
-  architecture scan, and **124/124** contracts. The declared suite contains 56
-  deterministic physics checks, 11 spider-biology checks, 25 mobile GUI/layout
-  checks, 21 front-end/settings/progression checks, and 11 bootstrap/build
-  contracts.
+- Local source passes the 134-contract engine runner with the exact
+  `4.7.1.stable.official.a13da4feb` Standard binary. The declared suite contains
+  56 deterministic physics checks, 10 zone geometry/mechanic/art checks, 11
+  spider-biology checks, 25 mobile GUI/layout checks, 21 front-end/settings/
+  progression checks, and 11 bootstrap/build contracts. The full required
+  `python3 tools/verify.py --require-godot` result is recorded at session close.
 - New contracts prove stable signing cannot silently return to per-run key
   generation; debug starts grant no rewards or records and cannot unlock
   checkpoints; off-grid seeded geometry equals traversal from zero; overlay
@@ -193,9 +192,9 @@ without a reported regression.
   and tuned for days, so they are stale by an unmeasured margin and were never
   evaluated against it. Treat a difference between them and the baseline as
   missing tuning, not as a tuning signal.
-- No authored Phase-1 chunk pack, moving hazards, final economy, missions,
-  production monetization, billing SDK, server entitlement, course sharing,
-  moderation, analytics, ads, cloud save, or store publishing.
+- No final economy, missions, production monetization, billing SDK, server
+  entitlement, course sharing, moderation, analytics, ads, cloud save, or store
+  publishing. Those remain separate from the authored zone implementation.
 - Campaign, difficulty, rewards, and audio now have approved direction in
   D-0033 but no implementation: staged teaching then challenges; per-mode bests
   with Standard alone competitive; cosmetics/stars rather than flies; generated
@@ -205,6 +204,19 @@ without a reported regression.
   release credential and must never become one.
 
 ## In flight
+
+**Zones 3–8 identity and mechanics (PR #73 candidate).** Silk Hollow has its
+own suspended precision geometry and art. Ruined Arboretum introduces pure
+fixed-tick panes, rotors, drip phase teaching, swept moving collision, and an
+energy-safe moving pivot. Storm Ridge adds deterministic wind/gusts and phased
+lightning; Web City adds ridable and sticky safe-anchor classes plus phased
+residents; Ashen Hollow adds once-only timed anchors and falling embers; Deep
+Mist spends draw distance while preserving lit targets and 700–820 px audio
+cues. Every lethal polygon carries explicit tap eligibility. Thirteen generated
+RGBA assets pass source/runtime/25% fringe inspection, and eight actual seeded
+world captures remain sortable as 320×180 pure-black silhouettes. Android
+small-screen readability and all six human success sentences remain owner
+playtest gates.
 
 **Web anchors are now surface-typed (2026-07-31, owner).** Rails, walls and
 ceiling-grown hazards answer web taps; floor-grown hazards are lethal but not

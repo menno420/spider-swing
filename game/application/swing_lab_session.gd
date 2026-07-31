@@ -583,18 +583,45 @@ func _make_snapshot() -> SimulationSnapshot:
 	snapshot.preset_name = _config.preset_name
 	if _config.course_boundaries_enabled:
 		snapshot.anchors = _world.anchors.duplicate()
-	for surface: PackedVector2Array in _world.surfaces:
-		snapshot.surfaces.append(surface.duplicate())
+	for index in range(_world.surfaces.size()):
+		snapshot.surfaces.append(_world.surfaces[index].duplicate())
+		snapshot.surface_rest_polygons.append(
+			_world._base_surfaces[index].duplicate())
+		snapshot.surface_ids.append(_world.surface_ids[index])
+		snapshot.surface_anchor_classes.append(
+			_world.surface_anchor_classes[index])
+		snapshot.surface_visual_ids.append(_world.surface_visual_ids[index])
+	for index in range(_world.decorations.size()):
+		snapshot.decorations.append(_world.decorations[index].duplicate())
+		snapshot.decoration_rest_polygons.append(
+			_world._base_decorations[index].duplicate())
+		snapshot.decoration_ids.append(_world.decoration_ids[index])
+		snapshot.decoration_visual_ids.append(
+			_world.decoration_visual_ids[index])
+		snapshot.decoration_active.append(
+			_world._decoration_active[index]
+			if index < _world._decoration_active.size() else 1)
 	if _config.course_boundaries_enabled:
 		for boundary: PackedVector2Array in _world.boundary_surfaces:
 			snapshot.boundary_surfaces.append(boundary.duplicate())
-	for obstacle_index in range(_world.obstacles.size()):
-		snapshot.obstacles.append(_world.obstacles[obstacle_index].duplicate())
+	for index in range(_world.obstacles.size()):
+		snapshot.obstacles.append(_world.obstacles[index].duplicate())
 		snapshot.obstacle_kinds.append(
-			_world.obstacle_kinds[obstacle_index]
-				if obstacle_index < _world.obstacle_kinds.size()
-				else CourseObstacleCatalog.UNSPECIFIED
-		)
+			_world.obstacle_kinds[index]
+				if index < _world.obstacle_kinds.size()
+				else CourseObstacleCatalog.UNSPECIFIED)
+		snapshot.obstacle_rest_polygons.append(
+			_world._base_obstacles[index].duplicate())
+		snapshot.obstacle_ids.append(_world.obstacle_ids[index])
+		snapshot.obstacle_anchor_classes.append(
+			_world.obstacle_anchor_classes[index])
+		snapshot.obstacle_visual_ids.append(_world.obstacle_visual_ids[index])
+		snapshot.obstacle_anchorable.append(
+			_world.obstacle_anchorable[index]
+			if index < _world.obstacle_anchorable.size() else 1)
+		snapshot.obstacle_active.append(
+			_world._obstacle_active[index]
+			if index < _world._obstacle_active.size() else 1)
 	snapshot.fly_positions = _world.fly_positions.duplicate()
 	snapshot.boost_positions = _world.boost_positions.duplicate()
 	snapshot.run_flies = _world.run_flies

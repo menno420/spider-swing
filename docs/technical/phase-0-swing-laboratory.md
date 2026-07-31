@@ -336,7 +336,7 @@ product decisions.
 
 ## Owner device playtest
 
-Install `0.20.1-bramble-obstacles` over `0.19.0-depth-testing` or any later
+Install `0.21.0-zones-4-8` over `0.19.0-depth-testing` or any later
 stable-key build without uninstalling; both use the stable signer and the update
 should preserve the save.
 Only a device that never installed `0.19.0` or later needs the one final

@@ -105,6 +105,7 @@ func _build_range(first: int, last: int) -> CourseGeometry:
 	var result := CourseGeometry.new()
 	result.first_chunk_index = first
 	result.last_chunk_index = last
+	result.course_seed = _course_seed
 	for chunk_index in range(first, last + 1):
 		_append_chunk(result, chunk_index)
 	return result
@@ -173,6 +174,7 @@ func _append_chunk(result: CourseGeometry, chunk_index: int) -> void:
 			pattern_id,
 			StringName(route["lane"]),
 			distance_at_chunk,
+			chunk_index,
 		)
 
 	if chunk_index >= 3 and posmod(chunk_index, 5) == 3:
@@ -226,6 +228,14 @@ func _boundary_profile(
 	route_lane: StringName,
 	is_ceiling: bool,
 ) -> PackedVector2Array:
+	var zone_profile := ZoneCourseBuilder.boundary_profile(
+		start_x,
+		base_y,
+		route_lane,
+		is_ceiling,
+	)
+	if not zone_profile.is_empty():
+		return zone_profile
 	var profile := PackedVector2Array([
 		Vector2(start_x, base_y),
 		Vector2(start_x + 240.0, base_y),
@@ -314,7 +324,8 @@ func _route_plan(
 		_course_seed,
 	)
 	var lane := StringName(pattern.get("lane", ROUTE_CENTRE))
-	if pattern_id == &"tight_rail" and allow_tight_corridor:
+	if pattern_id in [&"tight_rail", &"hollow_thread_eye"] and \
+			allow_tight_corridor:
 		lane = ROUTE_TIGHT
 	elif lane == ROUTE_TIGHT:
 		lane = ROUTE_CENTRE
@@ -397,10 +408,24 @@ func _append_middle_challenge(
 	pattern_id: StringName,
 	route_lane: StringName,
 	distance_at_chunk: float,
+	chunk_index: int,
 ) -> void:
 	# Every challenge keeps a usable lower or upper rail before the hazard. Its
 	# fly trail communicates the intended route without making it mandatory.
 	# Small hazards grow by at most 16%; the broad passage opening never shrinks.
+	if ZoneCourseBuilder.handles(pattern_id):
+		ZoneCourseBuilder.append_challenge(
+			result,
+			start_x,
+			ceiling_y,
+			floor_y,
+			pattern_id,
+			route_lane,
+			distance_at_chunk,
+			chunk_index,
+			_course_seed,
+		)
+		return
 	var growth := _obstacle_growth_scale(distance_at_chunk)
 	match pattern_id:
 		&"floor_vine":

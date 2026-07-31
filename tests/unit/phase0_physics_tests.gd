@@ -1660,14 +1660,17 @@ static func _test_course_regions_are_seeded_distinct_and_recoverable(
 		failures.append(
 			"Bramble Canopy lost its high↔low identity")
 		return 0
-	if not hollow_ids.has(&"rooted_gate") or \
+	if not hollow_ids.has(&"hollow_thread_eye") or \
 			not (
-				hollow_ids.has(&"silk_burr_high")
-				or hollow_ids.has(&"silk_burr_low")
+				hollow_ids.has(&"hollow_cocoon_chute")
+					or hollow_ids.has(&"hollow_twin_sacs")
 			) or \
-			not hollow_ids.has(&"tight_rail"):
+			not (
+				hollow_ids.has(&"hollow_lattice_high")
+					or hollow_ids.has(&"hollow_lattice_low")
+			):
 		failures.append(
-			"Silk Hollow lost its gate/burr/tight-gap precision identity: %s" %
+			"Silk Hollow lost its suspended/lattice/thread-eye identity: %s" %
 				[hollow_ids.keys()])
 		return 0
 
@@ -1951,16 +1954,11 @@ static func _test_debug_start_matches_seeded_geometry_from_zero(
 	failures: PackedStringArray,
 ) -> int:
 	var seed := 707
-	var start_distance := 137430.0
-	var session := SwingLabSession.new()
-	session.configure_run(SwingLabSession.RUN_STANDARD, 0.0, seed)
-	session._reset_run()
-	session.set_tuning_parameter(
-		TuningCatalog.DEBUG_START_DISTANCE,
-		start_distance,
-	)
-	var actual := session._course_stream.geometry()
-	var config := session._config
+	var starts := [
+		137430.0, 177430.0, 237430.0,
+		287430.0, 337430.0, 377430.0,
+	]
+	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 	var from_zero := CourseStream.new()
 	from_zero.reset(
 		config.middle_hazard_start_distance,
@@ -1975,30 +1973,62 @@ static func _test_debug_start_matches_seeded_geometry_from_zero(
 		seed,
 		SimulationWorld.START_POSITION.x,
 	)
-	var target_x := SimulationWorld.START_POSITION.x + start_distance
 	var walked_x := SimulationWorld.START_POSITION.x
-	while walked_x < target_x:
-		walked_x = minf(
-			target_x,
-			walked_x + CourseStream.CHUNK_WIDTH * 0.75,
+	for start_distance: float in starts:
+		var target_x := SimulationWorld.START_POSITION.x + start_distance
+		while walked_x < target_x:
+			walked_x = minf(
+				target_x,
+				walked_x + CourseStream.CHUNK_WIDTH * 0.75,
+			)
+			from_zero.update_for_position(walked_x)
+		var expected := from_zero.geometry()
+		var session := SwingLabSession.new()
+		session.configure_run(SwingLabSession.RUN_STANDARD, 0.0, seed)
+		session._reset_run()
+		session.set_tuning_parameter(
+			TuningCatalog.DEBUG_START_DISTANCE,
+			start_distance,
 		)
-		from_zero.update_for_position(walked_x)
-	var expected := from_zero.geometry()
-	if actual.first_chunk_index != expected.first_chunk_index or \
-			actual.last_chunk_index != expected.last_chunk_index or \
-			actual.surfaces != expected.surfaces or \
-			actual.boundary_surfaces != expected.boundary_surfaces or \
-			actual.aim_guides != expected.aim_guides or \
-			actual.obstacles != expected.obstacles or \
-			actual.obstacle_kinds != expected.obstacle_kinds or \
-			actual.fly_positions != expected.fly_positions or \
-			actual.boost_positions != expected.boost_positions:
-		failures.append(
-			"debug start geometry differs from the same seed traversed from zero")
+		var actual := session._course_stream.geometry()
+		if not _course_geometry_matches_exactly(actual, expected):
+			failures.append(
+				("debug start at %.0f px differs in polygons, anchor flags, "
+				+ "identity, or motion descriptors from the same seed traversed "
+				+ "from zero") % start_distance)
+			session.free()
+			return 0
 		session.free()
-		return 0
-	session.free()
 	return 1
+
+
+static func _course_geometry_matches_exactly(
+	actual: CourseGeometry,
+	expected: CourseGeometry,
+) -> bool:
+	return actual.first_chunk_index == expected.first_chunk_index and \
+		actual.last_chunk_index == expected.last_chunk_index and \
+		actual.course_seed == expected.course_seed and \
+		actual.surfaces == expected.surfaces and \
+		actual.surface_ids == expected.surface_ids and \
+		actual.surface_anchor_classes == expected.surface_anchor_classes and \
+		actual.surface_visual_ids == expected.surface_visual_ids and \
+		actual.surface_motion_specs == expected.surface_motion_specs and \
+		actual.decorations == expected.decorations and \
+		actual.decoration_ids == expected.decoration_ids and \
+		actual.decoration_visual_ids == expected.decoration_visual_ids and \
+		actual.decoration_motion_specs == expected.decoration_motion_specs and \
+		actual.boundary_surfaces == expected.boundary_surfaces and \
+		actual.aim_guides == expected.aim_guides and \
+		actual.obstacles == expected.obstacles and \
+		actual.obstacle_anchorable == expected.obstacle_anchorable and \
+		actual.obstacle_kinds == expected.obstacle_kinds and \
+		actual.obstacle_ids == expected.obstacle_ids and \
+		actual.obstacle_anchor_classes == expected.obstacle_anchor_classes and \
+		actual.obstacle_visual_ids == expected.obstacle_visual_ids and \
+		actual.obstacle_motion_specs == expected.obstacle_motion_specs and \
+		actual.fly_positions == expected.fly_positions and \
+		actual.boost_positions == expected.boost_positions
 
 
 static func _test_authored_weaves_and_small_silk_burrs_are_fair(
@@ -2262,6 +2292,12 @@ static func _test_region_pattern_pools_stay_varied(
 		&"deep_forest": CoursePatternCatalog.DEEP_FOREST_PATTERNS,
 		&"bramble_canopy": CoursePatternCatalog.BRAMBLE_CANOPY_PATTERNS,
 		&"silk_hollow": CoursePatternCatalog.SILK_HOLLOW_PATTERNS,
+		&"arboretum_opening": CoursePatternCatalog.ARBORETUM_OPENING_PATTERNS,
+		&"ruined_arboretum": CoursePatternCatalog.RUINED_ARBORETUM_PATTERNS,
+		&"storm_ridge": CoursePatternCatalog.STORM_RIDGE_PATTERNS,
+		&"web_city": CoursePatternCatalog.WEB_CITY_PATTERNS,
+		&"ashen_hollow": CoursePatternCatalog.ASHEN_HOLLOW_PATTERNS,
+		&"deep_mist": CoursePatternCatalog.DEEP_MIST_PATTERNS,
 	}
 	for name: StringName in pools:
 		var pool: Array = pools[name]

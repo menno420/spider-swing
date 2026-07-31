@@ -13,10 +13,20 @@ const REGION_LENGTH_PIXELS := REGION_LENGTH_METRES * PIXELS_PER_METRE
 const ANCIENT_FOREST := &"ancient_forest"
 const BRAMBLE_CANOPY := &"bramble_canopy"
 const SILK_HOLLOW := &"silk_hollow"
+const RUINED_ARBORETUM := &"ruined_arboretum"
+const STORM_RIDGE := &"storm_ridge"
+const WEB_CITY := &"web_city"
+const ASHEN_HOLLOW := &"ashen_hollow"
+const DEEP_MIST := &"deep_mist"
 
 const VISUAL_OLD_GROWTH := &"old_growth"
 const VISUAL_CANOPY := &"canopy"
 const VISUAL_HOLLOW := &"hollow"
+const VISUAL_ARBORETUM := &"arboretum"
+const VISUAL_STORM := &"storm"
+const VISUAL_WEB_CITY := &"web_city"
+const VISUAL_ASHEN := &"ashen"
+const VISUAL_MIST := &"mist"
 
 const REGIONS := [
 	{
@@ -45,6 +55,56 @@ const REGIONS := [
 		"quirk": "Silk-marked recovery pockets",
 		"visual_profile": VISUAL_HOLLOW,
 		"checkpoint": true,
+	},
+	{
+		"id": RUINED_ARBORETUM,
+		"name": "RUINED ARBORETUM",
+		"start_distance": REGION_LENGTH_PIXELS * 3.0,
+		"focus": "Timing · read the phase before committing",
+		"quirk": "Moving gaps and pivots",
+		"visual_profile": VISUAL_ARBORETUM,
+		"checkpoint": false,
+		"safe_entry": true,
+	},
+	{
+		"id": STORM_RIDGE,
+		"name": "STORM RIDGE",
+		"start_distance": REGION_LENGTH_PIXELS * 4.0,
+		"focus": "External force · stay on silk through the gust",
+		"quirk": "Deterministic lateral wind",
+		"visual_profile": VISUAL_STORM,
+		"checkpoint": false,
+		"safe_entry": true,
+	},
+	{
+		"id": WEB_CITY,
+		"name": "WEB CITY",
+		"start_distance": REGION_LENGTH_PIXELS * 5.0,
+		"focus": "Route choice · safe silk or a faster free line",
+		"quirk": "Ridable and sticky strands",
+		"visual_profile": VISUAL_WEB_CITY,
+		"checkpoint": false,
+		"safe_entry": true,
+	},
+	{
+		"id": ASHEN_HOLLOW,
+		"name": "ASHEN HOLLOW",
+		"start_distance": REGION_LENGTH_PIXELS * 6.0,
+		"focus": "Trust · release before a weak anchor fails",
+		"quirk": "Timed rotten anchors",
+		"visual_profile": VISUAL_ASHEN,
+		"checkpoint": false,
+		"safe_entry": true,
+	},
+	{
+		"id": DEEP_MIST,
+		"name": "DEEP MIST",
+		"start_distance": REGION_LENGTH_PIXELS * 7.0,
+		"focus": "Information · lit anchors and audio-first hazards",
+		"quirk": "Short sightline, endless spacing",
+		"visual_profile": VISUAL_MIST,
+		"checkpoint": false,
+		"safe_entry": true,
 	},
 ]
 

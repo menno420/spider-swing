@@ -685,11 +685,11 @@ static func _test_environment_theme_packs_are_visual_only(
 			failures.append("environment texture is not a 384 px runtime tile")
 			return 0
 	var art_paths := ArtAssetCatalog.texture_paths()
-	var expected_art_count := 16 + SpiderCatalog.ALL_IDS.size() + 1
+	var expected_art_count := 16 + 13 + SpiderCatalog.ALL_IDS.size() + 1
 	if art_paths.size() != expected_art_count:
 		failures.append(
-			"art catalog does not expose the old-growth and Bramble Canopy "
-			+ "packs, one asset per spider profile, and the fly")
+			"art catalog does not expose the zone packs, one asset per spider "
+			+ "profile, and the fly")
 		return 0
 	for path: String in art_paths:
 		if not ResourceLoader.exists(path):

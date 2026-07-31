@@ -31,6 +31,7 @@ godot --headless --path . --script res://tools/simulate.gd -- \
 | `--start-m=N` | 0 | Warp the start N metres into the course at that distance's pace — tests late-game regimes without surviving to them. Every per-km rate normalizes on distance *travelled*, so a warped band stays comparable with an unwarped one |
 | `--reel-style=` | `adaptive` | `adaptive` · `tap` · `hold` — how the bot spends Reel |
 | `--save-bursts=` | `on` | `on` · `off` — emergency Burst when no web can save it |
+| `--moving-anchor-proof` | off | Run the ADR 0004 moving-pivot energy probe against the production `WebConstraint`, then exit |
 | `--sweep=SPEC` | — | Parameter grid, e.g. `reel_rate:260:440:4,pull_cooldown:1.2:2.4:3` (≤60 points, one skill + spider). Names resolve as TuningCatalog ids first, else raw `SwingConfig` properties (`reel_regeneration_rate`) |
 | `--json=path` | — | Write per-run rows + summaries as JSON |
 
@@ -135,6 +136,38 @@ Interpretation caveats, in honesty order: the bot is one player model, not a
 population; its adaptations are simple rules, not learning; and a divergence
 between bot preference and owner device findings (see below) means "different
 regime or bot limitation", never "the device test was wrong".
+
+## Moving-anchor architecture probe
+
+ADR 0004's one-off architecture mode bypasses the player model and exercises the
+production rope solver directly:
+
+```bash
+godot --headless --path . --script res://tools/simulate.gd -- \
+  --moving-anchor-proof
+```
+
+It first translates a support at constant velocity and compares the result with
+the static solution in support-relative coordinates. It then runs the intended
+slow Ruined Arboretum pivot for twenty complete five-second cycles under the
+approved Balanced gravity. The command exits non-zero if translation covariance
+drifts beyond 0.001, the late-cycle relative-speed envelope grows, the moving
+peak exceeds the static control by more than 35%, or rope overrun exceeds the
+existing elasticity/correction budget.
+
+Measured 2026-07-31 with Godot `4.7.1.stable.official.a13da4feb`:
+
+- maximum translation-relative error: **0.000270 px** and **0.000284 px/s**;
+- moving/static peak relative-speed ratio: **1.0627**;
+- late/early five-cycle peak ratio: **0.1177** (energy decays; it does not
+  accumulate);
+- maximum rope overrun: **17.039 px**, inside the existing allowance and capped
+  correction budget.
+
+The moving-pivot mechanic is therefore viable at the proved 38 px radius,
+42-degree amplitude, and 300-tick period. Faster or larger authoring values are
+not covered by this result and require rerunning the probe with their actual
+specification.
 
 ## Observations (2026-07-30, bot model v2 — not human truth)
 
