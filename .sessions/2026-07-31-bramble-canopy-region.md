@@ -91,7 +91,30 @@ visual proof.
   Reduced Motion bypass, and direct-start bypass.
 - `python3 bootstrap.py check --strict --require-session-log` reaches only this
   card's deliberate `in-progress` lifecycle hold. Remote Android signer/source
-  evidence is still pending before the final `complete` flip.
+  evidence was the remaining prerequisite before the final `complete` flip.
+
+## Remote and Android proof
+
+- Exact remote head `b4eb76e18b56c30bb503c04d761b78e62936c4da` has tree
+  `c9db21eb25745b24ec828f0b2ae290a0e1ca4d47`, byte-identical to the locally
+  verified tree and cleanly ahead of current main `162b9c0…` by three commits.
+- `game-quality` runs 30662003736 and 30662011415 passed the exact head. The
+  deliberate born-red `substrate-gate` failure is only this card's status.
+- Android run 30662003775 passed stable-key, export, APK identity/version, signer
+  certificate, and upload checks. Artifact 8805521840 is 64,564,251 bytes and
+  its downloaded ZIP matches GitHub's SHA-256
+  `c3d8eb300b8552ee2be722c160f1019fa7a6bce9bf281a8320943313bdd5acca`.
+- The intact 64,968,926-byte APK has SHA-256
+  `e7d783bb3a680f4f057585efd7a7ccf7305974e4c32dd72e6e4f75b54ba60da5`.
+  Its embedded provenance names build `0.20.0-bramble-canopy`, exact source
+  `b4eb76e…`, package `com.menno420.spiderswing.dev`, and display name
+  `Spider Swing Bramble Canopy (dev)`. The APK contains all six imported
+  Bramble textures plus `classes.dex`, `AndroidManifest.xml`, and
+  `assets/project.binary`.
+- `keytool -printcert -jarfile` independently reports certificate SHA-256
+  `83ff0bc27903351779ffd1439f115e8c7e4c228fddd683e2a801c9700b30a741`,
+  exactly the pinned stable debug signer. The carrier PR used only to emit
+  Actions is closed; PR #62 remains the sole implementation PR.
 
 ## Planned verification
 

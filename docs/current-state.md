@@ -172,6 +172,12 @@ without a reported regression.
   and Android run 30656983045. Artifact 8803635374's downloaded ZIP matched
   GitHub's `cb9cb31d…` digest; its intact APK matched `7a9aa69d…`, embeds that
   source/build identity, and reports the pinned `83ff0bc2…` certificate.
+- PR #62 implementation head `b4eb76e1…` passes exact-engine `game-quality`
+  runs 30662003736/30662011415. Android run 30662003775 produced artifact
+  8805521840; its downloaded 64,564,251-byte ZIP matches GitHub's
+  `c3d8eb30…` digest, its intact 64,968,926-byte APK matches `e7d783bb…`, embeds
+  all six Bramble textures plus source/build provenance, and independently
+  reports the pinned `83ff0bc2…` certificate.
 
 **Deliberately absent — scope boundaries, not gaps**
 

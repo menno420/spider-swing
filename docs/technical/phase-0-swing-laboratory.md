@@ -325,8 +325,8 @@ product decisions.
 ## Owner device playtest
 
 Install `0.20.0-bramble-canopy` over `0.19.0-depth-testing` or any later
-stable-key build without
-uninstalling; both use the stable signer and the update should preserve the save.
+stable-key build without uninstalling; both use the stable signer and the update
+should preserve the save.
 Only a device that never installed `0.19.0` or later needs the one final
 uninstall from the old throwaway-signer era.
 
@@ -349,6 +349,18 @@ Before the traversal checklist, prove the new depth-access gate:
 - switch the level back to `OWNED` and confirm the exact prior Shop levels and
   balance return. Turn Debug Tools off in Settings and confirm neither depth
   control is reachable.
+- start at 4900 m and cross 5000 m normally: braided green rails and canopy
+  hazards should approach from the right before the lime-lit backdrop replaces
+  Ancient Forest, while Reduced Motion makes the backdrop switch immediate;
+- start directly at 5000 m and confirm the complete Bramble pack appears at
+  once. Its authored pair should demand a visible high↔low commitment rather
+  than a neutral centre line. Compare `OWNED` and `MAX`: Reel should reward an
+  early route read and arc setup, while Burst remains the faster late height
+  correction. This is a role check, not a request to make both controls equal;
+- at 10000 m, record Silk Hollow's gameplay separately. Its dedicated
+  background/obstacle pack is not built yet, and the current stream remains
+  Silk Hollow after 10000 m; do not count either limitation as a Bramble
+  regression.
 
 Then check the traversal baseline:
 
