@@ -1,0 +1,1 @@
+- `claude/zones-4-8-silhouette-identity` · **Build Silk Hollow art identity and deterministic Zones 4-8 without touching Bramble or meta-progression** · zone ADR/domain/application/simulation/presentation/assets/tests/docs; excludes BRAMBLE_CANOPY_PATTERNS and Bramble assets · 2026-07-31

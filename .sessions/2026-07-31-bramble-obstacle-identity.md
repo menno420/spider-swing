@@ -77,7 +77,8 @@ chroma-removal pipeline produced the runtime alpha assets.
 
 - `python3 tools/verify.py --require-godot` with exact
   `4.7.1.stable.official.a13da4feb`: architecture self-tests/live scan, import,
-  front-end boot, and **123/123 contracts** all pass.
+  front-end boot, and **124/124 contracts** all pass after integrating main's
+  independent region-pool variety floor and clearer count-mismatch diagnostic.
 - The new contract rejects every Ancient Forest id from Bramble, exposes all
   eight new variants across representative seeds, proves explicit left/right
   kinds survive copies, requires each hazard to remove the neutral-centre
