@@ -35,10 +35,20 @@ func _initialize() -> void:
 	_check_front_end_flow()
 	print("")
 	if _failures.is_empty() and _passed != EXPECTED_CHECK_COUNT:
+		# The common cause is a merge, not a broken test. Two branches that each
+		# add a contract each bump this constant by one, writing identical text
+		# — so git merges the line with no conflict while the merged tree runs
+		# the sum. Say that here, because the diff gives no hint and the wrong
+		# repair is to go hunting for a stray test.
 		_fail(
-			"runner executed %d checks but the declared suite requires %d" % [
+			("runner executed %d checks but the declared suite requires %d. "
+				+ "If you just merged main, both sides likely added contracts: "
+				+ "set EXPECTED_CHECK_COUNT to the executed total %d, not to "
+				+ "either branch's value. Only lower it if you deliberately "
+				+ "removed a contract.") % [
 				_passed,
 				EXPECTED_CHECK_COUNT,
+				_passed,
 			],
 		)
 	if _failures.is_empty():
