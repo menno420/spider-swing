@@ -6,6 +6,10 @@ laboratory APK install over the previous one and preserves the app's local save
 data, which is required to exercise real-device save migrations and long-term
 progression.
 
+Because every older artifact used a different throwaway signer, installing the
+first stable-key APK still requires one final uninstall. Every later APK signed
+with this key updates in place and preserves the device's app data.
+
 This is the conventional public debug identity:
 
 - alias: `androiddebugkey`
