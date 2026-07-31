@@ -43,6 +43,7 @@ static func run() -> Dictionary:
 	passed += _test_obstacle_scales_change_authoritative_polygons(failures)
 	passed += _test_guided_opening_swings_safely_without_input_lock(failures)
 	passed += _test_one_rescue_is_consumed_before_death(failures)
+	passed += _test_region_pattern_pools_stay_varied(failures)
 	passed += _test_floor_grown_hazards_are_lethal_but_not_tappable(failures)
 	passed += _test_dying_window_is_not_eaten_by_an_in_flight_tap(failures)
 	passed += _test_spider_profiles_and_glide_share_one_config(failures)
@@ -2102,6 +2103,49 @@ static func _test_one_rescue_is_consumed_before_death(
 		session.free()
 		return 0
 	session.free()
+	return 1
+
+
+static func _test_region_pattern_pools_stay_varied(
+	failures: PackedStringArray,
+) -> int:
+	# `_seeded_pattern` walks a pool with a coprime stride, which is a
+	# full-cycle permutation — so the visible cycle length IS the pool size.
+	# At CHUNK_WIDTH 960 px (96 m) a pool of four repeats a zone's whole
+	# sequence every ~384 m, roughly five seconds at full pace. Shrinking a pool
+	# to differentiate a zone therefore trades one identity problem for a worse
+	# one, and it is invisible in review — it only shows up as "this zone feels
+	# repetitive" on device.
+	var minimum_pool := 7
+	var pools := {
+		&"control": CoursePatternCatalog.CONTROL_PATTERNS,
+		&"mastery": CoursePatternCatalog.MASTERY_PATTERNS,
+		&"deep_forest": CoursePatternCatalog.DEEP_FOREST_PATTERNS,
+		&"bramble_canopy": CoursePatternCatalog.BRAMBLE_CANOPY_PATTERNS,
+		&"silk_hollow": CoursePatternCatalog.SILK_HOLLOW_PATTERNS,
+	}
+	for name: StringName in pools:
+		var pool: Array = pools[name]
+		if pool.size() < minimum_pool:
+			failures.append(
+				"pattern pool %s has %d patterns; below %d the zone's sequence "
+				% [name, pool.size(), minimum_pool]
+				+ "visibly loops (cycle length equals pool size)")
+			return 0
+		# The course seed must genuinely reorder a pool, not merely rotate it.
+		# Some composite sizes collapse to exactly one legal stride — 3, 4 and 6
+		# all do — which silently drops the seeded-variety property that
+		# docs/current-state.md records as live.
+		var strides := {}
+		for seed_value in range(40):
+			strides[CoursePatternCatalog._coprime_stride(
+				pool.size(), seed_value)] = true
+		if strides.size() < 2:
+			failures.append(
+				"pattern pool %s (size %d) admits only one coprime stride, so "
+				% [name, pool.size()]
+				+ "the course seed can no longer vary its pattern order")
+			return 0
 	return 1
 
 
