@@ -1,6 +1,6 @@
 # Bramble Canopy obstacle-identity follow-up
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 

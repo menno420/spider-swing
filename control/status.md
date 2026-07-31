@@ -1,9 +1,9 @@
 # Spider Swing · status
-updated: 2026-07-31T21:45:20Z
-phase: Phase 0.25 Bramble obstacle-identity correction — PR #69 in progress
+updated: 2026-07-31T21:47:19Z
+phase: Phase 0.25 Bramble obstacle-identity correction — PR #69 complete
 health: green
 kit: v1.20.2 · check: green · engaged: yes
-last-shipped: PR #65 merged; PR #62 Bramble presentation artifact device-reviewed
+last-shipped: PR #69 gives Bramble an exclusive hook-vine/leaf-shutter vocabulary
 blockers: Phase 1 and further numeric tuning remain product-gated on issue #2 device playtesting
 orders: acked= done=
 ⚑ needs-owner: PR #69 Android obstacle-identity device pass
@@ -22,5 +22,6 @@ the presentation direction but rejected the obstacles as old roles under new
 skins. A new owner action will name only PR #69's source-identified replacement
 artifact after its Android proof is green.
 notes: PR #69 replaces Bramble's inherited obstacle pool with explicit hook-vine
-and leaf-shutter geometry/art only. Physics, speed, Reel, Burst, upgrades,
-economy, persistence, and settlement remain unchanged.
+and leaf-shutter geometry/art only. Exact Godot, 124 contracts, GitHub quality,
+Android export/assets/provenance, and signer proof are green. Physics, speed,
+Reel, Burst, upgrades, economy, persistence, and settlement remain unchanged.
