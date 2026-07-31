@@ -679,3 +679,32 @@
   promoted, it's honestly the only one I've been testing and adjusting, so right
   now it's already much further ahead then it was at the time where those 3
   presets were made"
+
+## [D-0038] Make distance regions materially different while preserving late-game control roles
+
+- status: decided
+- date: 2026-07-31
+- verdict: A distance-region transition must change a real presentation pack,
+  not only its HUD name and tint. Bramble Canopy is the first complete 5000 m
+  slice: its own far/mid backdrop, braided-thorn rails, growth sockets, bramble,
+  seed-pod vine, brighter palette, and ambience. Foreground art resolves from
+  each polygon's world position so it approaches from ahead; the backdrop
+  crossfades for 2.2 seconds on entry and switches immediately under Reduced
+  Motion. Its signature deterministic pairs extend through the neutral middle
+  line but retain a Classic-sized authored high↔low guide and recovery cadence.
+  No speed, Reel, Burst, targeting, upgrade, or economy value changes.
+- why: Four owner recordings at 5000 m with the level-20 debug overlay made the
+  mismatch unambiguous: the label said Bramble Canopy but the same Ancient
+  Forest background and obstacle family made the transition effectively
+  invisible, and several supposed height patterns could be cleared by staying
+  near centre. The same recordings show a useful high-speed role split rather
+  than a balance defect. Reel is strongest when the route is read early and the
+  player shapes the next arc; Burst supplies the much faster late vertical
+  correction when obstacles arrive roughly a second apart. Clear advance cues
+  should preserve that difference instead of slowing the game or making Reel a
+  second Burst. Silk Hollow still needs its own complete pack, and the authored
+  schedule currently has no new region after 10000 m; neither is falsely
+  claimed complete by this slice.
+- provenance: Menno's four 2026-07-31 5000 m Android recordings and his finding
+  that high-distance Reel becomes predictive while Burst becomes the main rapid
+  height-change tool
