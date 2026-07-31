@@ -35,7 +35,7 @@ collision data. Mixed assets list the independently modelled pieces.
 
 | Asset | Chroma/keyed source → runtime | Why this runtime size | Anchor rule | 25% silhouette result; possible confusion |
 | --- | --- | --- | --- | --- |
-| `silk-hollow-backdrop.png` | 1672×941 → 1280×720 | Exact reference viewport; avoids runtime resampling of the parallax frame. | **NOT** — presentation only. | **PASS:** concave membranes, radial ribs, hanging sacs. Nearest whole-zone overlap is Bramble Canopy (IoU 0.492), but the void topology is webbed rather than braided. |
+| `silk-hollow-backdrop.png` | 1672×941 → 1280×720 | Exact reference viewport; avoids runtime resampling of the parallax frame. | **NOT** — presentation only. | **PASS:** concave membranes, radial ribs, hanging sacs. Nearest whole-zone overlap is Ancient Forest (IoU 0.488), but the void topology is webbed rather than trunked. |
 | `silk-hollow-cocoon-cluster.png` | 1254×1254 → 512×512 | Square rotation-safe canvas for 110–240 px suspended hazards and mipmaps. | **ANCHORABLE** only when ceiling-grown; floor needles use separate code art and are **NOT**. | **PASS:** pear sacs plus spindle. Could be mistaken for Web City egg sacs in isolation; City is separated by long spans at zone scale. |
 | `ruined-arboretum-backdrop.png` | 1672×941 → 1280×720 | Exact viewport for gables and rectangular greenhouse bays. | **NOT** — presentation only. | **PASS:** rectilinear gables, window grids, circles. Nearest whole-zone overlap is Ancient Forest (0.462); no organic trunk rhythm remains. |
 | `ruined-arboretum-pane.png` | 1254×1254 → 512×512 | Square phase-safe canvas leaves room for the rest arc while the shard swings. | Composite: round pivot **ANCHORABLE**; glass edge **NOT** and lethal. | **PASS:** socket + articulated shard + arc. No other zone has this mechanical punctuation. |
@@ -82,12 +82,12 @@ all pairwise zone-silhouette overlaps are in
 
 The contact sheet is generated from the actual seeded CourseStream geometry at
 tick 137 plus each foreground backdrop, then reduced to pure black at 320×180
-(25% of 1280×720). The highest pair overlap is 0.550, between the two pre-existing
-forest zones. Every owned zone is below 0.493 against every other zone.
+(25% of 1280×720). The highest pair overlap is 0.497, between the two pre-existing
+forest zones. Every owned zone is below 0.488 against every other zone.
 
 | Zone | Result | Closest possible confusion |
 | --- | --- | --- |
-| Silk Hollow | **PASS** | Bramble Canopy, 0.492; suspended cavities replace braided rails. |
+| Silk Hollow | **PASS** | Ancient Forest, 0.488; suspended cavities replace trunks. |
 | Ruined Arboretum | **PASS** | Ancient Forest, 0.462; straight gables/grids remain unmistakable. |
 | Storm Ridge | **PASS** | Ashen Hollow, 0.396; open sky versus fractured enclosure. |
 | Web City | **PASS** | Silk Hollow, 0.303; horizontal civic spans versus hanging sacs. |

@@ -8,6 +8,10 @@ polygons at tick 137; `tools/zone_art_audit.py` combines those polygons with the
 runtime foreground art, writes the full-colour world captures, reduces the same
 structure to pure black, and shrinks it to 25%.
 
+The fixed 6000 m Bramble capture deliberately includes its hook-vine and
+leaf-shutter signature families; `--bramble-metres=<value>` supports comparison
+probes without changing the recorded sample.
+
 Run:
 
 ```bash
@@ -35,8 +39,8 @@ and active hazards from the same captured tick.
 
 ## Result
 
-The highest pair overlap is 0.550, between the two pre-existing forest zones.
-Every owned zone remains below 0.493 against every other zone. Per-zone nearest
+The highest pair overlap is 0.497, between the two pre-existing forest zones.
+Every owned zone remains below 0.488 against every other zone. Per-zone nearest
 confusion, every asset's exact source/runtime dimensions and rationale, its
 **ANCHORABLE**/**NOT** state, hashes, and source/runtime/25% fringe counts are
 recorded in `assets/source/zone-art/README.md` and `zone-art-audit.json`.

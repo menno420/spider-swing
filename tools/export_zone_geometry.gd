@@ -10,18 +10,22 @@ const CAMERA_LEFT_OFFSET := VIEW_SIZE.x / 3.0
 const COURSE_SEED := 1337
 const SAMPLE_TICK := 137
 const SAMPLE_DISTANCES_METRES := [
-	2500.0, 7500.0, 12500.0, 18750.0,
+	2500.0, 6000.0, 12500.0, 18750.0,
 	23750.0, 28750.0, 33750.0, 37500.0,
 ]
 
 
 func _initialize() -> void:
 	var output_path := "/tmp/spider-zone-geometry.json"
+	var sample_distances := SAMPLE_DISTANCES_METRES.duplicate()
 	for argument: String in OS.get_cmdline_user_args():
 		if argument.begins_with("--out="):
 			output_path = argument.trim_prefix("--out=")
+		elif argument.begins_with("--bramble-metres="):
+			sample_distances[1] = float(argument.trim_prefix(
+				"--bramble-metres="))
 	var zones: Array[Dictionary] = []
-	for metres: float in SAMPLE_DISTANCES_METRES:
+	for metres: float in sample_distances:
 		zones.append(_capture_zone(metres))
 	var file := FileAccess.open(output_path, FileAccess.WRITE)
 	if file == null:
@@ -49,6 +53,10 @@ func _capture_zone(metres: float) -> Dictionary:
 	var geometry := stream.geometry()
 	var world_left := maxf(0.0, spider_x - CAMERA_LEFT_OFFSET)
 	var region := CourseRegionCatalog.region_for_distance(distance_pixels)
+	var pattern_ids: Array = []
+	for chunk_index in range(
+		geometry.first_chunk_index, geometry.last_chunk_index + 1):
+		pattern_ids.append(str(stream.pattern_id_for_chunk(chunk_index)))
 	var boundaries: Array = []
 	for polygon: PackedVector2Array in geometry.boundary_surfaces:
 		if _visible(polygon, world_left):
@@ -98,6 +106,7 @@ func _capture_zone(metres: float) -> Dictionary:
 		"name": str(region["name"]),
 		"metres": metres,
 		"visual_profile": str(region["visual_profile"]),
+		"pattern_ids": pattern_ids,
 		"boundaries": boundaries,
 		"surfaces": surfaces,
 		"surface_anchor_classes": surface_anchor_classes,

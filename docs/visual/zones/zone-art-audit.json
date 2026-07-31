@@ -538,12 +538,7 @@
     {
       "first": "ancient_forest",
       "second": "bramble_canopy",
-      "intersection_over_union": 0.550268
-    },
-    {
-      "first": "bramble_canopy",
-      "second": "silk_hollow",
-      "intersection_over_union": 0.492185
+      "intersection_over_union": 0.496882
     },
     {
       "first": "ancient_forest",
@@ -551,14 +546,14 @@
       "intersection_over_union": 0.4877
     },
     {
+      "first": "bramble_canopy",
+      "second": "silk_hollow",
+      "intersection_over_union": 0.473327
+    },
+    {
       "first": "ancient_forest",
       "second": "ruined_arboretum",
       "intersection_over_union": 0.461794
-    },
-    {
-      "first": "bramble_canopy",
-      "second": "ruined_arboretum",
-      "intersection_over_union": 0.444517
     },
     {
       "first": "silk_hollow",
@@ -573,7 +568,12 @@
     {
       "first": "bramble_canopy",
       "second": "ashen_hollow",
-      "intersection_over_union": 0.396435
+      "intersection_over_union": 0.40492
+    },
+    {
+      "first": "bramble_canopy",
+      "second": "ruined_arboretum",
+      "intersection_over_union": 0.401019
     },
     {
       "first": "storm_ridge",
@@ -593,12 +593,17 @@
     {
       "first": "bramble_canopy",
       "second": "storm_ridge",
-      "intersection_over_union": 0.333199
+      "intersection_over_union": 0.335051
     },
     {
       "first": "ruined_arboretum",
       "second": "storm_ridge",
       "intersection_over_union": 0.322601
+    },
+    {
+      "first": "bramble_canopy",
+      "second": "web_city",
+      "intersection_over_union": 0.31449
     },
     {
       "first": "ruined_arboretum",
@@ -631,11 +636,6 @@
       "intersection_over_union": 0.267903
     },
     {
-      "first": "bramble_canopy",
-      "second": "web_city",
-      "intersection_over_union": 0.25027
-    },
-    {
       "first": "web_city",
       "second": "ashen_hollow",
       "intersection_over_union": 0.24807
@@ -653,7 +653,7 @@
     {
       "first": "bramble_canopy",
       "second": "deep_mist",
-      "intersection_over_union": 0.115221
+      "intersection_over_union": 0.125445
     },
     {
       "first": "web_city",
@@ -679,7 +679,7 @@
   "highest_pair_iou": {
     "first": "ancient_forest",
     "second": "bramble_canopy",
-    "intersection_over_union": 0.550268
+    "intersection_over_union": 0.496882
   },
   "contact_sheet": "docs/visual/zones/zone-silhouette-contact-sheet-25.png",
   "screenshot_contact_sheet": "docs/visual/zones/zone-screenshot-contact-sheet.png",
