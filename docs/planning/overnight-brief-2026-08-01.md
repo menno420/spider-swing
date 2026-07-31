@@ -47,9 +47,30 @@ moves under you: `main` moved three times under open PRs on 2026-07-31.
 
 ## Wake chain — follow `docs/ROUTINES.md`
 
+This pattern is proven, not theoretical: a sibling session sustained itself for
+days off a single prompt and landed 48 PRs, through several 5-hour caps. What
+made it work is specific, and the details below are the ones that carry it.
+
 - **Exactly one outstanding wake at a time.** Consume before re-arming.
-- Re-arm at the end of each slice, after the PR is open and green — not before
-  the work, and never two deep.
+- **Re-arming is the last action of a slice, after the PR has merged** — not
+  when it is opened. Make it part of the ritual: land the work, then arm the
+  next wake. Never two deep, never before the work.
+- **The wake prompt must be complete enough to work from cold.** This is the
+  detail everything else depends on. The scheduler may deliver into a session
+  that has been restarted, so the message cannot lean on conversation context.
+  Every wake prompt must name: this brief, `docs/product/zone-progression.md`,
+  which slice is next, and what "done" looks like for it. Write it as though
+  the reader has never seen this conversation, because it may not have.
+- **~75 minutes out** is a good interval — long enough to finish a slice,
+  short enough to keep the chain tight.
+- **Nothing here bypasses the usage cap.** Hitting it genuinely stops the work.
+  The chain survives because the scheduler holds the next link while the session
+  is stopped, and fires it when work can run again. Expect gaps; they are not
+  failures.
+- **The session card is the handoff.** If a slice is cut off mid-way, the next
+  wake resumes from the repository, not from memory — so every card must end
+  saying what the next slice is and why. A card that only records what happened
+  leaves the chain worse off than one that says what is next.
 - At each wake: re-verify state by probing, do not trust the previous turn's
   record. Check whether `main` moved and whether your PR merged.
 - If a slice ends with nothing to do, re-arm and exit without writes.
