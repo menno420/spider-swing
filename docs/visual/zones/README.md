@@ -1,6 +1,6 @@
 # Zone structure and alpha QA
 
-> **Status:** `candidate-evidence`
+> **Status:** `audit`
 
 These captures are reproducible review evidence for the endless-course zones.
 `tools/export_zone_geometry.gd` exports the actual seeded `CourseStream`
