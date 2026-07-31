@@ -75,14 +75,16 @@ const TUTORIAL_STEPS := [
 	{
 		"title": "PULL TO THE TARGET",
 		"kicker": "05 · ANCHOR BURST",
-		"body": "Tap BURST while attached, or double-tap any solid target, to "
-			+ "cross 40% of the web distance in a quick controlled pull. Every "
+		"body": "Double-tap any solid target to cross 40% of the web distance "
+			+ "in a quick controlled pull toward that exact point. The BURST "
+			+ "button does the same without aiming, for when you cannot reach "
+			+ "across. Every "
 			+ "spider also has a useful minimum Burst travel that upgrades can "
 			+ "improve. Tapping "
 			+ "a solid below performs a shorter 40% Dive Pull and never stays "
 			+ "attached. During either pull, tap an upper solid to recover with "
 			+ "a normal web immediately.",
-		"tip": "Burst gains height; lower anchor windows redirect you under high obstacles.",
+		"tip": "Double-tap aims the Burst; at speed that beats reaching for the button.",
 	},
 	{
 		"title": "SURVIVE & RECOVER",
