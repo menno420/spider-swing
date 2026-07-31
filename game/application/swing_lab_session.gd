@@ -82,8 +82,9 @@ func configure_run(
 	mode: StringName = RUN_STANDARD,
 	start_distance_pixels: float = 0.0,
 	course_seed_override: int = -1,
+	debug_start_requested: bool = false,
 ) -> void:
-	_debug_start_active = false
+	_debug_start_active = debug_start_requested
 	var requested_practice := mode == RUN_PRACTICE
 	_run_mode = (
 		RUN_PRACTICE

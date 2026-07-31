@@ -24,6 +24,7 @@ var _progress: PlayerProgress
 var _session: SwingLabSession
 var _input_router: InputRouter
 var _view: SwingLabView
+var _active_run_is_debug_test: bool = false
 
 
 func _ready() -> void:
@@ -33,6 +34,7 @@ func _ready() -> void:
 	_front_end_state = FRONT_END_STATE_SCRIPT.new() as FrontEndState
 	_front_end_state.play_requested.connect(_start_game)
 	_front_end_state.practice_play_requested.connect(_start_practice_game)
+	_front_end_state.debug_play_requested.connect(_start_debug_game)
 	_front_end_state.creator_play_requested.connect(_start_creator_game)
 	_front_end_state.settings_changed.connect(_save_settings)
 	_front_end_state.spider_profile_requested.connect(_select_spider_profile)
@@ -86,6 +88,7 @@ func _instantiate_front_end() -> PackedStringArray:
 
 
 func _start_game(settings: PlayerSettings) -> void:
+	_active_run_is_debug_test = false
 	_unmount_front_end()
 	var failures := _mount_swing_lab(settings)
 	if failures.is_empty():
@@ -100,6 +103,7 @@ func _start_creator_game(
 	settings: PlayerSettings,
 	pattern: Array[StringName],
 ) -> void:
+	_active_run_is_debug_test = false
 	_unmount_front_end()
 	var failures := _mount_swing_lab(settings, pattern)
 	if failures.is_empty():
@@ -121,6 +125,7 @@ func _start_practice_game(
 				CourseRegionCatalog.checkpoint_start(region_id),
 			):
 		return
+	_active_run_is_debug_test = false
 	_unmount_front_end()
 	var failures := _mount_swing_lab(
 		settings,
@@ -136,11 +141,43 @@ func _start_practice_game(
 	_mount_front_end()
 
 
+func _start_debug_game(
+	settings: PlayerSettings,
+	start_distance_pixels: float,
+	upgrade_level: int,
+) -> void:
+	if not settings.show_debug_tools or not is_equal_approx(
+		start_distance_pixels,
+		TuningCatalog.clamp_value(
+			TuningCatalog.DEBUG_START_DISTANCE,
+			start_distance_pixels,
+		),
+	) or upgrade_level != _progression_service.debug_upgrade_overlay_level():
+		return
+	_active_run_is_debug_test = true
+	_unmount_front_end()
+	var failures := _mount_swing_lab(
+		settings,
+		[],
+		SwingLabSession.RUN_PRACTICE,
+		start_distance_pixels,
+		true,
+	)
+	if failures.is_empty():
+		return
+	for failure: String in failures:
+		printerr("[spider-swing] debug test start failed — %s" % failure)
+	_active_run_is_debug_test = false
+	_unmount_swing_lab()
+	_mount_front_end()
+
+
 func _mount_swing_lab(
 	settings: PlayerSettings,
 	creator_pattern: Array[StringName] = [],
 	run_mode: StringName = SwingLabSession.RUN_STANDARD,
 	start_distance_pixels: float = 0.0,
+	debug_start: bool = false,
 ) -> PackedStringArray:
 	var failures := PackedStringArray()
 	if not ResourceLoader.exists(SWING_LAB_SCENE_PATH):
@@ -172,7 +209,7 @@ func _mount_swing_lab(
 	_session.checkpoint_reached.connect(_unlock_region_checkpoint)
 	_session.configure_progress(_progress, _progression_service)
 	_session.configure_creator_pattern(creator_pattern)
-	_session.configure_run(run_mode, start_distance_pixels)
+	_session.configure_run(run_mode, start_distance_pixels, -1, debug_start)
 	_input_router.web_tapped.connect(_on_web_tapped)
 	_input_router.reel_changed.connect(_session.set_reel_active)
 	_input_router.burst_requested.connect(_session.request_burst)
@@ -222,7 +259,16 @@ func _return_to_menu() -> void:
 
 
 func _show_front_end() -> void:
+	if _session != null and _front_end_state.settings.show_debug_tools:
+		var snapshot := _session.current_snapshot()
+		if _active_run_is_debug_test or snapshot.debug_start_active or \
+				snapshot.debug_upgrade_overlay_level >= 0:
+			_front_end_state.sync_debug_run_setup(
+				snapshot.start_distance_pixels,
+				snapshot.debug_upgrade_overlay_level,
+			)
 	_unmount_swing_lab()
+	_active_run_is_debug_test = false
 	_front_end_state.show_home()
 	_mount_front_end()
 

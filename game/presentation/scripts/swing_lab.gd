@@ -1276,6 +1276,12 @@ func _draw_tuning_cards(
 				_quick_value_label(parameter, quick_value),
 				is_equal_approx(value, quick_value),
 			)
+		if parameter == TuningCatalog.DEBUG_START_DISTANCE:
+			_draw_button(
+				LabLayout.parameter_value_apply_rect(card_index, size),
+				"GO",
+				false,
+			)
 
 	if category_id == TuningCatalog.CATEGORY_PULLS:
 		var status := "DIVE READY" if _snapshot.dive_ready \
@@ -1299,6 +1305,14 @@ func _draw_tuning_cards(
 			shell_status,
 			15,
 			GREEN if _snapshot.surface_bounce_ready else YELLOW,
+		)
+	elif category_id == TuningCatalog.CATEGORY_RUN:
+		var panel := LabLayout.debug_panel_rect(size)
+		_draw_text(
+			Vector2(panel.position.x + 20.0, panel.end.y - 24.0),
+			"DEPTH CHANGES RESTART THE TEST · CLOSE DEBUG TO PLAY",
+			15,
+			YELLOW,
 		)
 
 

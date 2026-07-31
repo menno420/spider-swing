@@ -130,12 +130,13 @@ Burst boost.
 - Buckler can survive one moderate free-flight rail hit, then must attach an
   upper web to recharge. Obstacles, high-speed impacts, pull collisions, and a
   second rail contact remain lethal.
-- DEBUG → RUN accepts an exact typed distance and restarts there through the
-  existing no-awards Region Practice path on the same deterministic seed. It
-  also selects a session-only upgrade level or `OWNED`; Garage and Shop mark
-  overlay levels `NOT OWNED`, purchases remain real, and disabling the overlay
-  restores the exact saved levels. Both controls disappear when Debug Tools is
-  off.
+- With Debug Tools enabled, Home exposes a pre-run `DEBUG TEST RUN`: stage an
+  exact typed distance, use large `−`/`+` controls for distance and the
+  temporary all-track upgrade level, then start once through the existing
+  no-awards Region Practice path. `OWNED`/L0/L10/`MAX` remain shortcuts; Garage
+  and Shop mark overlays `NOT OWNED`, real purchases remain unchanged, and
+  normal Play clears the overlay. DEBUG → RUN retains the same live controls;
+  both surfaces disappear when Debug Tools is off.
 - A presentation view with camera follow, 228-pixel thumb targets,
   action flashes/haptics, pause/frame-step/slow-motion, and an eleven-section,
   touch-first DEBUG panel with direct values for Burst/Dive percentages and
@@ -237,11 +238,11 @@ Every push to `main` builds an installable debug APK.
 2. Click the most recent successful run.
 3. Download the **`spider-swing-android-debug`** artifact from the Artifacts
    section (kept 14 days).
-4. For build `0.19.0-depth-testing`, uninstall an older Spider Swing development
-   app one final time, unzip the artifact, and install
-   `spider-swing-debug.apk`. Do not uninstall afterward: every later artifact
-   uses the same stable debug identity and should update in place while
-   preserving saves.
+4. If the device has never installed build `0.19.0-depth-testing` or a later
+   stable-key build, uninstall the older Spider Swing development app one final
+   time. Then unzip the artifact and install `spider-swing-debug.apk`. Do not
+   uninstall afterward: every later artifact uses the same stable debug
+   identity and should update in place while preserving saves.
 
 Debug build only, signed by the conventional public key committed under
 `.github/android/`. The key and its credentials are public and must **NEVER** be
