@@ -4,13 +4,13 @@ extends SceneTree
 const MAIN_SCENE_PATH := "res://game/bootstrap/main.tscn"
 const EXPORT_PRESETS_PATH := "res://export_presets.cfg"
 const ANDROID_WORKFLOW_PATH := "res://.github/workflows/android-debug.yml"
-const BUILD_VERSION := "0.20.0-bramble-canopy"
-const ANDROID_VERSION_CODE := 37
-const ANDROID_APP_NAME := "Spider Swing Bramble Canopy (dev)"
+const BUILD_VERSION := "0.20.1-bramble-obstacles"
+const ANDROID_VERSION_CODE := 38
+const ANDROID_APP_NAME := "Spider Swing Bramble Obstacles (dev)"
 const DEBUG_KEYSTORE_PATH := "res://.github/android/debug.keystore"
 const DEBUG_KEYSTORE_SHA256 := \
 	"e9104672477e0238b6cc2f7d6b994c459e37f130cae06a37aff05001f101bbda"
-const EXPECTED_CHECK_COUNT := 122
+const EXPECTED_CHECK_COUNT := 123
 const REQUIRED_INPUT_ACTIONS := [
 	"web_action", "reel_in", "burst_action", "pause", "restart_run",
 	"toggle_debug"]

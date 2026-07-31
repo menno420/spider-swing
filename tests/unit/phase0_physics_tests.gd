@@ -54,6 +54,7 @@ static func run() -> Dictionary:
 	passed += _test_curated_pattern_catalog_is_banded_and_varied(failures)
 	passed += _test_course_regions_are_seeded_distinct_and_recoverable(
 		failures)
+	passed += _test_bramble_owns_distinct_obstacle_vocabulary(failures)
 	passed += _test_checkpoint_practice_starts_safe_and_is_non_record(
 		failures)
 	passed += _test_debug_start_awards_nothing_and_sets_no_record(failures)
@@ -1648,11 +1649,11 @@ static func _test_course_regions_are_seeded_distinct_and_recoverable(
 		failures.append(
 			"checkpoint entry or later-region recovery cadence is unsafe")
 		return 0
-	if not bramble_ids.has(&"canopy_high_low") or \
-			not bramble_ids.has(&"canopy_low_high") or \
+	if not bramble_ids.has(&"canopy_hook_high") or \
+			not bramble_ids.has(&"canopy_leaf_low") or \
 			not (
-				bramble_ids.has(&"canopy_thorn_high")
-					or bramble_ids.has(&"canopy_thorn_low")
+				bramble_ids.has(&"canopy_shutter_high_low")
+					or bramble_ids.has(&"canopy_shutter_low_high")
 			) or \
 			bramble_ids.has(&"rooted_gate"):
 		failures.append(
@@ -1697,6 +1698,138 @@ static func _test_course_regions_are_seeded_distinct_and_recoverable(
 						failures.append(
 							"seed %d guides region route into a hazard" % seed)
 						return 0
+	return 1
+
+
+static func _test_bramble_owns_distinct_obstacle_vocabulary(
+	failures: PackedStringArray,
+) -> int:
+	var inherited_ids := {}
+	for pool: Array in [
+		CoursePatternCatalog.CONTROL_PATTERNS,
+		CoursePatternCatalog.MASTERY_PATTERNS,
+		CoursePatternCatalog.DEEP_FOREST_PATTERNS,
+	]:
+		for pattern: Dictionary in pool:
+			inherited_ids[StringName(pattern["id"])] = true
+	var expected := {
+		&"canopy_hook_high": CourseObstacleCatalog.CANOPY_HOOK_VINE_RIGHT,
+		&"canopy_hook_low": CourseObstacleCatalog.CANOPY_HOOK_VINE_RIGHT,
+		&"canopy_leaf_high": CourseObstacleCatalog.CANOPY_LEAF_SHUTTER_RIGHT,
+		&"canopy_leaf_low": CourseObstacleCatalog.CANOPY_LEAF_SHUTTER_RIGHT,
+		&"canopy_hook_high_low": CourseObstacleCatalog.CANOPY_HOOK_VINE_LEFT,
+		&"canopy_hook_low_high": CourseObstacleCatalog.CANOPY_HOOK_VINE_LEFT,
+		&"canopy_shutter_high_low": CourseObstacleCatalog.CANOPY_LEAF_SHUTTER_LEFT,
+		&"canopy_shutter_low_high": CourseObstacleCatalog.CANOPY_LEAF_SHUTTER_LEFT,
+	}
+	for pattern: Dictionary in CoursePatternCatalog.BRAMBLE_CANOPY_PATTERNS:
+		var pattern_id := StringName(pattern["id"])
+		if inherited_ids.has(pattern_id) or not expected.has(pattern_id):
+			failures.append(
+				"Bramble still inherits an Ancient Forest obstacle id: %s" %
+					pattern_id)
+			return 0
+	if CoursePatternCatalog.BRAMBLE_CANOPY_PATTERNS.size() != expected.size():
+		failures.append("Bramble pattern pool and owned vocabulary drifted")
+		return 0
+
+	var found := {}
+	var route_radius := \
+		SwingConfig.from_preset(SwingConfig.PRESET_BALANCED).player_collision_radius \
+			+ 8.0
+	for seed in [0, 7, 77, 707]:
+		var stream := CourseStream.new()
+		stream.reset(
+			10000.0, 0.94, 0.90, 1.12, [], true, 1.0, 1.0,
+			20000.0, seed,
+		)
+		for chunk_index in range(52, 105):
+			var pattern_id := stream.pattern_id_for_chunk(chunk_index)
+			if not expected.has(pattern_id):
+				continue
+			found[pattern_id] = true
+			var chunk_start := float(chunk_index) * CourseStream.CHUNK_WIDTH
+			var chunk_end := chunk_start + CourseStream.CHUNK_WIDTH
+			var geometry := stream.update_for_position(chunk_start + 1.0)
+			var obstacles: Array[PackedVector2Array] = []
+			var kinds: Array[StringName] = []
+			for obstacle_index in range(geometry.obstacles.size()):
+				var obstacle := geometry.obstacles[obstacle_index]
+				var bounds := SolidGeometry.bounds(obstacle)
+				if bounds.get_center().x < chunk_start or \
+						bounds.get_center().x >= chunk_end:
+					continue
+				obstacles.append(obstacle)
+				kinds.append(geometry.obstacle_kind(obstacle_index))
+			var is_pair := pattern_id in [
+				&"canopy_hook_high_low",
+				&"canopy_hook_low_high",
+				&"canopy_shutter_high_low",
+				&"canopy_shutter_low_high",
+			]
+			if obstacles.size() != (2 if is_pair else 1):
+				failures.append("%s lost its distinct obstacle count" % pattern_id)
+				return 0
+			var hook_pair := pattern_id in [
+				&"canopy_hook_high_low",
+				&"canopy_hook_low_high",
+			]
+			var shutter_pair := pattern_id in [
+				&"canopy_shutter_high_low",
+				&"canopy_shutter_low_high",
+			]
+			if hook_pair and (
+				not kinds.has(CourseObstacleCatalog.CANOPY_HOOK_VINE_LEFT) or
+				not kinds.has(CourseObstacleCatalog.CANOPY_HOOK_VINE_RIGHT)
+			):
+				failures.append("%s lost its mirrored hook silhouettes" % pattern_id)
+				return 0
+			if shutter_pair and (
+				not kinds.has(CourseObstacleCatalog.CANOPY_LEAF_SHUTTER_LEFT) or
+				not kinds.has(CourseObstacleCatalog.CANOPY_LEAF_SHUTTER_RIGHT)
+			):
+				failures.append("%s lost its mirrored shutter silhouettes" % pattern_id)
+				return 0
+			for obstacle_index in range(obstacles.size()):
+				if not shutter_pair and not hook_pair and \
+						kinds[obstacle_index] != StringName(expected[pattern_id]):
+					failures.append("%s lost its explicit visual kind" % pattern_id)
+					return 0
+				var obstacle := obstacles[obstacle_index]
+				var bounds := SolidGeometry.bounds(obstacle)
+				if not SolidGeometry.circle_intersects_polygon(
+					Vector2(bounds.get_center().x, 398.0),
+					18.0,
+					obstacle,
+				):
+					failures.append(
+						"%s still permits a neutral-centre coast" % pattern_id)
+					return 0
+			var route_flies: Array[Vector2] = []
+			for fly: Vector2 in geometry.fly_positions:
+				if fly.x >= chunk_start and fly.x < chunk_end:
+					route_flies.append(fly)
+			for fly_index in range(route_flies.size() - 1):
+				for sample_index in range(11):
+					var sample := route_flies[fly_index].lerp(
+						route_flies[fly_index + 1],
+						float(sample_index) / 10.0,
+					)
+					for obstacle: PackedVector2Array in obstacles:
+						if SolidGeometry.circle_intersects_polygon(
+							sample,
+							route_radius,
+							obstacle,
+						):
+							failures.append(
+								"%s blocks its Garden-sized authored route" %
+									pattern_id)
+							return 0
+	if found.size() != expected.size():
+		failures.append(
+			"representative seeds do not expose every Bramble family: %s" %
+				[found.keys()])
+		return 0
 	return 1
 
 
@@ -1856,6 +1989,7 @@ static func _test_debug_start_matches_seeded_geometry_from_zero(
 			actual.boundary_surfaces != expected.boundary_surfaces or \
 			actual.aim_guides != expected.aim_guides or \
 			actual.obstacles != expected.obstacles or \
+			actual.obstacle_kinds != expected.obstacle_kinds or \
 			actual.fly_positions != expected.fly_positions or \
 			actual.boost_positions != expected.boost_positions:
 		failures.append(
@@ -1872,10 +2006,10 @@ static func _test_authored_weaves_and_small_silk_burrs_are_fair(
 	var pattern_ids := [
 		&"high_low_weave",
 		&"low_high_weave",
-		&"canopy_high_low",
-		&"canopy_low_high",
-		&"canopy_thorn_high",
-		&"canopy_thorn_low",
+		&"canopy_hook_high_low",
+		&"canopy_hook_low_high",
+		&"canopy_shutter_high_low",
+		&"canopy_shutter_low_high",
 		&"silk_burr_high",
 		&"silk_burr_low",
 	]
@@ -1919,10 +2053,12 @@ static func _test_authored_weaves_and_small_silk_burrs_are_fair(
 							"%s guides its fly route into collision" % pattern_id)
 						return 0
 			var is_weave := pattern_id in [
-			&"high_low_weave",
-			&"low_high_weave",
-			&"canopy_high_low",
-			&"canopy_low_high",
+				&"high_low_weave",
+				&"low_high_weave",
+				&"canopy_hook_high_low",
+				&"canopy_hook_low_high",
+				&"canopy_shutter_high_low",
+				&"canopy_shutter_low_high",
 		]
 			if is_weave:
 				if obstacles.size() != 2 or route_flies.size() != 7:
@@ -1943,9 +2079,10 @@ static func _test_authored_weaves_and_small_silk_burrs_are_fair(
 							pattern_id)
 					return 0
 				var high_to_low := pattern_id in [
-				&"high_low_weave",
-				&"canopy_high_low",
-			]
+					&"high_low_weave",
+					&"canopy_hook_high_low",
+					&"canopy_shutter_high_low",
+				]
 				var first_is_floor := \
 				first_bounds.end.y >= CourseStream.FLOOR_Y - 0.01
 				var second_is_floor := \
@@ -1956,8 +2093,10 @@ static func _test_authored_weaves_and_small_silk_burrs_are_fair(
 						"%s obstacles do not alternate rail height" % pattern_id)
 					return 0
 				var canopy_weave := pattern_id in [
-				&"canopy_high_low",
-				&"canopy_low_high",
+					&"canopy_hook_high_low",
+					&"canopy_hook_low_high",
+					&"canopy_shutter_high_low",
+					&"canopy_shutter_low_high",
 			]
 				if canopy_weave:
 					for obstacle: PackedVector2Array in obstacles:
@@ -2121,7 +2260,11 @@ static func _test_floor_grown_hazards_are_lethal_but_not_tappable(
 		Vector2(560.0, 140.0), Vector2(640.0, 140.0),
 		Vector2(640.0, 240.0), Vector2(560.0, 240.0),
 	])
-	geometry.append_obstacle(floor_grown, false)
+	geometry.append_obstacle(
+		floor_grown,
+		false,
+		CourseObstacleCatalog.CANOPY_LEAF_SHUTTER_RIGHT,
+	)
 	geometry.append_obstacle(ceiling_grown, true)
 	world.reset(config, geometry)
 
@@ -2144,8 +2287,12 @@ static func _test_floor_grown_hazards_are_lethal_but_not_tappable(
 		return 0
 	# The flag survives a geometry copy.
 	var copy := geometry.duplicate_geometry()
-	if copy.is_obstacle_anchorable(0) or not copy.is_obstacle_anchorable(1):
-		failures.append("anchor eligibility did not survive duplicate_geometry")
+	if copy.is_obstacle_anchorable(0) or \
+			not copy.is_obstacle_anchorable(1) or \
+			copy.obstacle_kind(0) != \
+				CourseObstacleCatalog.CANOPY_LEAF_SHUTTER_RIGHT:
+		failures.append(
+			"anchor eligibility or visual kind did not survive duplicate_geometry")
 		return 0
 	# Geometry built without the flag keeps the original behaviour.
 	var legacy := CourseGeometry.new()

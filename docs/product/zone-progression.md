@@ -2,8 +2,10 @@
 
 > **Status:** `owner-guidance`
 >
-> Owner-approved direction (2026-07-31). Zones 1–3 are **shipped and frozen**;
-> zones 4–8 are designed here and not yet built. This document is the source of
+> Owner-approved direction (2026-07-31). Zones 1–3 are **shipped** and their
+> stable ids/ranges are frozen for save compatibility; owner-rejected content
+> remains correctable. Zones 4–8 are designed here and not yet built. This
+> document is the source of
 > truth for zone identity, hazards and mechanics. Balance numbers live in
 > `SwingConfig` and the pattern catalog, never here.
 >
@@ -23,7 +25,7 @@ ends up feeling like a re-skin.
 | # | Zone | Range (m) | Axis it owns | State |
 |---|---|---|---|---|
 | 1 | Ancient Forest | 0–5 000 | Teaching — wide recovery rhythm | **shipped** |
-| 2 | Bramble Canopy | 5 000–10 000 | Vertical displacement | **shipped** |
+| 2 | Bramble Canopy | 5 000–10 000 | Vertical displacement | **shipped · device-corrected** |
 | 3 | Silk Hollow | 10 000–15 000 | Precision around suspended hazards | **shipped** |
 | 4 | Ruined Arboretum | 15 000–20 000 | **Timing** — the world moves | design |
 | 5 | Storm Ridge | 20 000–25 000 | **External force** — your arc is fought | design |
@@ -31,10 +33,13 @@ ends up feeling like a re-skin.
 | 7 | Ashen Hollow | 30 000–35 000 | **Trust** — anchors fail | design |
 | 8 | Deep Mist | 35 000+ | **Information** — you cannot see it coming | design |
 
-Zones 1–3 are frozen. Their ids (`ancient_forest`, `bramble_canopy`,
-`silk_hollow`) key persisted checkpoints, so renaming them breaks saves. Past
-15 000 m the catalog currently clamps to Silk Hollow forever; zones 4–8 are an
-append to `REGIONS`, not a restructure.
+Zones 1–3 have frozen ids and ranges. Their ids (`ancient_forest`,
+`bramble_canopy`, `silk_hollow`) key persisted checkpoints, so renaming them
+breaks saves. That is not permission to freeze content the owner has tested and
+rejected: Bramble's first visual pass kept the old obstacle roles under new art,
+so its normal pool now owns hook-vine and diagonal leaf-shutter families that
+Ancient Forest cannot select. Past 15 000 m the catalog currently clamps to
+Silk Hollow forever; zones 4–8 are an append to `REGIONS`, not a restructure.
 
 ## Constraints any zone must satisfy
 

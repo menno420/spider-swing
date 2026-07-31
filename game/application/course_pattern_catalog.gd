@@ -66,20 +66,19 @@ const DEEP_FOREST_PATTERNS := [
 	{"id": &"recovery_pair", "lane": &"high", "difficulty": 4},
 ]
 
-## Region two emphasizes fast vertical reading. It deliberately excludes the
-## broad centre gate so difficulty comes from changing height, not precision.
+## Region two emphasizes fast vertical reading through a vocabulary it owns.
+## None of these ids are inherited from Ancient Forest: the device-reviewed
+## material swap was not enough while the underlying obstacle roles remained
+## stumps, pods, curtains, and ordinary alternating rail growth.
 const BRAMBLE_CANOPY_PATTERNS := [
-	{"id": &"canopy_high_low", "lane": &"weave", "difficulty": 4},
-	{"id": &"canopy_low_high", "lane": &"weave", "difficulty": 4},
-	{"id": &"tall_vine", "lane": &"high", "difficulty": 4},
-	{"id": &"long_pod", "lane": &"low", "difficulty": 4},
-	{"id": &"vine_curtain", "lane": &"low", "difficulty": 4},
-	{"id": &"bramble_steps", "lane": &"high", "difficulty": 4},
-	{"id": &"alternating_thorns", "lane": &"centre", "difficulty": 4},
-	{"id": &"fallen_stump", "lane": &"high", "difficulty": 3},
-	{"id": &"ceiling_stump", "lane": &"low", "difficulty": 3},
-	{"id": &"canopy_thorn_high", "lane": &"high", "difficulty": 4},
-	{"id": &"canopy_thorn_low", "lane": &"low", "difficulty": 4},
+	{"id": &"canopy_hook_high", "lane": &"high", "difficulty": 4},
+	{"id": &"canopy_hook_low", "lane": &"low", "difficulty": 4},
+	{"id": &"canopy_leaf_high", "lane": &"high", "difficulty": 4},
+	{"id": &"canopy_leaf_low", "lane": &"low", "difficulty": 4},
+	{"id": &"canopy_hook_high_low", "lane": &"weave", "difficulty": 4},
+	{"id": &"canopy_hook_low_high", "lane": &"weave", "difficulty": 4},
+	{"id": &"canopy_shutter_high_low", "lane": &"weave", "difficulty": 4},
+	{"id": &"canopy_shutter_low_high", "lane": &"weave", "difficulty": 4},
 ]
 
 ## Region three emphasizes exact lines around suspended hazards and rail-grown
@@ -205,9 +204,9 @@ static func _base_pattern_for_chunk(
 			posmod(local_chunk, 4) == 2:
 		return {
 			"id": (
-				&"canopy_high_low"
+				&"canopy_shutter_high_low"
 					if posmod(local_chunk + course_seed, 2) == 0
-					else &"canopy_low_high"
+					else &"canopy_shutter_low_high"
 			),
 			"lane": &"weave",
 			"difficulty": 4,
