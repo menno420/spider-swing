@@ -19,6 +19,8 @@ const CANOPY_RAIL_TILE := &"canopy_rail_tile"
 const CANOPY_GROWTH_SOCKET := &"canopy_growth_socket"
 const CANOPY_BRAMBLE := &"canopy_bramble"
 const CANOPY_SEED_POD := &"canopy_seed_pod"
+const CANOPY_HOOK_VINE := &"canopy_hook_vine"
+const CANOPY_LEAF_SHUTTER := &"canopy_leaf_shutter"
 const CANOPY_BACKDROP_FAR := &"canopy_backdrop_far"
 const CANOPY_BACKDROP_MID := &"canopy_backdrop_mid"
 const CLASSIC_SPIDER := &"classic_spider"
@@ -55,6 +57,10 @@ const ASSETS := {
 		"res://assets/runtime/bramble-canopy/canopy-thorn-bramble.png",
 	CANOPY_SEED_POD:
 		"res://assets/runtime/bramble-canopy/canopy-seed-pod-vine.png",
+	CANOPY_HOOK_VINE:
+		"res://assets/runtime/bramble-canopy/canopy-hook-vine.png",
+	CANOPY_LEAF_SHUTTER:
+		"res://assets/runtime/bramble-canopy/canopy-leaf-shutter.png",
 	CANOPY_BACKDROP_FAR:
 		"res://assets/runtime/bramble-canopy/bramble-backdrop-far.webp",
 	CANOPY_BACKDROP_MID:

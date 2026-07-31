@@ -20,6 +20,12 @@ var obstacles: Array[PackedVector2Array] = []
 ## An index past the end reads as anchorable, so geometry assembled without
 ## calling `append_obstacle` keeps the original behaviour.
 var obstacle_anchorable: PackedByteArray = PackedByteArray()
+## Presentation-only semantic kind, parallel to `obstacles`.
+##
+## The kind never changes collision, lethality, or anchor eligibility. Legacy
+## geometry without a kind returns `UNSPECIFIED` and keeps the renderer's
+## conservative fallback.
+var obstacle_kinds: Array[StringName] = []
 var fly_positions: PackedVector2Array = PackedVector2Array()
 var boost_positions: PackedVector2Array = PackedVector2Array()
 var first_chunk_index: int = 0
@@ -32,17 +38,27 @@ var last_chunk_index: int = 0
 func append_obstacle(
 	polygon: PackedVector2Array,
 	anchorable: bool = true,
+	kind: StringName = CourseObstacleCatalog.UNSPECIFIED,
 ) -> void:
 	while obstacle_anchorable.size() < obstacles.size():
 		obstacle_anchorable.append(1)
+	while obstacle_kinds.size() < obstacles.size():
+		obstacle_kinds.append(CourseObstacleCatalog.UNSPECIFIED)
 	obstacles.append(polygon)
 	obstacle_anchorable.append(1 if anchorable else 0)
+	obstacle_kinds.append(kind)
 
 
 func is_obstacle_anchorable(index: int) -> bool:
 	if index < 0 or index >= obstacle_anchorable.size():
 		return true
 	return obstacle_anchorable[index] != 0
+
+
+func obstacle_kind(index: int) -> StringName:
+	if index < 0 or index >= obstacle_kinds.size():
+		return CourseObstacleCatalog.UNSPECIFIED
+	return obstacle_kinds[index]
 
 
 func duplicate_geometry() -> CourseGeometry:
@@ -55,6 +71,7 @@ func duplicate_geometry() -> CourseGeometry:
 	for obstacle: PackedVector2Array in obstacles:
 		copy.obstacles.append(obstacle.duplicate())
 	copy.obstacle_anchorable = obstacle_anchorable.duplicate()
+	copy.obstacle_kinds = obstacle_kinds.duplicate()
 	copy.fly_positions = fly_positions.duplicate()
 	copy.boost_positions = boost_positions.duplicate()
 	copy.first_chunk_index = first_chunk_index
