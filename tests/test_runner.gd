@@ -4,10 +4,13 @@ extends SceneTree
 const MAIN_SCENE_PATH := "res://game/bootstrap/main.tscn"
 const EXPORT_PRESETS_PATH := "res://export_presets.cfg"
 const ANDROID_WORKFLOW_PATH := "res://.github/workflows/android-debug.yml"
-const BUILD_VERSION := "0.18.0-buckler-test"
-const ANDROID_VERSION_CODE := 34
-const ANDROID_APP_NAME := "Spider Swing Buckler (dev)"
-const EXPECTED_CHECK_COUNT := 109
+const BUILD_VERSION := "0.19.0-depth-testing"
+const ANDROID_VERSION_CODE := 35
+const ANDROID_APP_NAME := "Spider Swing Depth Test (dev)"
+const DEBUG_KEYSTORE_PATH := "res://.github/android/debug.keystore"
+const DEBUG_KEYSTORE_SHA256 := \
+	"e9104672477e0238b6cc2f7d6b994c459e37f130cae06a37aff05001f101bbda"
+const EXPECTED_CHECK_COUNT := 116
 const REQUIRED_INPUT_ACTIONS := [
 	"web_action", "reel_in", "burst_action", "pause", "restart_run",
 	"toggle_debug"]
@@ -173,11 +176,26 @@ func _check_android_preset() -> void:
 				not workflow_text.contains(
 					"version/code=%d" % ANDROID_VERSION_CODE) or \
 				not workflow_text.contains(
-					"package/name=\"%s\"" % ANDROID_APP_NAME) or \
+					"APP_NAME: %s" % ANDROID_APP_NAME) or \
 				not workflow_text.contains(
-					"display_name=%s" % ANDROID_APP_NAME):
+					"package/name=\\\"${APP_NAME}\\\"") or \
+				not workflow_text.contains("display_name=${APP_NAME}"):
 			_fail("Android debug workflow build assertions drifted")
 			return
+		if not FileAccess.file_exists(DEBUG_KEYSTORE_PATH) or \
+				FileAccess.get_sha256(DEBUG_KEYSTORE_PATH) != \
+				DEBUG_KEYSTORE_SHA256:
+			_fail("stable Android debug keystore is missing or changed")
+			return
+		if workflow_text.contains("keytool -genkey") or \
+				workflow_text.contains("RUNNER_TEMP}/keystore") or \
+				workflow_text.contains("runner.temp }}/keystore") or \
+				not workflow_text.contains(
+					"DEBUG_KEYSTORE_PATH: .github/android/debug.keystore") or \
+				not workflow_text.contains("must NEVER be reused"):
+			_fail("Android workflow can regenerate or misuse its debug signing key")
+			return
+		_ok("Android debug signing is stable, public, and release-forbidden")
 		_ok("Android Debug preset is development-only and uniquely versioned")
 		return
 	_fail("Android Debug preset is missing")

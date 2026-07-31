@@ -8,786 +8,198 @@
 
 ## Stability baseline
 
-As of 2026-07-30, verified against the live surface. Known-good; do not re-audit
+As of 2026-07-31, verified against the live source. Known-good; do not re-audit
 without a reported regression.
 
-**Engine and project**
+**Engine, architecture, and application shell**
 
-- Godot **4.7.1** Standard (no .NET), GDScript only. Pinned by `.godot-version`;
-  `tools/verify.py` rejects a version mismatch and rejects a Mono build outright.
-- The project **imports and boots headlessly** with no parse errors or warnings,
-  and exits 0. Verified both locally and in CI.
+- Godot **4.7.1 Standard** (no .NET), GDScript only. `.godot-version` pins the
+  engine and `tools/verify.py` rejects the wrong version, Mono, parse failures,
+  fatal script diagnostics, or a missing engine when engine checks are required.
 - Compatibility renderer, landscape, 1280×720 reference viewport with
-  `canvas_items`/`expand` stretch, **60 Hz** fixed tick, 4 max catch-up steps.
-- The app opens on Home before gameplay. `FrontEndState` owns Home, Garage,
-  Shop, Tutorial, Course Lab, Region Practice, and Settings navigation; the
-  bootstrap composition root alone mounts or unmounts the front end and
-  simulation.
-- `SpiderUiTheme` now gives all front-end routes one Ancient-Forest-aligned
-  bark/moss/silk skin, including panels, buttons, focus/disabled states, and
-  silk-like scrollbars. Garage uses explicit three-card body and Silk rails plus
-  a live thread preview instead of native dropdowns. Shop adds a fly balance
-  badge, CORE/IDENTITY cards, and four visible milestone knots. Settings and
-  Shop retain one built-in Godot touch-drag owner, disable focus following, use
-  a 12-pixel drag deadzone, and take 64-pixel wheel/controller steps. Every
-  descendant button, label, panel, toggle, and container passes GUI gestures to
-  that owner, removing the device-observed dead regions without taking short
-  taps away from their original control. Shop explains that levels 5/10/15/20
-  apply the listed increase twice, marks the next milestone
-  `BREAKTHROUGH ×2`, and derives a maxed track's
-  four-breakthrough/24-step summary from the authoritative catalog.
-- `SpiderBiologyCatalog` holds one biological record per playable profile and
-  shares no key with `SpiderCatalog`: inspiration, claim strength (species,
-  composite, behaviour, or fictional), the observed real-world trait, an
-  explicit statement of what the game invents, a myth correction where one is
-  needed, and cited sources with an accepted-name authority and review date.
-  Only a species-level claim states a binomial, so Garden Spider and Anchorite
-  stay honest composites, Ballooner stays behaviour-level, and Buckler is
-  labelled an invented spider whose disclosure names itself as invented.
-  Invented profiles are first-class: the folio's "designing fictional
-  spiders" section sets the four rules — fiction is never the exciting tier, it
-  never borrows a real animal's name, it still says what it borrowed, and it
-  carries a correction for the misconception it creates. The Garage
-  detail card names the selected spider's inspiration and routes to a scrollable
-  FIELD GUIDE screen that keeps game identity, inspiration, real biology, and
-  game adaptation on separate lines. Nine contracts fail the build if a profile
-  loses its record or its disclosure, if a non-species record claims a binomial,
-  or if the two tables start sharing keys. `docs/product/spider-biology-folio.md`
-  carries the reasoning, art rules, editorial voice, and the parked candidate
-  backlog.
-- The six-step in-engine Tutorial teaches movement, forgiving solid targets,
-  release and momentum, speed-neutral rope-shortening Reel, percentage Burst,
-  one-shot downward Dive Pull, shaped obstacles/gaps, restart, Menu, and optional
-  diagnostics without a prerecorded binary asset.
-- `SaveRepository` exclusively owns versioned local settings and progression
-  writes. Swing options survive relaunch; idempotent run settlements persist
-  lifetime/spendable fly totals, best distance, selected profile/cosmetics,
-  profile upgrades, the creator pattern, reached region checkpoints, and
-  cosmetic milestone unlocks.
-- Six input actions are consumed through `InputRouter`: `web_action`, `reel_in`,
-  `burst_action`, `pause`, `restart_run`, and `toggle_debug`. Large left-thumb
-  Reel, right-thumb Burst, DEBUG, Menu, and debug-panel hit regions are real Godot
-  GUI controls that stop pointer events. Reel and Burst now share symmetric
-  228×228 reference-pixel hit regions from `LabLayout`, so their drawn controls,
-  actual buttons, and tests cannot drift apart.
-  World attach/release runs in `_unhandled_input` only after GUI handling.
-  Render-time events are buffered into commands; simulation never polls input.
-- The playable traversal lab has deterministic forward drive, the owner-tested
-  1120 gravity candidate, polygonal solid targeting with a 1000-pixel web range and 220-pixel
-  aim-forgiveness band, manual release, an 8% gentle attach catch, three named
-  presets, camera/world boundaries, and a bounded deterministic seven-chunk
-  geometry window that continues past 10,000 m.
-- Validated challenge chunks now use a reproducible course seed. Seed variation
-  changes curated pattern order only; it never places individual hazards or
-  mutates geometry randomly. The final two resolved chunks cannot repeat,
-  authored recovery pockets bound hard-pattern streaks, and the active course
-  seed/region/pattern are exposed to diagnostics and the headless simulator.
-- The endless course changes identity every 5000 m. Ancient Forest teaches mixed
-  fundamentals; Bramble Canopy emphasizes rapid high↔low decisions and a
-  regular weave cue; Silk Hollow emphasizes suspended seed burrs and precise
-  rail openings. Each checkpoint begins with an open guided-web chunk at the
-  correct distance-dependent pace. Subtle green hanging silk/motes and cool
-  hollow webs/dew distinguish later regions without changing collision or
-  targeting, and reduced motion freezes their decorative movement.
-- Reaching 5000 m or 10000 m in a standard run persists that checkpoint. Region
-  Practice starts there with the same physics and upgrades but an authoritative
-  non-competitive settlement: no flies, no best-distance updates, no later
-  checkpoint unlocks, and no future leaderboard eligibility. Schema 5 migrates
-  already-reached checkpoints once from schema-4 standard best distance.
-- A run begins on a real ceiling web through the ordinary constraint and follows
-  a deterministic safe first-second trajectory. It never locks input: any valid
-  early command can replace or release the opening web immediately.
-- One configurable rescue charge recovers the first lethal contact to a
-  collision-checked position with a 0.9-second obstacle shield. The charge is
-  visible in the HUD; the next lethal contact follows the ordinary death and
-  idempotent settlement path.
-- Reel shortens the authoritative rope length (320 px/s in Balanced) and spends
-  energy without adding a separate inward acceleration, minimum-speed
-  correction, or forward boost. The level-zero meter lasts 2.0 seconds and
-  provides about 640 px total shortening; maxed Garden Silk Winder reaches
-  416 px/s inside the owner-tested 400–450 px/s response band. Maxed Silk
-  Reserve extends that rate to 2.48 seconds. Natural take-up shortens the
-  web by 85% of each inward movement
-  by default, also without adding velocity. Balanced Flow raises that share to
-  91% at maximum level, leaving less slack and a shorter web. Anchor Burst
-  crosses 40% of the resolved starting
-  distance with 80 px minimum travel over 0.20 seconds. A lower target becomes
-  a one-shot 40% Dive Pull over 0.16 seconds
-  and never leaves a rope. Both paths retain bounded tangential carry, use fixed
-  exit speeds, and sweep against lethal polygon geometry. Burst availability is
-  a charge pool on one serial cooldown: capacity one at level zero (identical
-  cadence to the former bare cooldown), two from Anchor Drive level 10, where a
-  successful Burst alone spends a charge, the running refill never resets, and
-  the Burst button shows reserve pips only when capacity exceeds one. Dive
-  instead rearms only after a successful upper/obstacle web attachment.
-- Double-tap carries a target in the authoritative command, so Burst works
-  atomically even when the first tap has not attached yet. Ceiling pieces,
-  hanging/floor branches, obstacles, and rail-grown root passages all resolve through one
-  solid-edge targeting policy.
-- Burst and Dive Pull are interruptible transitions rather than input locks. A
-  valid upper-solid tap attaches a recovery web immediately, and a platform
-  double-tap made while pulling—or while detached during cooldown—falls back to
-  that web intent. Burst cooldown never gates normal webs or a ready Dive Pull.
-- Accepted Reel, Burst, and Dive Pull actions emit authoritative events.
-  Presentation renders short directional flashes and the input adapter supplies
-  distinct handheld haptics; unavailable actions do not fake success feedback.
-- The stream keeps a 1000 m learning runway free of large middle-lane challenges
-  and, independently, forbids inward rail movement before 2000 m by default.
-  It then combines continuous shaped ceiling/floor rails, leaf clusters, vine
-  forks, hanging seed pods, and broad rail-grown root passages. Rails are lethal by default;
-  one explicit route plan coordinates each challenge's rails and fly trail.
-  Most patterns open a high, low, or centre bypass; occasional later inward
-  passages are rail-only rather than stacked with a floating obstacle. After
-  2000 m, two authored weave chunks alternate shorter floor/ceiling growth with
-  420 px between cues, a separately tested central transition band, and a
-  validated high→low or low→high Classic-sized route. Two more patterns add a
-  compact, roughly 95×80-pixel silk-suspended seed burr and advertise a clear
-  route above or below it. Small post-runway growth now rises gradually from 8%
-  to at most 16%; the safe opening and root-passage opening do not shrink.
-  Sparse Burst Frenzy
-  pickups temporarily suppress cooldown. This remains prototype
-  instrumentation, not an authored or approved Phase 1 chunk pack.
-- The default authoritative polygon scales are 94% for rail-grown obstacles and
-  90% for detached floating hazards, with 112% gate openings. All three are
-  independently tunable and feed the same polygons to collision and rendering.
-- `SpiderCatalog` defines five comparison profiles over one `SwingConfig`:
-  balanced Garden Spider, smaller/faster Magnolia Green Jumper, heavier Anchorite, and
-  bounded-glide Ballooner, plus Buckler's one-charge moderate rail bounce.
-  Each exposes an explicit trade-off, the same five core fly-funded tracks, and
-  two identity tracks. Every track has 20 small levels; levels 5/10/15/20 grant
-  one extra deterministic tuning step. Schema 5 retains the proportional
-  former-five-level migration and adds explicit reached checkpoints. Every
-  runtime configuration now
-  resolves once from a fresh named preset before applying profile and upgrade
-  modifiers, so repeated mount/preset paths cannot compound Reel capacity,
-  recovery, or lockout. All spiders remain unlocked during Phase 0 so
-  progression cannot hide a feel candidate.
-- Garage owns profile, palette, and web-treatment selection; Shop spends
-  collected flies through `ProgressionService`; Course Lab saves six
-  EMPTY/LEAF/POD/VINE/GATE slots and substitutes the post-opening course during
-  its playtest. These are local foundations, not production economy or UGC.
-- The touch-first debug panel groups controls into Movement, Pacing, Rope,
-  Pulls, Course, Routes, Run, Look, Overlays, and Tools. Large cards use plain names, short
-  descriptions, direct
-  comparison values, and `−` / `+` controls for gravity, forward drive,
-  500–1400 px range, default RELEASE vs optional atomic RETARGET tap behavior,
-  aim forgiveness, attach catch, Reel shortening speed, full-meter Reel time,
-  automatic take-up and
-  retained percentage, Burst cooldown, Burst/Dive percentages and durations,
-  rope damping, rail presence/lethality, edge/floating/gate geometry sizes,
-  starting/maximum speed and exact full-speed distance, shaped-route clearance,
-  the inward-rail start distance and tight-gap size, guided opening, one-run rescue, Buckler impact
-  response, the middle-hazard start, and boost duration.
-- Settings is a readable vertical scroll surface with larger type and 58–68-pixel
-  controls, verified by runtime contracts and designed around the owner's
-  recorded 1040×480 viewport.
-- `EnvironmentThemeCatalog` defines Graybox plus four original generated
-  384×384 material packs: Ancient Forest (default), Mossy Ravine, Overgrown
-  Greenhouse, and Reclaimed Attic. `SwingLabView` maps them in world space over
-  the exact snapshot polygons; theme selection cannot change course geometry,
-  collision, targeting, pace, or lethality.
-- `ArtAssetCatalog` adds one cohesive Ancient Forest candidate-production
-  grammar over that same geometry: a world-continuous mossy branch rail, rooted
-  brambles, top-anchored thorn vines, broken root stumps, natural upper/lower
-  growth around broad rail passages, three low-contrast forest depth layers, a
-  finished five-profile spider roster, and golden forest flies. Garden is dark
-  and orange-banded; Magnolia Green Jumper is slender translucent olive; Anchorite is broad
-  charcoal-and-bronze; Ballooner is pale and tiptoe-raised; Buckler is
-  compact glossy amber. Finished
-  obstacle alpha replaces the prototype filled polygon in normal play.
-  Wall-grown art overlaps a root-and-moss growth socket behind the rail. Broad
-  shapes use aspect-preserving cover crops; tall narrow growth uses the complete
-  vertical vine silhouette with conservative horizontal overscan. This
-  eliminates transparent joins, missing wood at profile changes, stretched gate
-  halves, and the rectangularly sliced weave art seen on the owner's phone.
-  Missing assets fall back to textured geometry rather than creating invisible
-  collision. Collision outlines and web-target guides both load off and can be
-  enabled independently under DEBUG → OVERLAYS. The custom-drawn spider and
-  attached web interpolate between consecutive fixed snapshots using Godot's
-  render interpolation fraction; teleports snap, reduced motion disables the
-  restrained action poses, and mipmaps improve the heavily downscaled spider
-  and fly without touching physics. All five profiles share one right-facing
-  384×181 RGBA contract, mipmapped finished-sprite path, and radius-scaled
-  renderer; Garage and Shop reuse the same asset lookup and cosmetic tint in an
-  aspect-preserving preview. Their 4-near + 2-far-front visible-leg convention
-  preserves clear 2D depth while every authoritative profile radius remains
-  unchanged.
-- No autoload singletons exist, and a test fails if one appears.
+  `canvas_items`/`expand` stretch, 60 Hz fixed simulation, and four maximum
+  catch-up steps. No gameplay autoload singleton exists.
+- The app opens on Home. `FrontEndState` owns Home, Garage, Shop, Tutorial,
+  Course Lab, Region Practice, Field Guide, and Settings. The bootstrap root
+  alone wires and mounts presentation, input, persistence, progression, and the
+  application session.
+- Layering is enforced in both directions: domain imports no Godot-facing layer;
+  simulation imports domain; application imports inward; adapters and
+  presentation are outer peers; presentation never mutates simulation state.
+
+**Persistence and Android test delivery**
+
+- `SaveRepository` is the only persistent writer. Versioned settings and
+  schema-5 progression include fly balances, best distance, selected profile
+  and cosmetics, upgrade ownership, creator pattern, reached checkpoints, and
+  bounded idempotent-settlement history. Schema 5 infers already-reached region
+  checkpoints from a schema-4 standard best once; pre-20-level saves migrate
+  proportionally once.
+- Build `0.19.0-depth-testing` (Android version code 35, package
+  `com.menno420.spiderswing.dev`) replaces Actions' per-run signing key with the
+  stable conventional public debug identity in `.github/android/debug.keystore`.
+  The workflow pins its file and certificate digests and fails if key generation
+  returns. The key exists only so consecutive laboratory APKs update in place
+  and preserve app data.
+- The **next** installation still requires one final uninstall because every
+  older artifact used an unrelated throwaway signer. Every installation after
+  that stable-key build can update in place and preserve saves.
+- The committed key and its `androiddebugkey` / `android` / `android`
+  credentials are public. It must **NEVER** be reused for Google Play, a release
+  build, production signing, or any signed distribution. Release signing remains
+  absent and the workflow never publishes.
+
+**Traversal and deterministic course**
+
+- One `SwingConfig` drives all traversal. The current Balanced candidate uses
+  1120 gravity, 1000 px web reach, a gentle 8% attach catch, speed-neutral Reel
+  shortening at 320 px/s with a two-second level-zero meter, 85% automatic
+  inward slack take-up, a 40% Anchor Burst with 80 px minimum travel, and a
+  separate one-shot 40% Dive Pull. Accepted actions publish authoritative
+  feedback events; unavailable actions never fake success.
+- Input is buffered into commands and simulation never polls it. Native 228×228
+  Reel/Burst buttons and all laboratory controls consume GUI input before world
+  taps. Touchscreen presses and Godot's emulated mouse copy resolve to one
+  gameplay intent. Percentage pulls remain interruptible by an ordinary upper
+  web, and Dive rearms only through a successful upper attachment.
+- Each run begins on an ordinary, immediately interruptible guided web. One
+  visible rescue can recover the first lethal contact; the second follows the
+  normal idempotent settlement path.
+- `CourseStream` keeps a bounded seven-chunk window and derives every polygon,
+  guide, fly, and boost from chunk index plus course seed. Curated pattern order
+  varies by seed; geometry does not depend on the route taken to reach a chunk.
+  A 1000 m middle-hazard runway and independent 2000 m no-inward-rail period
+  protect onboarding before deterministic contoured routes, root passages,
+  weaves, and small silk burrs appear.
+- Endless-course identity changes every 5000 m: Ancient Forest, Bramble Canopy,
+  then Silk Hollow. Reaching 5000 m or 10000 m in a standard run persists that
+  checkpoint. Region Practice begins at the checkpoint's safe opening and is
+  authoritatively noncompetitive: no flies, best distance, later checkpoint,
+  record, or future leaderboard eligibility.
+
+**Depth-testing access**
+
+- DEBUG → RUN now accepts a typed metre value (plus direct comparison values and
+  `−`/`+`) and restarts at that exact distance. It reuses
+  `SwingLabSession.RUN_PRACTICE`, preserves the active deterministic seed, and
+  therefore inherits the complete no-awards/no-records policy. A contract
+  compares an off-grid debug start against the same seed streamed sequentially
+  from zero and requires exact geometry equality.
+- DEBUG → RUN also selects an upgrade test level from 0–20 or `OWNED`.
+  `ProgressionService` owns this as a session-only resolution overlay; the
+  purchase cost check and real `PlayerProgress` remain unchanged. Turning the
+  overlay off restores the exact saved level dictionary. Garage and Shop label
+  displayed overlay levels `NOT OWNED`, Shop pauses purchases, and an overlay
+  run is noncompetitive.
+- Both depth controls are unreachable when `show_debug_tools` is off. Their HUD
+  status says `DEBUG START … · AWARDS NOTHING` or
+  `DEBUG UPGRADES … · AWARDS NOTHING`; they never enter normal production flow.
+- The touch laboratory now groups Movement, Pacing, Rope, Pulls, Course, Routes,
+  Run, Special, Look, Overlays, and Tools. A headless 1280×720 `SubViewport`
+  measurement proves every new RUN/SPECIAL card, the typed distance entry, and
+  every category tab remain inside the panel; the native inputs disappear when
+  DEBUG is disabled.
+
+**Profiles, progression, and presentation**
+
+- `SpiderCatalog` defines five unlocked Phase-0 comparison profiles over the
+  same config: Garden Spider, Magnolia Green Jumper, Anchorite, Ballooner, and
+  Buckler. Each has five shared CORE tracks and two IDENTITY tracks, 20 small
+  levels, and deterministic extra steps at levels 5/10/15/20. Level-zero paths
+  remain the baseline and repeated configuration cannot compound modifiers.
+- Garage owns profile, palette, and Silk selection. Shop spends collected flies
+  only through `ProgressionService`. Course Lab persists six local pattern slots.
+  These are local test foundations, not claims of production economy, billing,
+  or user-generated-content infrastructure.
+- `SpiderBiologyCatalog` is separate from balance data. The discoverable Field
+  Guide distinguishes game identity, inspiration, real biology, invented
+  adaptation, myth correction, and cited sources. A real readable spider name
+  wins; an invented name must list every real spider it draws from and what each
+  contributes.
+- One shared Ancient-Forest-aligned UI theme covers the front end. Settings and
+  Shop use a single native vertical scroller whose descendants pass drag input.
+  The finished five-spider roster, flies, continuous branch rails, natural
+  obstacle art, and three forest depth layers are presentation-owned over the
+  same authoritative polygons. Missing art falls back to geometry; mipmapped
+  spider/web rendering interpolates fixed snapshots and snaps teleports.
+- Graybox plus four environment looks remain visual-only. Collision outlines and
+  target guides load off and can be enabled independently under DEBUG →
+  OVERLAYS. Reduced motion freezes decorative movement and restrained poses.
 
 **Verification**
 
-- PR #48 `game-quality` run
-  [30575710624](https://github.com/menno420/spider-swing/actions/runs/30575710624)
-  passes clean import, front-end boot, and all 97 contracts on Godot
-  `4.7.1.stable.official.a13da4feb` at exact seeded-region implementation
-  source `a2124776f6d494d6872eb1c59524202114d78769`. Its contracts cover seeded
-  determinism and variation, region pools, recovery spacing, route envelopes,
-  checkpoint migration, safe late starts, noncompetitive settlement, practice
-  UI, and presentation ownership. Android run
-  [30575710564](https://github.com/menno420/spider-swing/actions/runs/30575710564)
-  produced verified
-  [artifact 8772613930](https://github.com/menno420/spider-swing/actions/runs/30575710564/artifacts/8772613930),
-  build `0.15.0-seeded-regions-test`.
-- PR #44 `game-quality` run
-  [30566614922](https://github.com/menno420/spider-swing/actions/runs/30566614922)
-  passes clean import, front-end boot, and all 91 contracts on Godot
-  `4.7.1.stable.official.a13da4feb` at exact implementation source
-  `9f82310e52d5925a92d2b4e6d8d78c1ddfa2ed09`. Its presentation contract
-  proves Anchorite routes through the finished renderer with a mipmapped
-  384×181 texture, transparent corners, and the unchanged authoritative
-  profile scale. Android run
-  [30566616021](https://github.com/menno420/spider-swing/actions/runs/30566616021)
-  produced verified
-  [artifact 8769099561](https://github.com/menno420/spider-swing/actions/runs/30566616021/artifacts/8769099561),
-  build `0.13.0-anchorite-art-test`.
-- PR #40 `game-quality` run
-  [30559186244](https://github.com/menno420/spider-swing/actions/runs/30559186244)
-  passes clean import, front-end boot, and all 91 contracts on Godot
-  `4.7.1.stable.official.a13da4feb` at source
-  `dcd3cee27fad6bb59cca0b03a5b132a09fad9fea`. Its Reel contract proves the
-  2.0-second/640 px level-zero candidate, named-preset ordering, and max Garden
-  Silk Winder's 416 px/s result inside the owner-tested 400–450 px/s band.
-  Android run
-  [30559186273](https://github.com/menno420/spider-swing/actions/runs/30559186273)
-  produced verified
-  [artifact 8766128692](https://github.com/menno420/spider-swing/actions/runs/30559186273/artifacts/8766128692),
-  build `0.12.1-reel-speed-correction-test`.
-- PR #38 `game-quality` run
-  [30552161868](https://github.com/menno420/spider-swing/actions/runs/30552161868)
-  passes clean import, front-end boot, and all 91 contracts on Godot
-  `4.7.1.stable.official.a13da4feb` at source
-  `d3c14c95f84aa8a749a5a4694ba4fabd3bdbe389`. Its physics contract proves the
-  2.0-second/520 px base budget, the bounded max-shared-upgrade budget, and
-  idempotent progress resolution. Android run
-  [30552165170](https://github.com/menno420/spider-swing/actions/runs/30552165170)
-  produced verified
-  [artifact 8763246890](https://github.com/menno420/spider-swing/actions/runs/30552165170/artifacts/8763246890),
-  build `0.12.0-reel-resource-test`.
-- PR #36 `game-quality` run
-  [30535470384](https://github.com/menno420/spider-swing/actions/runs/30535470384)
-  passes clean import, front-end boot, and all 90 contracts on Godot
-  `4.7.1.stable.official.a13da4feb` at source
-  `3cef05470cfa10bf4a4e339c226ac099554aea58`. Its front-end contract proves
-  level 4 presents the next purchase as `BREAKTHROUGH ×2` and two tuning steps,
-  while a maxed card derives four breakthroughs and 24 total steps. Android run
-  [30535470355](https://github.com/menno420/spider-swing/actions/runs/30535470355)
-  produced verified
-  [artifact 8756471132](https://github.com/menno420/spider-swing/actions/runs/30535470355/artifacts/8756471132),
-  build `0.11.3-upgrade-breakthrough-copy-test`.
-- PR #34 `game-quality` run
-  [30533495192](https://github.com/menno420/spider-swing/actions/runs/30533495192)
-  passes clean import, front-end boot, and all 89 contracts on Godot
-  `4.7.1.stable.official.a13da4feb` at source
-  `748aa12a54430cedf38ca2a3dee555610328f69a`. Its new deterministic contract
-  proves maxed Balanced Flow raises automatic take-up from 85% to 91% and
-  leaves a shorter web for identical inward movement. Android run
-  [30533495206](https://github.com/menno420/spider-swing/actions/runs/30533495206)
-  produced verified
-  [artifact 8755663459](https://github.com/menno420/spider-swing/actions/runs/30533495206/artifacts/8755663459),
-  build `0.11.2-balanced-flow-copy-test`.
-- PR #32 `game-quality` run
-  [30531249630](https://github.com/menno420/spider-swing/actions/runs/30531249630)
-  passes architecture fixtures/scan, clean import, front-end boot, and all 88
-  contracts on Godot `4.7.1.stable.official.a13da4feb` at source
-  `e4788245d7618238404e5058023dcde8433e265a`. Android run
-  [30531250200](https://github.com/menno420/spider-swing/actions/runs/30531250200)
-  produced verified `spider-swing-android-debug` artifact
-  [8754781683](https://github.com/menno420/spider-swing/actions/runs/30531250200/artifacts/8754781683),
-  build `0.11.1-mobile-route-polish-test`.
-- The previous progression baseline remains PR #28. Its `game-quality` run
-  [30489461720](https://github.com/menno420/spider-swing/actions/runs/30489461720)
-  passed 86 contracts at source
-  `c8d093109860d4a0716aa2e3ddd7b6d163c82a70`.
-- The last merged baseline is PR #27. Its final `game-quality` run
-  [30485134026](https://github.com/menno420/spider-swing/actions/runs/30485134026)
-  passes the complete 82-check suite on Godot 4.7.1 at source
-  `06a4c65aeb87b4d47a54423f9cd56ce87dcaaba5`.
-- `tests/test_runner.gd` — 97 declared checks: forty-nine
-  deterministic physics, twenty-two GUI-owned mobile HUD, sixteen front-end
-  navigation/settings/progression, plus bootstrap and exact build-version
-  contracts. Physics covers exact 40%/40% pull shares, the unchanged
-  level-zero Burst cadence and the level-10 serial reserve Burst,
-  detached targeted Burst, recovery-web interruption, double-tap fallback,
-  release/retarget modes, speed-neutral Reel shortening, solid polygon
-  targeting/collision, take-up, rail toggles, swept pickups, tuning controls, and
-  paced bounded streaming, scaled authoritative geometry, guided opening,
-  rescue, spider profiles/glide, the shared seven-track/20-level structure,
-  breakthrough steps, level-zero preservation, creator-pattern bounds, a 5000 m pacing curve,
-  continuous contoured rails, seeded 5000 m region catalogs with fixed recovery
-  cadence and non-record checkpoint starts, a deterministic distance-banded pattern catalog,
-  full Classic-sized high↔low weave envelopes, bounded silk-burr geometry,
-  upgradeable minimum Burst travel, and bounded Buckler impacts. A three-lane
-  route sweep proves a Classic-sized spider
-  clears both rail-grown roots across the passage's full width at every
-  supported Creator opening; the mobile group proves both overlays begin off
-  and toggle independently, and that finished forest obstacles omit the legacy
-  backing fill, overlap behind continuous rails, never stretch the retired
-  circular gate halves, and register all six living-forest depth/attachment
-  assets, custom presentation interpolation, moving-art mipmaps, and
-  reduced-motion-safe action poses. The front-end group performs real filesystem
-  settings and progression round-trips plus settlement idempotency,
-  proportional one-time upgrade migration, one shared forest-web skin,
-  non-snapping touch scroll, custom body/Silk rails, a mobile-scrollable
-  seven-track Shop, explicit two-step breakthrough copy with a derived max
-  summary, profile upgrades, creator edits, checkpoint migration, and locked
-  practice routes. The trajectory
-  fixture produces the same final state when driven through simulated 30, 60,
-  90, and 120 Hz render loops.
-- `tools/check_architecture.py` — 14 fixtures, all passing, asserting both
-  directions of the inward rule.
+- Local source passes `python3 tools/verify.py` with the exact
+  `4.7.1.stable.official.a13da4feb` Standard binary: clean import, front-end boot,
+  architecture scan, and **116/116** contracts. The declared suite contains 51
+  deterministic physics checks, 11 spider-biology checks, 23 mobile GUI/layout
+  checks, 20 front-end/settings/progression checks, and 11 bootstrap/build
+  contracts.
+- New contracts prove stable signing cannot silently return to per-run key
+  generation; debug starts grant no rewards or records and cannot unlock
+  checkpoints; off-grid seeded geometry equals traversal from zero; overlay
+  levels never serialize; disabling the overlay restores exact owned levels;
+  Garage/Shop disclose ownership; overlay play is noncompetitive; and the new
+  controls fit and gate correctly at 1280×720.
+- `tools/check_architecture.py` passes all 14 self-test fixtures and the live
+  source scan. `python3 bootstrap.py check --strict` passes all content checks;
+  during implementation its only hold is the session card's deliberate
+  born-red `in-progress` badge.
+- `game-quality` runs the same engine-backed verification on a clean runner.
+  `substrate-gate` deliberately remains red until the session card flips
+  complete. `android-debug` exports and uploads the development APK but is not a
+  required merge check because Android SDK downloads are an external dependency.
 
-**CI**
+**Deliberately absent — scope boundaries, not gaps**
 
-- `game-quality` — **green.** Runs `tools/verify.py` on a clean runner with Godot
-  4.7.1 and uses no secrets. PR #13 run
-  [30389822532](https://github.com/menno420/spider-swing/actions/runs/30389822532)
-  passed all 46 runtime contracts at source
-  `357b885290e8ad692b8ef04c1dcfaf7892cfb03e`, including exact percentage pulls,
-  speed-neutral Reel, solid polygon targeting/collision, shaped streaming,
-  touch geometry, feedback, and Android workflow identity guards.
-- PR #14 and merged-main `game-quality` run
-  [30394635476](https://github.com/menno420/spider-swing/actions/runs/30394635476)
-  passed all 50 contracts at merged source
-  `5dcbd3410eff573f24add454819cdbd33248e5d5`, including pull interruption,
-  double-tap recovery fallback, tap-mode tuning, and lower anchor coverage.
-- PR #15 `game-quality` run
-  [30396476300](https://github.com/menno420/spider-swing/actions/runs/30396476300)
-  passes 53 contracts at source
-  `4ecc2968c2404edca9c8c4125c48d44eff02a554`. The added device-equivalent
-  regression sends one raw touchscreen event followed by its emulated mouse copy
-  and proves that exactly one command survives, Burst is interrupted, and the
-  recovery web remains attached.
-- PR #16 `game-quality` run
-  [30402293219](https://github.com/menno420/spider-swing/actions/runs/30402293219)
-  passes all 59 contracts at source
-  `9050ea46d9894f6bb8198a6ee5a454e04e39f62a`. The added contracts cover
-  speed-neutral natural take-up, independent rail presence/lethality, the 1000 m
-  middle-hazard runway, organic pattern streaming, swept flies, Burst Frenzy,
-  idempotent persistent cosmetic milestones, all new debug controls, and exact
-  Android build metadata.
-- PR #18 `game-quality` run
-  [30422862144](https://github.com/menno420/spider-swing/actions/runs/30422862144)
-  passes all 70 contracts at source
-  `e43500546b896972c96ee833e0967094d4edd982`. The added contracts prove the
-  guided first-second web remains interruptible, authoritative obstacle
-  scaling, one rescue then normal death, centralized spider profiles and glide,
-  saved bounded creator patterns, fly-funded upgrades, and real Garage/Shop/
-  Course Lab navigation.
-- PR #19 `game-quality` run
-  [30444418170](https://github.com/menno420/spider-swing/actions/runs/30444418170)
-  passes all 74 contracts at gameplay source
-  `bc582e25a2a2fd7d6da18ed2cf127cc568b834ca`. The added contracts prove the
-  exact 5000 m pace curve, continuous open/tight rail profiles, upgradable
-  minimum Burst travel, three five-level paths for all five spiders, and
-  Buckler's spent/rearmed moderate-impact shell while retaining lethal
-  obstacles, hard impacts, and pull collisions.
-- PR #20 `game-quality` run
-  [30447006504](https://github.com/menno420/spider-swing/actions/runs/30447006504)
-  passes all 75 runtime contracts on Godot 4.7.1 at gameplay source
-  `b700c61eaa1c427005b1e957cb708dc58e56390f`. The new deterministic contract
-  proves that no generated rail moves inward before 2000 m, route flies clear
-  the authoritative obstacle polygons, and a later inward passage contains no
-  floating blocker.
-- PR #21 `game-quality` run
-  [30451065223](https://github.com/menno420/spider-swing/actions/runs/30451065223)
-  passes all 76 runtime contracts on Godot 4.7.1 at gameplay source
-  `402997b6362e46c9002aa6001c7b3f9f28cbb16a`. The new GUI-owned contract
-  loads all four 384×384 environment tiles, drives each large LOOK card, and
-  proves that theme selection cannot mutate the authoritative course geometry.
-- PR #23 `game-quality` run
-  [30463832533](https://github.com/menno420/spider-swing/actions/runs/30463832533)
-  passes all 77 runtime contracts on Godot 4.7.1 at source
-  `5e11740ccd249b5754114443316fa64207490de5`. The added deterministic contract
-  sweeps the complete fly-advertised route through the split root gate at 80%,
-  112%, and 140% openings. The host verifier also rejects fatal Godot script
-  diagnostics even when the engine process exits 0.
-- PR #24 `game-quality` run
-  [30468085710](https://github.com/menno420/spider-swing/actions/runs/30468085710)
-  passes all 78 runtime contracts on Godot 4.7.1 at source
-  `5029e2c501b01e48c12e88a2ba266212014c0ef9`. The strengthened route contract
-  sweeps three useful steering lanes across the entire rail-grown root passage,
-  while the expanded mobile contract proves collision outlines and unattached
-  web guides both start hidden and toggle independently.
-- PR #25 `game-quality` run
-  [30474513238](https://github.com/menno420/spider-swing/actions/runs/30474513238)
-  passes all 79 runtime contracts on Godot 4.7.1 at source
-  `e01113d1a8d8f919125fd1630a42dad421589007`. The added presentation contract
-  proves finished Ancient Forest obstacles request no geometry backing and the
-  legacy dark-shadow draw path is absent.
-- PR #30 `game-quality` run
-  [30520782041](https://github.com/menno420/spider-swing/actions/runs/30520782041)
-  passes all 88 contracts on Godot 4.7.1 at source
-  `e8faca0762bd7184115a913cf9dc5e9cbb90b29e`. Android run
-  [30520782029](https://github.com/menno420/spider-swing/actions/runs/30520782029)
-  produced artifact
-  [`8750656978`](https://github.com/menno420/spider-swing/actions/runs/30520782029/artifacts/8750656978),
-  61,387,799 bytes with digest
-  `sha256:f0845b3e6fa8391adc068aeff37719076518fb17180ef2279cc92d933de90c6c`.
-  The downloaded ZIP matched that digest and passed archive validation. Its
-  61,791,366-byte APK passed archive validation with SHA-256
-  `2f9b820a7773a49ffbee1a74c1176ae660e0d2d3750ded9734667d55a37202a0`;
-  `build-info.txt` proves version `0.11.0-forest-web-polish-test`, exact source,
-  dev package, and display name `Spider Swing Forest Web Polish (dev)`.
-- `substrate-gate` — kit-owned. A born-red session card deliberately holds a PR
-  until close-out; it must be green on the completed card before merge.
-- `android-debug` — **green on `main`, APK proven.** Run #1 produced artifact
-  `spider-swing-android-debug`; it was downloaded and inspected, not just assumed
-  from a green tick: `Android package (APK), with classes.dex`, 56,968,605 bytes,
-  signed, containing this project's own scripts and scenes, shipping exactly
-  `arm64-v8a` + `x86_64`. Uses no secrets and never publishes.
-  Run: https://github.com/menno420/spider-swing/actions/runs/30344755707
-- `android-debug` also runs for gameplay pull requests. PR #12 run
-  [30377680073](https://github.com/menno420/spider-swing/actions/runs/30377680073)
-  produced artifact `spider-swing-android-debug` ID `8695654625`, 56,723,433
-  bytes, digest
-  `sha256:9a6a22f0cc5a7d6165740101c29691f75aa02a10b38d626a2c81dd716271776a`.
-  It was downloaded and verified as an Android APK with `classes.dex`,
-  `AndroidManifest.xml`, and `assets/project.binary`. Its bundled build manifest
-  proves version `0.2.2-responsive-pull-test`, source
-  `cc0bac54e74f49ed4147978bc7a6e702c4c50804`, package
-  `com.menno420.spiderswing.dev`, and display name
-  `Spider Swing Responsive Pull (dev)`.
-- PR #13 `android-debug` run
-  [30389823194](https://github.com/menno420/spider-swing/actions/runs/30389823194)
-  produced downloadable artifact
-  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30389823194/artifacts/8700462786)
-  ID `8700462786`, 56,739,942 bytes, digest
-  `sha256:a40ee04c2417fd3890b83830206a02965f55dfcf4d41c1c239181959bad33acb`.
-  The downloaded 57,120,332-byte APK opened without errors and had SHA-256
-  `305f25025e4cb7b55590011dcf39a67882ead60f6529e12ac15fd4a58897de04`.
-  Its bundled manifest proves version `0.3.0-percentage-pull-test`, source
-  `357b885290e8ad692b8ef04c1dcfaf7892cfb03e`, package
-  `com.menno420.spiderswing.dev`, and display name
-  `Spider Swing Percentage Pull (dev)`.
-- PR #14 `android-debug` run
-  [30393906389](https://github.com/menno420/spider-swing/actions/runs/30393906389)
-  produced downloadable artifact
-  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30393906389/artifacts/8702034654)
-  ID `8702034654`, 56,747,428 bytes, digest
-  `sha256:b23c0f462339b017c2a564873522db0357fb4937e1ee70b88913eaa179597339`.
-  The downloaded 57,128,524-byte APK passed archive verification and had SHA-256
-  `4633b9b84b16cf52c29436ad355aec223cb201267be7a1b2eecd80f2705c6b4b`.
-  Its bundled manifest proves version `0.3.1-recovery-web-test`, source
-  `1d4e3269c317a4b1323ccfe9e7c57eaea137d7d4`, package
-  `com.menno420.spiderswing.dev`, and display name
-  `Spider Swing Recovery Web (dev)`.
-- PR #16 `android-debug` run
-  [30402293330](https://github.com/menno420/spider-swing/actions/runs/30402293330)
-  produced downloadable artifact
-  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30402293330/artifacts/8705188365)
-  ID `8705188365`, 56,779,277 bytes, digest
-  `sha256:bc87ecdf2814b7a7cf887d0b727416d748f18c9a02a890cd218df37c9b3be61b`.
-  The downloaded 57,162,004-byte APK passed archive verification and had
-  SHA-256
-  `5199c5c43562123f345da3833fcdc247a216965e21529abb2d4ffa4801982cfa`.
-  Its bundled manifest proves version `0.4.0-gameplay-foundation-test`, source
-  `9050ea46d9894f6bb8198a6ee5a454e04e39f62a`, package
-  `com.menno420.spiderswing.dev`, and display name
-  `Spider Swing Gameplay Foundation (dev)`.
-- PR #17 `android-debug` run
-  [30420061815](https://github.com/menno420/spider-swing/actions/runs/30420061815)
-  produced downloadable artifact
-  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30420061815/artifacts/8711576758)
-  ID `8711576758`, 56,800,048 bytes, digest
-  `sha256:57f77723586babbe408bb6b86f987bb3e8caa622b01f9130fd943b91c58b4dcd`.
-  The downloaded 57,182,655-byte APK passed archive verification and had
-  SHA-256
-  `2b9438829f631d3486a668b28915aa8ff9d618639d287a8f87166b9771f20db6`.
-  Its build manifest proves version `0.4.1-debug-lab-dive-reset-test`, source
-  `b00007514aaad431dcfaa5b41c8ec9413a1eadba`, package
-  `com.menno420.spiderswing.dev`, and display name
-  `Spider Swing Dive Reset (dev)`.
-- PR #18 `android-debug` run
-  [30422862138](https://github.com/menno420/spider-swing/actions/runs/30422862138)
-  produced downloadable artifact
-  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30422862138/artifacts/8712535636)
-  ID `8712535636`, 56,839,504 bytes, digest
-  `sha256:7b0200d952148090efcd271f7ed1240650657d43de3ca7e26e5abae848cdf89a`.
-  The downloaded 57,223,786-byte APK passed archive verification and had
-  SHA-256
-  `d9f1f109f58d5c49509a8d89aa5b89b6ff28e7435c17f21a202c040c702df382`.
-  It contains `classes.dex`, `AndroidManifest.xml`, and
-  `assets/project.binary`; its build manifest proves version
-  `0.5.0-opening-garage-test`, exact source, dev package, and display name
-  `Spider Swing Opening Garage (dev)`.
-- PR #19 `android-debug` run
-  [30444418230](https://github.com/menno420/spider-swing/actions/runs/30444418230)
-  produced downloadable artifact
-  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30444418230/artifacts/8720817780)
-  ID `8720817780`, 56,859,911 bytes, digest
-  `sha256:ba83d0a7c1f6cd64706da933f3d6e08af10459fcf6d1f28c231228a3842863ef`.
-  The workflow proved the APK is a valid archive with a manifest, package
-  `com.menno420.spiderswing.dev`, version code `13`, and version
-  `0.6.0-gradual-progression-test`; the connected download endpoint returned
-  the complete ZIP file successfully.
-- PR #21 `android-debug` run
-  [30451065009](https://github.com/menno420/spider-swing/actions/runs/30451065009)
-  produced downloadable artifact
-  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30451065009/artifacts/8723522456)
-  ID `8723522456`, 57,651,810 bytes, digest
-  `sha256:d74b40e6a2ff92cbb7457bbf982c6212e087506e78c13ba8b19ac13990744926`.
-  The downloaded 58,035,981-byte APK passed archive verification and had
-  SHA-256
-  `0e8689f112068f2ae4b0d763472d40c0bc284613b424f6113e43421f652131bf`.
-  It contains `classes.dex`, `AndroidManifest.xml`, and
-  `assets/project.binary`; its build manifest proves version
-  `0.7.0-environment-themes-test`, exact source, dev package, and display name
-  `Spider Swing Environment Themes (dev)`.
-- PR #22 `android-debug` run
-  [30458979638](https://github.com/menno420/spider-swing/actions/runs/30458979638)
-  produced downloadable artifact
-  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30458979638/artifacts/8726773191)
-  ID `8726773191`, 58,679,746 bytes, digest
-  `sha256:c3e0c2c94cacec5f0315c87ba7320decf55a39a61fdb166a5eba2288aebf1870`.
-  The downloaded artifact ZIP passed archive verification with the same
-  SHA-256. Its 59,065,710-byte APK passed archive verification with SHA-256
-  `f045f1ab5b3af460c77b256502c73338fcfbcf8d3d5b0b713acee98228e709e7`
-  and contains `classes.dex`, `AndroidManifest.xml`, and
-  `assets/project.binary`; `build-info.txt` proves version
-  `0.8.0-forest-art-test`, source
-  `8aaa517823239a3d80db94d14c72eab12ad0219d`, dev package, and display name
-  `Spider Swing Forest Art (dev)`.
-- PR #23 `android-debug` run
-  [30463832706](https://github.com/menno420/spider-swing/actions/runs/30463832706)
-  produced downloadable artifact
-  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30463832706/artifacts/8728752470)
-  ID `8728752470`, 58,590,815 bytes, digest
-  `sha256:7702d3245b236bb19eccc1a9a3e10a79d613bf0e4b6915c54d3f2a8abd154fd4`.
-  The preceding gameplay-identical run `30463570678` was downloaded; its
-  58,979,706-byte APK passed archive verification with SHA-256
-  `670e78776eb7596a5c81328722ea08be655ed592d637de6df18f236a51ac0527`.
-  `build-info.txt` proves version `0.8.1-split-gate-test`, source
-  `60bb5e83fb747f9cb6418218db4db2cd03c3fa26`, dev package, and display name
-  `Spider Swing Split Gate (dev)`.
-- PR #24 `android-debug` run
-  [30468087491](https://github.com/menno420/spider-swing/actions/runs/30468087491)
-  produced downloadable artifact
-  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30468087491/artifacts/8730447877)
-  ID `8730447877`, 58,595,704 bytes, digest
-  `sha256:3dbd6a975f512e3633fb03cc65d07320b3b30c686b367fe18130c96ae395d006`.
-  The downloaded ZIP and its 58,983,802-byte APK passed archive validation; the
-  APK has SHA-256
-  `cfc39b42a49a83bb5111113f9737e74ccc4c74f23f859100e800c30544b5756f`
-  and contains `classes.dex`, `AndroidManifest.xml`, and
-  `assets/project.binary`. `build-info.txt` proves version
-  `0.8.2-wide-passage-test`, exact source, dev package, and display name
-  `Spider Swing Wide Passage (dev)`.
-- PR #25 `android-debug` run
-  [30474512943](https://github.com/menno420/spider-swing/actions/runs/30474512943)
-  produced downloadable artifact
-  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30474512943/artifacts/8733049254)
-  ID `8733049254`, 58,597,102 bytes, digest
-  `sha256:26c3a7b81986bdd2cff2c293c6cf8a4a48d21f318b7ddc79b044c430ea2c2885`.
-  The downloaded ZIP and APK passed archive validation; the APK has SHA-256
-  `991c8e8d33be956ee4908c981f356d8a0653c47c875b17229a1680e92943d311`
-  and contains `classes.dex`, `AndroidManifest.xml`, and
-  `assets/project.binary`. `build-info.txt` proves version
-  `0.8.3-clean-forest-test`, exact source, dev package, and display name
-  `Spider Swing Clean Forest (dev)`.
-- PR #26 `android-debug` run
-  [30476965336](https://github.com/menno420/spider-swing/actions/runs/30476965336)
-  produced downloadable artifact
-  [`spider-swing-android-debug`](https://github.com/menno420/spider-swing/actions/runs/30476965336/artifacts/8734021620)
-  ID `8734021620`, 58,421,464 bytes, digest
-  `sha256:c46b101fc33200108d82fd10510a75f29ed431ede15c383783f5d2dc19ebbc68`.
-  The downloaded ZIP matched that digest and passed archive validation. Its
-  58,807,429-byte APK passed archive validation with SHA-256
-  `91c99a6cd151db64ac99d504e240f7ae5f3c877417448f5b324fbf254841d19c`
-  and contains `classes.dex`, `AndroidManifest.xml`, and
-  `assets/project.binary`. `build-info.txt` proves version
-  `0.8.4-cohesive-forest-test`, exact source, dev package, and display name
-  `Spider Swing Cohesive Forest (dev)`.
-- **Dependabot** — live. Its first run opened two bumps against the kit-owned
-  `substrate-gate.yml`; both were closed because `adopt`/`upgrade` regenerates that
-  file. The rule is documented in `.github/dependabot.yml`: kit-owned-only bumps get
-  closed, host-owned bumps get merged.
-- All host-owned `uses:` references are pinned to full commit SHAs resolved from
-  upstream refs, with release tags in trailing comments.
-
-**Deliberately absent** — scope boundary, not gaps:
-
-- No authored Phase 1 chunk pack, moving hazards, finalized currency/economy,
-  missions, or production monetization. Flies, prototype upgrades, one temporary
-  boost, one-run rescue, profiles, and cosmetics are contained foundation
-  slices.
-- No Play Billing SDK, product catalogue, purchase verification, server-backed
-  entitlement, hourly play-blocking lives, course sharing, discovery, or
-  moderation. The local Shop and Course Lab do not claim those capabilities.
-- No approved physics baseline yet: `balanced_candidate`, `weighty_candidate`,
-  and `agile_candidate` require owner real-device playtesting.
-- No approved production art direction, analytics, ads, cloud save, or store
-  SDK. Ancient Forest has one candidate-production visual slice for owner
-  evaluation; the other generated environment packs remain prototype
-  comparison art.
-- No production Android signing, no Google Play publishing, no iOS/macOS signing
-  runner.
-- The owner has temporarily made the repository **public** to preserve Actions
-  availability. GitHub metadata confirms public visibility and
-  `allow_auto_merge: false`; the anonymous rulesets endpoint currently lists no
-  ruleset. The former private-plan 403 is historical rather than a current
-  visibility claim. Repository protection or visibility changes are not part of
-  this gameplay PR.
+- No approved movement baseline yet. Balanced, Weighty, and Agile remain named
+  candidates until Menno completes issue #2's real-device playtest.
+- No authored Phase-1 chunk pack, moving hazards, final economy, missions,
+  production monetization, billing SDK, server entitlement, course sharing,
+  moderation, analytics, ads, cloud save, or store publishing.
+- No production signing or Google Play publishing. The stable debug key is not a
+  release credential and must never become one.
 
 ## In flight
 
-The five-profile production-art roster, the Garden anatomy correction, the
-biological inspiration layer, and the Field Guide are all open for device
-review. The next owner evidence should cover species readability, contrast
-against each course region, pose deformation while swinging, seeded-region
-identity and checkpoint-practice integrity, and reserve-Burst feel. One naming
-question is the owner's alone and is parked, not blocking: whether the release
-roster uses fictional names throughout or promotes species names. The Springtail
-naming question is resolved — it is now Buckler; the biology folio carries the
-reasoning.
+The open exit gate is still Menno's device playtest on issue #2. The depth build
+removes the three access blockers: its first install establishes the stable
+signer, later builds retain the same save, DEBUG can jump to any typed distance,
+and `OWNED` versus a selected upgrade level can be compared without wiping or
+granting progression. Owner evidence should now cover long-distance region
+identity, upgrade A/B feel, save survival across two stable-key builds, and the
+existing traversal checklist in the Swing Laboratory reference.
 
 ## Recently shipped (newest first)
 
-- **2026-07-31 — Spider identity: biology layer, Field Guide, and the naming
-  rule.** `SpiderBiologyCatalog` keeps one record per profile — inspiration,
-  claim strength, real trait, an explicit statement of what the game invents,
-  a myth correction, and cited sources — sharing no key with `SpiderCatalog`, so
-  taxonomy can be corrected without touching a tuned number or saved
-  progression. A scrollable FIELD GUIDE route renders it — its own Home button
-  for discoverability plus the Garage entry beside the spider it describes,
-  returning to whichever route the player took — keeping
-  game identity, inspiration, real biology and game adaptation on separate
-  lines. **Naming rule:** a real spider with a usable name always wins; where
-  none exists the name is invented and `drawn_from` must then list every real
-  spider it borrows from *and what each contributes*, so one invented spider can
-  honestly combine several. Skitter became **Magnolia Green Jumper**; Springtail
-  — a name belonging to Collembola, not spiders — became **Buckler**, which now
-  names *Ummidia* (body and hinged trapdoor) and *Cyclocosmia* (hardened
-  abdominal disc). Persisted ids are unchanged; a pre-rename save was verified to
-  load with both identity upgrade levels intact. Eleven biology contracts guard
-  it. Art is generated or unencumbered; agent verification against trustworthy
-  sources is the sufficient standard for a claim. Reasoning, sources and the
-  decision trail live in `docs/product/spider-biology-folio.md` and the dated
-  verification log beside it.
-- **2026-07-30 — Seeded regions and checkpoint practice (PR #48).** Divides
-  the endless course into three reproducible 5,000 m identities with distinct
-  curated pools and bounded recovery cadence, adds presentation-owned region
-  atmosphere and transition feedback, and unlocks explicitly noncompetitive
-  practice starts at 5,000 m and 10,000 m. Practice cannot award flies, update
-  records, unlock later checkpoints, or enter future leaderboards.
-- **2026-07-30 — Reserve Burst breakthrough (PR #47).** Turns Burst
-  availability into a serially recharging charge pool and gives Anchor Drive
-  level 10 one stored second Burst without changing level-zero cadence,
-  long-run refill throughput, pull physics, or the rest of progression.
-- **2026-07-30 — Adaptive simulation lab v2 (PR #45).** Makes Claude's bot
-  route-aware, adds late-course starts and parameter sweeps, and expands
-  resource/economy metrics while remaining diagnostic tooling rather than a
-  gameplay or CI authority.
-- **2026-07-30 — Anchorite production spider (PR #44).** Adds a broad,
-  low, charcoal-and-bronze burrowing-spider sprite at the same finished
-  384×181 source contract as Garden, routes both profiles through one
-  presentation renderer, preserves authoritative Anchorite size/collision,
-  and left the other three procedural silhouettes unchanged until PR #52
-  completed the roster.
-- **2026-07-30 — Headless simulation lab (PR #41).** Batch-runs the
-  authoritative simulation through a seeded imperfect-player model and reports
-  distance, death cause, and resource statistics by spider, skill tier,
-  preset, and upgrade level. It is diagnostic tooling rather than a CI gate
-  and changes no gameplay value.
-- **2026-07-30 — Device-led Reel speed correction (PR #40).** Keeps the
-  finite two-second level-zero resource from PR #38 but raises Balanced Reel
-  from 260 to 320 px/s and max Garden Silk Winder from 338 to 416 px/s. Named
-  debug presets, direct tuning values, deterministic contracts, and the Android
-  build agree; all unrelated movement and progression systems remain unchanged.
-- **2026-07-30 — Bounded Reel resource comparison (PR #38).** Reduces the
-  level-zero shortening budget from about 1,333 px to 520 px, gives maxed shared
-  Reel tracks meaningful bounded headroom to about 838 px, prevents repeated
-  configuration paths from compounding upgrades, and adds direct full-meter
-  time tuning without changing velocity, aim, Burst, course pace, routes, or
-  saves.
-- **2026-07-30 — Forest-web interface and course rhythm (PR #30).** Unified
-  Home, Garage, Shop, and Settings under one reusable forest-web theme,
-  replaced native cosmetic dropdowns with body/Silk rails and a live preview,
-  disabled focus-following scroll snaps, and introduced deterministic
-  post-2000 m weave/burr patterns. The device recording then exposed the
-  scrolling and weave regressions corrected by PR #32.
-- **2026-07-29 — Deep progression and stable presentation (PR #28).** Gives
-  every spider five shared core and two identity tracks over 20 levels,
-  proportionally migrates five-level saves, and interpolates only spider/web
-  presentation while preserving level-zero simulation.
-- **2026-07-29 — Living forest course (PR #27).** Adds continuous branch rails,
-  natural obstacle sockets, three depth layers, and a curated distance-banded
-  pattern catalog without changing the protected opening.
-- **2026-07-29 — Environment theme packs (PR #21).** Adds Ancient
-  Forest, Mossy Ravine, Overgrown Greenhouse, and Reclaimed Attic runtime
-  textures, one presentation-owned catalog, world-space polygon UVs, a large
-  LOOK selector, Graybox fallback, and a visual-only geometry regression.
-
-- **2026-07-29 — Fair early corridor routing (PR #20).** Gives each
-  generated challenge one route plan, protects the first 2000 m from inward
-  rail movement by default, and reserves later narrow passages for rail-only
-  challenges. The playtest build is `0.6.1-fair-corridor-test`.
-- **2026-07-29 — Gradual progression and bounded rail recovery (PR #19).**
-  Moves maximum speed to an exact smooth 5000 m default ramp, makes shaped
-  rails lethal by default, reduces Classic Reel/Burst, adds minimum Burst
-  travel and three five-level paths per spider, and introduces Springtail's
-  one-charge moderate rail bounce. The verified Android build is
-  `0.6.0-gradual-progression-test`.
-- **2026-07-29 — Dive reset and touch-first DEBUG (PR #17).** Separates the Dive
-  charge from Burst time, rearms it only through a successful upper/obstacle
-  attachment, and replaces carousel searching with six plain-language,
-  touch-first debug sections. The verified Android build is
-  `0.4.1-debug-lab-dive-reset-test`.
-- **2026-07-28 — Configurable gameplay foundation (PR #16).** Promotes the
-  1120-gravity/40%-Dive comparison, adds speed-neutral automatic take-up,
-  independently configurable safe/lethal/hidden corridor rails, a 1000 m
-  middle-hazard runway, organic deterministic patterns, fly trails, Burst
-  Frenzy, two persistent palette milestones, and 59 passing contracts. Every
-  unsettled feel value remains available in DEBUG; no final economy or upgrade
-  cost was invented.
-- **2026-07-28 — Recovery-web controls (PR #14 merged).** Makes percentage
-  pulls interruptible by ordinary webs, converts otherwise-unavailable rapid
-  double-taps into recovery intent, promotes 1000-pixel reach, exposes tap mode
-  and cooldown tuning, and authors lower anchor windows before hazards.
-- **2026-07-28 — Percentage-pull traversal candidate (PR #13 ready).**
-  Separates Reel shortening from speed gain, makes Burst/Dive distance-shaped and
-  atomically targetable, accepts all retained solid polygons as anchors, adds
-  shaped ceiling/floor/obstacle silhouettes, exposes the new feel controls, and
-  passes 46 local and CI Godot contracts with a verified Android artifact.
-- **2026-07-28 — Responsive rope-actions candidate.** PR #12 enlarges both thumb
-  targets to symmetric 228×228 regions, gives Reel a guaranteed first-tick radial
-  response, decomposes Burst into anchor-directed and retained tangential motion,
-  adds event-driven flashes/haptics, and passes 42 Godot contracts. Its verified
-  Android artifact is build `0.2.2-responsive-pull-test`.
-- **2026-07-28 — Anchor-pull feel candidate.** PR #11 extends web reach from
-  620 to 820 pixels, gives Reel an immediate bounded inward response plus sustained
-  pull, and makes Burst an attached-only 440 px/s impulse along the active web
-  vector. The exact gameplay commit passes 41 Godot contracts and produces a
-  verified Android APK.
-- **2026-07-28 — Mobile traversal and obstacle test.** PR #10 makes Settings
-  readable and scrollable, splits large Reel/Burst controls across the thumbs,
-  accepts any point on continuous ceiling surfaces, replaces the finite anchor
-  field with a bounded deterministic stream, adds static striped test obstacles,
-  and passes 39 Godot contracts with a verified Android artifact.
-- **2026-07-28 — Starting screen, tutorial, and settings.** PR #9 opens on Home,
-  adds Play, a data-driven five-step animated Tutorial, real persistent Settings,
-  a Menu return path, reduced-motion behavior, and 31 passing Godot contracts.
-- **2026-07-28 — Control-owned mobile HUD correction.** PR #8 makes Reel, DEBUG,
-  and panel controls native GUI buttons that consume touch before world input;
-  adds visible build version `0.0.2-control-ui`; and produces a source-identified
-  APK. Menno confirmed Reel and DEBUG work as expected on Android.
-- **2026-07-28 — Mobile HUD touch-coordinate correction (superseded).** Real-device video
-  reproduced a mismatch between physical viewport sizing and stretch-adjusted
-  touch/canvas coordinates. Reel and DEBUG now share the canvas coordinate contract;
-  detached Reel reports why it cannot pull and attached Reel has explicit active
-  feedback. No physics tuning values changed.
-- **2026-07-28 — Phase 0 Swing Laboratory.** Deterministic point-mass simulation,
-  capped rope constraint, momentum-preserving manual release, Reel energy,
-  buffered multitouch input, three named tuning candidates, read-only graybox
-  presentation, runtime tuning and reproduction tools, and eight physics contracts.
-  Owner device approval remains the exit gate.
-- **2026-07-28 — founding bootstrap.** Substrate Kit v1.20.2 adopted in guided mode
-  with enforcement wired and all 16 interview slots answered; a Godot 4.7.1 shell
-  that boots and exits cleanly headless; the GDD placed byte-exact (SHA-256
-  verified) with ADRs 0001–0003; `tools/verify.py` and
-  `tools/check_architecture.py`; `tests/test_runner.gd`; `game-quality` and
-  `android-debug` workflows with SHA-pinned actions; labels, milestones, and
-  squash-only merge settings; and the Phase 0 implementation issue.
+- **2026-07-31 — Debug depth-testing access.** Stable debug signing, exact
+  arbitrary-distance practice starts, and a session-only selectable upgrade
+  overlay make persistent far-course and progression testing possible without
+  changing physics, economy, ownership, or settlement architecture.
+- **2026-07-31 — Spider identity and Field Guide (PR #53).** Separates biology
+  from balance, makes the guide a Home and Garage route, adopts real names where
+  usable, renames Skitter to Magnolia Green Jumper, and documents Buckler's
+  *Ummidia*/*Cyclocosmia* inspiration without changing persisted ids.
+- **2026-07-30 — Seeded regions and checkpoint practice (PR #48).** Adds three
+  deterministic 5000 m identities, bounded recovery cadence, region atmosphere,
+  schema-5 checkpoints, and explicitly noncompetitive late-section practice.
+- **2026-07-30 — Reserve Burst and simulation labs (PRs #47, #45, #41).** Adds a
+  serially recharging second Burst at Anchor Drive level 10 and two diagnostic
+  headless simulation surfaces without changing level-zero cadence or CI
+  authority.
+- **2026-07-30 — Device-led Reel correction (PRs #38, #40).** Bounds the
+  level-zero Reel resource, raises Balanced response to the owner-tested band,
+  and keeps resolution idempotent and speed-neutral.
+- **2026-07-29/30 — Progression, course, and presentation foundation.** Twenty
+  small upgrade levels with breakthroughs, five profiles, a bounded living
+  forest course, environment themes, scroll-safe front-end routes, and finished
+  runtime art landed through PRs #21–#36. Earlier Phase-0 history remains in git,
+  session cards, decisions, and the technical reference rather than this boot
+  ledger.
 
 ## Review rhythm
 
-Agents work through ready born-red PRs, finish the declared scope, run the exact game-quality and Substrate gates, and land work only on green. Reversible implementation decisions are decide-and-flag. The owner reviews playable feel, branding, monetization, production signing, and external publication rather than routine code. Production releases require a real-device playtest and an explicit owner-controlled signing/publishing step.
+Agents work through ready born-red PRs, finish the declared scope, run the exact
+game-quality and Substrate gates, and land only on green. Reversible technical
+choices are decide-and-flag. Menno reviews playable feel, branding,
+monetization, production signing, and external publication. A production release
+requires real-device approval and an owner-controlled signing/publishing step.

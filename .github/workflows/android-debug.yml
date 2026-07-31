@@ -9,10 +9,12 @@
 # NOT a required merge check, deliberately: it depends on external SDK downloads,
 # so making it required would turn a third-party outage into a merge block.
 #
-# SECRETS: this workflow reads NONE. Debug signing uses a throwaway keystore
-# generated inside the run and never uploaded. There is no production signing
-# material anywhere in this repository, and this workflow never publishes to
-# Google Play.
+# SECRETS: this workflow reads NONE. Debug signing uses the stable conventional
+# key committed at .github/android/debug.keystore so consecutive APKs update in
+# place and preserve local saves. The key and credentials are public by design.
+# It must NEVER be reused for Google Play, a release build, production signing,
+# or any signed distribution. No release signing exists here and this workflow
+# never publishes to Google Play.
 #
 # Every `uses:` is pinned to a full commit SHA resolved from the upstream
 # repository's own git ref, with the release tag in a trailing comment.
@@ -26,6 +28,7 @@ on:
       - 'project.godot'
       - 'export_presets.cfg'
       - '.github/workflows/android-debug.yml'
+      - '.github/android/**'
   push:
     branches: [main]
   workflow_dispatch:
@@ -41,7 +44,11 @@ env:
   GODOT_VERSION: 4.7.1
   APK_PATH: build/spider-swing-debug.apk
   ARTIFACT_NAME: spider-swing-android-debug
-  BUILD_VERSION: 0.18.0-buckler-test
+  BUILD_VERSION: 0.19.0-depth-testing
+  APP_NAME: Spider Swing Depth Test (dev)
+  DEBUG_KEYSTORE_PATH: .github/android/debug.keystore
+  DEBUG_KEYSTORE_SHA256: e9104672477e0238b6cc2f7d6b994c459e37f130cae06a37aff05001f101bbda
+  DEBUG_CERT_SHA256: 83ff0bc27903351779ffd1439f115e8c7e4c228fddd683e2a801c9700b30a741
   SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
 jobs:
@@ -101,30 +108,31 @@ jobs:
           set -euo pipefail
           grep -F "config/version=\"${BUILD_VERSION}\"" project.godot
           grep -F "version/name=\"${BUILD_VERSION}\"" export_presets.cfg
-          grep -F 'version/code=34' export_presets.cfg
-          grep -F 'package/name="Spider Swing Buckler (dev)"' export_presets.cfg
+          grep -F 'version/code=35' export_presets.cfg
+          grep -F "package/name=\"${APP_NAME}\"" export_presets.cfg
           echo "build identity: ${BUILD_VERSION} @ ${SOURCE_SHA}"
 
-      - name: Generate an ephemeral debug keystore
-        # Throwaway, per-run, never uploaded, never a secret. A debug keystore
-        # exists only so Android will install the APK at all; it carries no
-        # trust. Godot reads these three env vars for debug signing, so no
-        # editor-settings file has to be synthesised.
+      - name: Assert the stable debug-only signing identity
+        # This public key is stable solely so development APKs update in place.
+        # Rotating it forces another uninstall; using it for distribution would
+        # be insecure. Release signing remains deliberately absent.
         run: |
-          mkdir -p "${RUNNER_TEMP}/keystore"
-          keytool -keyalg RSA -genkeypair \
-            -alias androiddebugkey \
-            -keypass android \
-            -keystore "${RUNNER_TEMP}/keystore/debug.keystore" \
+          set -euo pipefail
+          test -f "${DEBUG_KEYSTORE_PATH}"
+          actual_sha="$(sha256sum "${DEBUG_KEYSTORE_PATH}" | cut -d' ' -f1)"
+          if [ "${actual_sha}" != "${DEBUG_KEYSTORE_SHA256}" ]; then
+            echo "::error::stable debug keystore digest changed; this would break in-place installs"
+            exit 1
+          fi
+          keytool -list \
+            -keystore "${DEBUG_KEYSTORE_PATH}" \
             -storepass android \
-            -dname "CN=Android Debug,O=Android,C=US" \
-            -validity 9999 \
-            -deststoretype pkcs12
-          echo "generated an ephemeral debug keystore (not a secret, not uploaded)"
+            -alias androiddebugkey
+          echo "WARNING: public debug key only; NEVER use for Play, release, or distribution."
 
       - name: Export the Android Debug preset
         env:
-          GODOT_ANDROID_KEYSTORE_DEBUG_PATH: ${{ runner.temp }}/keystore/debug.keystore
+          GODOT_ANDROID_KEYSTORE_DEBUG_PATH: ${{ github.workspace }}/${{ env.DEBUG_KEYSTORE_PATH }}
           GODOT_ANDROID_KEYSTORE_DEBUG_USER: androiddebugkey
           GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD: android
         run: |
@@ -135,8 +143,9 @@ jobs:
             echo "source_sha=${SOURCE_SHA}"
             echo "workflow_run=${GITHUB_RUN_ID}"
             echo "package=com.menno420.spiderswing.dev"
-            echo "display_name=Spider Swing Buckler (dev)"
-            echo "install_note=Uninstall the previous dev build first; CI debug signing is ephemeral."
+            echo "display_name=${APP_NAME}"
+            echo "debug_key_sha256=${DEBUG_KEYSTORE_SHA256}"
+            echo "install_note=First stable-key install needs one final uninstall; later builds update in place and preserve data."
           } > build/build-info.txt
 
           # Import first, as a separate step. A cold export that also has to
@@ -175,7 +184,14 @@ jobs:
             echo "::error::APK versionName does not match ${BUILD_VERSION}"
             exit 1
           fi
-          echo "APK verified: valid zip, manifest present, version ${BUILD_VERSION}"
+          signer="$(${ANDROID_HOME}/build-tools/34.0.0/apksigner verify \
+            --print-certs "${APK_PATH}" \
+            | awk -F': ' '/Signer #1 certificate SHA-256 digest/{print tolower($2)}')"
+          if [ "${signer}" != "${DEBUG_CERT_SHA256}" ]; then
+            echo "::error::APK signer ${signer} does not match stable debug certificate ${DEBUG_CERT_SHA256}"
+            exit 1
+          fi
+          echo "APK verified: valid zip, manifest present, version ${BUILD_VERSION}, stable debug signer"
 
       - name: Upload the debug APK
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -199,13 +215,14 @@ jobs:
             echo "| Godot | ${GODOT_VERSION} Standard |"
             echo "| Version | \`${BUILD_VERSION}\` |"
             echo "| Source | \`${SOURCE_SHA}\` |"
-            echo "| App label | \`Spider Swing Five Spider Art (dev)\` |"
+            echo "| App label | \`${APP_NAME}\` |"
             echo "| Package | \`com.menno420.spiderswing.dev\` (development only) |"
             echo "| Retention | 14 days |"
             echo ""
-            echo "Debug build only. Not signed for release, not approved for Google Play."
-            echo "Download it from this run's Artifacts section. Because CI uses an"
-            echo "ephemeral debug signing key, uninstall the previous Spider Swing dev"
-            echo "app first, then install this APK. Confirm the HUD shows"
+            echo "Debug build only. NEVER reuse this public key for release or distribution."
+            echo "Download it from this run's Artifacts section. The NEXT install needs"
+            echo "one final uninstall because older artifacts used throwaway keys. Every"
+            echo "install after this stable-key build updates in place and preserves saves."
+            echo "Confirm the HUD shows"
             echo "\`BUILD ${BUILD_VERSION}\` before testing."
           } >> "$GITHUB_STEP_SUMMARY"

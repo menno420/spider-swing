@@ -13,8 +13,8 @@ rates and that test players can attribute their deaths (§ 23). None of that can
 judged from CI output — it requires the owner holding a phone.
 
 So the build pipeline's job during development is narrow and specific: **put an
-installable debug APK in the owner's hands on every change to `main`**, with no
-credentials involved.
+installable debug APK in the owner's hands on every change to `main`**, without
+production credentials or a publishing path.
 
 Publishing is a different activity with different risk. It needs a production
 package identifier, a release keystore that must never leak, a Play Console
@@ -24,7 +24,7 @@ package name cannot be reused).
 
 ## Decision
 
-### Now: debug-only, credential-free
+### Now: debug-only, public conventional credentials
 
 - One export preset, named exactly `Android Debug`, committed as text in
   `export_presets.cfg`.
@@ -36,10 +36,16 @@ package name cannot be reused).
 - `.github/workflows/android-debug.yml` runs on pushes to `main` and manual
   dispatch, exports `build/spider-swing-debug.apk`, and uploads it as the artifact
   `spider-swing-android-debug` with 14-day retention.
-- **Debug signing uses a keystore generated inside the CI run and never
-  uploaded.** It is wired through Godot's `GODOT_ANDROID_KEYSTORE_DEBUG_PATH`,
-  `_USER`, and `_PASSWORD` environment variables. No secret is read; the workflow
-  declares no repository secrets at all.
+- **Debug signing uses the stable conventional public key committed at
+  `.github/android/debug.keystore`.** Its `androiddebugkey` / `android` /
+  `android` credentials are not secrets. The workflow verifies the key's file
+  and certificate digests, wires it through Godot's
+  `GODOT_ANDROID_KEYSTORE_DEBUG_PATH`, `_USER`, and `_PASSWORD` environment
+  variables, and verifies the exported APK signer. A source contract rejects
+  any return to per-run `keytool` generation.
+- This key must **NEVER** be reused for Google Play, a release build, production
+  signing, or any signed distribution. It exists only so development APKs share
+  one Android identity and can update in place. No release signing exists.
 - JDK 17 for the Android toolchain, per Godot's current Android export
   requirements.
 - `gradle_build/use_gradle_build=false`: the export uses Godot's prebuilt APK
@@ -69,7 +75,8 @@ time comes:
 **No production credential, key, token, signing material, or store integration is
 committed to this repository, and none will be added without an explicit
 owner-controlled step.** `.gitignore` refuses `*.keystore`, `*.jks`, `*.p12`,
-`*.pepk`, and provisioning profiles so an accidental `git add -A` cannot leak one.
+`*.pepk`, and provisioning profiles so an accidental `git add -A` cannot leak
+one; the exact public debug key above is the only documented exception.
 
 ### Minimum supported device
 
@@ -84,6 +91,10 @@ sets the final floor.
   caught within one change instead of at release time.
 - The owner can install a playtest build by downloading an Actions artifact — no
   store, no signing, no distribution account.
+- The first stable-key install still needs one final uninstall because earlier
+  artifacts used unrelated throwaway certificates. Every later debug build can
+  update in place, preserving settings and progression for device migration
+  tests.
 - A debug APK installs alongside a future production build rather than conflicting
   with it, because the identifiers differ.
 - 14-day retention keeps storage bounded; a build worth keeping longer is worth a
@@ -95,6 +106,10 @@ sets the final floor.
 
 - **Signed release APK/AAB in CI now** — rejected: requires a release keystore in
   secrets before the game is playable, which is risk with no payoff.
+- **Store the debug key as an Actions secret** — rejected: the conventional
+  debug identity is not a security boundary, while hiding it would make local
+  reproduction depend on repository configuration and make accidental secret
+  rotation silently break in-place updates.
 - **Publishing to an internal Play track** — rejected: needs a Play account and a
   production identifier; the GDD explicitly defers naming and store-conflict review
   (§ 25.7, and the codename warning at the head of the GDD).

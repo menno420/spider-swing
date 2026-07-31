@@ -53,6 +53,8 @@ static func run() -> Dictionary:
 		failures)
 	passed += _test_checkpoint_practice_starts_safe_and_is_non_record(
 		failures)
+	passed += _test_debug_start_awards_nothing_and_sets_no_record(failures)
+	passed += _test_debug_start_matches_seeded_geometry_from_zero(failures)
 	passed += _test_authored_weaves_and_small_silk_burrs_are_fair(failures)
 	passed += _test_contoured_rails_are_continuous_and_varied(failures)
 	passed += _test_obstacle_collision_is_authoritative(failures)
@@ -1705,6 +1707,120 @@ static func _test_checkpoint_practice_starts_safe_and_is_non_record(
 		return 0
 	session.free()
 	standard.free()
+	return 1
+
+
+static func _test_debug_start_awards_nothing_and_sets_no_record(
+	failures: PackedStringArray,
+) -> int:
+	var progress := PlayerProgress.defaults()
+	progress.total_flies = 14
+	progress.spendable_flies = 9
+	progress.best_distance_pixels = 4200.0
+	var service := ProgressionService.new()
+	var session := SwingLabSession.new()
+	session.configure_progress(progress, service)
+	session.configure_run(SwingLabSession.RUN_STANDARD, 0.0, 77)
+	session._reset_run()
+	var checkpoints: Array[StringName] = []
+	session.checkpoint_reached.connect(func(
+		region_id: StringName,
+		_distance: float,
+	) -> void:
+		checkpoints.append(region_id))
+	var start_distance := 123450.0
+	session.set_tuning_parameter(
+		TuningCatalog.DEBUG_START_DISTANCE,
+		start_distance,
+	)
+	var snapshot := session.current_snapshot()
+	if not snapshot.debug_start_active or \
+			snapshot.run_mode != SwingLabSession.RUN_PRACTICE or \
+			snapshot.records_eligible or \
+			not is_equal_approx(snapshot.start_distance_pixels, start_distance) or \
+			not is_equal_approx(snapshot.distance_pixels, start_distance):
+		failures.append("arbitrary debug start did not inherit practice ownership")
+		session.free()
+		return 0
+
+	session._world.run_flies = 88
+	session._world.distance_pixels = start_distance + 80000.0
+	session._update_region_progress()
+	var settlements: Array[RunSettlement] = []
+	session.settlement_created.connect(func(value: RunSettlement) -> void:
+		settlements.append(value))
+	session._emit_settlement(&"test")
+	if settlements.size() != 1 or settlements[0].rewards_eligible or \
+			settlements[0].records_eligible or \
+			settlements[0].leaderboards_eligible or \
+			settlements[0].run_mode != SwingLabSession.RUN_PRACTICE or \
+			not checkpoints.is_empty():
+		failures.append(
+			"debug start could award rewards, records, leaderboards, or checkpoints")
+		session.free()
+		return 0
+	var result := service.apply_settlement(progress, settlements[0])
+	if not bool(result.get("applied", false)) or \
+			int(result.get("flies_granted", -1)) != 0 or \
+			progress.total_flies != 14 or progress.spendable_flies != 9 or \
+			not is_equal_approx(progress.best_distance_pixels, 4200.0):
+		failures.append("debug start settlement changed saved economy or record")
+		session.free()
+		return 0
+	session.free()
+	return 1
+
+
+static func _test_debug_start_matches_seeded_geometry_from_zero(
+	failures: PackedStringArray,
+) -> int:
+	var seed := 707
+	var start_distance := 137430.0
+	var session := SwingLabSession.new()
+	session.configure_run(SwingLabSession.RUN_STANDARD, 0.0, seed)
+	session._reset_run()
+	session.set_tuning_parameter(
+		TuningCatalog.DEBUG_START_DISTANCE,
+		start_distance,
+	)
+	var actual := session._course_stream.geometry()
+	var config := session._config
+	var from_zero := CourseStream.new()
+	from_zero.reset(
+		config.middle_hazard_start_distance,
+		config.edge_obstacle_scale,
+		config.floating_obstacle_scale,
+		config.gate_opening_scale,
+		[],
+		config.corridor_contours_enabled,
+		config.corridor_clearance_scale,
+		config.corridor_tight_gap_scale,
+		config.tight_corridor_start_distance,
+		seed,
+		SimulationWorld.START_POSITION.x,
+	)
+	var target_x := SimulationWorld.START_POSITION.x + start_distance
+	var walked_x := SimulationWorld.START_POSITION.x
+	while walked_x < target_x:
+		walked_x = minf(
+			target_x,
+			walked_x + CourseStream.CHUNK_WIDTH * 0.75,
+		)
+		from_zero.update_for_position(walked_x)
+	var expected := from_zero.geometry()
+	if actual.first_chunk_index != expected.first_chunk_index or \
+			actual.last_chunk_index != expected.last_chunk_index or \
+			actual.surfaces != expected.surfaces or \
+			actual.boundary_surfaces != expected.boundary_surfaces or \
+			actual.aim_guides != expected.aim_guides or \
+			actual.obstacles != expected.obstacles or \
+			actual.fly_positions != expected.fly_positions or \
+			actual.boost_positions != expected.boost_positions:
+		failures.append(
+			"debug start geometry differs from the same seed traversed from zero")
+		session.free()
+		return 0
+	session.free()
 	return 1
 
 

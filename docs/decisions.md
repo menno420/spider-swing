@@ -549,3 +549,46 @@
   about where it goes.
 - provenance: Menno's 2026-07-31 direction to make the Field Guide a separate
   Home button for discoverability
+
+## [D-0033] Commit one public debug signer for reproducible Android updates
+
+- status: decided
+- date: 2026-07-31
+- verdict: The development package is signed by one conventional repository-
+  owned `androiddebugkey` whose alias, passwords, file digest, and certificate
+  digest are explicit. Actions verifies the key and final APK signer and is
+  contractually forbidden from generating a per-run replacement. The key is
+  public debug material only and must **NEVER** sign Google Play, a release
+  build, production output, or any distribution. Release signing remains absent.
+- why: A new certificate makes Android reject an in-place update, forcing an
+  uninstall that deletes the only real-device evidence for save survival and
+  migration. An Actions secret was possible, but it would hide a non-secret,
+  make reproducibility depend on repository configuration, and turn accidental
+  rotation into another data-wiping install boundary. The conventional public
+  key is auditable in source and offers no false security claim. Devices signed
+  by the old throwaway runs still need one final uninstall; all later builds
+  keep the same application data.
+- provenance: Menno's 2026-07-31 approval to choose a stable Android debug
+  signer, including explicit acceptance of the conventional committed key
+
+## [D-0034] Route every debug advantage through noncompetitive resolution
+
+- status: decided
+- date: 2026-07-31
+- verdict: Arbitrary-distance starts reuse `RUN_PRACTICE` on the active
+  deterministic seed. Upgrade testing is a selectable session-only overlay in
+  `ProgressionService`: config and UI resolve against a copied view of the
+  selected spider's levels, while owned `PlayerProgress`, the purchase cost
+  check, persistence codecs, and settlement ownership remain untouched. Any run
+  that uses a debug start or overlay is noncompetitive, and its HUD says it
+  awards nothing. Garage and Shop say overlay levels are not owned; disabling
+  Debug Tools clears the overlay.
+- why: A second run or settlement path would drift from Region Practice, and a
+  free-purchase bypass would contaminate the save precisely when stable signing
+  finally makes that save valuable. Resolution provides a clean owned-versus-
+  upgraded A/B test, restores exact saved levels on `OWNED`, and inherits the
+  existing no-flies/no-records/no-checkpoints/no-leaderboards policy. Exact
+  seeded-geometry and serialization contracts make those properties executable
+  rather than visual assumptions.
+- provenance: Menno's 2026-07-31 depth-testing request for arbitrary course
+  access and non-persistent free upgrades

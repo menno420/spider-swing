@@ -115,6 +115,17 @@ as venue `any`.)
 kit-owned — they refresh at upgrade between the fence markers; local
 findings go here, below the fence.)
 
+- 2026-07-31 · capability · `owner-live` · **Godot 4.7.1 Standard runs fully in
+  this managed Codex workspace when its XDG roots are task-local** · an
+  unmodified launch exits 134 after `Could not create directory:
+  '/root/.local'`, `Error attempting to create data dir`, and signal 11; with
+  `XDG_DATA_HOME=/tmp/spider-swing-godot-data`,
+  `XDG_CONFIG_HOME=/tmp/spider-swing-godot-config`, and
+  `XDG_CACHE_HOME=/tmp/spider-swing-godot-cache`, the
+  official `4.7.1.stable.official.a13da4feb` binary completes import, boot, and
+  all 116 headless contracts · create those three directories and export the
+  task-local XDG values for every engine-backed verification in this seat.
+
 - 2026-07-31 · capability · `owner-live` · **This Codex Work seat can generate,
   edit, key, inspect, integrate, and Android-prove production character art** ·
   the built-in image workflow corrected Garden's leg topology; the local soft-

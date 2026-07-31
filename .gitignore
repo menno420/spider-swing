@@ -31,10 +31,10 @@ Thumbs.db
 
 # ------------------------------------------- Android generated build state
 # `gradle_build/use_gradle_build` produces this tree; it is machine-local.
-android/
-!android/README.md
-android/build/
-android/.gradle/
+/android/
+!/android/README.md
+/android/build/
+/android/.gradle/
 .gradle/
 local.properties
 *.apk
@@ -43,8 +43,10 @@ local.properties
 *.idsig
 
 # ------------------------- local export credentials and signing material
-# NEVER commit signing material. Production signing is owner-controlled and
-# lives in repository secrets, not in the tree (ADR 0003).
+# NEVER commit production signing material. Production signing is
+# owner-controlled and lives outside the tree (ADR 0003). The one explicit
+# exception below is the public, conventional Android DEBUG key used only so
+# consecutive laboratory APKs can update in place and preserve device saves.
 *.keystore
 *.jks
 *.p12
@@ -53,6 +55,7 @@ local.properties
 *.cer
 *.certSigningRequest
 export_credentials.cfg
+!.github/android/debug.keystore
 .env
 .env.*
 !.env.example

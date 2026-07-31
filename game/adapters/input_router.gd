@@ -42,11 +42,13 @@ var _reel_button: Button
 var _burst_button: Button
 var _debug_button: Button
 var _menu_button: Button
+var _debug_start_distance_entry: LineEdit
 var _debug_controls: Array[Control] = []
 var _debug_always_controls: Array[Control] = []
 var _debug_category_controls: Dictionary = {}
 var _debug_controls_enabled: bool = true
 var _active_debug_category_index: int = 0
+var _debug_start_distance_pixels: float = 0.0
 
 
 func _ready() -> void:
@@ -228,6 +230,15 @@ func install_touch_surface(
 				quick.pressed.connect(
 					_emit_tuning_value.bind(parameter, value))
 				_register_category_control(category_controls, quick)
+			if parameter == TuningCatalog.DEBUG_START_DISTANCE:
+				_debug_start_distance_entry = _make_debug_distance_entry(
+					card_index,
+					layout_size,
+				)
+				_register_category_control(
+					category_controls,
+					_debug_start_distance_entry,
+				)
 
 	var visual_category_index := TuningCatalog.category_index(
 		TuningCatalog.CATEGORY_VISUALS)
@@ -274,10 +285,14 @@ func install_touch_surface(
 	_set_debug_controls_visible(false)
 
 
-func hud_button(button_name: StringName) -> Button:
+func hud_control(control_name: StringName) -> Control:
 	if _touch_surface == null:
 		return null
-	return _touch_surface.get_node_or_null(NodePath(str(button_name))) as Button
+	return _touch_surface.get_node_or_null(NodePath(str(control_name))) as Control
+
+
+func hud_button(button_name: StringName) -> Button:
+	return hud_control(button_name) as Button
 
 
 func configure_debug_controls(enabled: bool) -> void:
@@ -291,6 +306,12 @@ func configure_debug_controls(enabled: bool) -> void:
 
 
 func present_snapshot(snapshot: SimulationSnapshot) -> void:
+	_debug_start_distance_pixels = snapshot.start_distance_pixels
+	if _debug_start_distance_entry != null and \
+			not _debug_start_distance_entry.has_focus():
+		_debug_start_distance_entry.text = _format_debug_distance(
+			_debug_start_distance_pixels,
+		)
 	if snapshot.debug_category_index != _active_debug_category_index:
 		_active_debug_category_index = snapshot.debug_category_index
 		if _debug_visible:
@@ -346,6 +367,67 @@ func _new_input_button(button_name: StringName) -> Button:
 	button.self_modulate = Color(1.0, 1.0, 1.0, 0.01)
 	_touch_surface.add_child(button)
 	return button
+
+
+func _make_debug_distance_entry(
+	card_index: int,
+	layout_size: Vector2,
+) -> LineEdit:
+	var entry := LineEdit.new()
+	entry.name = "DebugStartDistanceEntry"
+	entry.placeholder_text = "TYPE METERS"
+	entry.text = "0"
+	entry.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	entry.virtual_keyboard_type = LineEdit.KEYBOARD_TYPE_NUMBER_DECIMAL
+	entry.mouse_filter = Control.MOUSE_FILTER_STOP
+	entry.add_theme_font_size_override("font_size", 18)
+	entry.add_theme_color_override("font_color", Color("fff0b8"))
+	entry.add_theme_color_override("caret_color", Color("72e8e1"))
+	entry.add_theme_color_override("selection_color", Color("245b65"))
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = Color("071c23")
+	normal.border_color = Color("72e8e1")
+	normal.set_border_width_all(2)
+	normal.set_corner_radius_all(7)
+	entry.add_theme_stylebox_override("normal", normal)
+	var focus := normal.duplicate() as StyleBoxFlat
+	focus.border_color = Color("fff0b8")
+	entry.add_theme_stylebox_override("focus", focus)
+	var rect := LabLayout.parameter_value_entry_rect(card_index, layout_size)
+	entry.position = rect.position
+	entry.size = rect.size
+	entry.text_submitted.connect(_submit_debug_start_distance)
+	_touch_surface.add_child(entry)
+	return entry
+
+
+func _submit_debug_start_distance(text_value: String) -> void:
+	var normalized := text_value.strip_edges().replace(",", ".")
+	if not normalized.is_valid_float():
+		_debug_start_distance_entry.text = _format_debug_distance(
+			_debug_start_distance_pixels,
+		)
+		return
+	_debug_start_distance_pixels = TuningCatalog.clamp_value(
+		TuningCatalog.DEBUG_START_DISTANCE,
+		normalized.to_float() * 10.0,
+	)
+	_debug_start_distance_entry.text = _format_debug_distance(
+		_debug_start_distance_pixels,
+	)
+	tuning_value_requested.emit(
+		TuningCatalog.DEBUG_START_DISTANCE,
+		_debug_start_distance_pixels,
+	)
+
+
+func _format_debug_distance(distance_pixels: float) -> String:
+	var meters := distance_pixels / 10.0
+	return (
+		"%.0f" % meters
+		if is_equal_approx(meters, roundf(meters))
+		else "%.1f" % meters
+	)
 
 
 func _set_touch_reel(active: bool) -> void:

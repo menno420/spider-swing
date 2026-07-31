@@ -1,10 +1,62 @@
 extends RefCounted
 class_name ProgressionService
-## Applies validated settlements and cosmetic selections to player progress.
+## Applies validated settlements and selections to player progress, and owns
+## the session-only debug upgrade resolution overlay. The overlay never mutates
+## PlayerProgress and is deliberately absent from every persistence codec.
 
 const AMBER_FLY_REQUIREMENT := 25
 const COMET_DISTANCE_REQUIREMENT := 10000.0
 const SETTLEMENT_HISTORY_LIMIT := 64
+const DEBUG_UPGRADE_OVERLAY_DISABLED := -1
+
+var _debug_upgrade_overlay_level: int = DEBUG_UPGRADE_OVERLAY_DISABLED
+
+
+func set_debug_upgrade_overlay_level(level: int) -> bool:
+	var resolved := clampi(
+		level,
+		DEBUG_UPGRADE_OVERLAY_DISABLED,
+		SpiderCatalog.MAX_UPGRADE_LEVEL,
+	)
+	if resolved == _debug_upgrade_overlay_level:
+		return false
+	_debug_upgrade_overlay_level = resolved
+	return true
+
+
+func clear_debug_upgrade_overlay() -> bool:
+	return set_debug_upgrade_overlay_level(DEBUG_UPGRADE_OVERLAY_DISABLED)
+
+
+func debug_upgrade_overlay_level() -> int:
+	return _debug_upgrade_overlay_level
+
+
+func debug_upgrade_overlay_enabled() -> bool:
+	return _debug_upgrade_overlay_level >= 0
+
+
+func resolved_progress(progress: PlayerProgress) -> PlayerProgress:
+	var resolved := progress.copy()
+	if not debug_upgrade_overlay_enabled():
+		return resolved
+	for item: Dictionary in SpiderCatalog.upgrades_for(
+		resolved.selected_spider_id,
+	):
+		resolved.upgrade_levels[str(item["id"])] = \
+			_debug_upgrade_overlay_level
+	return resolved
+
+
+func resolved_upgrade_level(
+	progress: PlayerProgress,
+	upgrade_id: StringName,
+) -> int:
+	var item := SpiderCatalog.upgrade(upgrade_id)
+	if debug_upgrade_overlay_enabled() and not item.is_empty() and \
+			StringName(item["profile"]) == progress.selected_spider_id:
+		return _debug_upgrade_overlay_level
+	return progress.upgrade_level(upgrade_id)
 
 
 func apply_settlement(

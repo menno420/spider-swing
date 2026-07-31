@@ -41,7 +41,11 @@ func _ready() -> void:
 	_front_end_state.upgrade_purchase_requested.connect(_purchase_upgrade)
 	_front_end_state.creator_piece_requested.connect(_cycle_creator_piece)
 	_front_end_state.creator_clear_requested.connect(_clear_creator_pattern)
-	_front_end_state.configure(_save_repository.load_settings(), _progress)
+	_front_end_state.configure(
+		_save_repository.load_settings(),
+		_progress,
+		_progression_service,
+	)
 	var failures := _mount_front_end()
 	if is_smoke_test():
 		_report_boot(failures)
@@ -166,7 +170,7 @@ func _mount_swing_lab(
 	_session.event_published.connect(_input_router.present_simulation_event)
 	_session.settlement_created.connect(_apply_settlement)
 	_session.checkpoint_reached.connect(_unlock_region_checkpoint)
-	_session.configure_progress(_progress)
+	_session.configure_progress(_progress, _progression_service)
 	_session.configure_creator_pattern(creator_pattern)
 	_session.configure_run(run_mode, start_distance_pixels)
 	_input_router.web_tapped.connect(_on_web_tapped)
