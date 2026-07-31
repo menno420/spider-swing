@@ -109,4 +109,4 @@ PR #52 is ready and green on the complete implementation head except for the
 designed born-red hold. The final closeout head must rerun governance, pinned
 Godot, and Android and may merge only after all required checks are green.
 
-- **📊 Model:** gpt-5.6-sol · high · production art and integration
+- **📊 Model:** gpt-5.6-sol · high · feature build
