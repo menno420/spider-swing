@@ -29,12 +29,21 @@ every run ended in a death. Bands 0/1k/2k/3k/4k/4.5k/5k/5.5k/6k/7k/8k/10k/15k/20
 
 ## Finding
 
-**The endless course stops getting harder at about 6000 m, and everything past
-10 000 m is easier than 4000 m.** Intermediate bot: 2.79 deaths/km at 1 km,
-climbing to a peak of 10.36 ±1.16 at 6 km, then falling to 5.46 ±0.61 at 10 km
-and staying flat through 20 km. The peak-to-plateau drop is 3.7σ. 10 km is
-exactly as hard as 4 km (5.46 ±0.61 vs 5.38 ±0.60); for a novice it matches
-2 km, for an expert 3 km.
+*(Re-measured after `main` landed PR #69 mid-slice — see "Re-measurement"
+below. The numbers here describe the merged tree.)*
+
+**The course ramps hard to 8 km, then falls off a cliff at 10 km.**
+Intermediate bot: 2.79 deaths/km at 1 km, climbing to 19.47 ±2.18 at 8 km — a
+7× ramp — then dropping to 5.46 ±0.61 at 10 km, a 3.6× collapse across the
+Bramble Canopy → Silk Hollow boundary, and flat through 20 km. The drop is
+6.2σ. 10 km is still no harder than 4 km (5.46 ±0.61 vs 5.38 ±0.60) despite
+everything between them being 2–4× deadlier.
+
+**Inside Bramble Canopy, skill stops mattering.** The novice-to-expert
+deaths/km ratio falls from 3.31× at 1 km to 1.31× at 5 km, 1.10× at 6 km, and
+0.87× at 7 km — where the expert bot dies *more* than the novice. Silk Hollow
+restores it to 1.7–1.8×. A band where playing well does not help is a content
+signal rather than a difficulty one.
 
 Three mechanisms, each confirmed by censusing the served stream rather than
 only by reading the source:
@@ -47,14 +56,35 @@ only by reading the source:
    statistically identical out to 30 km — same eleven patterns, same
    proportions, ~20% recovery, mean authored difficulty 3.16–3.20.
 
-Silk Hollow is structurally gentler than Bramble Canopy: recovery every 5
-chunks against Bramble's 6 (20.8% vs 18.9% of the stream), while Bramble also
-forces a vertical weave every 4 chunks — 33% of its entire stream. With
-obstacle growth already saturated, nothing compensates, so the curve inverts at
-the zone-2 → zone-3 boundary.
+A fourth mechanism stopped working: **the authored `difficulty` field no longer
+predicts lethality.** PR #69 moved Bramble's mean authored difficulty 3.15 →
+3.25 (3%) and left its recovery share unchanged at 18.9%, while measured
+deaths/km at 8 km went 7.01 → 19.47 (178%). Whatever the new vocabulary's
+geometry does is invisible to the rating. Treat the field as a label, not a
+measurement, until something reconciles them.
 
 **The remedy is zone content, which is not this lane.** Recorded for the lane
 that owns it; nothing in the pattern catalog was changed.
+
+## Re-measurement — main moved under the slice
+
+`main` landed PR #69 ("Give Bramble Canopy its own obstacle vocabulary") while
+this PR was open. It replaced **every** pattern id in the Bramble pool — 11 ids
+out, 8 new ones in — which is precisely the content the 5–10 km bands measure.
+The first measurement's Bramble numbers no longer described the tree, so the
+whole grid and the census were re-run against the merged result and the
+document rewritten. Landing the original numbers would have shipped a doc that
+contradicted the code it documented on the day it merged.
+
+The change is confined as expected, which is the internal check: the 0 m and
+10/15/20 km bands came back **byte-identical** to the pre-#69 run, because runs
+at those starts never touch Bramble. Only the 5–8 km bands moved.
+
+It also changed the headline. Before #69 the curve peaked at 6 km and declined
+gently; now it climbs to 8 km and collapses. The skill-insensitivity finding
+did not exist before #69 at all — old Bramble held a 1.5–2× novice/expert
+ratio. Both are reported as measurements of the current tree, not as verdicts
+on the zone lane's change.
 
 ## The lab fix this needed
 
@@ -105,10 +135,12 @@ gate. Anchors: `session-card-grammar` / `model-line-class` guards in
 
 ## Verification
 
-`python3 tools/verify.py --require-godot` → **exit 0**, 123 contracts on pinned
-Godot 4.7.1. Re-run after rebasing onto `main` (which moved twice during the
-slice, once through the contract-count machinery in PR #72) — the count still
-reads 123 executed and 123 declared.
+`python3 tools/verify.py --require-godot` → **exit 0**, **124** contracts on
+pinned Godot 4.7.1, run against the tree with `main` merged in. `main` moved
+three times during this slice — PR #72 touched the contract-count machinery and
+PR #69 bumped `EXPECTED_CHECK_COUNT` 123 → 124 — so the suite was re-run after
+each merge rather than trusting the diff. The count reads 124 executed against
+124 declared, so the same-value merge hazard did not bite.
 
 `python3 bootstrap.py check --strict` → **exit 0**.
 
@@ -117,8 +149,10 @@ reads 123 executed and 123 declared.
 - `docs/measurements/2026-08-01-difficulty-curve.md` — the committed baseline:
   deaths/km, survival, death causes and resource pressure, with an explicit
   section on which numbers are load-bearing and which are not.
-- `tools/difficulty_curve.py` — drives the grid and renders the tables, so the
-  baseline can be re-measured and diffed rather than trusted forever.
+- `tools/difficulty_curve.py` — drives the grid and renders the tables,
+  including the skill-sensitivity ratio, so the baseline can be re-measured and
+  diffed rather than trusted forever. Re-running it after #69 is what caught
+  the stale numbers.
 - `tools/simulate.gd` — travelled-distance normalization, `deaths_per_km` and
   its standard error.
 - `docs/technical/simulation-lab.md`, `docs/README.md` — kept in step.

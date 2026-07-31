@@ -127,6 +127,29 @@ def render(summaries: list[dict], options: argparse.Namespace) -> str:
         add(f"| {band:,} m | " + " | ".join(cells) + " |")
     add("")
 
+    if "novice" in skills and "expert" in skills:
+        add("## Skill sensitivity")
+        add("")
+        add("Novice deaths/km ÷ expert deaths/km. High means the band rewards")
+        add("skill; ~1.0 means playing well does not help, which is a content")
+        add("signal rather than a difficulty one.")
+        add("")
+        add("| Start | Novice | Expert | Ratio |")
+        add("| --- | ---: | ---: | ---: |")
+        for band in bands:
+            novice = by_key.get((band, "novice"))
+            expert = by_key.get((band, "expert"))
+            if novice is None or expert is None:
+                continue
+            expert_rate = expert["deaths_per_km"]
+            ratio = ("—" if expert_rate <= 0.0
+                     else f"{novice['deaths_per_km'] / expert_rate:.2f}×")
+            add(
+                f"| {band:,} m | {novice['deaths_per_km']:.2f} | "
+                f"{expert_rate:.2f} | {ratio} |"
+            )
+        add("")
+
     add("## Distance survived from the start line")
     add("")
     add("| Start | Skill | Mean | Median | p10 | p90 | Timeouts |")
