@@ -144,10 +144,13 @@ without a reported regression.
   source scan. `python3 bootstrap.py check --strict` passes all content checks;
   during implementation its only hold is the session card's deliberate
   born-red `in-progress` badge.
-- `game-quality` runs the same engine-backed verification on a clean runner.
-  `substrate-gate` deliberately remains red until the session card flips
-  complete. `android-debug` exports and uploads the development APK but is not a
-  required merge check because Android SDK downloads are an external dependency.
+- PR #54 implementation head `6bb90227…` passed engine-backed `game-quality`
+  run 30646172533. Android run 30646174062 produced artifact 8799510029; its
+  downloaded ZIP matched GitHub's `8be96ccd…` digest, its intact APK matched
+  `5835c002…`, and `keytool` independently reported the pinned certificate
+  `83ff0bc2…`. `substrate-gate` remains deliberately red only until the session
+  card flips complete. Android export is not a required merge check because SDK
+  downloads are an external dependency.
 
 **Deliberately absent — scope boundaries, not gaps**
 
@@ -156,6 +159,11 @@ without a reported regression.
 - No authored Phase-1 chunk pack, moving hazards, final economy, missions,
   production monetization, billing SDK, server entitlement, course sharing,
   moderation, analytics, ads, cloud save, or store publishing.
+- Campaign, difficulty, rewards, and audio now have approved direction in
+  D-0033 but no implementation: staged teaching then challenges; per-mode bests
+  with Standard alone competitive; cosmetics/stars rather than flies; generated
+  SFX plus individually verified CC0 ambience/music. Difficulty must not alter
+  the approved physics preset.
 - No production signing or Google Play publishing. The stable debug key is not a
   release credential and must never become one.
 
@@ -175,6 +183,9 @@ existing traversal checklist in the Swing Laboratory reference.
   arbitrary-distance practice starts, and a session-only selectable upgrade
   overlay make persistent far-course and progression testing possible without
   changing physics, economy, ownership, or settlement architecture.
+- **2026-07-31 — Owner direction (PR #55).** Records the staged campaign,
+  difficulty-record, campaign-reward, audio-source, and agent-merge decisions;
+  no gameplay implementation was added.
 - **2026-07-31 — Spider identity and Field Guide (PR #53).** Separates biology
   from balance, makes the guide a Home and Garage route, adopts real names where
   usable, renames Skitter to Magnolia Green Jumper, and documents Buckler's

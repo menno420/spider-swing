@@ -115,6 +115,20 @@ as venue `any`.)
 kit-owned — they refresh at upgrade between the fence markers; local
 findings go here, below the fence.)
 
+- 2026-07-31 · capability · `owner-live` · **The stable public debug signer is
+  proven end to end in a source-identified Android artifact** · PR #54 source
+  `6bb90227…` passed Android run
+  [30646174062](https://github.com/menno420/spider-swing/actions/runs/30646174062),
+  producing
+  [artifact 8799510029](https://github.com/menno420/spider-swing/actions/runs/30646174062/artifacts/8799510029);
+  the downloaded 61,782,748-byte ZIP matched GitHub's SHA-256 `8be96ccd…`, its
+  intact 62,186,268-byte APK matched `5835c002…`, `build-info.txt` named the
+  exact source/build/package/key digest, and `keytool -printcert -jarfile`
+  reported certificate SHA-256 `83ff0bc2…`, exactly the workflow pin · the
+  first stable-key install still needs one uninstall because legacy builds used
+  throwaway identities; use later artifacts to prove device data continuity,
+  and never reuse this public key for Play, release, or distribution.
+
 - 2026-07-31 · capability · `owner-live` · **Godot 4.7.1 Standard runs fully in
   this managed Codex workspace when its XDG roots are task-local** · an
   unmodified launch exits 134 after `Could not create directory:
