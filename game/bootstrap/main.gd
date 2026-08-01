@@ -223,6 +223,7 @@ func _start_debug_game(
 	settings: PlayerSettings,
 	start_distance_pixels: float,
 	upgrade_level: int,
+	bird_overrides: Dictionary,
 ) -> void:
 	if not settings.show_debug_tools or not is_equal_approx(
 		start_distance_pixels,
@@ -230,7 +231,8 @@ func _start_debug_game(
 			TuningCatalog.DEBUG_START_DISTANCE,
 			start_distance_pixels,
 		),
-	) or upgrade_level != _progression_service.debug_upgrade_overlay_level():
+	) or upgrade_level != _progression_service.debug_upgrade_overlay_level() or \
+			bird_overrides != _front_end_state.debug_bird_overrides():
 		return
 	_active_run_is_debug_test = true
 	_unmount_front_end()
@@ -240,6 +242,8 @@ func _start_debug_game(
 		SwingLabSession.RUN_PRACTICE,
 		start_distance_pixels,
 		true,
+		&"",
+		bird_overrides,
 	)
 	if failures.is_empty():
 		return
@@ -257,6 +261,7 @@ func _mount_swing_lab(
 	start_distance_pixels: float = 0.0,
 	debug_start: bool = false,
 	campaign_level_id: StringName = &"",
+	bird_debug_overrides: Dictionary = {},
 ) -> PackedStringArray:
 	var failures := PackedStringArray()
 	if not ResourceLoader.exists(SWING_LAB_SCENE_PATH):
@@ -291,6 +296,7 @@ func _mount_swing_lab(
 	_session.checkpoint_reached.connect(_unlock_region_checkpoint)
 	_session.configure_progress(_progress, _progression_service)
 	_session.configure_creator_pattern(creator_pattern)
+	_session.configure_bird_debug_overrides(bird_debug_overrides)
 	_session.configure_run(
 		run_mode, start_distance_pixels, -1, debug_start, campaign_level_id)
 	_input_router.web_tapped.connect(_on_web_tapped)
@@ -352,6 +358,14 @@ func _show_front_end() -> void:
 			_front_end_state.sync_debug_run_setup(
 				snapshot.start_distance_pixels,
 				snapshot.debug_upgrade_overlay_level,
+				{
+					"bird_speed": snapshot.tuning_values.get(
+						&"bird_speed", SwingConfig.DEFAULT_BIRD_SPEED),
+					"bird_acceleration": snapshot.tuning_values.get(
+						&"bird_acceleration", SwingConfig.DEFAULT_BIRD_ACCELERATION),
+					"bird_start_offset": snapshot.tuning_values.get(
+						&"bird_start_offset", SwingConfig.DEFAULT_BIRD_START_OFFSET),
+				},
 			)
 	_unmount_swing_lab()
 	_active_run_is_debug_test = false

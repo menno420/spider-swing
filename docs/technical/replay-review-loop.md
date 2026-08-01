@@ -66,11 +66,12 @@ drift.
 
 ```jsonc
 {
-  "format": "spider-swing-input-trace@2",
+  "format": "spider-swing-input-trace@3",
   "setup": {            // everything needed to rebuild the identical world
     "preset": "balanced_baseline", "spider": "classic", "skill": "expert",
     "upgrades": 20, "difficulty": "standard", "start_m": 5000,
-    "course_seed": 1342, "bot_seed": 12, "bot": "<policy knobs>"
+    "course_seed": 1342, "bot_seed": 12, "bot": "<policy knobs>",
+    "bird_speed": 0, "bird_acceleration": 12, "bird_start_offset": 760
   },
   "expected": {         // what the run did, so the trace can be checked
     "travelled_m": 3335.33, "distance_m": 8335.33,
@@ -187,7 +188,8 @@ are easy to get wrong:
 - A trace from a superseded format must be **skipped by the catalog**, not
   listed and then refused. The former current trace
   `lab-best-warp5000-l20.json` is retained as a complete `@1` fixture for that
-  rule; after the physics-driven `@2` bump, every old `@1` trace looks like it.
+  rule; after the earned-speed/bird `@3` bump, every old `@1` or `@2` trace
+  looks like it.
 
 ## Bumping the format
 

@@ -1,6 +1,6 @@
 # Earned speed and the bird — design spec
 
-> **Status:** `plan`
+> **Status:** `binding`
 >
 > **The two mechanics the owner has chosen to build next, specified against the
 > live source.** Speed stops being handed to the player and starts being earned;
@@ -14,12 +14,13 @@
 > for tuning* is `assumed` and marked as such — see § "What cannot be tuned from
 > the lab", which is the most important section in this document.
 >
-> **Implementation status (2026-08-01):** ordered slice 1, release quality, is
-> implemented in build `0.25.0-earned-release-playtest`. Its maximum award
-> (`assumed` 100 px/s) and full-arc threshold (`assumed` 90°) deliberately await
-> a device verdict; the headless contracts establish deterministic eligibility,
-> scaling, bounds, reset behavior, and forced-detach exclusion. Slices 2–5 remain
-> in the order below. The free drive and bird are unchanged in slice 1.
+> **Implementation status (2026-08-02):** the complete package is implemented
+> in build `0.26.0-earned-speed-bird-playtest`. Release quality remains
+> `assumed` at 100 px/s maximum and 90° full arc; continuous drive is zero; the
+> left kill line is visible deterministic bird state; and Test Run exposes all
+> three assumed bird axes. The contracts establish simulation, presentation,
+> replay, isolation and reset behavior. OQ-13 … OQ-16 remain device/product
+> verdicts, not implementation blockers.
 
 ## The owner's brief, verbatim
 
@@ -168,6 +169,23 @@ repurposed, not left as a dead purchase. That is an owner-facing product
 decision (it is a named, priced identity track on a shipped spider), so it goes
 to the queue rather than being decided in-session.
 
+### Implemented decisions at the six reference-speed sites
+
+`target_speed_at` remains intact as the named reference. The six sites were not
+allowed to inherit the drive removal accidentally:
+
+1. Opening launch keeps the one-time reference grant.
+2. Rescue keeps its anti-death-spiral reference grant and additionally restores
+   the full configured bird gap.
+3. Guided opening keeps the reference launch.
+4. Camera look-ahead keeps comparing earned velocity against the reference.
+5. Profile scaling keeps shaping the reference curve; Quick Feet is
+   deliberately inert pending OQ-13, with an explicit audit exception.
+6. Release quality now caps at `maximum_target_speed +
+   maximum_horizontal_overspeed`, not the local distance curve. Current values
+   make that **1120 px/s / 112 m/s** (`inferred` safety ceiling), above the
+   owner's measured 73–78 m/s opening band while still bounding repeated awards.
+
 **Recommended shape rather than deletion:** keep `target_speed_at` as a *named
 reference speed* — the number the camera, the rescue, and the bird are all
 expressed against — and reduce `horizontal_drive_acceleration` to zero (or near
@@ -189,14 +207,14 @@ speed just in a different way"* — expressed mechanically.
 
 # Part 2 — The bird
 
-## The bird already exists, invisibly
+## The bird existed invisibly; it is now visible state
 
-`SimulationWorld.left_kill_boundary()` (`simulation_world.gd:554`) is
-`furthest_x − config.camera_left_kill_distance` (520 px). It is enforced in
-`step()` at `:471-477`, kills with `DEATH_REQUESTED` cause `camera_boundary`
-and message *"Lost behind the camera"*, and is already published to
-presentation as `snapshot.left_kill_boundary`
-(`swing_lab_session.gd:684`).
+At the spec baseline `SimulationWorld.left_kill_boundary()` was
+`furthest_x − config.camera_left_kill_distance` (520 px). It was enforced in
+`step()`, killed with `DEATH_REQUESTED` cause `camera_boundary`, and was already
+published as `snapshot.left_kill_boundary`. The implementation now derives that
+same seam from `bird_position.x + BIRD_CONTACT_LEAD_X`, preserving the death
+cause while changing the message to *"Caught by the pursuing bird"*.
 
 **The bird is that line: made visible, given its own position state, and
 advanced by its own law instead of ratcheting off `furthest_x`.** Building it
@@ -296,6 +314,20 @@ The owner has stated he cannot supply new recordings for this work. Therefore:
    hauling exploit stays dead. `arc per web` is reported for every batch, so
    re-running the search is a genuine regression test on the exploit.
 
+### Combined-tree exploit regression
+
+**Measured** on the implementation tree with `tools/simulate.gd`, 12 runs,
+intermediate, L20, bot seeds 4242–4253, course seeds 9000–9005, 120 s cap,
+bird speed zero. Resolution is one 60 Hz tick; the bot still cannot pump and no
+number here tuned the bird.
+
+- The previously flagged hauling policy travels a mean **73.5 m** (median
+  65.3 m, p10–p90 60.4–75.4 m, max 148.2 m) and all 12 runs time out dangling.
+  Its 111.6° recorded arc is not a travelling swing and is deliberately not
+  used as a target — the regression result is that the exploit no longer moves.
+- The endorsed wide-swing policy still produces a **63.9° arc per web** on the
+  same held-out setup. This is style evidence only, not a bird-speed target.
+
 ## Build order
 
 **Corrected 2026-08-01.** The original five-slice split shipped release quality
@@ -306,7 +338,7 @@ requested.
 
 1. **Release quality — implemented** (PR #97). Not judgeable until the drive is
    gone; see OQ-16's timing banner.
-2. **Drive → 0 and the bird — together.** Removing the drive without the bird
+2. **Drive → 0 and the bird — implemented together.** Removing the drive without the bird
    produces a game that is only harder: the drive is what makes stalling
    impossible today, and `left_kill_boundary()` becomes a live failure mode with
    nothing on screen explaining it (`measured`: 4 of 10 bot runs time out at

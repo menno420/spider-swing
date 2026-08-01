@@ -24,9 +24,10 @@ opened the earned-speed follow-ups OQ-13 … OQ-16.
 Removing the free forward drive makes it buy **nothing**. It is a named, priced
 identity track on a shipped spider, so it cannot simply be left dead.
 
-**Default:** the work proceeds by repointing it at a *swing* speed term rather
-than the drive, so Skitter keeps its "fast" identity. Nothing is renamed or
-repriced without an answer here.
+**Default:** it remains deliberately inert in the combined playtest, with an
+explicit upgrade-audit exception, rather than being silently repointed before
+the owner chooses its identity. Nothing is renamed, repriced, or presented as a
+working benefit without an answer here.
 
 **The fork:** which term. Release-momentum bonus, reel retraction rate, and
 burst exit speed all read as "quick", and they produce genuinely different
@@ -36,7 +37,9 @@ spiders. That is a feel decision, not a measurable one.
 
 **Default:** it kills, reusing the existing `camera_boundary` death path
 (`game/simulation/simulation_world.gd:471-477`) — cheapest to build and
-consistent with the invisible line it replaces.
+consistent with the invisible line it replaces. Build
+`0.26.0-earned-speed-bird-playtest` implements this default; rescue restores the
+configured bird gap after the first contact.
 
 **The fork:** a non-lethal first contact (a stagger, a slowdown, a stolen fly)
 softens the death spiral that earned speed plus an accelerating pursuer creates,
@@ -52,9 +55,11 @@ physics allow ~92 m/s from a 380 px web. Every bot number here is a **floor**,
 not a target, and a bird tuned against it would be tuned against a player who
 cannot play the game this design is about.
 
-**Default:** ship a placeholder explicitly marked `assumed`, and expose bird
-speed, acceleration and start offset as **debug tunables on the Test Run
-screen** so the number is found by playing.
+**Default:** build `0.26.0-earned-speed-bird-playtest` ships `assumed` values of
+300 px/s start speed, +12 px/s per 1,000 m, and 760 px start gap. Test Run
+exposes all three directly and provides OFF (0/12/760), SLOW (240/8/900), BASE
+(300/12/760), and FAST (380/20/600). These are comparison points, not claims
+about correct tuning.
 
 **The fork:** the values themselves, after one device playtest of a no-drive
 build. No recording is needed — only a verdict.
@@ -66,16 +71,21 @@ the award is deterministic and bounded; they cannot prove that a player feels
 the connection between timing and speed on a phone. The bot cannot pump, so it
 is explicitly not a tuning instrument for this question.
 
-**Default:** build `0.25.0-earned-release-playtest` uses an `assumed` 100 px/s
+**Default:** build `0.26.0-earned-speed-bird-playtest` uses an `assumed` 100 px/s
 maximum award and an `assumed` 90° full-arc threshold. The release must be
 forward, right of the anchor, and rising; falling, backward, forced-detach, and
 near-zero-arc releases receive no meaningful award.
+
+The combined build keeps those two assumed values and changes only the safety
+ceiling to the run-wide maximum reference plus overspeed: 1120 px/s / 112 m/s
+with current config. That ceiling is `inferred`, not a feel target.
 
 **The fork:** keep, strengthen, weaken, or reshape those two assumed values after
 one device playtest. No recording is needed — only whether good timing feels
 rewarding and whether repeated shallow releases read as an exploit.
 
-> **Do not gather this verdict yet — wait for slice 2.** Added 2026-08-01 after
+> **This verdict is now ready in the combined build.** The earlier deferral was
+> added 2026-08-01 after
 > slice 1 merged. Two mechanisms make the current build the worst possible
 > place to judge this, and they compound:
 >

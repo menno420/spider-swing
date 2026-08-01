@@ -21,6 +21,7 @@ signal debug_play_requested(
 	settings: PlayerSettings,
 	start_distance_pixels: float,
 	upgrade_level: int,
+	bird_overrides: Dictionary,
 )
 ## A bundled lab trace the owner chose to watch. Carries the path rather than
 ## the document so the state layer never holds a whole run in memory.
@@ -51,9 +52,9 @@ const TUTORIAL_STEPS := [
 	{
 		"title": "KEEP MOVING",
 		"kicker": "01 · THE RUN",
-		"body": "The spider starts on a training web and moves forward "
-			+ "automatically. You have about a second to read the first arc, "
-			+ "but may take control immediately. Shape that speed into a safe path.",
+		"body": "The spider launches on a training web, but there is no free "
+			+ "forward drive after that. You have about a second to read the first "
+			+ "arc and may take control immediately. Every later gain is earned.",
 		"tip": "Let the opening swing carry you, then watch the space ahead.",
 	},
 	{
@@ -68,7 +69,8 @@ const TUTORIAL_STEPS := [
 		"title": "RELEASE WITH MOMENTUM",
 		"kicker": "03 · SWING",
 		"body": "While attached, tap anywhere away from the controls to release. "
-			+ "Your velocity is preserved, so timing controls height and speed.",
+			+ "A wide rising release adds forward momentum; poor timing only keeps "
+			+ "the speed you already carried.",
 		"tip": "Release while rising to carry momentum forward.",
 	},
 	{
@@ -109,6 +111,32 @@ const TUTORIAL_STEPS := [
 	},
 ]
 
+## Session-only comparison points for the combined no-drive/bird playtest.
+## Every value is `assumed`: the bot cannot pump and therefore cannot tune a
+## pursuer intended for human-earned speed. The owner can change each axis.
+const BIRD_DEBUG_PRESETS := {
+	&"off": {
+		"bird_speed": 0.0,
+		"bird_acceleration": 12.0,
+		"bird_start_offset": 760.0,
+	},
+	&"slow": {
+		"bird_speed": 240.0,
+		"bird_acceleration": 8.0,
+		"bird_start_offset": 900.0,
+	},
+	&"base": {
+		"bird_speed": SwingConfig.DEFAULT_BIRD_SPEED,
+		"bird_acceleration": SwingConfig.DEFAULT_BIRD_ACCELERATION,
+		"bird_start_offset": SwingConfig.DEFAULT_BIRD_START_OFFSET,
+	},
+	&"fast": {
+		"bird_speed": 380.0,
+		"bird_acceleration": 20.0,
+		"bird_start_offset": 600.0,
+	},
+}
+
 var screen: int = Screen.HOME
 var field_guide_return_screen: int = Screen.HOME
 var tutorial_index: int = 0
@@ -117,6 +145,9 @@ var progress: PlayerProgress = PlayerProgress.defaults()
 var debug_run_distance_pixels: float = 0.0
 var debug_run_upgrade_level: int = \
 	ProgressionService.DEBUG_UPGRADE_OVERLAY_DISABLED
+var debug_bird_speed: float = SwingConfig.DEFAULT_BIRD_SPEED
+var debug_bird_acceleration: float = SwingConfig.DEFAULT_BIRD_ACCELERATION
+var debug_bird_start_offset: float = SwingConfig.DEFAULT_BIRD_START_OFFSET
 var _progression_service := ProgressionService.new()
 
 
@@ -383,6 +414,58 @@ func adjust_debug_run_upgrade_level(direction: int) -> void:
 	set_debug_run_upgrade_level(debug_run_upgrade_level + direction)
 
 
+func set_debug_bird_value(parameter_id: StringName, value: float) -> void:
+	if not settings.show_debug_tools or parameter_id not in [
+		&"bird_speed", &"bird_acceleration", &"bird_start_offset",
+	]:
+		return
+	var safe_value := TuningCatalog.clamp_value(parameter_id, value)
+	var current := float(debug_bird_overrides()[str(parameter_id)])
+	if is_equal_approx(current, safe_value):
+		return
+	match parameter_id:
+		&"bird_speed":
+			debug_bird_speed = safe_value
+		&"bird_acceleration":
+			debug_bird_acceleration = safe_value
+		&"bird_start_offset":
+			debug_bird_start_offset = safe_value
+	changed.emit()
+
+
+func adjust_debug_bird_value(parameter_id: StringName, direction: int) -> void:
+	if parameter_id not in [
+		&"bird_speed", &"bird_acceleration", &"bird_start_offset",
+	]:
+		return
+	var current := float(debug_bird_overrides()[str(parameter_id)])
+	set_debug_bird_value(
+		parameter_id,
+		current + TuningCatalog.step_for(parameter_id) * direction,
+	)
+
+
+func apply_debug_bird_preset(preset_id: StringName) -> void:
+	if not settings.show_debug_tools or not BIRD_DEBUG_PRESETS.has(preset_id):
+		return
+	var preset: Dictionary = BIRD_DEBUG_PRESETS[preset_id]
+	debug_bird_speed = TuningCatalog.clamp_value(
+		&"bird_speed", float(preset["bird_speed"]))
+	debug_bird_acceleration = TuningCatalog.clamp_value(
+		&"bird_acceleration", float(preset["bird_acceleration"]))
+	debug_bird_start_offset = TuningCatalog.clamp_value(
+		&"bird_start_offset", float(preset["bird_start_offset"]))
+	changed.emit()
+
+
+func debug_bird_overrides() -> Dictionary:
+	return {
+		"bird_speed": debug_bird_speed,
+		"bird_acceleration": debug_bird_acceleration,
+		"bird_start_offset": debug_bird_start_offset,
+	}
+
+
 func request_debug_play() -> void:
 	if not settings.show_debug_tools:
 		return
@@ -396,12 +479,14 @@ func request_debug_play() -> void:
 		settings.copy(),
 		debug_run_distance_pixels,
 		debug_run_upgrade_level,
+		debug_bird_overrides(),
 	)
 
 
 func sync_debug_run_setup(
 	distance_pixels: float,
 	upgrade_level: int,
+	bird_overrides: Dictionary = {},
 ) -> void:
 	if not settings.show_debug_tools:
 		return
@@ -413,6 +498,14 @@ func sync_debug_run_setup(
 		TuningCatalog.DEBUG_UPGRADE_LEVEL,
 		float(upgrade_level),
 	))
+	for parameter_id: StringName in [
+		&"bird_speed", &"bird_acceleration", &"bird_start_offset",
+	]:
+		if bird_overrides.has(str(parameter_id)):
+			set_debug_bird_value(
+				parameter_id,
+				float(bird_overrides[str(parameter_id)]),
+			)
 
 
 func request_spider_profile(spider_id: StringName) -> void:

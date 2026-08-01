@@ -13,6 +13,8 @@ static func run() -> Dictionary:
 	passed += _test_action_feedback_is_event_driven(failures)
 	passed += _test_spider_presentation_is_interpolated_and_mipmapped(
 		failures)
+	passed += _test_pursuing_bird_art_is_clean_and_larger_than_spider(failures)
+	passed += _test_pursuing_bird_motion_reads_fixed_tick_state(failures)
 	passed += _test_double_tap_has_a_separate_burst_route(failures)
 	passed += _test_touch_mouse_emulation_produces_one_intent(failures)
 	passed += _test_device_tap_keeps_recovery_web_attached(failures)
@@ -332,6 +334,113 @@ static func _contains_visible_chroma_key(image: Image) -> bool:
 					pixel.g < 0.40 and pixel.b > 0.75:
 				return true
 	return false
+
+
+static func _test_pursuing_bird_art_is_clean_and_larger_than_spider(
+	failures: PackedStringArray,
+) -> int:
+	for asset_id: StringName in [
+		ArtAssetCatalog.PURSUING_BIRD_UPSTROKE,
+		ArtAssetCatalog.PURSUING_BIRD_DOWNSTROKE,
+		ArtAssetCatalog.PURSUING_BIRD_DEEPSTROKE,
+		ArtAssetCatalog.PURSUING_BIRD_GLIDE,
+	]:
+		var path := ArtAssetCatalog.texture_path(asset_id)
+		var texture := load(path) as Texture2D
+		if texture == null or texture.get_size() != Vector2(280.0, 280.0):
+			failures.append("pursuing bird pose lost its normalized 280 px canvas")
+			return 0
+		var image := texture.get_image()
+		if image == null or not _transparent_frame_is_clean(image) or \
+				_contains_visible_chroma_key(image):
+			failures.append("pursuing bird pose has an alpha or chroma fringe")
+			return 0
+		var visible_bounds := _visible_alpha_bounds(image)
+		var rendered_extent := maxf(
+			visible_bounds.size.x, visible_bounds.size.y) * \
+			SwingLabView.BIRD_CANVAS_SIZE.x / 280.0
+		# `measured` from the normalized alpha bounds at one-source-pixel
+		# resolution: every pose renders 200–243 px across its largest axis,
+		# between 2× and 3× the nominal 96 px spider canvas.
+		if rendered_extent < 192.0 or rendered_extent > 288.0:
+			failures.append("pursuing bird no longer reads 2–3× spider scale")
+			return 0
+		var import_file := FileAccess.open("%s.import" % path, FileAccess.READ)
+		if import_file == null or not import_file.get_as_text().contains(
+			"mipmaps/generate=true",
+		):
+			failures.append("moving bird art lacks mipmaps: %s" % path)
+			return 0
+	return 1
+
+
+static func _visible_alpha_bounds(image: Image) -> Rect2:
+	var minimum := Vector2(INF, INF)
+	var maximum := Vector2(-INF, -INF)
+	for y in range(image.get_height()):
+		for x in range(image.get_width()):
+			if image.get_pixel(x, y).a <= 0.05:
+				continue
+			minimum.x = minf(minimum.x, float(x))
+			minimum.y = minf(minimum.y, float(y))
+			maximum.x = maxf(maximum.x, float(x + 1))
+			maximum.y = maxf(maximum.y, float(y + 1))
+	if is_inf(minimum.x):
+		return Rect2()
+	return Rect2(minimum, maximum - minimum)
+
+
+static func _test_pursuing_bird_motion_reads_fixed_tick_state(
+	failures: PackedStringArray,
+) -> int:
+	var view := SwingLabView.new()
+	var first := SimulationSnapshot.new()
+	first.tick = 20
+	first.position = Vector2(300.0, 300.0)
+	first.bird_enabled = true
+	first.bird_position = Vector2(40.0, 260.0)
+	first.bird_velocity = Vector2(300.0, -120.0)
+	view.present(first)
+	var second := SimulationSnapshot.new()
+	second.tick = 21
+	second.position = Vector2(305.0, 302.0)
+	second.bird_enabled = true
+	second.bird_position = Vector2(46.0, 268.0)
+	second.bird_velocity = Vector2(300.0, 120.0)
+	view.present(second)
+	if not view._render_bird_position(0.5).is_equal_approx(
+		Vector2(43.0, 264.0),
+	) or not view._render_bird_velocity(0.5).is_equal_approx(
+		Vector2(300.0, 0.0),
+	):
+		failures.append("bird presentation does not interpolate fixed snapshots")
+		view.free()
+		return 0
+	view.free()
+	var before_wrap := SwingLabView.bird_frame_sample(0.99)
+	var after_wrap := SwingLabView.bird_frame_sample(0.01)
+	if int(before_wrap["next"]) != 0 or int(after_wrap["current"]) != 0 or \
+			float(before_wrap["blend"]) < 0.99 or \
+			float(after_wrap["blend"]) > 0.01:
+		failures.append("bird flap interpolation snaps at the phase wrap")
+		return 0
+	if is_equal_approx(
+		SwingLabView.bird_vertical_bob(0.10, false),
+		SwingLabView.bird_vertical_bob(0.35, false),
+	) or not is_zero_approx(SwingLabView.bird_vertical_bob(0.35, true)):
+		failures.append("bird bob is not coupled to flap phase/reduced motion")
+		return 0
+	if SwingLabView.bird_bank(-260.0, false) >= 0.0 or \
+			SwingLabView.bird_bank(260.0, false) <= 0.0 or \
+			absf(SwingLabView.bird_bank(260.0, true)) >= \
+				absf(SwingLabView.bird_bank(260.0, false)):
+		failures.append("bird banking does not follow vertical velocity")
+		return 0
+	if not is_equal_approx(SwingLabView.bird_glide_mix(0.70), 1.0) or \
+			not is_zero_approx(SwingLabView.bird_glide_mix(1.25)):
+		failures.append("bird does not ease from closing flap to glide")
+		return 0
+	return 1
 
 
 static func _test_double_tap_has_a_separate_burst_route(
@@ -686,8 +795,8 @@ static func _test_environment_theme_packs_are_visual_only(
 			return 0
 	var art_paths := ArtAssetCatalog.texture_paths()
 	# 16 forest/canopy assets, 32 Zones 3–8 assets, one asset per
-	# spider profile, and the golden fly.
-	var expected_art_count := 16 + 32 + SpiderCatalog.ALL_IDS.size() + 1
+	# spider profile, the golden fly, and four pursuing-bird poses.
+	var expected_art_count := 16 + 32 + SpiderCatalog.ALL_IDS.size() + 1 + 4
 	if art_paths.size() != expected_art_count:
 		failures.append(
 			"art catalog does not expose the zone packs, one asset per spider "

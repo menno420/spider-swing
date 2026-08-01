@@ -21,7 +21,7 @@ class_name TraceCatalog
 ## agree on it and neither may own it. Bump it when the record shape or
 ## authoritative physics semantics changes so an old trace is refused rather
 ## than replayed into a world it was never recorded in.
-const INPUT_TRACE_FORMAT := "spider-swing-input-trace@2"
+const INPUT_TRACE_FORMAT := "spider-swing-input-trace@3"
 const TRACE_DIRECTORY := "res://assets/runtime/traces"
 const TRACE_EXTENSION := ".json"
 const PIXELS_PER_METRE := 10.0
