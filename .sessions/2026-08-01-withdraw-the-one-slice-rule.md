@@ -117,23 +117,38 @@ where the code is.** Worth proposing to substrate-kit with the two earlier
 brief-template ideas; all three are about the same document and the same
 failure of writing plans for the writer rather than the reader.
 
-## Addendum — the prompt is now time-boxed
+## Addendum — a time-box was added, then removed
 
-Same slice, added minutes later. The owner said he intends to run this tonight
-and take a few runs before sleeping. That changes what a good outcome is: **an
-installable APK beats a perfect PR.**
+Same slice, twice in a few minutes, and the second edit is the instructive one.
 
-The prompt now states the priority order (drive → bird simulation → a bird
-visual that is correct rather than polished → exploit regression) and says
-explicitly which item to **drop** if the session runs long: the
-exploit-regression search, because it is measurement rather than gameplay and
-can follow tomorrow. It also names the one thing that must **not** be dropped —
-the debug tunables — because without them he cannot isolate the two changes, and
-that isolation is the entire reason they were allowed to ship together.
+On hearing the owner intended to run this tonight, I added a time-box: priority
+order, drop the exploit regression if running long, an installable APK beats a
+perfect PR. **He corrected it immediately** — *"no need to tell it to rush, I
+expect this session to last shorter than an hour anyways, and if not then I will
+just test it tomorrow."*
 
-It closes by asking for the two lines he actually needs: which Actions run holds
+He is right, and the reasoning is worth keeping. **Urgency I invented on his
+behalf was strictly downside.** It could not make the session faster than it was
+already going to be, and it could make the bird worse — the one part he
+explicitly asked to be done properly. I had converted a scheduling preference
+into a quality instruction, which is the same category of error as the slicing
+rule earlier today: taking a constraint from one frame and applying it in
+another where it does not hold.
+
+What survives, because it is about quality rather than speed: **do not cut the
+bird short**, and **do not drop the debug tunables** — that isolation is the
+entire reason the two changes were allowed to ship together. The prompt still
+closes by asking for the two lines he actually needs: which Actions run holds
 the APK, and what to change on the Test Run screen to try bird-off, bird-slow
 and bird-fast.
+
+**Second correction, same message:** chat links were written as repo-relative
+paths, which are clickable in a terminal and 404 on a phone. He reads on a
+phone, in chat, with no diff view. Two rules follow, and they belong in
+substrate-kit rather than here because they are about how the owner reads, not
+about this project: **a requested prompt is delivered in chat as a complete
+copy-ready block**, and **every repository link is a full
+`https://github.com/owner/repo/blob/main/...` URL**.
 
 ## Next slice
 
