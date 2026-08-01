@@ -28,7 +28,7 @@ const FIXED_DELTA := 1.0 / 60.0
 ## the replay path has something to prove itself against without anyone having
 ## to re-run a search first.
 const COMMITTED_TRACE := \
-	"res://assets/runtime/traces/release-quality-technical.json"
+	"res://assets/runtime/traces/earned-speed-bird-technical.json"
 
 ## `SwingLabSession.TRACE_PIXELS_PER_METRE`, restated so this contract does not
 ## silently follow a change to it.
@@ -48,6 +48,7 @@ static func run() -> Dictionary:
 	passed += _test_timed_anchor_publishes_its_remaining_life(failures)
 	passed += _test_dive_is_reachable_through_a_web_tap(failures)
 	passed += _test_committed_trace_replays_in_the_session(failures)
+	passed += _test_trace_replays_its_bird_isolation_settings(failures)
 	passed += _test_trace_format_mismatch_is_refused(failures)
 	passed += _test_catalog_lists_the_committed_trace(failures)
 	passed += _test_catalog_skips_documents_it_cannot_replay(failures)
@@ -270,6 +271,32 @@ static func _test_committed_trace_replays_in_the_session(
 				+ "replay shows a different run from the one reported")
 				% [got, want, absf(got - want)])
 		return 0
+	return 1
+
+
+static func _test_trace_replays_its_bird_isolation_settings(
+	failures: PackedStringArray,
+) -> int:
+	var trace := SwingLabSession.read_input_trace(COMMITTED_TRACE)
+	var setup: Dictionary = trace.get("setup", {})
+	if not is_zero_approx(float(setup.get("bird_speed", -1.0))) or \
+			not is_equal_approx(float(setup.get("bird_acceleration", -1.0)), 12.0) or \
+			not is_equal_approx(float(setup.get("bird_start_offset", -1.0)), 760.0):
+		failures.append("technical trace does not declare all bird isolation axes")
+		return 0
+	var session := SwingLabSession.new()
+	var loaded := session.load_input_trace(trace)
+	var snapshot := session.current_snapshot()
+	if not bool(loaded.get("ok", false)) or snapshot.bird_enabled or \
+			not is_zero_approx(float(snapshot.tuning_values[&"bird_speed"])) or \
+			not is_equal_approx(
+				float(snapshot.tuning_values[&"bird_acceleration"]), 12.0) or \
+			not is_equal_approx(
+				float(snapshot.tuning_values[&"bird_start_offset"]), 760.0):
+		failures.append("trace replay did not restore its bird-off world exactly")
+		session.free()
+		return 0
+	session.free()
 	return 1
 
 

@@ -6,19 +6,18 @@
 > work always win over this file. Read it second (right after the working
 > agreement) and keep it current as the project moves.
 
-**The earned-speed mechanics work is proceeding one ordered slice at a time.** Read
+**The earned-speed package is implemented as one testable whole.** Read
 [`next-session-brief-2026-08-01-mechanics.md`](planning/next-session-brief-2026-08-01-mechanics.md)
 and the spec it points at,
 [`earned-speed-and-the-bird.md`](game-design/earned-speed-and-the-bird.md).
-The first slice now makes a deliberate wide, rising release an authoritative
-source of bounded forward momentum. The free drive and bird are deliberately
-unchanged; the next ordered slice is drive → 0 as a config value. The owner
-redirected on 2026-08-01 evening: the first 10 km of visuals are essentially
-done, so the remaining visual job is **the bird**, and the wider mechanical job
-is that **forward speed becomes earned** through upgrades, swing control, reel,
-burst timing, and release timing. OQ-12 is answered; OQ-13 to OQ-16 are the
-device/product questions measurement could not settle. **No new recordings will
-be supplied**, so nothing may be planned around getting one.
+Build `0.26.0-earned-speed-bird-playtest` removes the continuous forward drive,
+keeps `target_speed_at` as a named reference, and makes the former invisible
+left kill line a deterministic pursuing bird. Release, swing control, Reel and
+pull timing now supply forward speed; the bird supplies visible pressure. Its
+three chase values are session-only Test Run tunables because the non-pumping
+bot cannot tune them. OQ-12 is answered; OQ-13 to OQ-16 are the device/product
+questions measurement could not settle. **No new recordings will be supplied**,
+so nothing may be planned around getting one.
 
 The earlier [`fresh-session handoff`](planning/fresh-session-handoff-2026-08-01.md)
 is **superseded as a plan and still accurate as a record** — read it for what
@@ -54,7 +53,7 @@ without a reported regression.
   pattern, reached checkpoints, and bounded idempotent-settlement history.
   Older settings default audio/haptics on; every progression migration remains
   one-way and explicit.
-- Build `0.25.0-earned-release-playtest` (Android version code 44, package
+- Build `0.26.0-earned-speed-bird-playtest` (Android version code 45, package
   `com.menno420.spiderswing.dev`) retains the stable conventional public debug
   identity introduced by `0.19.0-depth-testing` in
   `.github/android/debug.keystore`. The workflow pins its file and certificate
@@ -79,9 +78,20 @@ without a reported regression.
   attachment arc and the upward share of velocity scale an `assumed` 100 px/s
   maximum forward award; an `assumed` 90° arc reaches full arc quality. The
   award is forward/right-of-anchor only, excluded from forced Burst/Dive detach,
-  and bounded by an `inferred` reuse of the named target-plus-overspeed ceiling.
+  and bounded by the run-wide maximum named reference plus overspeed: 1120 px/s
+  (112 m/s) with current values. The absolute cap prevents manufactured speed
+  without throttling the owner's measured 73–78 m/s opening band.
   Zero disables the mechanic. Device feel, not the non-pumping bot, decides the
   two assumed tuning values.
+- Continuous forward drive is zero in all three presets. The one-time opening,
+  rescue grant, guided opening, camera look-ahead and profile reference-speed
+  scaling deliberately keep `target_speed_at`; Quick Feet is deliberately inert
+  pending OQ-13 rather than silently repurposed.
+- The pursuing bird is state on `SimulationWorld`, not `CourseMotion`. Its X
+  advances at an independent distance-rising world rate; its Y follows player
+  height through a damped spring. Speed zero disables movement, drawing and
+  contact, while rescue restores the complete configured gap. Contact reuses
+  the published `camera_boundary` death path.
 - Input is buffered into commands and simulation never polls it. Native 228×228
   Reel/Burst buttons and all laboratory controls consume GUI input before world
   taps. Touchscreen presses and Godot's emulated mouse copy resolve to one
@@ -135,6 +145,11 @@ without a reported regression.
   first, and `OWNED` restores the exact saved level dictionary. Garage and Shop
   label displayed overlay levels `NOT OWNED`, Shop pauses purchases, and an
   overlay run is noncompetitive.
+- The pre-run screen also stages bird speed, distance gain and start gap with
+  mobile `−`/`+` controls and OFF/SLOW/BASE/FAST presets. These values never
+  enter settings or progression. OFF is a true isolation switch even if the
+  acceleration field is nonzero; SLOW/BASE/FAST are explicitly `assumed` until
+  the owner answers OQ-15 on device.
 - DEBUG → RUN retains its live distance and upgrade controls for adjustments
   during a test, including typed `GO`, Enter/Done, focus loss, presets, and
   `−`/`+`. The pre-run screen is the primary setup path. Both surfaces are
@@ -170,6 +185,12 @@ without a reported regression.
   Bramble Canopy pack are presentation-owned over the same authoritative
   polygons. Missing art falls back to geometry; mipmapped spider/web rendering
   interpolates fixed snapshots and snaps teleports.
+- The pursuer uses four original transparent robin poses on normalized 280 px
+  canvases. Fixed-tick phase blends the flap cycle without a wrap snap; vertical
+  bob shares that phase, banking reads authoritative Y velocity, closing raises
+  flap rate, and a safe lead eases into a glide. Reduced Motion removes bob and
+  softens bank. At its 300 px render canvas the visible silhouette reads just
+  over 2× the nominal spider canvas.
 - A presentation-owned `AudioDirector` consumes authoritative events and
   snapshots without feeding back into simulation. Twenty-five original,
   reproducibly generated mono PCM samples cover attach/release, Reel,
@@ -182,11 +203,11 @@ without a reported regression.
 
 **Verification**
 
-- Local source passes the 184-contract engine runner with the exact
+- Local source passes the 197-contract engine runner with the exact
   `4.7.1.stable.official.a13da4feb` Standard binary. The declared suite contains
-  11 bootstrap/build, 60 deterministic physics, 15 zone, 11 spider-biology,
-  10 Campaign, 9 difficulty, 4 upgrade-wiring, 9 simulation-lab/replay,
-  2 economy, 6 generated-SFX, 25 mobile GUI/layout, and 22 front-end/settings/
+  11 bootstrap/build, 68 deterministic physics, 15 zone, 11 spider-biology,
+  10 Campaign, 9 difficulty, 4 upgrade-wiring, 10 simulation-lab/replay,
+  2 economy, 6 generated-SFX, 27 mobile GUI/layout, and 24 front-end/settings/
   progression checks. The full
   required `python3 tools/verify.py --require-godot` result is recorded at
   session close.
@@ -213,31 +234,6 @@ without a reported regression.
   source scan. `python3 bootstrap.py check --strict` passes all content checks;
   during implementation its only hold is the session card's deliberate
   born-red `in-progress` badge.
-- PR #54 implementation head `6bb90227…` passed engine-backed `game-quality`
-  run 30646172533. Android run 30646174062 produced artifact 8799510029; its
-  downloaded ZIP matched GitHub's `8be96ccd…` digest, its intact APK matched
-  `5835c002…`, and `keytool` independently reported the pinned certificate
-  `83ff0bc2…`; its completed `substrate-gate` also passed. Android export is not
-  a required merge check because SDK downloads are an external dependency.
-- PR #60 implementation head `34b8d5d1…` passed `game-quality` run 30656982928
-  and Android run 30656983045. Artifact 8803635374's downloaded ZIP matched
-  GitHub's `cb9cb31d…` digest; its intact APK matched `7a9aa69d…`, embeds that
-  source/build identity, and reports the pinned `83ff0bc2…` certificate.
-- PR #62 implementation head `b4eb76e1…` passes exact-engine `game-quality`
-  runs 30662003736/30662011415. Android run 30662003775 produced artifact
-  8805521840; its downloaded 64,564,251-byte ZIP matches GitHub's
-  `c3d8eb30…` digest, its intact 64,968,926-byte APK matches `e7d783bb…`, embeds
-  all six Bramble textures plus source/build provenance, and independently
-  reports the pinned `83ff0bc2…` certificate.
-- Final source `main` `2787314…` differs from PR #92 head `005660a4…` only by
-  the temporary PR #91 coordination claim; their gameplay/content is identical.
-  Android run 30703610645 produced artifact 8819609662;
-  its downloaded 76,605,277-byte ZIP matches GitHub's `2a8b3774…` digest, the
-  intact APK matches `4efb36dc…`, `build-info.txt` identifies build
-  `0.24.0-environment-finish-playtest` and the dev package, and `keytool`
-  reports the pinned `83ff0bc2…` certificate. This is the build that includes
-  the flagged web-spam review trace; PR #92 changes no physics, zones, or
-  balance.
 
 **The economy now has a written model**
 
@@ -357,10 +353,9 @@ without a reported regression.
   reel-as-accelerator (already worth 6.2% speed / 52% distance). They are
   mutually enabling, which is why evaluating them one at a time produced two
   wrong verdicts.
-- Ordered slice 1 now implements that arc-scaled release momentum, but does not
-  claim the old drive has stopped refunding missed timing. Its effectiveness as
-  a propulsion source is completed by the next ordered drive → 0 slice; this
-  PR establishes the missing mechanic and its deterministic safety bounds.
+- The combined build now completes that package: arc-scaled release momentum is
+  a primary source, the drive no longer refunds missed timing, and the visible
+  bird replaces the ratcheting invisible line.
 - **Wide swinging wins outright in the no-drive world.** Re-measured there on
   held-out seeds: hauling 65 m (dangling), searched no-drive optimum 2 424 m
   at 27.6° arc, **endorsed wide-swinging 2 717 m at 48.4 m/s holding a 61.2°
@@ -401,11 +396,12 @@ without a reported regression.
 - It **calibrated the anomaly detector**: those runs measure 2.45× Burst
   against a 2.5× threshold that had been guessed, so the alarm sits just above
   endorsed play.
-- Release-quality physics changes authoritative outcomes, so trace identity is
-  now `@2`; every former `@1` trace is intentionally skipped rather than shown
+- Earned-speed/bird physics changes authoritative outcomes, so trace identity is
+  now `@3`; every former `@1`/`@2` trace is intentionally skipped rather than shown
   as the same run under different physics. Their old verdict remains historical
   evidence, not current-build replay evidence. The bundled
-  `release-quality-technical.json` is a deterministic `@2` cross-path fixture,
+  `earned-speed-bird-technical.json` is a deterministic `@3` cross-path fixture
+  recorded with bird speed zero,
   not a fair-play or tuning claim. The formerly flagged web-spam trace therefore
   has no pending current-build judgement, and no published conclusion rests on
   it.
@@ -575,6 +571,15 @@ with hook-vine and leaf-shutter geometry without retuning either control; the
 
 ## Recently shipped (newest first)
 
+- **2026-08-02 — Earned speed and pursuing bird (PR #102).** Continuous drive
+  is zero, the named reference curve remains for its six explicit couplings,
+  and the former left kill line is now deterministic bird state with a finished
+  four-pose visual. Test Run owns OFF/SLOW/BASE/FAST comparisons plus direct
+  speed, acceleration and gap controls. The trace boundary is `@3`; the current
+  technical trace is bird-off and reproduces exactly through both replay paths.
+- **2026-08-01 — Earned release quality (PR #97).** A wide, rising manual
+  release earns bounded forward momentum; forced Burst/Dive detach does not.
+  Its two feel values remain assumed for the combined device session.
 - **2026-08-01 — Upgrade playstyle sweep and first replay verdict (PR #92).**
   The owner accepted the two original bundled lab traces as fair, slightly
   Burst/Dive-heavy representations of his play. Cross-applying the same policy

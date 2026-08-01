@@ -21,6 +21,11 @@ const CAPS := [
 	{"field": "automatic_take_up_retention", "max": 0.94},
 ]
 
+## OQ-13 owns the product decision for Quick Feet after free drive removal.
+## Its persisted id and bought levels remain intact, but it is deliberately the
+## one temporarily inert track rather than being silently repointed by an agent.
+const PENDING_REDESIGN_TRACKS := [&"skitter_drive"]
+
 
 static func run() -> Dictionary:
 	var failures := PackedStringArray()
@@ -73,7 +78,7 @@ static func _test_every_track_reaches_the_config(
 			for field: String in baseline:
 				if maxed[field] != baseline[field]:
 					changed.append(field)
-			if changed.is_empty():
+			if changed.is_empty() and upgrade_id not in PENDING_REDESIGN_TRACKS:
 				failures.append(
 					("track %s changes no config value at level %d — it is "
 						+ "disconnected, not weak") % [

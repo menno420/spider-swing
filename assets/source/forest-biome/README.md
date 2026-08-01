@@ -2,8 +2,8 @@
 
 > **Status:** `candidate-production-source-record`
 
-Twelve original assets were generated with OpenAI image generation on
-2026-07-29; ten are active runtime assets. The earlier single-branch rail and
+Thirteen original sheets were generated with OpenAI image generation across
+2026-07-29 and 2026-08-02; fourteen images are active runtime assets. The earlier single-branch rail and
 dedicated split-gate raster are retained only as recoverable history. Every
 active asset was reviewed individually, in repeated-tile or layered-composition
 previews where relevant, and at mobile gameplay scale. The previously generated
@@ -167,3 +167,29 @@ legs, broad translucent veined wings, and a crisp silhouette at 24–30 pixels.
 - runtime: `assets/runtime/collectibles/golden-forest-fly.png`
 - runtime SHA-256:
   `ed03b99dd26c62d87ee5dc3ec485fb3be32e46148551635216768d1c0d5c1d41`
+
+## Pursuing robin flight set
+
+Generation specification: one visually consistent European-robin-like forest
+predator, facing right, across a 2×2 pose sheet: high upstroke, transition
+downstroke, deep power stroke, and long-wing glide. Warm orange breast, brown
+feathers, readable eye and beak, painterly detail matching Ancient Forest,
+strong phone-scale silhouette, no text, no scenery, and a flat magenta key. No
+third-party or owner-supplied image was used as a reference.
+
+The built-in image generator produced the sheet on a flat magenta field. The
+image-generation skill's soft chroma/despill helper used a one-pixel edge
+contract; poses were cropped, normalized to 280×280 transparent canvases, and
+padded before mipmapped runtime import. The uncommitted full sheet is
+regenerable from this specification and hash.
+
+- generated sheet SHA-256:
+  `551094c2f410a52c41196eb952e0f18e125bef3e013fc8b369537b13e07b3323`
+- upstroke runtime: `assets/runtime/characters/pursuing-bird-upstroke.png` —
+  `19c5fe1c0347f489c1530137be434306f6acdd32dc3e059142fcfedf9fd10288`
+- downstroke runtime: `assets/runtime/characters/pursuing-bird-downstroke.png` —
+  `eec64314cde66f54c053f860a2cbe9a4f7ded511fb7e24a39a5cb2666f25bbea`
+- deep-stroke runtime: `assets/runtime/characters/pursuing-bird-deepstroke.png` —
+  `74307fb275050ebc19dfd3c2ad84eabc564b680dc5a056df30122cd953763fe2`
+- glide runtime: `assets/runtime/characters/pursuing-bird-glide.png` —
+  `e7e074ca6b7841f28b2e911889389d1e7790de5861f9e95a0096df06759aad27`

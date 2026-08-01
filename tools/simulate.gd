@@ -424,6 +424,9 @@ func _run_batch(
 		row["skill"] = str(skill)
 		row["preset"] = str(config.preset_name)
 		row["upgrades"] = int(options["upgrades"])
+		row["bird_speed"] = config.bird_speed
+		row["bird_acceleration"] = config.bird_acceleration
+		row["bird_start_offset"] = config.bird_start_offset
 		row["run"] = run_index
 		if not point.is_empty():
 			row["sweep"] = point.duplicate(true)
@@ -1103,7 +1106,7 @@ func _write_traces(
 			"format": TraceCatalog.INPUT_TRACE_FORMAT,
 			"bot_model": BOT_MODEL_VERSION,
 			# Everything needed to rebuild the identical world.
-			"setup": {
+				"setup": {
 				"preset": options["preset"],
 				# The ROW's values, never the options': a batch run with
 				# --skill=all or --spider=all would stamp the literal "all"
@@ -1124,8 +1127,11 @@ func _write_traces(
 				"max_seconds": options["max_seconds"],
 				"course_seed": row["course_seed"],
 				"bot_seed": row["seed"],
-				"bot": options["bot"],
-			},
+					"bot": options["bot"],
+					"bird_speed": row["bird_speed"],
+					"bird_acceleration": row["bird_acceleration"],
+					"bird_start_offset": row["bird_start_offset"],
+				},
 			# What the run actually did. `--replay` re-runs the commands and
 			# fails unless it lands here again.
 			"expected": {
@@ -1188,6 +1194,12 @@ func _verify_trace(path: String) -> bool:
 		{})
 	if config == null:
 		return false
+	config.set_tuning_value(&"bird_speed", float(setup.get(
+		"bird_speed", SwingConfig.DEFAULT_BIRD_SPEED)))
+	config.set_tuning_value(&"bird_acceleration", float(setup.get(
+		"bird_acceleration", SwingConfig.DEFAULT_BIRD_ACCELERATION)))
+	config.set_tuning_value(&"bird_start_offset", float(setup.get(
+		"bird_start_offset", SwingConfig.DEFAULT_BIRD_START_OFFSET)))
 
 	var driver := RunDriver.new()
 	driver.setup(

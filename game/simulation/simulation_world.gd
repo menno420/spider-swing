@@ -8,6 +8,14 @@ const PULL_CLEARANCE := 10.0
 const GUIDED_ANCHOR_Y := 112.0
 const FIXED_DELTA := 1.0 / 60.0
 const HIGHWAY_ANCHOR_SPEED := 410.0
+## The old kill line is the bird's leading contact point, not its body centre.
+## Keeping that point explicit makes the visible beak agree with the existing
+## death seam while the 280 px sprite can bank and flap around it.
+const BIRD_CONTACT_LEAD_X := 82.0
+const BIRD_VERTICAL_STIFFNESS := 10.0
+const BIRD_VERTICAL_DAMPING := 6.25
+const BIRD_MAXIMUM_VERTICAL_SPEED := 520.0
+const BIRD_FLAP_CLOCK_UNITS := 60000
 
 var config: SwingConfig
 var position: Vector2 = START_POSITION
@@ -16,6 +24,11 @@ var target_speed: float = 0.0
 var distance_pixels: float = 0.0
 var furthest_x: float = START_POSITION.x
 var tick: int = 0
+var bird_position: Vector2 = Vector2.ZERO
+var bird_velocity: Vector2 = Vector2.ZERO
+var bird_flap_phase: float = 0.0
+var bird_flap_rate: float = 0.0
+var bird_closing: bool = false
 var anchors: PackedVector2Array = PackedVector2Array()
 var surfaces: Array[PackedVector2Array] = []
 var surface_ids: Array[StringName] = []
@@ -84,6 +97,7 @@ var _web_anchor_attached_tick: int = -1
 var _web_anchor_initial_position: Vector2 = Vector2.ZERO
 var _spent_anchor_sources: Dictionary = {}
 var _emitted_zone_cues: Dictionary = {}
+var _bird_flap_clock: int = 0
 
 
 func reset(
@@ -100,6 +114,7 @@ func reset(
 	distance_pixels = start_distance
 	furthest_x = _run_start_x
 	tick = 0
+	_reset_bird_state()
 	run_flies = 0
 	_collected_pickups.clear()
 	_spent_anchor_sources.clear()
@@ -455,6 +470,7 @@ func step(delta: float) -> Array[SimulationEvent]:
 
 	furthest_x = maxf(furthest_x, position.x)
 	distance_pixels = maxf(0.0, furthest_x - START_POSITION.x)
+	_advance_bird(delta)
 	tick += 1
 	_commit_next_course_motion()
 
@@ -472,7 +488,7 @@ func step(delta: float) -> Array[SimulationEvent]:
 		events.append(SimulationEvent.make(
 			SimulationEvent.Kind.DEATH_REQUESTED,
 			position,
-			"Lost behind the camera",
+			"Caught by the pursuing bird",
 			{"cause": &"camera_boundary"},
 		))
 	return events
@@ -552,7 +568,82 @@ func _emit_storm_gust_cue(events: Array[SimulationEvent]) -> void:
 
 
 func left_kill_boundary() -> float:
-	return furthest_x - config.camera_left_kill_distance
+	if not bird_enabled():
+		return -1000000000.0
+	return bird_position.x + BIRD_CONTACT_LEAD_X
+
+
+func bird_enabled() -> bool:
+	return config != null and config.bird_speed > 0.0
+
+
+func bird_gap() -> float:
+	if not bird_enabled():
+		return INF
+	return position.x - left_kill_boundary()
+
+
+func _reset_bird_state() -> void:
+	_bird_flap_clock = 0
+	bird_flap_phase = 0.0
+	bird_closing = false
+	if not bird_enabled():
+		bird_position = Vector2(
+			position.x - config.bird_start_offset - BIRD_CONTACT_LEAD_X,
+			position.y,
+		)
+		bird_velocity = Vector2.ZERO
+		bird_flap_rate = 0.0
+		return
+	bird_position = Vector2(
+		position.x - config.bird_start_offset - BIRD_CONTACT_LEAD_X,
+		position.y,
+	)
+	bird_velocity = Vector2(config.bird_speed_at(distance_pixels), 0.0)
+	bird_flap_rate = 1.15
+
+
+## Advance the visible kill line as authoritative world state. X follows only
+## its own position law; Y is a critically damped pursuit of player height.
+## The flap clock uses integer fixed-tick units so replay paths cannot drift.
+func _advance_bird(delta: float) -> void:
+	if not bird_enabled():
+		bird_velocity = Vector2.ZERO
+		bird_flap_rate = 0.0
+		bird_flap_phase = 0.0
+		bird_closing = false
+		return
+	bird_velocity.x = config.bird_speed_at(distance_pixels)
+	bird_position.x += bird_velocity.x * delta
+
+	var target_y := clampf(position.y, 150.0, config.lower_world_boundary - 110.0)
+	var vertical_acceleration := \
+		(target_y - bird_position.y) * BIRD_VERTICAL_STIFFNESS \
+		- bird_velocity.y * BIRD_VERTICAL_DAMPING
+	bird_velocity.y = clampf(
+		bird_velocity.y + vertical_acceleration * delta,
+		-BIRD_MAXIMUM_VERTICAL_SPEED,
+		BIRD_MAXIMUM_VERTICAL_SPEED,
+	)
+	bird_position.y += bird_velocity.y * delta
+
+	var gap := maxf(0.0, bird_gap())
+	var closing_speed := bird_velocity.x - velocity.x
+	bird_closing = closing_speed > 5.0 or \
+		gap < config.bird_start_offset * 0.55
+	var gap_danger := 1.0 - clampf(
+		(gap - 100.0) / maxf(config.bird_start_offset, 1.0), 0.0, 1.0)
+	var closing_danger := clampf(closing_speed / 240.0, 0.0, 1.0)
+	var danger := maxf(gap_danger, closing_danger)
+	bird_flap_rate = lerpf(1.15, 5.0, danger)
+	if not bird_closing and gap > config.bird_start_offset * 0.85:
+		bird_flap_rate = 0.70
+	_bird_flap_clock = posmod(
+		_bird_flap_clock + roundi(bird_flap_rate * 1000.0),
+		BIRD_FLAP_CLOCK_UNITS,
+	)
+	bird_flap_phase = float(_bird_flap_clock) / \
+		float(BIRD_FLAP_CLOCK_UNITS)
 
 
 func nearest_solid_point(target: Vector2) -> Dictionary:
@@ -1201,11 +1292,12 @@ func _release_web(events: Array[SimulationEvent]) -> void:
 	var requested_bonus := (
 		config.release_momentum_bonus_speed * float(release["quality"])
 	)
-	# `inferred` safety rule: retain the existing named reference-speed ceiling
-	# so repeated releases cannot manufacture unbounded speed. This does not
-	# drive the spider toward the curve; it only limits this one earned award.
+	# `inferred` safety rule: retain one absolute ceiling so repeated releases
+	# cannot manufacture unbounded speed. The run-wide maximum reference is used
+	# deliberately: the old local target ceiling throttled normal owner play near
+	# the start once release quality became a primary propulsion source.
 	var forward_cap := (
-		config.target_speed_at(distance_pixels)
+		config.maximum_target_speed
 		+ config.maximum_horizontal_overspeed
 	)
 	var forward_bonus := minf(
@@ -1366,6 +1458,9 @@ func rescue_after_death() -> SimulationEvent:
 	var rescue_position := _find_rescue_position()
 	position = rescue_position
 	velocity = Vector2(maxf(300.0, target_speed * 0.88), -110.0)
+	# The rescue is the anti-death-spiral valve: it restores both a viable
+	# reference launch and the complete configured pursuer gap.
+	_reset_bird_gap_after_rescue()
 	rescue_shield_remaining = config.rescue_shield_duration
 	return SimulationEvent.make(
 		SimulationEvent.Kind.RESCUE_USED,
@@ -1377,6 +1472,15 @@ func rescue_after_death() -> SimulationEvent:
 			"rescue_y": position.y,
 		},
 	)
+
+
+func _reset_bird_gap_after_rescue() -> void:
+	if not bird_enabled():
+		return
+	bird_position.x = position.x - config.bird_start_offset - \
+		BIRD_CONTACT_LEAD_X
+	bird_position.y = lerpf(bird_position.y, position.y, 0.35)
+	bird_velocity = Vector2(config.bird_speed_at(distance_pixels), 0.0)
 
 
 func _find_rescue_position() -> Vector2:

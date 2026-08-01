@@ -48,8 +48,8 @@ env:
   GODOT_VERSION: 4.7.1
   APK_PATH: build/spider-swing-debug.apk
   ARTIFACT_NAME: spider-swing-android-debug
-  BUILD_VERSION: 0.25.0-earned-release-playtest
-  APP_NAME: Spider Swing Earned Release Playtest (dev)
+  BUILD_VERSION: 0.26.0-earned-speed-bird-playtest
+  APP_NAME: Spider Swing Earned Speed + Bird Playtest (dev)
   DEBUG_KEYSTORE_PATH: .github/android/debug.keystore
   DEBUG_KEYSTORE_SHA256: e9104672477e0238b6cc2f7d6b994c459e37f130cae06a37aff05001f101bbda
   DEBUG_CERT_SHA256: 83ff0bc27903351779ffd1439f115e8c7e4c228fddd683e2a801c9700b30a741
@@ -112,7 +112,7 @@ jobs:
           set -euo pipefail
           grep -F "config/version=\"${BUILD_VERSION}\"" project.godot
           grep -F "version/name=\"${BUILD_VERSION}\"" export_presets.cfg
-          grep -F 'version/code=44' export_presets.cfg
+          grep -F 'version/code=45' export_presets.cfg
           grep -F "package/name=\"${APP_NAME}\"" export_presets.cfg
           echo "build identity: ${BUILD_VERSION} @ ${SOURCE_SHA}"
 

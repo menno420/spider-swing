@@ -354,7 +354,7 @@ current mechanics continuation, use
 and its earned-speed specification. No new recording is expected; device-only
 questions require a playtest verdict.
 
-Install `0.25.0-earned-release-playtest` over `0.19.0-depth-testing` or any later
+Install `0.26.0-earned-speed-bird-playtest` over `0.19.0-depth-testing` or any later
 stable-key build without uninstalling; both use the stable signer and the update
 should preserve the save.
 Only a device that never installed `0.19.0` or later needs the one final
@@ -362,6 +362,16 @@ uninstall from the old throwaway-signer era.
 
 Before the traversal checklist, prove the new depth-access gate:
 
+- In `DEBUG TEST RUN`, leave BASE selected and compare a wide rising release
+  against an immediate or falling release. The good release should produce a
+  visible forward gain; shallow repeated releases must not become a tap engine.
+- Select bird **OFF** (`speed 0`, acceleration 12, gap 760) to isolate the
+  no-drive world. The opening launch remains, but detached coasting should no
+  longer rebuild speed for free; swing timing, Reel and pulls must carry it.
+- Select **SLOW** (`240 / 8 / 900`), then **FAST** (`380 / 20 / 600`). Judge
+  whether the 2–3× robin enters smoothly from the left, tracks height with lag,
+  banks and glides believably, and communicates closing danger through faster
+  flapping. All three sets are assumed comparison points, not approved balance.
 - change a visible setting, collect flies, buy at least one real upgrade, and
   retain the app for the next build; after installing that later build without
   uninstalling, verify the setting, balance, owned level, best distance, and

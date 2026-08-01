@@ -27,12 +27,23 @@ const FOREST_RAIL_SEGMENT_OVERLAP := 38.0
 const MOTION_TELEPORT_THRESHOLD := 240.0
 const REGION_BANNER_DURATION := 2.8
 const REGION_VISUAL_TRANSITION_DURATION := 2.2
+const BIRD_CANVAS_SIZE := Vector2(300.0, 300.0)
+const BIRD_FLAP_ASSETS := [
+	ArtAssetCatalog.PURSUING_BIRD_UPSTROKE,
+	ArtAssetCatalog.PURSUING_BIRD_DOWNSTROKE,
+	ArtAssetCatalog.PURSUING_BIRD_DEEPSTROKE,
+]
+const BIRD_FLAP_SEQUENCE := [0, 1, 2, 1]
 
 var _snapshot: SimulationSnapshot
 var _previous_spider_position := Vector2.ZERO
 var _current_spider_position := Vector2.ZERO
 var _previous_spider_velocity := Vector2.ZERO
 var _current_spider_velocity := Vector2.ZERO
+var _previous_bird_position := Vector2.ZERO
+var _current_bird_position := Vector2.ZERO
+var _previous_bird_velocity := Vector2.ZERO
+var _current_bird_velocity := Vector2.ZERO
 var _motion_tick: int = -1
 var _motion_time: float = 0.0
 var _camera_x: float = 0.0
@@ -98,14 +109,24 @@ func present(snapshot: SimulationSnapshot) -> void:
 		_current_spider_position = snapshot.position
 		_previous_spider_velocity = snapshot.velocity
 		_current_spider_velocity = snapshot.velocity
+		_previous_bird_position = snapshot.bird_position
+		_current_bird_position = snapshot.bird_position
+		_previous_bird_velocity = snapshot.bird_velocity
+		_current_bird_velocity = snapshot.bird_velocity
 	elif snapshot.tick > _motion_tick:
 		_previous_spider_position = _current_spider_position
 		_previous_spider_velocity = _current_spider_velocity
 		_current_spider_position = snapshot.position
 		_current_spider_velocity = snapshot.velocity
+		_previous_bird_position = _current_bird_position
+		_previous_bird_velocity = _current_bird_velocity
+		_current_bird_position = snapshot.bird_position
+		_current_bird_velocity = snapshot.bird_velocity
 	else:
 		_current_spider_position = snapshot.position
 		_current_spider_velocity = snapshot.velocity
+		_current_bird_position = snapshot.bird_position
+		_current_bird_velocity = snapshot.bird_velocity
 	_motion_tick = snapshot.tick
 	_snapshot = snapshot
 	if region_changed:
@@ -254,6 +275,7 @@ func _draw() -> void:
 		return
 	_draw_web()
 	_draw_action_feedback()
+	_draw_bird()
 	_draw_spider()
 	_draw_feedback()
 	_draw_hud(size)
@@ -1528,6 +1550,89 @@ func _draw_spider() -> void:
 		draw_line(center, center + render_velocity * 0.12, YELLOW, 2.0)
 
 
+## The bird is a presentation of SimulationWorld state, never a second motion
+## source. Its four authored poses are blended from the fixed-tick flap phase;
+## bob shares that same phase and banking reads only authoritative Y velocity.
+func _draw_bird() -> void:
+	if _snapshot == null or not _snapshot.bird_enabled:
+		return
+	var center := _world_to_screen(_render_bird_position())
+	var bob := bird_vertical_bob(_snapshot.bird_flap_phase, _reduced_motion)
+	center.y += bob
+	var bank := bird_bank(_render_bird_velocity().y, _reduced_motion)
+	var glide_mix := 1.0 if _reduced_motion else \
+		bird_glide_mix(_snapshot.bird_flap_rate)
+	var sample := bird_frame_sample(_snapshot.bird_flap_phase)
+	var current_asset: StringName = BIRD_FLAP_ASSETS[int(sample["current"])]
+	var next_asset: StringName = BIRD_FLAP_ASSETS[int(sample["next"])]
+	var current_texture := _art_texture(current_asset)
+	var next_texture := _art_texture(next_asset)
+	var glide_texture := _art_texture(ArtAssetCatalog.PURSUING_BIRD_GLIDE)
+
+	# A phase-coupled halo makes closing pressure readable without inventing an
+	# independent visual clock. The bird itself remains the exact danger line.
+	if _snapshot.bird_closing:
+		var danger_pulse := 0.16 + \
+			absf(sin(_snapshot.bird_flap_phase * TAU)) * 0.10
+		draw_circle(center, 82.0, Color(RED, danger_pulse))
+
+	draw_set_transform(center, bank, Vector2.ONE)
+	var bird_rect := Rect2(-BIRD_CANVAS_SIZE * 0.5, BIRD_CANVAS_SIZE)
+	if current_texture != null and next_texture != null:
+		var blend := float(sample["blend"])
+		var flap_alpha := 1.0 - glide_mix
+		draw_texture_rect(
+			current_texture, bird_rect, false,
+			Color(1.0, 1.0, 1.0, flap_alpha * (1.0 - blend)))
+		draw_texture_rect(
+			next_texture, bird_rect, false,
+			Color(1.0, 1.0, 1.0, flap_alpha * blend))
+		if glide_texture != null and glide_mix > 0.0:
+			draw_texture_rect(
+				glide_texture, bird_rect, false,
+				Color(1.0, 1.0, 1.0, glide_mix))
+	elif glide_texture != null:
+		draw_texture_rect(glide_texture, bird_rect, false, Color.WHITE)
+	else:
+		# Import failures stay legible in development builds without changing the
+		# contact seam: this simple silhouette is presentation-only fallback art.
+		draw_colored_polygon(PackedVector2Array([
+			Vector2(-90.0, 8.0), Vector2(-24.0, -34.0),
+			Vector2(28.0, -10.0), Vector2(92.0, 0.0),
+			Vector2(28.0, 19.0), Vector2(-20.0, 40.0),
+		]), Color("592c24"))
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+
+static func bird_frame_sample(phase: float) -> Dictionary:
+	var frame_position := fposmod(phase, 1.0) * \
+		float(BIRD_FLAP_SEQUENCE.size())
+	var slot := floori(frame_position) % BIRD_FLAP_SEQUENCE.size()
+	var next_slot := (slot + 1) % BIRD_FLAP_SEQUENCE.size()
+	var raw_blend := frame_position - floorf(frame_position)
+	var smooth_blend := raw_blend * raw_blend * (3.0 - 2.0 * raw_blend)
+	return {
+		"current": BIRD_FLAP_SEQUENCE[slot],
+		"next": BIRD_FLAP_SEQUENCE[next_slot],
+		"blend": smooth_blend,
+	}
+
+
+static func bird_glide_mix(flap_rate: float) -> float:
+	return 1.0 - clampf((flap_rate - 0.70) / 0.55, 0.0, 1.0)
+
+
+static func bird_vertical_bob(phase: float, reduced_motion: bool) -> float:
+	if reduced_motion:
+		return 0.0
+	return sin((fposmod(phase, 1.0) - 0.125) * TAU) * 8.0
+
+
+static func bird_bank(vertical_velocity: float, reduced_motion: bool) -> float:
+	var strength := 0.10 if reduced_motion else 0.30
+	return clampf(vertical_velocity / 520.0, -1.0, 1.0) * strength
+
+
 func _draw_finished_spider_sprite(
 	center: Vector2,
 	rotation: float,
@@ -2262,6 +2367,24 @@ func _render_spider_velocity(fraction_override: float = -1.0) -> Vector2:
 		return _current_spider_velocity
 	return _previous_spider_velocity.lerp(
 		_current_spider_velocity,
+		_physics_interpolation_fraction(fraction_override),
+	)
+
+
+func _render_bird_position(fraction_override: float = -1.0) -> Vector2:
+	if _motion_tick < 0:
+		return _current_bird_position
+	return _previous_bird_position.lerp(
+		_current_bird_position,
+		_physics_interpolation_fraction(fraction_override),
+	)
+
+
+func _render_bird_velocity(fraction_override: float = -1.0) -> Vector2:
+	if _motion_tick < 0:
+		return _current_bird_velocity
+	return _previous_bird_velocity.lerp(
+		_current_bird_velocity,
 		_physics_interpolation_fraction(fraction_override),
 	)
 

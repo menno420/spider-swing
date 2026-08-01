@@ -31,6 +31,10 @@ const BALLOONER_SPIDER := &"ballooner_spider"
 # filename to SHA256, and no player sees either. The profile is Buckler.
 const BUCKLER_SPIDER := &"springtail_spider"
 const GOLDEN_FLY := &"golden_fly"
+const PURSUING_BIRD_UPSTROKE := &"pursuing_bird_upstroke"
+const PURSUING_BIRD_DOWNSTROKE := &"pursuing_bird_downstroke"
+const PURSUING_BIRD_DEEPSTROKE := &"pursuing_bird_deepstroke"
+const PURSUING_BIRD_GLIDE := &"pursuing_bird_glide"
 const HOLLOW_BACKDROP := &"hollow_backdrop"
 const HOLLOW_BACKDROP_NEAR := &"hollow_backdrop_near"
 const HOLLOW_COCOON := &"hollow_cocoon"
@@ -109,6 +113,14 @@ const ASSETS := {
 		"res://assets/runtime/characters/springtail-trapdoor-spider.png",
 	GOLDEN_FLY:
 		"res://assets/runtime/collectibles/golden-forest-fly.png",
+	PURSUING_BIRD_UPSTROKE:
+		"res://assets/runtime/characters/pursuing-bird-upstroke.png",
+	PURSUING_BIRD_DOWNSTROKE:
+		"res://assets/runtime/characters/pursuing-bird-downstroke.png",
+	PURSUING_BIRD_DEEPSTROKE:
+		"res://assets/runtime/characters/pursuing-bird-deepstroke.png",
+	PURSUING_BIRD_GLIDE:
+		"res://assets/runtime/characters/pursuing-bird-glide.png",
 	HOLLOW_BACKDROP:
 		"res://assets/runtime/zone-art/silk-hollow-backdrop.png",
 	HOLLOW_BACKDROP_NEAR:

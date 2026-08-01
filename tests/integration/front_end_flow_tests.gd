@@ -26,6 +26,8 @@ static func run() -> Dictionary:
 	passed += _test_debug_upgrade_overlay_restores_exact_saved_levels(failures)
 	passed += _test_garage_and_shop_disclose_debug_upgrade_levels(failures)
 	passed += _test_debug_run_setup_stages_and_starts_before_play(failures)
+	passed += _test_debug_bird_presets_are_session_only(failures)
+	passed += _test_debug_bird_controls_are_visible_and_labeled(failures)
 	passed += _test_upgrades_and_creator_edits_use_progression_service(failures)
 	passed += _test_composition_root_mounts_front_end_first(failures)
 	passed += _test_trace_watch_is_reachable_and_debug_only(failures)
@@ -88,9 +90,10 @@ static func _test_tutorial_covers_current_mechanics(
 		for key in ["title", "body", "tip"]:
 			combined += " " + str(step.get(key, ""))
 	for required: String in [
-		"moves forward automatically",
+		"no free forward drive",
 		"solid ceiling or obstacle edge",
 		"tap anywhere",
+		"wide rising release",
 		"hold REEL",
 		"fixed rate",
 		"BURST",
@@ -964,7 +967,7 @@ static func _test_debug_run_setup_stages_and_starts_before_play(
 		"DebugRunAwardsWarning", true, false) as Label
 	if state.screen != FrontEndState.Screen.DEBUG_RUN_SETUP or \
 			screen == null or not screen.visible or card == null or \
-			columns == null or columns.get_child_count() != 2 or entry == null or \
+			columns == null or columns.get_child_count() != 3 or entry == null or \
 			warning == null or not warning.text.contains("NO RECORD"):
 		failures.append("debug route did not open a complete pre-run setup")
 		viewport.free()
@@ -983,6 +986,16 @@ static func _test_debug_run_setup_stages_and_starts_before_play(
 			failures.append("%s is not a mobile-sized pre-run control" % button_name)
 			viewport.free()
 			return 0
+	for parameter_id: StringName in [
+		&"bird_speed", &"bird_acceleration", &"bird_start_offset",
+	]:
+		for prefix: String in ["DebugBirdMinus_", "DebugBirdPlus_"]:
+			var bird_button := view.front_end_button(
+				StringName("%s%s" % [prefix, parameter_id]))
+			if bird_button == null or bird_button.custom_minimum_size.y < 48.0:
+				failures.append("bird tuning control is not mobile-sized")
+				viewport.free()
+				return 0
 
 	# OWNED -> L0 -> L1 -> L0 proves both large controls cross the overlay edge.
 	view.front_end_button(&"DebugUpgradePlus").pressed.emit()
@@ -993,6 +1006,7 @@ static func _test_debug_run_setup_stages_and_starts_before_play(
 		viewport.free()
 		return 0
 	state.set_debug_run_upgrade_level(6)
+	state.apply_debug_bird_preset(&"slow")
 	entry.text = "12345,7"
 	entry.text_changed.emit(entry.text)
 	var debug_requests: Array[Dictionary] = []
@@ -1000,16 +1014,20 @@ static func _test_debug_run_setup_stages_and_starts_before_play(
 		requested_settings: PlayerSettings,
 		distance_pixels: float,
 		upgrade_level: int,
+		bird_overrides: Dictionary,
 	) -> void:
 		debug_requests.append({
 			"debug": requested_settings.show_debug_tools,
 			"distance": distance_pixels,
 			"level": upgrade_level,
+			"bird": bird_overrides.duplicate(true),
 		}))
 	view.front_end_button(&"DebugRunStart").pressed.emit()
 	if debug_requests.size() != 1 or not bool(debug_requests[0]["debug"]) or \
 			not is_equal_approx(float(debug_requests[0]["distance"]), 123457.0) or \
 			int(debug_requests[0]["level"]) != 6 or \
+			debug_requests[0]["bird"] != \
+				FrontEndState.BIRD_DEBUG_PRESETS[&"slow"] or \
 			service.debug_upgrade_overlay_level() != 6 or \
 			progress.to_dictionary() != exact_saved:
 		failures.append("pre-run choices did not start one exact temporary test")
@@ -1018,6 +1036,7 @@ static func _test_debug_run_setup_stages_and_starts_before_play(
 
 	var session := SwingLabSession.new()
 	session.configure_progress(progress, service)
+	session.configure_bird_debug_overrides(debug_requests[0]["bird"])
 	session.configure_run(
 		SwingLabSession.RUN_PRACTICE,
 		123457.0,
@@ -1029,8 +1048,10 @@ static func _test_debug_run_setup_stages_and_starts_before_play(
 	if not snapshot.debug_start_active or \
 			snapshot.run_mode != SwingLabSession.RUN_PRACTICE or \
 			snapshot.records_eligible or \
-			not is_equal_approx(snapshot.distance_pixels, 123457.0) or \
-			snapshot.debug_upgrade_overlay_level != 6:
+		not is_equal_approx(snapshot.distance_pixels, 123457.0) or \
+		snapshot.debug_upgrade_overlay_level != 6 or \
+		not is_equal_approx(
+			float(snapshot.tuning_values[&"bird_speed"]), 240.0):
 		failures.append("pre-run setup did not inherit debug practice ownership")
 		session.free()
 		viewport.free()
@@ -1053,6 +1074,83 @@ static func _test_debug_run_setup_stages_and_starts_before_play(
 	if route.visible or state.screen != FrontEndState.Screen.HOME or \
 			debug_requests.size() != 1:
 		failures.append("pre-run debug controls bypassed show_debug_tools gating")
+		viewport.free()
+		return 0
+	viewport.free()
+	return 1
+
+
+static func _test_debug_bird_presets_are_session_only(
+	failures: PackedStringArray,
+) -> int:
+	var settings := PlayerSettings.defaults()
+	settings.show_debug_tools = true
+	var state := FrontEndState.new()
+	state.configure(settings)
+	var original_settings := state.settings.to_dictionary()
+	for preset_id: StringName in [&"off", &"slow", &"base", &"fast"]:
+		state.apply_debug_bird_preset(preset_id)
+		var expected: Dictionary = FrontEndState.BIRD_DEBUG_PRESETS[preset_id]
+		if state.debug_bird_overrides() != expected:
+			failures.append("%s bird preset did not stage all three axes" % preset_id)
+			return 0
+	state.apply_debug_bird_preset(&"off")
+	if not is_zero_approx(state.debug_bird_speed) or \
+			not is_equal_approx(state.debug_bird_acceleration, 12.0) or \
+			state.settings.to_dictionary() != original_settings:
+		failures.append("bird-off was not a true session-only speed switch")
+		return 0
+	state.adjust_debug_bird_value(&"bird_speed", 1)
+	state.adjust_debug_bird_value(&"bird_acceleration", -1)
+	state.adjust_debug_bird_value(&"bird_start_offset", 1)
+	if not is_equal_approx(state.debug_bird_speed, 20.0) or \
+			not is_equal_approx(state.debug_bird_acceleration, 10.0) or \
+			not is_equal_approx(state.debug_bird_start_offset, 800.0):
+		failures.append("bird −/+ controls did not use the published steps")
+		return 0
+	return 1
+
+
+static func _test_debug_bird_controls_are_visible_and_labeled(
+	failures: PackedStringArray,
+) -> int:
+	var settings := PlayerSettings.defaults()
+	settings.show_debug_tools = true
+	var state := FrontEndState.new()
+	state.configure(settings)
+	state.show_debug_run_setup()
+	var viewport := SubViewport.new()
+	viewport.size = Vector2i(1280, 720)
+	var view := FrontEndView.new()
+	view.size = Vector2(viewport.size)
+	viewport.add_child(view)
+	view.bind_state(state)
+	var card := view.find_child("DebugRunBirdCard", true, false) as Control
+	var presets := view.find_child("DebugBirdPresets", true, false) as Control
+	if card == null or presets == null or not card.visible or \
+			presets.get_child_count() != 4:
+		failures.append("Test Run does not expose the complete bird tuning card")
+		viewport.free()
+		return 0
+	for preset_id: StringName in [&"off", &"slow", &"base", &"fast"]:
+		var button := view.front_end_button(
+			StringName("DebugBirdPreset_%s" % preset_id))
+		if button == null or button.custom_minimum_size.y < 48.0 or \
+				button.text != str(preset_id).to_upper():
+			failures.append("bird comparison preset is missing or unreadable")
+			viewport.free()
+			return 0
+	view.front_end_button(&"DebugBirdPreset_off").pressed.emit()
+	var speed_label := view.find_child(
+		"DebugBirdValue_bird_speed", true, false) as Label
+	if speed_label == null or speed_label.text != "OFF":
+		failures.append("bird speed zero is not visibly labeled OFF")
+		viewport.free()
+		return 0
+	view.front_end_button(&"DebugBirdPreset_fast").pressed.emit()
+	if not speed_label.text.contains("38.0 m/s") or \
+			not is_equal_approx(state.debug_bird_start_offset, 600.0):
+		failures.append("FAST preset does not show its exact comparison values")
 		viewport.free()
 		return 0
 	viewport.free()

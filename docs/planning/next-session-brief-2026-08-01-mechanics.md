@@ -1,6 +1,6 @@
 # Next session brief — earned speed and the bird (mechanics, not visuals)
 
-> **Status:** `plan`
+> **Status:** `reference`
 >
 > **This supersedes
 > [`fresh-session-handoff-2026-08-01.md`](fresh-session-handoff-2026-08-01.md)
@@ -11,8 +11,9 @@
 > **No new recordings will be supplied.** Everything the next session needs is
 > in the repository. That constraint shapes the whole brief.
 >
-> **Progress:** ordered slice 1 (release quality) is implemented in
-> `0.25.0-earned-release-playtest`; the next session starts at slice 2, drive → 0.
+> **Progress (2026-08-02):** the combined drive → 0 and pursuing-bird package
+> is implemented in `0.26.0-earned-speed-bird-playtest`. This brief remains the
+> rationale and constraint record; OQ-13 … OQ-16 now guide the device verdict.
 
 ## What changed, in the owner's words
 

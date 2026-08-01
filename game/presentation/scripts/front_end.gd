@@ -71,6 +71,7 @@ var _debug_run_distance_value: Label
 var _debug_trace_label: Label
 var _debug_trace_watch: Button
 var _debug_run_upgrade_value: Label
+var _debug_bird_values: Dictionary = {}
 var _buttons: Dictionary = {}
 var _interface_ready: bool = false
 var _syncing_settings: bool = false
@@ -808,7 +809,7 @@ func _build_debug_run_setup() -> void:
 	var heading := _label("DEBUG TEST RUN", 38, INK)
 	_place(heading, _debug_run_setup, 0.19, 0.035, 0.64, 0.12)
 	var explanation := _label(
-		"Set up the distance and temporary upgrade feel before the run starts. "
+		"Set distance, temporary upgrades, and the pursuing bird before the run. "
 		+ "These choices are session-only and never change what you own.",
 		18,
 		MUTED,
@@ -823,7 +824,7 @@ func _build_debug_run_setup() -> void:
 	content.name = "DebugRunSetupContent"
 	content.add_theme_constant_override("separation", 10)
 	_fill_with_margin(content, card, 20.0)
-	content.add_child(_section_label("CHOOSE BOTH, THEN START ONCE"))
+	content.add_child(_section_label("CHOOSE THE TEST CONDITIONS, THEN START ONCE"))
 
 	var columns := HBoxContainer.new()
 	columns.name = "DebugRunSetupColumns"
@@ -832,6 +833,7 @@ func _build_debug_run_setup() -> void:
 	content.add_child(columns)
 	columns.add_child(_build_debug_distance_card())
 	columns.add_child(_build_debug_upgrade_card())
+	columns.add_child(_build_debug_bird_card())
 
 	content.add_child(_build_trace_watch_row())
 
@@ -1018,6 +1020,73 @@ func _build_debug_upgrade_card() -> PanelContainer:
 	note.custom_minimum_size.y = 26.0
 	body.add_child(note)
 	return card
+
+
+func _build_debug_bird_card() -> PanelContainer:
+	var card := _panel(PANEL_SOFT, 16, GREEN)
+	card.name = "DebugRunBirdCard"
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var body := VBoxContainer.new()
+	body.add_theme_constant_override("separation", 6)
+	_fill_with_margin(body, card, 14.0)
+	body.add_child(_setting_heading("PURSUING BIRD · ASSUMED"))
+	var description := _setting_description(
+		"Tune the chase without changing the no-drive world. Speed 0 is bird-off.")
+	description.add_theme_font_size_override("font_size", 14)
+	body.add_child(description)
+	for parameter_id: StringName in [
+		&"bird_speed", &"bird_acceleration", &"bird_start_offset",
+	]:
+		body.add_child(_build_debug_bird_row(parameter_id))
+
+	var presets := HBoxContainer.new()
+	presets.name = "DebugBirdPresets"
+	presets.add_theme_constant_override("separation", 5)
+	body.add_child(presets)
+	for preset_id: StringName in [&"off", &"slow", &"base", &"fast"]:
+		var button := _button(
+			StringName("DebugBirdPreset_%s" % preset_id),
+			str(preset_id).to_upper(),
+			GREEN,
+			48.0,
+		)
+		button.add_theme_font_size_override("font_size", 14)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.pressed.connect(_on_debug_bird_preset.bind(preset_id))
+		presets.add_child(button)
+	return card
+
+
+func _build_debug_bird_row(parameter_id: StringName) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.name = "DebugBirdRow_%s" % parameter_id
+	row.add_theme_constant_override("separation", 5)
+	var descriptor := TuningCatalog.descriptor(parameter_id)
+	var label := _label(str(descriptor.get("label", parameter_id)), 13, MUTED)
+	label.custom_minimum_size.x = 96.0
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(label)
+	var minus := _button(
+		StringName("DebugBirdMinus_%s" % parameter_id), "−", GREEN, 48.0)
+	minus.custom_minimum_size.x = 48.0
+	minus.add_theme_font_size_override("font_size", 25)
+	minus.pressed.connect(_on_debug_bird_adjust.bind(parameter_id, -1))
+	row.add_child(minus)
+	var value := _label("", 14, YELLOW)
+	value.name = "DebugBirdValue_%s" % parameter_id
+	value.custom_minimum_size = Vector2(90.0, 48.0)
+	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	value.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	row.add_child(value)
+	_debug_bird_values[parameter_id] = value
+	var plus := _button(
+		StringName("DebugBirdPlus_%s" % parameter_id), "+", GREEN, 48.0)
+	plus.custom_minimum_size.x = 48.0
+	plus.add_theme_font_size_override("font_size", 23)
+	plus.pressed.connect(_on_debug_bird_adjust.bind(parameter_id, 1))
+	row.add_child(plus)
+	return row
 
 
 func _build_field_guide() -> void:
@@ -1384,6 +1453,19 @@ func _render_debug_run_setup() -> void:
 			SpiderCatalog.MAX_UPGRADE_LEVEL,
 		]
 	)
+	(_debug_bird_values[&"bird_speed"] as Label).text = (
+		"OFF" if is_zero_approx(_state.debug_bird_speed)
+		else "%.1f m/s" % (
+			_state.debug_bird_speed / CourseRegionCatalog.PIXELS_PER_METRE)
+	)
+	(_debug_bird_values[&"bird_acceleration"] as Label).text = \
+		"+%.1f m/s" % (
+			_state.debug_bird_acceleration /
+			CourseRegionCatalog.PIXELS_PER_METRE)
+	(_debug_bird_values[&"bird_start_offset"] as Label).text = \
+		"%.0f m gap" % (
+			_state.debug_bird_start_offset /
+			CourseRegionCatalog.PIXELS_PER_METRE)
 	# No bundled traces is an ordinary state, not an error: the screen simply
 	# has nothing to offer and says so rather than presenting a dead button.
 	var trace := _state.selected_trace()
@@ -1533,6 +1615,16 @@ func _on_debug_upgrade_adjust(direction: int) -> void:
 func _on_debug_upgrade_set(level: int) -> void:
 	if _state != null:
 		_state.set_debug_run_upgrade_level(level)
+
+
+func _on_debug_bird_adjust(parameter_id: StringName, direction: int) -> void:
+	if _state != null:
+		_state.adjust_debug_bird_value(parameter_id, direction)
+
+
+func _on_debug_bird_preset(preset_id: StringName) -> void:
+	if _state != null:
+		_state.apply_debug_bird_preset(preset_id)
 
 
 func _on_debug_run_start() -> void:

@@ -45,12 +45,21 @@ const BASE_REEL_EMPTY_LOCKOUT := 0.75
 const DEFAULT_RELEASE_MOMENTUM_BONUS_SPEED := 100.0
 ## `assumed`: bounded debug/schema guardrail, not a recommended tuning target.
 const MAX_RELEASE_MOMENTUM_BONUS_SPEED := 300.0
+## `assumed`: the bot cannot pump, so it cannot tune the pursuing bird. These
+## three placeholders exist to produce a device-testable baseline; the Test Run
+## screen exposes every one and speed zero disables the bird completely.
+const DEFAULT_BIRD_SPEED := 300.0
+const DEFAULT_BIRD_ACCELERATION := 12.0
+const DEFAULT_BIRD_START_OFFSET := 760.0
 
 @export var schema_version: int = SCHEMA_VERSION
 @export var preset_name: StringName = PRESET_BALANCED
 @export var gravity: float = 1120.0
 @export var spider_mass: float = 1.0
-@export var horizontal_drive_acceleration: float = 470.0
+## Continuous forward drive is deliberately zero: horizontal pace is earned
+## through pendulum conversion, Reel work, pulls, and qualified releases. Keep
+## the field as the single reversible experiment switch and as a debug control.
+@export var horizontal_drive_acceleration: float = 0.0
 @export var starting_target_speed: float = 360.0
 @export var maximum_target_speed: float = 760.0
 @export var speed_curve_distance: float = 50000.0
@@ -61,6 +70,14 @@ const MAX_RELEASE_MOMENTUM_BONUS_SPEED := 300.0
 ## formula, bounds, and eligibility rules.
 @export var release_momentum_bonus_speed: float = \
 	DEFAULT_RELEASE_MOMENTUM_BONUS_SPEED
+## Horizontal world speed at the start, in px/s. Zero is the authoritative
+## bird-off switch even when acceleration is non-zero.
+@export var bird_speed: float = DEFAULT_BIRD_SPEED
+## Extra px/s per 1,000 m of furthest progress. It reads position, never player
+## velocity, so banked distance remains a real buffer.
+@export var bird_acceleration: float = DEFAULT_BIRD_ACCELERATION
+## Initial distance from the spider to the bird's contact line, in pixels.
+@export var bird_start_offset: float = DEFAULT_BIRD_START_OFFSET
 @export var air_drag: float = 0.055
 @export var web_minimum_length: float = 90.0
 @export var web_maximum_length: float = 1000.0
@@ -157,6 +174,9 @@ func apply_preset(name: StringName) -> void:
 	automatic_take_up_enabled = true
 	automatic_take_up_retention = 0.85
 	release_momentum_bonus_speed = DEFAULT_RELEASE_MOMENTUM_BONUS_SPEED
+	bird_speed = DEFAULT_BIRD_SPEED
+	bird_acceleration = DEFAULT_BIRD_ACCELERATION
+	bird_start_offset = DEFAULT_BIRD_START_OFFSET
 	burst_distance_fraction = 0.40
 	burst_minimum_distance = 80.0
 	burst_pull_duration = 0.20
@@ -196,7 +216,7 @@ func apply_preset(name: StringName) -> void:
 		PRESET_WEIGHTY:
 			gravity = 1320.0
 			spider_mass = 1.35
-			horizontal_drive_acceleration = 410.0
+			horizontal_drive_acceleration = 0.0
 			starting_target_speed = 350.0
 			maximum_target_speed = 750.0
 			air_drag = 0.04
@@ -207,7 +227,7 @@ func apply_preset(name: StringName) -> void:
 		PRESET_AGILE:
 			gravity = 980.0
 			spider_mass = 0.8
-			horizontal_drive_acceleration = 570.0
+			horizontal_drive_acceleration = 0.0
 			starting_target_speed = 390.0
 			maximum_target_speed = 800.0
 			air_drag = 0.07
@@ -219,7 +239,7 @@ func apply_preset(name: StringName) -> void:
 			preset_name = PRESET_BALANCED
 			gravity = 1120.0
 			spider_mass = 1.0
-			horizontal_drive_acceleration = 470.0
+			horizontal_drive_acceleration = 0.0
 			starting_target_speed = 360.0
 			maximum_target_speed = 760.0
 			air_drag = 0.055
@@ -239,6 +259,15 @@ func target_speed_at(distance_pixels: float) -> float:
 		linear_progress * linear_progress * (3.0 - 2.0 * linear_progress)
 	)
 	return lerpf(starting_target_speed, maximum_target_speed, smooth_progress)
+
+
+## Position-based pursuer law. `bird_acceleration` is deliberately a gain per
+## 1,000 m rather than an acceleration toward player speed.
+func bird_speed_at(distance_pixels: float) -> float:
+	if bird_speed <= 0.0:
+		return 0.0
+	var kilometres := maxf(distance_pixels, 0.0) / 10000.0
+	return bird_speed + bird_acceleration * kilometres
 
 
 func adjust(parameter: StringName, direction: float) -> float:
@@ -269,6 +298,15 @@ func set_tuning_value(parameter: StringName, value: float) -> float:
 		&"full_speed_m":
 			speed_curve_distance = safe_value
 			return speed_curve_distance
+		&"bird_speed":
+			bird_speed = safe_value
+			return bird_speed
+		&"bird_acceleration":
+			bird_acceleration = safe_value
+			return bird_acceleration
+		&"bird_start_offset":
+			bird_start_offset = safe_value
+			return bird_start_offset
 		&"web_range":
 			web_maximum_length = safe_value
 			return web_maximum_length
@@ -380,6 +418,12 @@ func value_for(parameter: StringName) -> float:
 			return maximum_target_speed
 		&"full_speed_m":
 			return speed_curve_distance
+		&"bird_speed":
+			return bird_speed
+		&"bird_acceleration":
+			return bird_acceleration
+		&"bird_start_offset":
+			return bird_start_offset
 		&"web_range":
 			return web_maximum_length
 		&"tap_retarget":
@@ -460,6 +504,9 @@ func validate() -> PackedStringArray:
 	if release_momentum_bonus_speed < 0.0 or \
 			release_momentum_bonus_speed > MAX_RELEASE_MOMENTUM_BONUS_SPEED:
 		failures.append("release momentum bonus is invalid")
+	if bird_speed < 0.0 or bird_acceleration < 0.0 or \
+			bird_start_offset <= 0.0:
+		failures.append("pursuing bird values are invalid")
 	if web_minimum_length <= 0.0 or web_maximum_length <= web_minimum_length:
 		failures.append("web length range is invalid")
 	if reel_energy_capacity <= 0.0 or reel_drain_rate <= 0.0 or \

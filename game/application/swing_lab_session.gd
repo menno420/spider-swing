@@ -22,6 +22,9 @@ const RUN_STANDARD := &"standard"
 const RUN_PRACTICE := &"practice"
 const RUN_CAMPAIGN := &"campaign"
 static var TUNING_PARAMETERS: Array[StringName] = TuningCatalog.parameter_ids()
+const BIRD_DEBUG_PARAMETERS := [
+	&"bird_speed", &"bird_acceleration", &"bird_start_offset",
+]
 
 var _config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 var _world := SimulationWorld.new()
@@ -42,6 +45,7 @@ var _difficulty_mode: StringName = DifficultyCatalog.MODE_STANDARD
 ## from being cleared by swinging past the goal.
 var _verbs_performed: Array[StringName] = []
 var _debug_start_active: bool = false
+var _debug_bird_overrides: Dictionary = {}
 var _course_seed: int = 1337
 var _course_seed_override: int = -1
 var _recording_seed: int = 1337
@@ -90,6 +94,20 @@ func configure_progress(
 
 func configure_creator_pattern(pattern: Array[StringName]) -> void:
 	_creator_pattern = pattern.duplicate()
+
+
+## Session-only owner controls. Keeping these separate from PlayerSettings and
+## PlayerProgress guarantees Test Run comparisons never serialize as ownership
+## or silently alter normal Play.
+func configure_bird_debug_overrides(overrides: Dictionary) -> void:
+	_debug_bird_overrides.clear()
+	for parameter: StringName in BIRD_DEBUG_PARAMETERS:
+		if not overrides.has(parameter) and not overrides.has(str(parameter)):
+			continue
+		var value: float = float(overrides.get(
+			parameter, overrides.get(str(parameter), 0.0)))
+		_debug_bird_overrides[parameter] = TuningCatalog.clamp_value(
+			parameter, value)
 
 
 func configure_run(
@@ -314,6 +332,8 @@ func _apply_tuning_value(parameter: StringName, value: float) -> void:
 		_run_mode = RUN_PRACTICE
 		_reset_run(true, false)
 		return
+	if parameter in BIRD_DEBUG_PARAMETERS:
+		_debug_bird_overrides[parameter] = safe_value
 	_config.set_tuning_value(parameter, safe_value)
 	_after_tuning_change(parameter)
 	_publish_snapshot()
@@ -407,6 +427,14 @@ func load_input_trace(trace: Dictionary) -> Dictionary:
 	if commands.is_empty():
 		return {"ok": false, "reason": "trace carries no input", "commands": 0}
 	var setup: Dictionary = trace.get("setup", {})
+	configure_bird_debug_overrides({
+		&"bird_speed": float(setup.get(
+			"bird_speed", SwingConfig.DEFAULT_BIRD_SPEED)),
+		&"bird_acceleration": float(setup.get(
+			"bird_acceleration", SwingConfig.DEFAULT_BIRD_ACCELERATION)),
+		&"bird_start_offset": float(setup.get(
+			"bird_start_offset", SwingConfig.DEFAULT_BIRD_START_OFFSET)),
+	})
 
 	_recording = false
 	_difficulty_mode = DifficultyCatalog.resolve(
@@ -682,6 +710,13 @@ func _make_snapshot() -> SimulationSnapshot:
 	snapshot.distance_pixels = _world.distance_pixels
 	snapshot.furthest_x = _world.furthest_x
 	snapshot.left_kill_boundary = _world.left_kill_boundary()
+	snapshot.bird_enabled = _world.bird_enabled()
+	snapshot.bird_position = _world.bird_position
+	snapshot.bird_velocity = _world.bird_velocity
+	snapshot.bird_gap = _world.bird_gap()
+	snapshot.bird_flap_phase = _world.bird_flap_phase
+	snapshot.bird_flap_rate = _world.bird_flap_rate
+	snapshot.bird_closing = _world.bird_closing
 	snapshot.web_attached = _world.web.attached
 	snapshot.anchor = _world.web.anchor
 	snapshot.rope_length = _world.web.rope_length
@@ -947,6 +982,8 @@ func _resolved_config(preset_name: StringName) -> SwingConfig:
 	# Applied last and in one place, so every path that rebuilds the config
 	# (preset change, progress change, upgrade overlay) carries the mode.
 	DifficultyCatalog.apply_to_config(config, _difficulty_mode)
+	for parameter: StringName in _debug_bird_overrides:
+		config.set_tuning_value(parameter, float(_debug_bird_overrides[parameter]))
 	return config
 
 
@@ -988,6 +1025,8 @@ func _run_start_message(region: Dictionary, guided: bool) -> String:
 		return "DEBUG UPGRADE OVERLAY L%d · awards nothing" % overlay_level
 	if _run_mode == RUN_PRACTICE:
 		return "%s practice · no records or rewards" % region["name"]
+	if guided and _config.bird_speed > 0.0:
+		return "Opening web ready · wings are already behind you"
 	return "Opening web ready" if guided else "%s ready" % region["name"]
 
 

@@ -11,10 +11,18 @@ static func run() -> Dictionary:
 	var passed := 0
 
 	passed += _test_presets(failures)
+	passed += _test_forward_drive_is_zero_in_every_preset(failures)
 	passed += _test_baseline_preset_id_and_legacy_migration(failures)
 	passed += _test_reel_resource_baseline_and_resolution(failures)
 	passed += _test_gradual_speed_curve_reaches_full_pace_at_five_kilometres(
 		failures)
+	passed += _test_bird_x_uses_its_own_world_law(failures)
+	passed += _test_bird_world_rate_rises_with_distance(failures)
+	passed += _test_bird_y_follows_with_damped_lag(failures)
+	passed += _test_bird_contact_reuses_camera_boundary_death(failures)
+	passed += _test_zero_bird_speed_disables_contact_and_motion(failures)
+	passed += _test_rescue_restores_the_configured_bird_gap(failures)
+	passed += _test_bird_flap_clock_and_state_are_deterministic(failures)
 	passed += _test_release_quality_rewards_wide_rising_arc(failures)
 	passed += _test_release_quality_rejects_poor_timing(failures)
 	passed += _test_release_quality_is_capped_and_resets(failures)
@@ -101,6 +109,25 @@ static func _test_presets(failures: PackedStringArray) -> int:
 		failures.append(
 			"balanced baseline lost its weaker base, pacing, or rail defaults")
 		return 0
+	return 1
+
+
+static func _test_forward_drive_is_zero_in_every_preset(
+	failures: PackedStringArray,
+) -> int:
+	for name: StringName in SwingConfig.preset_names():
+		var config := SwingConfig.from_preset(name)
+		if not is_zero_approx(config.horizontal_drive_acceleration):
+			failures.append("preset %s still grants continuous forward drive" % name)
+			return 0
+		config.gravity = 0.0001
+		config.air_drag = 0.0
+		var result := SpiderMotor.apply_forces(
+			Vector2(100.0, 0.0), 0.0, FIXED_DELTA, config)
+		var resolved_velocity: Vector2 = result["velocity"]
+		if resolved_velocity.x > 100.001:
+			failures.append("preset %s rebuilt speed below its reference curve" % name)
+			return 0
 	return 1
 
 
@@ -234,6 +261,185 @@ static func _test_gradual_speed_curve_reaches_full_pace_at_five_kilometres(
 		if float(speeds[index]) > float(speeds[index + 1]):
 			failures.append("target speed curve is not monotonic")
 			return 0
+	return 1
+
+
+static func _bird_test_config() -> SwingConfig:
+	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	config.gravity = 0.0001
+	config.air_drag = 0.0
+	config.guided_start_enabled = false
+	config.course_boundaries_enabled = false
+	config.rescue_life_enabled = false
+	config.bird_speed = 300.0
+	config.bird_acceleration = 0.0
+	config.bird_start_offset = 760.0
+	return config
+
+
+static func _test_bird_x_uses_its_own_world_law(
+	failures: PackedStringArray,
+) -> int:
+	var config := _bird_test_config()
+	var slow := SimulationWorld.new()
+	var fast := SimulationWorld.new()
+	slow.reset(config, CourseGeometry.new())
+	fast.reset(config, CourseGeometry.new())
+	slow.velocity = Vector2.ZERO
+	fast.velocity = Vector2(900.0, 0.0)
+	var start_x := slow.bird_position.x
+	for _index in range(30):
+		slow.step(FIXED_DELTA)
+		fast.step(FIXED_DELTA)
+	if absf(slow.bird_position.x - fast.bird_position.x) > 0.001 or \
+			absf(slow.bird_position.x - start_x - 150.0) > 0.001:
+		failures.append("bird X matched player speed instead of its own world law")
+		return 0
+	return 1
+
+
+static func _test_bird_world_rate_rises_with_distance(
+	failures: PackedStringArray,
+) -> int:
+	var config := _bird_test_config()
+	config.bird_acceleration = 12.0
+	var opening := SimulationWorld.new()
+	var late := SimulationWorld.new()
+	opening.reset(config, CourseGeometry.new(), 0.0)
+	late.reset(config, CourseGeometry.new(), 50000.0)
+	# Hold player distance fixed so this contract measures the bird law at the
+	# stated 0.001 px/s resolution, not the opening launch's first-tick travel.
+	opening.velocity = Vector2.ZERO
+	late.velocity = Vector2.ZERO
+	opening.step(FIXED_DELTA)
+	late.step(FIXED_DELTA)
+	# `measured` from the config law at 0.001 px/s resolution: +12 px/s per
+	# 1,000 m makes the 5,000 m bird exactly 60 px/s faster.
+	if absf(opening.bird_velocity.x - 300.0) > 0.001 or \
+			absf(late.bird_velocity.x - 360.0) > 0.001:
+		failures.append("bird pressure no longer rises predictably with distance")
+		return 0
+	return 1
+
+
+static func _test_bird_y_follows_with_damped_lag(
+	failures: PackedStringArray,
+) -> int:
+	var config := _bird_test_config()
+	config.bird_start_offset = 1600.0
+	var world := SimulationWorld.new()
+	world.reset(config, CourseGeometry.new())
+	world.velocity = Vector2(900.0, 0.0)
+	world.position.y = 600.0
+	var initial_y := world.bird_position.y
+	world.step(FIXED_DELTA)
+	if world.bird_position.y <= initial_y or \
+			world.bird_position.y >= world.position.y or \
+			world.bird_velocity.y <= 0.0:
+		failures.append("bird Y snapped to the spider instead of beginning a damped follow")
+		return 0
+	for _index in range(59):
+		world.step(FIXED_DELTA)
+	if absf(world.position.y - world.bird_position.y) >= \
+			absf(world.position.y - initial_y):
+		failures.append("damped bird follow did not converge on player height")
+		return 0
+	return 1
+
+
+static func _test_bird_contact_reuses_camera_boundary_death(
+	failures: PackedStringArray,
+) -> int:
+	var config := _bird_test_config()
+	config.bird_speed = 1.0
+	config.bird_start_offset = 300.0
+	var world := SimulationWorld.new()
+	world.reset(config, CourseGeometry.new())
+	world.position.x = world.left_kill_boundary() - 10.0
+	world.velocity = Vector2.ZERO
+	var events := world.step(FIXED_DELTA)
+	var death := _first_event(events, SimulationEvent.Kind.DEATH_REQUESTED)
+	if death == null or StringName(death.data.get("cause", &"")) != \
+			&"camera_boundary" or not death.message.contains("bird"):
+		failures.append("visible bird contact bypassed the existing death path")
+		return 0
+	return 1
+
+
+static func _test_zero_bird_speed_disables_contact_and_motion(
+	failures: PackedStringArray,
+) -> int:
+	var config := _bird_test_config()
+	config.bird_speed = 0.0
+	config.bird_acceleration = 100.0
+	var world := SimulationWorld.new()
+	world.reset(config, CourseGeometry.new(), 50000.0)
+	var start := world.bird_position
+	world.position.x = start.x - 500.0
+	for _index in range(120):
+		var events := world.step(FIXED_DELTA)
+		if _contains_event(events, SimulationEvent.Kind.DEATH_REQUESTED):
+			failures.append("bird-off run still emitted a pursuer death")
+			return 0
+	if world.bird_enabled() or world.bird_position != start or \
+			world.bird_velocity != Vector2.ZERO or \
+			not is_zero_approx(world.bird_flap_rate):
+		failures.append("bird speed zero did not disable state, drawing eligibility, and death")
+		return 0
+	return 1
+
+
+static func _test_rescue_restores_the_configured_bird_gap(
+	failures: PackedStringArray,
+) -> int:
+	var config := _bird_test_config()
+	config.bird_start_offset = 880.0
+	var world := SimulationWorld.new()
+	world.reset(config, CourseGeometry.new())
+	world.position = Vector2(1400.0, 640.0)
+	world.bird_position.x = world.position.x - 40.0 - \
+		SimulationWorld.BIRD_CONTACT_LEAD_X
+	world.rescue_after_death()
+	if absf(world.bird_gap() - 880.0) > 0.001 or \
+			absf(world.bird_velocity.x - config.bird_speed_at(
+				world.distance_pixels)) > 0.001:
+		failures.append("rescue did not restore the configured bird buffer")
+		return 0
+	return 1
+
+
+static func _test_bird_flap_clock_and_state_are_deterministic(
+	failures: PackedStringArray,
+) -> int:
+	var config := _bird_test_config()
+	var first := SimulationWorld.new()
+	var second := SimulationWorld.new()
+	for world: SimulationWorld in [first, second]:
+		world.reset(config, CourseGeometry.new())
+		world.velocity = Vector2(900.0, 0.0)
+	for _index in range(90):
+		first.step(FIXED_DELTA)
+		second.step(FIXED_DELTA)
+	if first.bird_position != second.bird_position or \
+			first.bird_velocity != second.bird_velocity or \
+			first.bird_flap_phase != second.bird_flap_phase or \
+			first.bird_flap_rate != second.bird_flap_rate:
+		failures.append("identical fixed-tick bird histories diverged")
+		return 0
+	# `measured` at one fixed-tick resolution: 90 ticks × 700 clock units,
+	# wrapped on the 60,000-unit phase clock, is exactly 0.05.
+	if first.bird_closing or first.bird_flap_rate > 0.71 or \
+			absf(first.bird_flap_phase - 0.05) > 0.000001:
+		failures.append("well-buffered bird did not ease into its glide cadence")
+		return 0
+	first.velocity = Vector2.ZERO
+	first.bird_position.x = first.position.x - 180.0 - \
+		SimulationWorld.BIRD_CONTACT_LEAD_X
+	first.step(FIXED_DELTA)
+	if not first.bird_closing or first.bird_flap_rate <= 0.71 or \
+			first.bird_flap_phase < 0.0 or first.bird_flap_phase >= 1.0:
+		failures.append("closing bird did not raise its deterministic flap cadence")
+		return 0
 	return 1
 
 
@@ -405,7 +611,7 @@ static func _test_release_quality_is_capped_and_resets(
 	config.maximum_horizontal_overspeed = 50.0
 	var capped := SimulationWorld.new()
 	if not _prime_release_world(
-			capped, config, Vector2(700.0, 390.0), Vector2(400.0, -300.0)):
+			capped, config, Vector2(700.0, 390.0), Vector2(800.0, -600.0)):
 		failures.append("capped release fixture could not attach")
 		return 0
 	capped.queue_command(InputCommand.release(1, 0))
@@ -420,9 +626,9 @@ static func _test_release_quality_is_capped_and_resets(
 	if release_event == null or release_count != 1 or \
 			absf(float(release_event.data.get("forward_bonus", 0.0)) - 10.0) \
 			> 0.001 or \
-			absf(float(release_event.data.get("velocity_after_x", 0.0)) - 410.0) \
+			absf(float(release_event.data.get("velocity_after_x", 0.0)) - 810.0) \
 			> 0.001:
-		failures.append("release award ignored its reference-speed cap or duplicated")
+		failures.append("release award ignored its absolute max-reference cap or duplicated")
 		return 0
 
 	# Reset and reuse the same world, then compare it with a fresh world. Old arc
@@ -950,8 +1156,8 @@ static func _test_upgrade_catalog_has_shared_core_and_breakthroughs(
 			&"burst_cooldown", -1.0],
 		[SpiderCatalog.SKITTER, &"skitter_size",
 			&"player_collision_radius", -1.0],
-		[SpiderCatalog.SKITTER, &"skitter_drive",
-			&"horizontal_drive_acceleration", 1.0],
+		# OQ-13 deliberately leaves persisted `skitter_drive` inert until the
+		# owner chooses which earned-speed term Quick Feet should buy.
 		[SpiderCatalog.ANCHORITE, &"anchorite_momentum",
 			&"burst_exit_speed", 1.0],
 		[SpiderCatalog.ANCHORITE, &"anchorite_pendulum",
@@ -2785,7 +2991,8 @@ static func _test_spider_profiles_and_glide_share_one_config(
 	var buckler := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 	SpiderCatalog.apply_to_config(buckler, progress)
 	if agile.player_collision_radius >= 18.0 or \
-			agile.horizontal_drive_acceleration <= 470.0:
+			not is_zero_approx(agile.horizontal_drive_acceleration) or \
+			agile.starting_target_speed <= 360.0:
 		failures.append("Magnolia Green Jumper lost its smaller, more agile profile")
 		return 0
 	if heavy.player_collision_radius <= 18.0 or heavy.gravity <= 1120.0 or \
@@ -2797,7 +3004,7 @@ static func _test_spider_profiles_and_glide_share_one_config(
 		return 0
 	if SpiderCatalog.ALL_IDS.size() != 5 or \
 			not buckler.surface_bounce_enabled or \
-			buckler.horizontal_drive_acceleration >= 470.0:
+			not is_zero_approx(buckler.horizontal_drive_acceleration):
 		failures.append("Buckler lost its bounded recovery trade-off")
 		return 0
 	var world := SimulationWorld.new()
