@@ -345,7 +345,7 @@ remain owned by their existing builders.
 - Every region pool contains at least seven patterns and admits multiple
   coprime seeded strides; the dedicated 15-contract zone group covers each
   density gate and mechanic above without changing the approved Balanced
-  physics values. The complete live suite is 175 contracts; the added contracts
+  physics values. The complete live suite total lives in `EXPECTED_CHECK_COUNT` (`tests/test_runner.gd`); the added contracts
   lock two-plane depth, wall/surface/obstacle routing, diagnostic-only outlines,
   and ceiling-support continuity for every family visible in the owner's
   10–30 km recordings.

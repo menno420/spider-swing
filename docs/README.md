@@ -45,6 +45,7 @@ and diff rather than trusting a number forever.
 | Document | What it is |
 | --- | --- |
 | [`measurements/2026-08-01-owner-play-calibration.md`](measurements/2026-08-01-owner-play-calibration.md) | **Ground truth for how the game is actually played**, from owner device recordings — and the acceptance test any simulation model must pass before its output is published. |
+| [`measurements/2026-08-01-upgrade-playstyle-sweep.md`](measurements/2026-08-01-upgrade-playstyle-sweep.md) | **What upgrades change about how the game is played** — they buy survival and economy of effort, not distance — plus the cross-application test that separates a real effect from search luck. |
 | [`measurements/2026-08-01-bot-model-v3.md`](measurements/2026-08-01-bot-model-v3.md) | What the v3 player-model rebuild fixed, what it bought, and the three plausible fixes that measured worse and were deleted. Scored against the acceptance targets: three of eight. |
 | [`measurements/2026-08-01-upgrade-audit.md`](measurements/2026-08-01-upgrade-audit.md) | What each upgrade track is actually worth, measured per track in isolation — including two that change the config and change nothing about play. |
 | [`measurements/2026-08-01-difficulty-curve.md`](measurements/2026-08-01-difficulty-curve.md) | Deaths per kilometre, survival, death causes and resource pressure across 0–20 km and three skill tiers — the baseline difficulty modes, the upgrade audit and economy tuning are judged against. |
