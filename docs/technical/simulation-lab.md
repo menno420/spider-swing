@@ -37,24 +37,34 @@ godot --headless --path . --script res://tools/simulate.gd -- \
 | `--sweep=SPEC` | — | Parameter grid, e.g. `reel_rate:260:440:4,pull_cooldown:1.2:2.4:3` (≤60 points, one skill + spider). Names resolve as TuningCatalog ids first, else raw `SwingConfig` properties (`reel_regeneration_rate`) |
 | `--json=path` | — | Write per-run rows + summaries as JSON |
 
-## The player model (bot v2)
+## The player model (bot v3)
 
 The bot reads only what a player could: its own motion, the fly trail (the
 game's authored route language), solid geometry through the same
 `nearest_solid_point` forgiveness a real tap receives, and the pull-safety
 preview the HUD already draws. It attaches up-forward webs when falling or
 below the route, releases on the rising swing, reels when below the route
-line, and Bursts opportunistically — plus an emergency Burst when it is
+line, Bursts opportunistically, and spends the one Dive each web attach
+re-arms on a forward-and-below anchor — plus an emergency Burst when it is
 falling to its death and no attachable web exists. Skill tiers vary only
 human-imperfection parameters:
 
-| Tier | Decision cadence | Reaction delay | Aim error σ | Checks pull safety |
-| --- | --- | --- | --- | --- |
-| novice | 10 ticks | 9 ticks (+0–2) | 46 px | 40% of Bursts |
-| intermediate | 7 ticks | 6 ticks (+0–2) | 26 px | 75% of Bursts |
-| expert | 4 ticks | 3 ticks (+0–2) | 10 px | 95% of Bursts |
+| Tier | Decision cadence | Reaction delay | Aim error σ | Checks pull safety | Dive willingness | Reads anchor class |
+| --- | --- | --- | --- | --- | --- | --- |
+| novice | 10 ticks | 9 ticks (+0–2) | 46 px | 40% of Bursts | 10% | 20% |
+| intermediate | 7 ticks | 6 ticks (+0–2) | 26 px | 75% of Bursts | 35% | 65% |
+| expert | 4 ticks | 3 ticks (+0–2) | 10 px | 95% of Bursts | 65% | 95% |
 
-**v2 adapts to the configuration it is handed**, the way a player learns a
+**v3 is v2 plus the three verbs and readings it was missing.** It was rebuilt
+on 2026-08-01 after owner recordings showed v2 measuring a different game
+(`docs/measurements/2026-08-01-bot-model-v3.md`): Dive is now a searched verb
+taken 0.5–0.7 times per web attach, the Reel policy is written in absolute
+seconds instead of fractions of the meter, and the attach fan is scored by
+anchor class. Two summary lines exist to catch the model being wrong without
+another set of recordings — `taps/s`, against the owner's measured 4.71, and
+the share of web searches that offered a genuine anchor-class choice.
+
+**v3 adapts to the configuration it is handed**, the way a player learns a
 build, so upgrade comparisons measure the tuning rather than a bot's stale
 habits:
 
@@ -116,31 +126,38 @@ Standard's 2.04 while killing the player twice as fast. Summaries now report
 `deaths_per_run` beside the rate so the cause is visible. **Compare modes on
 distance survived.**
 
-## The bot cannot measure upgrades — especially Reel ones
+## The publication rule
 
-**Do not use this lab to evaluate upgrade tracks.** Established by owner device
-evidence on 2026-08-01, after a lab audit concluded the opposite and was wrong.
+**No output from this lab may be used to draw conclusions about difficulty,
+upgrades or the economy until the model passes the acceptance targets in
+`docs/measurements/2026-08-01-owner-play-calibration.md`.** Bot v3 passes
+three of eight. Until that changes, batches here are for comparing course
+content and geometry against each other, not for stating what the game is.
 
-The bot's Reel policy is expressed in **fractions of the meter**: it engages
-above `energy_fraction > reel_reserve` and disengages at
-`energy_fraction <= 0.06`. Every one of those terms is a ratio, so scaling
-`reel_energy_capacity` scales numerator and denominator together and the bot
-behaves *identically*. Silk Reserve at level 20 raises continuous reel time
-from 2.00 s to 2.48 s — a change a player feels immediately and the bot cannot
-represent.
+The rule exists because the alternative was tried. A lab audit concluded that
+buying every upgrade made the player 25% worse; the owner reported the
+opposite from device play, and he was right. v2's Reel policy was expressed in
+**fractions of the meter** — engage above `energy_fraction > reel_reserve`,
+stop at `<= 0.06` — so scaling `reel_energy_capacity` scaled both sides and
+the bot behaved identically. Silk Reserve's real 2.00 s → 2.48 s gain in
+continuous reel time was invisible to it, and the audit read that blindness as
+a null result.
 
-Two consequences worth holding onto:
+Two lessons outlast the specific bug:
 
 - **A bit-identical result is not evidence of no effect.** It can equally mean
-  the model is blind to the axis being varied. Check whether the bot's policy
-  is scale-invariant in that parameter before concluding anything.
-- **"The Reel meter never empties" is circular.** The bot stops reeling at 6%
-  remaining, so it cannot empty the meter by construction. Any conclusion
-  resting on that premise is measuring the stopping rule, not the game.
+  the model is blind to the axis being varied. Check whether the policy is
+  scale-invariant in that parameter before concluding anything. v3's reel
+  thresholds are absolute seconds specifically so that a binding reservoir
+  *would* show — it still does not, which makes the same null result mean
+  something it did not mean before.
+- **Check the premise against the device before leaning on it.** "The Reel
+  meter never empties" was true, but v2 could not have discovered it: its 6%
+  stopping rule made the observation unfalsifiable. The owner's recordings
+  settle it independently — the meter never falls below 73% in a whole run at
+  L20.
 
-Upgrade *feel* is a device question. The lab can still compare course content,
-difficulty modes and geometry, where the bot's policy is not the thing under
-test.
+Upgrade *feel* remains a device question in any case.
 
 ## Verb ablation, and what it cannot prove
 
@@ -227,7 +244,12 @@ The moving-pivot mechanic is therefore viable at the proved 38 px radius,
 not covered by this result and require rerunning the probe with their actual
 specification.
 
-## Observations (2026-07-30, bot model v2 — not human truth)
+## Observations (2026-07-30, bot model **v2** — superseded, kept for method)
+
+> These predate the v3 rebuild and the acceptance targets, and were taken with
+> the model that could not Dive and could not see Reel capacity. Read them for
+> how a question was asked, not for what the answer was.
+
 
 - The v1 finding that maxed-everything Garden scored *below* level 0 halves
   under the adaptive bot (≈−13% → ≈−6% mean, medians 1 289 m vs 1 191 m,

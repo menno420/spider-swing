@@ -102,6 +102,29 @@ the owner's 0.133 s median gap. So the model's *rate* is roughly right and its
 *repertoire* is not. That is a much more specific diagnosis than "the bot is
 unrealistic", and it points at what to build.
 
+## The reel meter, read off the button
+
+The REEL button carries a cyan radial depletion meter, so the resource can be
+read frame by frame rather than argued about. Run `726dcc65`, 1 459 frames at
+30 fps, upgrades L20, sampling 360 angles at three radii per frame:
+
+| Measure | Value |
+| --- | ---: |
+| Median fill | 100% |
+| 5th percentile | 86% |
+| **Minimum across the whole run** | **73%** |
+| Episodes below 90% | 17, longest 1.13 s |
+
+**A skilled player at L20 never brings the meter below three-quarters.** The
+deepest dip spends roughly 20 energy — 27% of the L20 reservoir, and still
+only 33% of the level-0 one. The meter does not bind at either end of the
+upgrade track for this player.
+
+That is worth recording precisely because it *rescues* a conclusion this
+document's first draft helped discard. Calling the bot's "the meter never
+empties" circular was correct about the method — its 6% stopping rule made the
+result unfalsifiable — but the claim itself is independently true on device.
+
 ## Acceptance targets
 
 A simulation model may not be used to draw conclusions about difficulty,
@@ -124,7 +147,12 @@ considered.
 
 ## Known structural blind spots
 
-Three, all discoverable in source, all of which produced published errors:
+Three, all discoverable in source, all of which produced published errors.
+**All three are closed in bot model v3** — see
+[`2026-08-01-bot-model-v3.md`](2026-08-01-bot-model-v3.md) for what that
+bought (the upgrade penalty fell from −25.1% to −6.3%, input rate now matches
+at 4.89 taps/s) and what it did not: v3 still fails five of the eight targets
+above, so the publication rule below is unchanged.
 
 1. **No Dive.** The bot cannot represent a third of the verb set.
 2. **Fraction-based Reel policy.** It engages above

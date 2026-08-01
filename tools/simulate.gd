@@ -1,5 +1,5 @@
 extends SceneTree
-## Headless batch-run simulation lab for balance and systems tuning (bot v2).
+## Headless batch-run simulation lab for balance and systems tuning (bot v3).
 ##
 ## Drives the authoritative SimulationWorld + CourseStream with a scripted,
 ## deliberately imperfect player model and reports distance, death-cause, and
@@ -53,7 +53,7 @@ extends SceneTree
 ##                        property names (e.g. reel_regeneration_rate).
 ##   --json=path          write per-run rows and summaries as JSON
 ##
-## Bot v2 adapts to the configuration it is handed, the way a player learns
+## Bot v3 adapts to the configuration it is handed, the way a player learns
 ## their build: its Reel reserve follows the meter's sustainability
 ## (drain vs regeneration), its Reel engagement follows the retraction rate,
 ## and its Burst aim shortens as the pull fraction grows — plus a
@@ -62,8 +62,20 @@ extends SceneTree
 ## from the seeded imperfection model, so a tuning change shifts the
 ## metrics. `--course-seeds` deliberately sweeps curated course order
 ## separately from modeled player imperfection.
+##
+## v3 closes three structural gaps found by comparing v2 against owner device
+## recordings (docs/measurements/2026-08-01-owner-play-calibration.md):
+## Dive is a verb it can actually use, its Reel policy is written in absolute
+## seconds instead of fractions of the meter, and it reads the anchor class
+## zones 4–8 are built out of. It still fails that document's acceptance
+## targets by roughly an order of magnitude, so **its output remains
+## unpublishable as a claim about difficulty, upgrades or the economy.**
+##
+## Read `taps_per_second` in the summary against the owner's measured
+## 4.71 taps/s before trusting any run: an input rate far from that means the
+## model is not playing the same game, whatever its distance says.
 
-const BOT_MODEL_VERSION := 2
+const BOT_MODEL_VERSION := 3
 const FIXED_DELTA := 1.0 / 60.0
 const PIXELS_PER_METRE := 10.0
 const DISTANCE_BANDS_M := [500.0, 1000.0, 2000.0, 3500.0]
@@ -79,6 +91,9 @@ static var _isolated_track: String = ""
 ## Imperfection model per skill tier. Ticks are 60 Hz simulation ticks.
 ## `care` is the probability of checking the pull-safety preview (the same
 ## endpoint/safe information the HUD shows) before committing to a Burst.
+## `dive_chance` is the per-decision willingness to spend the one Dive each
+## web attach re-arms; `class_read` is how reliably the anchor class the HUD
+## cues ("Weak anchor ahead", "Weak span holding") is actually acted on.
 const SKILL_PROFILES := {
 	&"novice": {
 		"decision_period_ticks": 10,
@@ -89,7 +104,9 @@ const SKILL_PROFILES := {
 		"panic_fall_speed": 470.0,
 		"release_rise_speed": 150.0,
 		"burst_chance": 0.05,
+		"dive_chance": 0.10,
 		"care": 0.40,
+		"class_read": 0.20,
 	},
 	&"intermediate": {
 		"decision_period_ticks": 7,
@@ -100,7 +117,9 @@ const SKILL_PROFILES := {
 		"panic_fall_speed": 390.0,
 		"release_rise_speed": 175.0,
 		"burst_chance": 0.16,
+		"dive_chance": 0.35,
 		"care": 0.75,
+		"class_read": 0.65,
 	},
 	&"expert": {
 		"decision_period_ticks": 4,
@@ -111,9 +130,30 @@ const SKILL_PROFILES := {
 		"panic_fall_speed": 330.0,
 		"release_rise_speed": 200.0,
 		"burst_chance": 0.30,
+		"dive_chance": 0.65,
 		"care": 0.95,
+		"class_read": 0.95,
 	},
 }
+
+## How each anchor class is worth choosing, before skill scales the reading.
+## Positive prefers, negative avoids. Silk highway carries the anchor forward
+## for free; sticky silk bleeds velocity for as long as the web holds; rotten
+## and collapsing spans expire on a timer and are then spent for good.
+const ANCHOR_CLASS_SCORE := {
+	CourseGeometry.ANCHOR_HIGHWAY: 90.0,
+	CourseGeometry.ANCHOR_FIXED: 0.0,
+	CourseGeometry.ANCHOR_MOVING_PIVOT: -20.0,
+	CourseGeometry.ANCHOR_STICKY: -70.0,
+	CourseGeometry.ANCHOR_ROTTEN: -120.0,
+	CourseGeometry.ANCHOR_COLLAPSING: -150.0,
+}
+
+## Anchor classes that expire while you hang on them.
+const TIMED_ANCHOR_CLASSES := [
+	CourseGeometry.ANCHOR_ROTTEN,
+	CourseGeometry.ANCHOR_COLLAPSING,
+]
 
 
 func _initialize() -> void:
@@ -298,7 +338,10 @@ func _summarize(
 		"flies": 0.0, "reel_empties": 0.0, "bursts": 0.0, "dives": 0.0,
 		"attaches": 0.0, "seconds": 0.0, "reel_time_s": 0.0,
 		"reel_energy_spent": 0.0, "time_empty_s": 0.0, "save_bursts": 0.0,
-		"travelled_m": 0.0, "deaths": 0.0,
+		"travelled_m": 0.0, "deaths": 0.0, "taps": 0.0,
+		"timed_anchor_attaches": 0.0, "sticky_attaches": 0.0,
+		"highway_attaches": 0.0, "anchor_failures": 0.0,
+		"attach_searches": 0.0, "class_choices": 0.0,
 	}
 	var rescues := 0
 	var pull_deaths := 0
@@ -378,6 +421,22 @@ func _summarize(
 		"mean_dives": float(totals["dives"]) / count,
 		"mean_save_bursts": float(totals["save_bursts"]) / count,
 		"mean_attaches": float(totals["attaches"]) / count,
+		# Input rate, so the model can be held against the owner's recovered
+		# tap stream rather than only against distance. Seconds are summed
+		# across runs so a batch of short runs cannot inflate it.
+		"taps_per_second": 0.0 if totals["seconds"] <= 0.0
+			else float(totals["taps"]) / float(totals["seconds"]),
+		"dives_per_attach": 0.0 if totals["attaches"] <= 0.0
+			else float(totals["dives"]) / float(totals["attaches"]),
+		"mean_timed_anchor_attaches":
+			float(totals["timed_anchor_attaches"]) / count,
+		"mean_sticky_attaches": float(totals["sticky_attaches"]) / count,
+		"mean_highway_attaches": float(totals["highway_attaches"]) / count,
+		"mean_anchor_failures": float(totals["anchor_failures"]) / count,
+		# Share of web searches that offered more than one anchor class, i.e.
+		# the share in which the class preference could change anything at all.
+		"class_choice_rate": 0.0 if totals["attach_searches"] <= 0.0
+			else float(totals["class_choices"]) / float(totals["attach_searches"]),
 		"rescue_used_runs": rescues,
 		"rescue_mean_distance_m": 0.0 if rescues == 0
 			else rescue_distance_total / rescues,
@@ -414,6 +473,14 @@ func _print_summary(summary: Dictionary) -> void:
 		summary["flies_per_km"], summary["mean_attaches"],
 		summary["mean_bursts"], summary["mean_save_bursts"],
 		summary["mean_dives"]])
+	print("  input       %.2f taps/s · %.2f dives per web (owner: 4.71 taps/s)" % [
+		summary["taps_per_second"], summary["dives_per_attach"]])
+	print("  anchors     %.1f highway · %.1f sticky · %.1f timed (%.1f failed under load)" % [
+		summary["mean_highway_attaches"], summary["mean_sticky_attaches"],
+		summary["mean_timed_anchor_attaches"],
+		summary["mean_anchor_failures"]])
+	print("  anchor pick %.1f%% of web searches offered a class choice" % [
+		summary["class_choice_rate"] * 100.0])
 	print("  reel        %.2fs held · %.1f energy spent · %.2f empties · %.2fs at empty" % [
 		summary["mean_reel_time_s"], summary["mean_reel_energy_spent"],
 		summary["mean_reel_empties"], summary["mean_time_empty_s"]])
@@ -833,13 +900,26 @@ class RunDriver:
 	var bursts := 0
 	var save_bursts := 0
 	var dives := 0
+	var taps := 0
 	var reel_empties := 0
 	var reel_ticks := 0
 	var empty_ticks := 0
 	var reel_energy_spent := 0.0
-	var reel_reserve := 0.2
+	## Seconds of continuous reel kept in hand before spending, and the
+	## seconds-remaining at which reeling stops. Both are absolute times, not
+	## fractions of the meter — see `_derive_adaptations`.
+	var reel_reserve_s := 0.5
+	var reel_stop_floor_s := 0.12
 	var reel_band_scale := 1.0
 	var burst_reach := 460.0
+	var attached_class: StringName = CourseGeometry.ANCHOR_FIXED
+	var attached_expiry_tick := -1
+	var timed_anchor_attaches := 0
+	var sticky_attaches := 0
+	var highway_attaches := 0
+	var anchor_failures := 0
+	var attach_searches := 0
+	var class_choices := 0
 	var course_seed := 1337
 	var start_m := 0.0
 	var ablated: Array[StringName] = []
@@ -884,21 +964,39 @@ class RunDriver:
 		chunk_index = maxi(
 			0, floori(world.position.x / CourseStream.CHUNK_WIDTH))
 
-	## How a player internalizes their build. Reel: the less sustainable the
-	## meter (regeneration vs drain), the bigger the reserve kept before
-	## spending; a faster reel is engaged later because it corrects quicker.
+	## How a player internalizes their build. Reel: a player judges the meter
+	## in SECONDS of continuous pull, not in percent — "about two seconds of
+	## reel" is the sensation the HUD bar conveys. Writing the policy in
+	## seconds is what makes reservoir size legible to the model at all: the
+	## v2 policy compared `energy_fraction` against fraction thresholds, so
+	## scaling `reel_energy_capacity` scaled both sides and every capacity
+	## upgrade was bit-for-bit invisible. It also meant the bot stopped at a
+	## fixed 6% and could never empty the meter, which turned "the Reel meter
+	## never empties" into a measurement of its own stopping rule.
 	## Burst: the further a pull travels, the closer the chosen anchors, so
 	## expected travel stays a controllable hop instead of a leap.
 	func _derive_adaptations() -> void:
+		# Both thresholds are absolute times and MUST NOT be derived from
+		# `reel_energy_capacity`. Anything proportional to the reservoir —
+		# including a threshold in seconds computed as a share of the seconds
+		# the reservoir buys — cancels the reservoir back out and reproduces
+		# exactly the v2 blindness this rewrite exists to remove. What a
+		# player holds back is a beat of reaction and an expectation of the
+		# next correction, neither of which grows because the tank did.
 		match reel_style:
 			&"hold":
-				reel_reserve = 0.02
+				reel_reserve_s = 0.05
+				reel_stop_floor_s = 0.03
 			&"tap":
-				reel_reserve = 0.20
+				reel_reserve_s = 0.70
+				reel_stop_floor_s = 0.30
 			_:
+				# The less the meter sustains itself, the longer a player
+				# wants banked before committing to a pull.
 				var sustain := config.reel_regeneration_rate / \
 					maxf(0.001, config.reel_drain_rate)
-				reel_reserve = clampf(0.6 * (1.0 - sustain), 0.10, 0.50)
+				reel_reserve_s = clampf(0.9 * (1.0 - sustain), 0.15, 0.80)
+				reel_stop_floor_s = 0.10
 		reel_band_scale = clampf(
 			config.reel_retraction_rate /
 				SwingConfig.BASE_REEL_RETRACTION_RATE,
@@ -961,8 +1059,32 @@ class RunDriver:
 						)
 					SimulationEvent.Kind.ATTACHED:
 						attaches += 1
+						attached_class = StringName(event.data.get(
+							"anchor_class", CourseGeometry.ANCHOR_FIXED))
+						attached_expiry_tick = -1
+						match attached_class:
+							CourseGeometry.ANCHOR_STICKY:
+								sticky_attaches += 1
+							CourseGeometry.ANCHOR_HIGHWAY:
+								highway_attaches += 1
+							CourseGeometry.ANCHOR_ROTTEN, \
+							CourseGeometry.ANCHOR_COLLAPSING:
+								timed_anchor_attaches += 1
+					SimulationEvent.Kind.HAZARD_CUE:
+						# The same crack cue the HUD is driven by, carrying
+						# how long the span has left.
+						if event.data.get("cue", &"") == &"rotten_crack" and \
+								event.data.has("lifetime_ticks"):
+							attached_expiry_tick = world.tick + int(
+								event.data["lifetime_ticks"])
+					SimulationEvent.Kind.ANCHOR_FAILED:
+						anchor_failures += 1
+						attached_class = CourseGeometry.ANCHOR_FIXED
+						attached_expiry_tick = -1
 					SimulationEvent.Kind.RELEASED:
 						wants_reel = false
+						attached_class = CourseGeometry.ANCHOR_FIXED
+						attached_expiry_tick = -1
 					SimulationEvent.Kind.REEL_EMPTY:
 						reel_empties += 1
 					SimulationEvent.Kind.BURST_STARTED:
@@ -998,6 +1120,15 @@ class RunDriver:
 			"bursts": bursts,
 			"save_bursts": save_bursts,
 			"dives": dives,
+			"taps": taps,
+			"taps_per_second": (
+				float(taps) / maxf(0.001, world.tick * FIXED_DELTA)),
+			"timed_anchor_attaches": timed_anchor_attaches,
+			"sticky_attaches": sticky_attaches,
+			"highway_attaches": highway_attaches,
+			"anchor_failures": anchor_failures,
+			"attach_searches": attach_searches,
+			"class_choices": class_choices,
 			"reel_empties": reel_empties,
 			"reel_time_s": reel_ticks * FIXED_DELTA,
 			"reel_energy_spent": reel_energy_spent,
@@ -1028,23 +1159,75 @@ class RunDriver:
 			-float(profile["release_rise_speed"])
 		var high_enough := world.position.y < target_y - band
 		var near_ceiling := world.position.y < 230.0
+		# A span that expires while you hang on it is the one case where
+		# holding a good swing is the mistake. The HUD says so directly
+		# ("Weak span holding · release before it breaks"); acting on it is a
+		# skill axis, not a cheat.
+		if _timed_anchor_overstayed():
+			_set_reel(false)
+			_schedule(InputCommand.release(_next_sequence(), world.tick))
+			return
 		if (rising_fast and world.position.y < target_y + band) or \
 				high_enough or near_ceiling:
 			_set_reel(false)
+			# The one Dive each attach re-arms is worth more than an ordinary
+			# release: it converts the hang into forward speed instead of
+			# merely giving it up. Only taken when the descent is wanted.
+			if _try_dive(target_y):
+				return
 			_schedule(InputCommand.release(_next_sequence(), world.tick))
 			return
 		var too_low := world.position.y > target_y + \
 			float(profile["reel_band_px"]) * reel_band_scale
-		var energy_fraction := world.web.reel_energy / \
-			maxf(0.001, config.reel_energy_capacity)
+		var reel_seconds_left := world.web.reel_energy / \
+			maxf(0.001, config.reel_drain_rate)
 		if wants_reel:
-			var stop_floor := 0.02 if reel_style == &"hold" else \
-				(0.08 if reel_style == &"tap" else 0.06)
 			if world.position.y <= target_y or \
-					energy_fraction <= stop_floor or near_ceiling:
+					reel_seconds_left <= reel_stop_floor_s or near_ceiling:
 				_set_reel(false)
-		elif too_low and energy_fraction > reel_reserve:
+		elif too_low and reel_seconds_left > reel_reserve_s:
 			_set_reel(true)
+
+	## True once a rotten or collapsing span is close enough to failing that a
+	## player reading the cue would already have let go. The remaining life
+	## comes from the `rotten_crack` hazard cue the HUD itself is driven by —
+	## the bot reads the same number the player is shown, and only as reliably
+	## as its tier reads cues at all. The margin is its own reaction delay, so
+	## it is a decision made in time, not a prediction of the future.
+	func _timed_anchor_overstayed() -> bool:
+		if not (attached_class in TIMED_ANCHOR_CLASSES):
+			return false
+		if attached_expiry_tick < 0:
+			return false
+		if rng.randf() > float(profile["class_read"]):
+			return false
+		var margin := int(profile["reaction_delay_ticks"]) + 4
+		return world.tick >= attached_expiry_tick - margin
+
+	## Spend the Dive if a forward-and-below anchor is in range and the pull
+	## preview stays clear. `dive_ready` is re-armed by every web attach, so
+	## the natural cadence this produces is at most one Dive per web — which
+	## is the loop the owner's recordings show: attach high, swing, dive
+	## down-forward for speed, attach high again.
+	func _try_dive(target_y: float) -> bool:
+		if not world.dive_ready or world.pull_active:
+			return false
+		if &"dive" in ablated:
+			return false
+		if rng.randf() > float(profile["dive_chance"]):
+			return false
+		# Diving from below the route only digs deeper, and near the floor it
+		# is simply a way to die faster.
+		if world.position.y > target_y or world.position.y > 520.0:
+			return false
+		var tap := _find_dive_tap()
+		if tap == Vector2.INF:
+			return false
+		# If the queue already holds a web intent the Dive is not actually
+		# sent, and reporting it as taken would silently swallow the release
+		# this branch was chosen instead of.
+		return _schedule(
+			InputCommand.attach(tap, _next_sequence(), world.tick))
 
 	func _decide_detached(target_y: float, band: float) -> void:
 		var falling_fast := world.velocity.y > \
@@ -1052,6 +1235,11 @@ class RunDriver:
 		var below_route := world.position.y > target_y + band
 		var floor_danger := world.position.y > 600.0
 		if not (falling_fast or below_route or floor_danger):
+			# Coasting above the route with a Dive still armed is the other
+			# place the owner spends one: it buys forward speed downward
+			# instead of waiting for gravity to give it back.
+			if world.position.y < target_y - band and _try_dive(target_y):
+				return
 			if world.burst_charges > 0 and \
 					rng.randf() < float(profile["burst_chance"]):
 				var burst_tap := _find_tap(Vector2(1.0, -0.35), burst_reach)
@@ -1086,14 +1274,70 @@ class RunDriver:
 		)
 		return bool(preview["safe"])
 
-	## Fan of up-forward taps; the first whose snapped anchor is usable wins.
+	## Fan of up-forward taps. v2 took the first usable anchor; v3 reads the
+	## whole fan and picks by anchor class, because the classes zones 4–8 are
+	## built out of are not interchangeable: a silk highway carries the anchor
+	## forward for free, sticky silk bleeds velocity for as long as the web
+	## holds, and rotten or collapsing spans expire and are then spent for
+	## good. A model blind to that measures those zones as if every anchor
+	## were an ordinary fixed one. How much of the class information survives
+	## into the choice is `class_read`, so a novice still grabs whatever is
+	## nearest.
 	func _find_attach_tap() -> Vector2:
+		var best_tap := Vector2.INF
+		var best_score := -INF
+		var index := 0
+		var offered: Dictionary = {}
 		for angle_degrees: float in [-70.0, -52.0, -36.0, -20.0]:
 			var direction := Vector2.RIGHT.rotated(deg_to_rad(angle_degrees))
-			var tap := _find_tap(direction, 0.62 * config.web_maximum_length)
-			if tap != Vector2.INF:
-				return tap
-		return Vector2.INF
+			var probe := _probe_tap(
+				direction, 0.62 * config.web_maximum_length, false)
+			index += 1
+			if not bool(probe["found"]):
+				continue
+			offered[probe["class"]] = true
+			# Earlier angles are the steeper, higher-recovery ones the fan was
+			# ordered to prefer; keep that ordering as a small tiebreak so
+			# class preference has to be a real difference to override it.
+			var score := _anchor_class_score(
+				StringName(probe["class"])) - float(index) * 4.0
+			if score > best_score:
+				best_score = score
+				best_tap = probe["tap"]
+		# A preference can only change an outcome when there is something to
+		# prefer. Counting the searches that actually offered more than one
+		# anchor class is what keeps "the bot reads anchor classes" from
+		# becoming a claim about behaviour it never gets to make.
+		attach_searches += 1
+		if offered.size() > 1:
+			class_choices += 1
+		return best_tap
+
+	## Fan of down-forward taps for the Dive. Mirrors the attach fan below the
+	## horizon; the world routes any target `downward_target_threshold` below
+	## the spider to the Dive path, whichever button delivered it.
+	func _find_dive_tap() -> Vector2:
+		var best_tap := Vector2.INF
+		var best_score := -INF
+		for angle_degrees: float in [20.0, 38.0, 56.0]:
+			var direction := Vector2.RIGHT.rotated(deg_to_rad(angle_degrees))
+			var probe := _probe_tap(
+				direction, 0.55 * config.web_maximum_length, true)
+			if not bool(probe["found"]):
+				continue
+			if not _pull_looks_safe(probe["tap"]):
+				continue
+			var score := _anchor_class_score(StringName(probe["class"]))
+			if score > best_score:
+				best_score = score
+				best_tap = probe["tap"]
+		return best_tap
+
+	## Class preference, faded towards indifference by how well the tier reads
+	## the game's own anchor cues.
+	func _anchor_class_score(anchor_class: StringName) -> float:
+		var base := float(ANCHOR_CLASS_SCORE.get(anchor_class, 0.0))
+		return base * float(profile["class_read"])
 
 	## Desperation search: steeper angles and shorter reach than the normal
 	## fan, because the normal fan already came up empty.
@@ -1108,6 +1352,22 @@ class RunDriver:
 		return Vector2.INF
 
 	func _find_tap(direction: Vector2, reach: float) -> Vector2:
+		var probe := _probe_tap(direction, reach, false)
+		return probe["tap"] if bool(probe["found"]) else Vector2.INF
+
+	## One aimed tap, snapped through the same forgiving nearest-solid query a
+	## real tap gets. `downward` selects which side of the Dive threshold the
+	## snapped anchor has to land on: the world routes a target at least
+	## `downward_target_threshold` below the spider to the Dive path and
+	## everything else to a web, so the two searches are the same search with
+	## the test inverted. v2 hard-rejected every downward anchor here, which
+	## is the single line that made Dive unreachable for the model.
+	func _probe_tap(
+		direction: Vector2,
+		reach: float,
+		downward: bool,
+	) -> Dictionary:
+		var miss := {"found": false, "tap": Vector2.INF, "class": &""}
 		var error := Vector2(
 			rng.randfn(0.0, float(profile["aim_error_px"])),
 			rng.randfn(0.0, float(profile["aim_error_px"])),
@@ -1115,17 +1375,23 @@ class RunDriver:
 		var tap := world.position + direction.normalized() * reach + error
 		var nearest := world.nearest_solid_point(tap)
 		if not bool(nearest["found"]):
-			return Vector2.INF
+			return miss
 		var anchor := Vector2(nearest["anchor"])
-		if anchor.y >= world.position.y + config.downward_target_threshold:
-			return Vector2.INF
+		var is_downward := anchor.y >= \
+			world.position.y + config.downward_target_threshold
+		if is_downward != downward:
+			return miss
 		if anchor.x < world.position.x - 60.0:
-			return Vector2.INF
+			return miss
 		var distance := world.position.distance_to(anchor)
 		if distance < config.web_minimum_length * 1.1 or \
 				distance > config.web_maximum_length * 0.98:
-			return Vector2.INF
-		return tap
+			return miss
+		return {
+			"found": true,
+			"tap": tap,
+			"class": nearest.get("anchor_class", CourseGeometry.ANCHOR_FIXED),
+		}
 
 	## The fly trail is the authored route language; following it is exactly
 	## what the game asks of a player, not a bot cheat.
@@ -1155,9 +1421,9 @@ class RunDriver:
 		wants_reel = active
 		_schedule(InputCommand.reel(active, _next_sequence(), world.tick))
 
-	func _schedule(command: InputCommand) -> void:
+	func _schedule(command: InputCommand) -> bool:
 		if _is_ablated(command):
-			return
+			return false
 		var family := _command_family(command)
 		if family != &"other":
 			for entry: Dictionary in pending:
@@ -1166,12 +1432,18 @@ class RunDriver:
 					# The bot reasons again before delayed input lands. Keeping
 					# one pending web/Burst intent prevents a successful attach
 					# from being undone by a stale duplicate tap.
-					return
+					return false
+		# Every command the model commits to is one finger contact, so the
+		# count is directly comparable to the tap stream recovered from owner
+		# recordings (4.71 taps/s, median gap 0.133 s) — see
+		# docs/measurements/2026-08-01-owner-play-calibration.md.
+		taps += 1
 		pending.append({
 			"deliver_tick": world.tick +
 				int(profile["reaction_delay_ticks"]) + rng.randi_range(0, 2),
 			"command": command,
 		})
+		return true
 
 	func _deliver_due_commands() -> void:
 		var kept: Array[Dictionary] = []

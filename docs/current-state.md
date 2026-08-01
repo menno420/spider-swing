@@ -224,8 +224,19 @@ without a reported regression.
   The bot on the identical warp manages 196 m at 10.23 deaths/km.
 - **No simulation output may be used for conclusions about difficulty, upgrades
   or the economy until the model meets the targets in that document** — the
-  cheapest of which is that upgrades must *improve* the result. The current bot
-  fails on sign, reporting a 25% loss where the owner gains 2.5×.
+  cheapest of which is that upgrades must *improve* the result.
+- **Bot model v3 (2026-08-01) closes all three named blind spots** and scores
+  **three of eight** targets, so the rule above is unchanged. It Dives, reads
+  its Reel meter in absolute seconds, and reads anchor classes; the upgrade
+  penalty fell from −25.1% to −6.3% and input rate now matches the owner
+  (4.89 taps/s against 4.71). What still fails is survival — 8.17 deaths/km
+  against 0.47 — and the remaining gap is route choice, not verbs or pace.
+  Details, including three plausible fixes that measured *worse* and were
+  deleted, in `docs/measurements/2026-08-01-bot-model-v3.md`.
+- Ground truth on the Reel meter, read off the button in owner recordings: it
+  never falls below **73%** in a whole run at L20. The upgrade audit's "the
+  meter never empties" premise is true — it simply was not established by the
+  circular evidence originally offered for it.
 
 **Difficulty — owner verdict, 2026-08-01**
 
