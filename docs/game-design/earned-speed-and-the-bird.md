@@ -149,6 +149,17 @@ should not start by editing `spider_motor.gd`:
 | Guided opening | `simulation_world.gd:1379` | `velocity = target_speed_at(distance)` | tutorial hand-hold |
 | Camera look-ahead | `swing_lab.gd:222` | `max(0, velocity.x − target_speed)` | needs a new reference speed or the camera stops leading |
 | Profile / upgrade scaling | `spider_catalog.gd:347-349` | `speed_scale` multiplies start/max target speed | spider identity partly expressed through the curve |
+| **Release award cap** *(added by slice 1)* | `simulation_world.gd` `_release_web` | `forward_cap = target_speed_at + maximum_horizontal_overspeed` | **the sharpest one** — see below |
+
+**The sixth site did not exist when this spec was written.** Slice 1 bounds the
+release award with an `inferred` reuse of `target_speed_at + maximum_horizontal_
+overspeed`. As a limiter on a bonus sitting *on top of a drive*, that is a sound
+safety rail. With the drive gone it becomes a **throttle on the primary speed
+source**, and the numbers are uncomfortable: the ceiling is **72.0 m/s at 0 m**
+and **76.2 m/s at 1 km**, while the owner's standing-start L0 runs sustain
+~73–78 m/s. A cap meant to stop repeated releases manufacturing speed would
+instead stand between a good player and the speed this design exists to let them
+earn. Decide it explicitly in slice 2.
 
 **One upgrade track is invalidated outright.** `skitter_drive` — *Quick Feet*,
 `QUICK_FEET` — multiplies `horizontal_drive_acceleration`

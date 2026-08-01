@@ -75,6 +75,24 @@ near-zero-arc releases receive no meaningful award.
 one device playtest. No recording is needed — only whether good timing feels
 rewarding and whether repeated shallow releases read as an exploit.
 
+> **Do not gather this verdict yet — wait for slice 2.** Added 2026-08-01 after
+> slice 1 merged. Two mechanisms make the current build the worst possible
+> place to judge this, and they compound:
+>
+> - **The drive erases the penalty.** A good release survives 4.4 s of airtime
+>   at 0 m on drag alone, so the award is real — but a *bad* release costs
+>   nothing, because the drive floors you at `target_speed` and rebuilds at
+>   470 px/s. The good-vs-bad contrast is a fraction of what it becomes once
+>   the drive is gone.
+> - **The award's ceiling sits inside the band you already play in.**
+>   `target_speed_at + maximum_horizontal_overspeed` is 72.0 m/s at 0 m and
+>   76.2 m/s at 1 km; your standing-start L0 runs sustain ~73–78 m/s. For the
+>   first kilometre the award may be near zero.
+>
+> A weak verdict gathered now would send someone tuning the 100 px/s value when
+> neither the value nor the formula is at fault. **Test slice 1 and slice 2
+> together in one session** once the drive is removed.
+
 ### OQ-9 · Should Harsh pay a fly premium?
 
 **Measured:** Harsh pays the same flies per minute as Standard (~46/min at
