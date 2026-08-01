@@ -6,10 +6,21 @@
 > work always win over this file. Read it second (right after the working
 > agreement) and keep it current as the project moves.
 
-For the next recording-led continuation, read the dated
-[`fresh-session handoff`](planning/fresh-session-handoff-2026-08-01.md). It
-separates repository proof from owner acceptance and limits the next task to one
-zone or system before another device verdict.
+**The next session builds mechanics, not visuals.** Read
+[`next-session-brief-2026-08-01-mechanics.md`](planning/next-session-brief-2026-08-01-mechanics.md)
+and the spec it points at,
+[`earned-speed-and-the-bird.md`](game-design/earned-speed-and-the-bird.md).
+The owner redirected on 2026-08-01 evening: the first 10 km of visuals are
+essentially done, so the remaining visual job is **the bird**, and the mechanical
+job is that **forward speed becomes earned** — the free drive goes away and the
+difficulty ramp moves out of the pace curve into player-controlled speed
+(upgrades, swing control, reel and burst timing). OQ-12 is answered; OQ-13 to
+OQ-15 are what measurement could not settle. **No new recordings will be
+supplied**, so nothing may be planned around getting one.
+
+The earlier [`fresh-session handoff`](planning/fresh-session-handoff-2026-08-01.md)
+is **superseded as a plan and still accurate as a record** — read it for what
+merged and what Menno accepted, not for what to do next.
 
 ## Stability baseline
 
