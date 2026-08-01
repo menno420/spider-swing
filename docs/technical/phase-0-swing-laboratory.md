@@ -340,6 +340,12 @@ product decisions.
 
 ## Owner device playtest
 
+The checklist below is a regression catalogue, not one session's scope. For the
+current recording-led continuation, use the prioritized
+[`fresh-session handoff`](../planning/fresh-session-handoff-2026-08-01.md):
+diagnose one recording, finish one zone or system, and wait for the device
+verdict before selecting the next item.
+
 Install `0.24.0-environment-finish-playtest` over `0.19.0-depth-testing` or any later
 stable-key build without uninstalling; both use the stable signer and the update
 should preserve the save.

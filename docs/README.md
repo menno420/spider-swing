@@ -12,7 +12,8 @@
 | ---: | --- | --- |
 | 1 | [`AGENT_ORIENTATION.md`](AGENT_ORIENTATION.md) | How to work in this repository. |
 | 2 | [`current-state.md`](current-state.md) | What is true right now — the stability baseline, what is in flight, what shipped. |
-| 3 | [`CAPABILITIES.md`](CAPABILITIES.md) | What sessions in this environment can and cannot do, with verified evidence. |
+| 3 | [`planning/fresh-session-handoff-2026-08-01.md`](planning/fresh-session-handoff-2026-08-01.md) | Dated recording-led continuation: what actually merged, what Menno accepted, what still needs device proof, and the one-slice-at-a-time next-session prompt. |
+| 4 | [`CAPABILITIES.md`](CAPABILITIES.md) | What sessions in this environment can and cannot do, with verified evidence. |
 
 ## Product
 

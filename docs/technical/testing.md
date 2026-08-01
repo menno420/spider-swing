@@ -89,7 +89,7 @@ Run directly:
 godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-175 checks, grouped so one subsystem failure never hides the rest:
+181 checks, grouped so one subsystem failure never hides the rest:
 
 - engine, main-scene, input-action, 60 Hz, renderer/viewport, Android preset,
   inward-dependency, and no-autoload bootstrap contracts;
@@ -136,9 +136,11 @@ godot --headless --path . --script res://tests/test_runner.gd
   without any physics change;
 - four upgrade-wiring contracts retain all seven saleable tracks and guard the
   simulator's known blind spots;
-- four simulation-lab input contracts prove the measurement tool receives
+- nine simulation-lab/replay contracts: four prove the measurement tool receives
   typed anchor classes, timed-anchor life, and the real Dive input path without
-  freezing any bot conclusion;
+  freezing any bot conclusion; five prove a committed trace reproduces through
+  the real session, incompatible or unrelated JSON is refused, valid traces are
+  catalogued, and the plain-JSON traces are included in Android exports;
 - two economy contracts keep flies and Campaign stars in their declared lanes;
 - six generated-SFX contracts prove original/reproducible provenance, exact
   catalog parity, Android-sized PCM/headroom, core-event coverage, variant and
@@ -156,7 +158,7 @@ godot --headless --path . --script res://tests/test_runner.gd
   interpolation, mipmapped moving art, restrained/reduced-motion-safe action
   poses, region ambience and persistent practice status remain presentation-only,
   and world input waits for Godot GUI handling;
-- twenty-one front-end contracts proving Home starts before gameplay,
+- twenty-two front-end contracts proving Home starts before gameplay,
   Play/Garage/Shop/Tutorial/Campaign/Course Lab/Region Practice/Field Guide/
   Settings route correctly,
   the six tutorial
@@ -171,7 +173,9 @@ godot --headless --path . --script res://tests/test_runner.gd
   proportionally, profile upgrades and creator edits persist, milestone unlocks
   persist, every fifth-level Shop purchase is explicitly described as two
   tuning steps with a derived max summary, and only a play request mounts the
-  run. Checkpoint migration and practice settlement tests prove reached regions
+  run. A debug-only trace picker must change selection and route the selected
+  trace's own setup into the watch path. Checkpoint migration and practice
+  settlement tests prove reached regions
   round-trip while practice grants no flies and cannot update best distance.
 
 The physics group lives in `tests/unit/phase0_physics_tests.gd`, zone content in
