@@ -9,6 +9,13 @@
 > Measured against `main` at PR #69 (Bramble Canopy's own obstacle vocabulary).
 > That PR replaced every pattern id in the Bramble pool, so any earlier reading
 > of the 5–10 km bands does not describe this tree.
+>
+> **Superseded above 15 km by PR #73.** Zones 4–8 landed after this was
+> measured — Ruined Arboretum at 15 km, Storm Ridge at 20 km, then Web City,
+> Ashen Hollow and Deep Mist — so the 15 km and 20 km bands below now sample
+> zones that did not exist, and the "10 km to 30 km is statistically identical"
+> finding no longer describes the tree. The 0–10 km bands and the mechanism
+> section still hold. Re-measure before leaning on anything above 10 km.
 
 ## Headline
 

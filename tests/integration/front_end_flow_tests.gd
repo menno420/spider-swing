@@ -260,9 +260,14 @@ static func _test_composition_root_mounts_front_end_first(
 	if not source.contains(
 		"_front_end_state.debug_play_requested.connect(_start_debug_game)"
 	) or not source.contains(
-		"_session.configure_run(run_mode, start_distance_pixels, -1, debug_start)"
+		"run_mode, start_distance_pixels, -1, debug_start, campaign_level_id)"
 	):
 		failures.append("debug pre-run setup bypasses the composition root")
+		return 0
+	if not source.contains(
+		"_front_end_state.campaign_play_requested.connect(_start_campaign_game)"
+	):
+		failures.append("campaign start bypasses the composition root")
 		return 0
 	return 1
 

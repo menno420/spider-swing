@@ -81,6 +81,16 @@ func apply_settlement(
 			progress.best_distance_pixels,
 			settlement.distance_pixels,
 		)
+	# A campaign clear pays exactly one star and never a fly. The
+	# settlement-id dedupe above already makes a repeat clear a no-op, so the
+	# star cannot be farmed by replaying a fixed-seed level.
+	var star_granted := false
+	if not settlement.campaign_level_id.is_empty() and \
+			CampaignCatalog.has_level(settlement.campaign_level_id):
+		var level_key := str(settlement.campaign_level_id)
+		if int(progress.campaign_stars.get(level_key, 0)) < 1:
+			progress.campaign_stars[level_key] = 1
+			star_granted = true
 	var unlocked := PackedStringArray()
 	if progress.total_flies >= AMBER_FLY_REQUIREMENT:
 		_unlock(progress, PlayerProgress.STYLE_AMBER, unlocked)
@@ -91,6 +101,7 @@ func apply_settlement(
 		"unlocked": unlocked,
 		"flies_granted": collected,
 		"records_eligible": settlement.records_eligible,
+		"star_granted": star_granted,
 	}
 
 

@@ -13,7 +13,7 @@ const ANDROID_APP_NAME := "Spider Swing Zones 4-8 (dev)"
 const DEBUG_KEYSTORE_PATH := "res://.github/android/debug.keystore"
 const DEBUG_KEYSTORE_SHA256 := \
 	"e9104672477e0238b6cc2f7d6b994c459e37f130cae06a37aff05001f101bbda"
-const EXPECTED_CHECK_COUNT := 134
+const EXPECTED_CHECK_COUNT := 144
 const REQUIRED_INPUT_ACTIONS := [
 	"web_action", "reel_in", "burst_action", "pause", "restart_run",
 	"toggle_debug"]
@@ -35,6 +35,7 @@ func _initialize() -> void:
 	_check_phase0_physics()
 	_check_zone_progression()
 	_check_spider_biology()
+	_check_campaign()
 	_check_mobile_hud_layout()
 	_check_front_end_flow()
 	print("")
@@ -283,6 +284,18 @@ func _check_zone_progression() -> void:
 		return
 	for failure: String in failures:
 		_fail("Zones 3–8 — %s" % failure)
+
+
+func _check_campaign() -> void:
+	var result := CampaignTests.run()
+	var failures: PackedStringArray = result["failures"]
+	if failures.is_empty():
+		_passed += int(result["passed"])
+		print("  ✓ Campaign teaching tier: %d contracts" %
+			int(result["passed"]))
+		return
+	for failure: String in failures:
+		_fail("Campaign teaching tier — %s" % failure)
 
 
 func _check_spider_biology() -> void:

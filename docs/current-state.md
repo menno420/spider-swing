@@ -195,8 +195,19 @@ without a reported regression.
 - No final economy, missions, production monetization, billing SDK, server
   entitlement, course sharing, moderation, analytics, ads, cloud save, or store
   publishing. Those remain separate from the authored zone implementation.
-- Campaign, difficulty, rewards, and audio now have approved direction in
-  D-0033 but no implementation: staged teaching then challenges; per-mode bests
+- **The campaign teaching tier now exists** — this boundary moved on purpose.
+  Three levels (Reel, Burst, Dive) are reachable from Home → CAMPAIGN. A level
+  is cleared only by reaching its goal **and** performing the verb it teaches,
+  so it cannot be swung past; the requirement is an explicit objective, not a
+  property of geometry, because the lab's bot cannot certify terrain as
+  verb-gated (it deadlocks without Reel and never Dives). Levels run fixed
+  course seeds on existing Ancient Forest geometry, add no obstacle kinds and
+  no art, and settle non-competitively: one star each, never a fly, no record,
+  no leaderboard. Progression is schema 6; a schema-5 save loads with an empty
+  star ledger. Later campaign tiers (combining verbs into challenges) and the
+  difficulty modes remain unimplemented.
+- Difficulty, rewards beyond campaign stars, and audio still have approved
+  direction in D-0033 but no implementation: per-mode bests
   with Standard alone competitive; cosmetics/stars rather than flies; generated
   SFX plus individually verified CC0 ambience/music. Difficulty must not alter
   the approved physics preset.
