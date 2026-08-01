@@ -158,16 +158,37 @@ the default policy, both of which stay inside ordinary play.
 
 ## Two things the review conversation surfaced
 
-**The bot cannot see obstacles.** Watching the traces, the owner read them as
-recognising and avoiding obstacles. It never reads the obstacle list; the
-apparent avoidance is emergent from following the fly trail, which is a
-compliment to the route design rather than the model. Recorded in
-`docs/technical/simulation-lab.md` § "What the model can actually see".
+**Obstacle awareness exists, with an exact shape.** Watching the traces, the
+owner read them as recognising and avoiding obstacles, and separately noticed
+dives that "narrowly avoided" hazards. Both observations are right and they
+have different causes: route-following for the first, and a **swept clearance
+test along each candidate pull** (`preview_pull` → `_first_obstacle_contact`)
+for the second. The model cannot see an obstacle it is swinging toward, but it
+will not *pull into* one, and it picks among candidate dives by clear path.
+Full distinction in `docs/technical/simulation-lab.md` § "What the model can
+actually see".
 
-**The reel gap, made vivid.** The bundled 10 773 m trace is 640 commands over
-97 seconds and contains **9 reel presses**. The owner taps reel roughly once
-per second and empties the meter repeatedly at L0. The model effectively does
-not use the reel — which is exactly why no reel-upgrade claim may come from it.
+**Reeling buys speed — the design phrase "speed-neutral" is narrower than it
+reads.** The owner said he reels partly to gain speed. Tested by ablation on
+the endorsed policy, held-out seeds:
+
+| | reel allowed | reel ablated |
+| --- | ---: | ---: |
+| Mean speed | **79.2 m/s** | 74.5 m/s |
+| Distance | **1 908 m** | 1 252 m |
+| Run duration | 24.1 s | 16.8 s |
+
+**Reel is worth +6.2% speed and +52% distance.** "Speed-neutral" is true only
+of the shortening step itself — `WebConstraint` adds no velocity when it
+retracts the rope. The speed arrives through the pendulum, and it is not
+small. The phrase should not be read as "reeling does not make you faster".
+
+**Reel usage is configuration-dependent, not uniformly absent.** An earlier
+note said the model "effectively does not use the reel", from 9 reel presses
+in the 97-second flagged trace. That holds for *that* run (1.5% of its
+duration) and not in general: the endorsed warp-L20 runs hold reel **21.5% of
+the time** — which is why the owner saw it reeling. The real gap is that he
+reels harder still, and empties the meter at L0 where the model never does.
 
 ## A fidelity gap, now measured at both ends
 
