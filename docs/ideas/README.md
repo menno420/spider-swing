@@ -48,6 +48,33 @@ frontmatter keeps the score.
   — routed to a structured cross-zone validator only after PR #86's Bramble
   device verdict proves the first implementation.
 
+**The 2026-08-01 owner-conversation batch.** Five linked ideas captured from a
+long live planning session. They interlock: the charter governs the events, the
+events supply the breadth the economy needs, the competitive layer needs seeds
+and downgradeable upgrades, and none of it is testable until the install funnel
+is fixed. Read the charter first — it constrains all the others.
+
+- [The fairness charter](fairness-charter-2026-08-01.md) — **read first.** Four
+  published rules that make every later monetisation decision visibly a
+  decision. Owner fork: the wording. The Clash Royale case and ShiftLife's
+  `PRODUCT.md` precedent are both in it.
+- [Recurring events + the economy finding](live-content-and-events-2026-08-01.md)
+  — six typed event categories, twice a year each; and the measured reason it is
+  not polish: maxing costs ~21 minutes, so there is currently almost nothing
+  worth €1 to skip. Promotes OQ-10 from a pacing question to a business-model
+  one.
+- [The competitive layer](competitive-layer-2026-08-01.md) — narrow leaderboards,
+  **seeded records + ghosts** (the strongest single item), downgradeable
+  upgrades, per-spider campaign levels, milestones. Carries a ⚠ determinism
+  prerequisite that gates the rest.
+- [Distribution and first contact](distribution-and-first-contact-2026-08-01.md)
+  — the install funnel is eating the playtest signal; three private routes that
+  do not conflict with holding the public launch back; the paid-tester and
+  fifteen-second-clip experiments.
+- [The player-feedback loop](player-feedback-loop-2026-08-01.md) — acting on
+  reviews as a stated promise, phrased to survive a million players; the curated
+  voting slate; and the summarisation trap in AI triage.
+
 ## Shipped (survive window open)
 
 (Promoted ideas whose PR merged; the revert-scan flips them `survived`
