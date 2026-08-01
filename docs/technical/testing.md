@@ -20,16 +20,18 @@ the other would recurse.
 
 ## `python3 tools/verify.py`
 
-The single host verification entry point. Runs five steps in order and reports a
+The single host verification entry point. Runs seven reported steps in order and reports a
 summary; any failure exits nonzero.
 
 | Step | What it proves |
 | --- | --- |
-| 1. Godot discovery | A Godot binary is locatable via `GODOT_BIN`, `GODOT`, `GODOT4`, or PATH. |
-| 2. Version check | The binary reports the version pinned in `.godot-version` (4.7.1) and is **not** a Mono/.NET build. |
-| 3. Architecture check | `tools/check_architecture.py --self-test` (14 fixtures), then the repository scan. |
-| 4. Headless import | `godot --headless --import` — the project imports with no script parse errors. |
-| 5. Headless run | The boot smoke test, then `tests/test_runner.gd`. |
+| 1. Audio reproducibility | `tools/generate_audio_samples.py --check` regenerates every original WAV in a temporary directory and compares exact bytes plus the manifest. |
+| 2. Architecture self-test | `tools/check_architecture.py --self-test` proves all 14 legal/illegal fixtures. |
+| 3. Architecture scan | The live repository still obeys inward dependencies. |
+| 4. Godot discovery/version | A Standard binary is locatable and reports the pinned 4.7.1 version. |
+| 5. Headless import | `godot --headless --import` finds no script parse or resource-import errors. |
+| 6. Boot smoke test | The real main scene mounts the front end before gameplay. |
+| 7. Contract runner | `tests/test_runner.gd` executes the exact declared suite. |
 
 Godot can occasionally return exit code `0` while printing a GDScript parse or
 compile failure. `tools/verify.py` therefore treats the engine's fatal script
@@ -87,11 +89,11 @@ Run directly:
 godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-133 checks, grouped so one subsystem failure never hides the rest:
+165 checks, grouped so one subsystem failure never hides the rest:
 
 - engine, main-scene, input-action, 60 Hz, renderer/viewport, Android preset,
   inward-dependency, and no-autoload bootstrap contracts;
-- fifty-five deterministic physics contracts, including extended arbitrary-point
+- fifty-six deterministic physics contracts, including extended arbitrary-point
   solid attachment, larger aim forgiveness, momentum preservation, speed-neutral
   Reel and automatic take-up, a bounded 2.0-second/520-pixel base Reel budget,
   deterministic non-compounding Reel upgrade resolution, runtime full-meter
@@ -126,6 +128,17 @@ godot --headless --path . --script res://tests/test_runner.gd
   source/runtime/25% alpha plus silhouette audit;
 - eleven spider-biology contracts keep profile identity and disclosures separate
   from balance data;
+- ten Campaign contracts prove verb-gated clears, fixed seeds, one-time stars,
+  and noncompetitive settlement;
+- nine difficulty contracts prove per-mode bests and content/recovery variation
+  without any physics change;
+- four upgrade-wiring contracts retain all seven saleable tracks and guard the
+  simulator's known blind spots;
+- two economy contracts keep flies and Campaign stars in their declared lanes;
+- six generated-SFX contracts prove original/reproducible provenance, exact
+  catalog parity, Android-sized PCM/headroom, core-event coverage, variant and
+  cooldown policy, five distinct later-zone warnings, and optional effects/
+  haptics wiring;
 - twenty-five mobile HUD contracts proving large separated Reel and Burst controls,
   DEBUG, and Menu are event-consuming
   Buttons, GUI geometry shares one layout source, accepted actions drive visual
@@ -139,12 +152,13 @@ godot --headless --path . --script res://tests/test_runner.gd
   poses, region ambience and persistent practice status remain presentation-only,
   and world input waits for Godot GUI handling;
 - twenty-one front-end contracts proving Home starts before gameplay,
-  Play/Garage/Shop/Tutorial/Course Lab/Region Practice/Settings route correctly,
+  Play/Garage/Shop/Tutorial/Campaign/Course Lab/Region Practice/Field Guide/
+  Settings route correctly,
   the six tutorial
   steps cover live mechanics, Settings
   is touch-scrollable from every descendant control/card region without focus
-  snapping and remains mobile-readable, options
-  validate and emit once, serialization is stable, atomic filesystem persistence
+  snapping and remains mobile-readable, options (including independent effects
+  and haptics) validate and emit once, serialization is stable, atomic filesystem persistence
   round-trips, progression settlements remain idempotent, the seven-track Shop
   remains mobile-scrollable, one central forest-web theme skins every screen,
   custom body/Silk rails and the Silk preview replace native dropdowns, former

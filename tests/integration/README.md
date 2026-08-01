@@ -2,7 +2,9 @@
 
 Cross-system tests: the seams where guarantees actually live.
 
-Empty at bootstrap. The high-value targets, in rough priority order:
+`front_end_flow_tests.gd` currently exercises the composed navigation, settings,
+persistence, progression, touch-scroll, debug-run, Campaign, and difficulty
+seams. The continuing high-value targets, in rough priority order:
 
 1. **Settlement idempotency** — applying the same `RunSettlement` twice has no
    effect, including across a simulated app suspension during results (GDD § 20).

@@ -37,6 +37,7 @@ var _reel_active: bool = false
 var _touch_reel_active: bool = false
 var _debug_visible: bool = false
 var _keyboard_reel_active: bool = false
+var _haptics_enabled: bool = true
 var _touch_surface: Control
 var _reel_button: Button
 var _burst_button: Button
@@ -331,6 +332,8 @@ func present_snapshot(snapshot: SimulationSnapshot) -> void:
 
 
 func present_simulation_event(event: SimulationEvent) -> void:
+	if not _haptics_enabled:
+		return
 	match event.kind:
 		SimulationEvent.Kind.REEL_STARTED:
 			Input.vibrate_handheld(28, 0.35)
@@ -340,6 +343,10 @@ func present_simulation_event(event: SimulationEvent) -> void:
 			Input.vibrate_handheld(38, 0.62)
 		SimulationEvent.Kind.SURFACE_BOUNCED:
 			Input.vibrate_handheld(64, 0.72)
+
+
+func configure_haptics(enabled: bool) -> void:
+	_haptics_enabled = enabled
 
 
 func _make_anchored_button(

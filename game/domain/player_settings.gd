@@ -5,11 +5,13 @@ class_name PlayerSettings
 ## This is a value object. It performs validation and serialization but never
 ## touches the filesystem; SaveRepository is the only persistent writer.
 
-const SCHEMA_VERSION := 1
+const SCHEMA_VERSION := 2
 
 var swing_preset: StringName = SwingConfig.PRESET_BALANCED
 var show_control_hints: bool = true
 var reduced_motion: bool = false
+var effects_enabled: bool = true
+var haptics_enabled: bool = true
 var show_debug_tools: bool = true
 
 
@@ -25,6 +27,8 @@ static func from_dictionary(data: Dictionary) -> PlayerSettings:
 		settings.swing_preset = requested_preset
 	settings.show_control_hints = bool(data.get("show_control_hints", true))
 	settings.reduced_motion = bool(data.get("reduced_motion", false))
+	settings.effects_enabled = bool(data.get("effects_enabled", true))
+	settings.haptics_enabled = bool(data.get("haptics_enabled", true))
 	settings.show_debug_tools = bool(data.get("show_debug_tools", true))
 	return settings
 
@@ -39,5 +43,7 @@ func to_dictionary() -> Dictionary:
 		"swing_preset": str(swing_preset),
 		"show_control_hints": show_control_hints,
 		"reduced_motion": reduced_motion,
+		"effects_enabled": effects_enabled,
+		"haptics_enabled": haptics_enabled,
 		"show_debug_tools": show_debug_tools,
 	}

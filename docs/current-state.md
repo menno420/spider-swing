@@ -8,7 +8,7 @@
 
 ## Stability baseline
 
-As of 2026-07-31, verified against the live source. Known-good; do not re-audit
+As of 2026-08-01, verified against the live source. Known-good; do not re-audit
 without a reported regression.
 
 **Engine, architecture, and application shell**
@@ -29,13 +29,14 @@ without a reported regression.
 
 **Persistence and Android test delivery**
 
-- `SaveRepository` is the only persistent writer. Versioned settings and
-  schema-5 progression include fly balances, best distance, selected profile
-  and cosmetics, upgrade ownership, creator pattern, reached checkpoints, and
-  bounded idempotent-settlement history. Schema 5 infers already-reached region
-  checkpoints from a schema-4 standard best once; pre-20-level saves migrate
-  proportionally once.
-- Build `0.21.0-zones-4-8` (Android version code 39, package
+- `SaveRepository` is the only persistent writer. Schema-2 settings include
+  effects and haptics alongside control, motion, and diagnostic choices.
+  Schema-7 progression includes fly and star balances, per-difficulty bests,
+  Campaign clears, selected profile and cosmetics, upgrade ownership, creator
+  pattern, reached checkpoints, and bounded idempotent-settlement history.
+  Older settings default audio/haptics on; every progression migration remains
+  one-way and explicit.
+- Build `0.22.0-audio-playtest` (Android version code 40, package
   `com.menno420.spiderswing.dev`) retains the stable conventional public debug
   identity introduced by `0.19.0-depth-testing` in
   `.github/android/debug.keystore`. The workflow pins its file and certificate
@@ -140,18 +141,29 @@ without a reported regression.
   Bramble Canopy pack are presentation-owned over the same authoritative
   polygons. Missing art falls back to geometry; mipmapped spider/web rendering
   interpolates fixed snapshots and snaps teleports.
+- A presentation-owned `AudioDirector` consumes authoritative events and
+  snapshots without feeding back into simulation. Twenty-five original,
+  reproducibly generated mono PCM samples cover attach/release, Reel,
+  Burst/Dive, pickups, rescue/death, Buckler bounce, and all five later-zone
+  warnings. High-frequency actions round-robin variants and have explicit
+  cooldowns; effects and haptics are independently persistent settings.
 - Graybox plus four environment looks remain visual-only. Collision outlines and
   target guides load off and can be enabled independently under DEBUG →
   OVERLAYS. Reduced motion freezes decorative movement and restrained poses.
 
 **Verification**
 
-- Local source passes the 134-contract engine runner with the exact
+- Local source passes the 165-contract engine runner with the exact
   `4.7.1.stable.official.a13da4feb` Standard binary. The declared suite contains
-  56 deterministic physics checks, 10 zone geometry/mechanic/art checks, 11
-  spider-biology checks, 25 mobile GUI/layout checks, 21 front-end/settings/
-  progression checks, and 11 bootstrap/build contracts. The full required
-  `python3 tools/verify.py --require-godot` result is recorded at session close.
+  11 bootstrap/build, 56 deterministic physics, 10 zone, 11 spider-biology,
+  10 Campaign, 9 difficulty, 4 upgrade-wiring, 2 economy, 6 generated-SFX,
+  25 mobile GUI/layout, and 21 front-end/settings/progression checks. The full
+  required `python3 tools/verify.py --require-godot` result is recorded at
+  session close.
+- The same gate regenerates all 25 WAVs in a temporary directory and compares
+  exact bytes before Godot runs. The committed pack is 536 KiB, mono 44.1 kHz
+  16-bit PCM, peaks between −12 and −3 dBFS, and carries a hash/level/duration/
+  loop manifest. The Reel loop has a measured boundary-step ratio of 0.718.
 - New contracts prove stable signing cannot silently return to per-run key
   generation; debug starts grant no rewards or records and cannot unlock
   checkpoints; off-grid seeded geometry equals traversal from zero; overlay
@@ -254,9 +266,9 @@ without a reported regression.
   verb-gated (it deadlocks without Reel and never Dives). Levels run fixed
   course seeds on existing Ancient Forest geometry, add no obstacle kinds and
   no art, and settle non-competitively: one star each, never a fly, no record,
-  no leaderboard. Progression is schema 6; a schema-5 save loads with an empty
-  star ledger. Later campaign tiers (combining verbs into challenges) and the
-  difficulty modes remain unimplemented.
+  no leaderboard. Campaign stars entered in schema 6 and remain compatible in
+  schema 7; a schema-5 save loads with an empty star ledger. Later Campaign
+  tiers that combine verbs into challenges remain unimplemented.
 - **Difficulty modes now exist** — this boundary also moved on purpose.
   Relaxed, Standard and Harsh are chosen on Home and change only what the
   stream serves and how much recovery there is: obstacle size, gate width, when
@@ -269,23 +281,25 @@ without a reported regression.
   that region checkpoints unlock from, which excludes Relaxed because its rails
   are not lethal; only Standard is leaderboard-eligible. Measured ordering is
   monotone — Relaxed 3 096 m, Standard 1 714 m, Harsh 1 133 m at intermediate.
-- Rewards beyond campaign stars, and audio, still have approved
-  direction in D-0033 but no implementation: cosmetics/stars rather than flies; generated
-  SFX plus individually verified CC0 ambience/music. Difficulty must not alter
-  the approved physics preset.
+- Rewards beyond Campaign stars still have approved direction in D-0033 but no
+  implementation: cosmetics/stars rather than flies. The first generated-SFX
+  playtest pass now exists; ambience and music remain absent and, when sourced,
+  require individually verified CC0 records. Difficulty still cannot alter the
+  approved physics preset.
 - No production signing or Google Play publishing. The stable debug key is not a
   release credential and must never become one.
 
-## In flight
+## Owner playtest gates
 
-**Zones 3–8 identity and mechanics (PR #73 candidate).** Silk Hollow has its
+**Zones 3–8 identity and mechanics (PR #73 merged).** Silk Hollow has its
 own suspended precision geometry and art. Ruined Arboretum introduces pure
 fixed-tick panes, rotors, drip phase teaching, swept moving collision, and an
 energy-safe moving pivot. Storm Ridge adds deterministic wind/gusts and phased
 lightning; Web City adds ridable and sticky safe-anchor classes plus phased
 residents; Ashen Hollow adds once-only timed anchors and falling embers; Deep
 Mist spends draw distance while preserving lit targets and 700–820 px audio
-cues. Every lethal polygon carries explicit tap eligibility. Thirteen generated
+cues, now backed by distinct generated warning samples. Every lethal polygon
+carries explicit tap eligibility. Thirteen generated
 RGBA assets pass source/runtime/25% fringe inspection, and eight actual seeded
 world captures remain sortable as 320×180 pure-black silhouettes. Android
 small-screen readability and all six human success sentences remain owner
@@ -332,20 +346,31 @@ Reel shapes an arc when the next route is read early, while Burst performs the
 fast late height correction. PR #62 preserved those values and fixed the
 background/material transition, but its first device review rejected the
 obstacles as old roles under new skins. This build replaces that inherited pool
-with hook-vine and leaf-shutter geometry without retuning either control. Its
-APK still needs the decisive device obstacle/readability pass; Silk Hollow needs
-its own finished-art slice afterward.
+with hook-vine and leaf-shutter geometry without retuning either control. Silk
+Hollow and Zones 4–8 now have their own geometry and art; the decisive remaining
+gate is whether every zone stays readable and mechanically legible on-device.
 
 ## Recently shipped (newest first)
 
-- **2026-07-31 — Bramble obstacle identity (PR #69 candidate).** Normal Bramble
+- **2026-08-01 — Audio playtest slice.** Build `0.22.0-audio-playtest` replaces
+  the renderer's temporary sine cue with 25 original generated samples, one
+  event-driven audio director, persistent effects/haptics controls, exact
+  regeneration, level/headroom checks, and a seamless Reel loop contract.
+- **2026-08-01 — Campaign and difficulty (PRs #75–#76).** Three verb-gated
+  teaching levels award non-repeatable stars; Relaxed, Standard and Harsh vary
+  content/recovery while leaving the approved physics baseline identical.
+- **2026-08-01 — Silk Hollow and Zones 4–8 (PR #73).** Six later-zone
+  identities, deterministic moving-parts architecture, typed special anchors,
+  original art, and silhouette evidence extend the endless course through Deep
+  Mist without touching the approved physics values.
+- **2026-07-31 — Bramble obstacle identity (PR #69).** Normal Bramble
   generation now owns eight hook/shutter patterns, matching explicit art kinds,
   and no Ancient Forest obstacle ids; Garden-sized route sweeps remain clear.
 - **2026-07-31 — Bramble presentation identity (PR #62).** The 5000 m
   transition receives its own generated art pack and world-anchored foreground,
   but the first device pass found its obstacle roles still too inherited; PR
   #69 is the correction rather than overstating this pass as complete.
-- **2026-07-31 — Pre-run debug depth controls (PR #60 candidate).** Home now
+- **2026-07-31 — Pre-run debug depth controls (PR #60).** Home now
   stages exact distance and temporary upgrades through large `−`/`+` before one
   no-awards test start; ordinary Play restores owned levels, and the in-run
   controls remain available for live adjustments.

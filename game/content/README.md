@@ -28,5 +28,7 @@ height/velocity envelopes, valid anchor positions, safe route envelope, minimum
 preview distance, collectible sockets, mirroring support, and obstacle tags with
 required player capabilities.
 
-Empty at bootstrap: Phase 1 populates it (Phase 0 uses a graybox debug course, not
-authored content). See ADR 0002.
+This rank-0 directory remains deliberately empty. Current authored catalogs live
+at the inward layer that owns their behavior (`domain` or `application`) while
+the project proves the right schema boundaries; moving them here requires an
+explicit migration rather than a second source of truth. See ADR 0002.

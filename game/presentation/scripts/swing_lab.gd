@@ -58,8 +58,6 @@ var _region_banner_focus: String = ""
 var _region_visual_transition_from: StringName = \
 	CourseRegionCatalog.VISUAL_OLD_GROWTH
 var _region_visual_transition_remaining: float = 0.0
-var _cue_player: AudioStreamPlayer
-var _cue_playback: AudioStreamGeneratorPlayback
 
 
 func _ready() -> void:
@@ -68,7 +66,6 @@ func _ready() -> void:
 	texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
 	_load_environment_textures()
 	_load_art_textures()
-	_prepare_cue_audio()
 	set_process(true)
 	queue_redraw()
 
@@ -179,7 +176,6 @@ func present_event(event: SimulationEvent) -> void:
 			_feedback_color = RED
 		SimulationEvent.Kind.HAZARD_CUE:
 			_feedback_color = YELLOW
-			_play_zone_cue(StringName(event.data.get("cue", &"mist_echo")))
 		SimulationEvent.Kind.FLY_COLLECTED:
 			_feedback_color = YELLOW
 		SimulationEvent.Kind.BOOST_COLLECTED:
@@ -2021,53 +2017,6 @@ func _load_art_textures() -> void:
 		var texture := load(path) as Texture2D
 		if texture != null:
 			_art_textures[asset_id] = texture
-
-
-func _prepare_cue_audio() -> void:
-	var generator := AudioStreamGenerator.new()
-	generator.mix_rate = 22050.0
-	generator.buffer_length = 0.35
-	_cue_player = AudioStreamPlayer.new()
-	_cue_player.stream = generator
-	_cue_player.volume_db = -10.0
-	add_child(_cue_player)
-	_cue_player.play()
-	_cue_playback = _cue_player.get_stream_playback() as \
-		AudioStreamGeneratorPlayback
-
-
-func _play_zone_cue(cue: StringName) -> void:
-	if _cue_playback == null:
-		return
-	var start_hz := 410.0
-	var end_hz := 270.0
-	var duration := 0.18
-	if cue == &"glass_phase":
-		start_hz = 940.0
-		end_hz = 1280.0
-		duration = 0.14
-	elif cue == &"rotten_crack":
-		start_hz = 180.0
-		end_hz = 72.0
-		duration = 0.16
-	elif cue == &"storm_gust":
-		start_hz = 120.0
-		end_hz = 340.0
-		duration = 0.24
-	elif cue == &"storm_charge":
-		start_hz = 520.0
-		end_hz = 1560.0
-		duration = 0.18
-	var mix_rate := 22050.0
-	var frame_count := floori(duration * mix_rate)
-	var phase := 0.0
-	for index in range(frame_count):
-		var progress := float(index) / float(maxi(1, frame_count - 1))
-		var frequency := lerpf(start_hz, end_hz, progress)
-		phase += TAU * frequency / mix_rate
-		var envelope := sin(PI * progress) * (1.0 - progress * 0.35)
-		var sample := sin(phase) * envelope * 0.24
-		_cue_playback.push_frame(Vector2(sample, sample))
 
 
 func _art_texture(asset_id: StringName) -> Texture2D:

@@ -3,17 +3,19 @@ extends SceneTree
 
 const ZoneProgressionSuite = preload(
 	"res://tests/unit/zone_progression_tests.gd")
+const AudioPresentationSuite = preload(
+	"res://tests/unit/audio_presentation_tests.gd")
 
 const MAIN_SCENE_PATH := "res://game/bootstrap/main.tscn"
 const EXPORT_PRESETS_PATH := "res://export_presets.cfg"
 const ANDROID_WORKFLOW_PATH := "res://.github/workflows/android-debug.yml"
-const BUILD_VERSION := "0.21.0-zones-4-8"
-const ANDROID_VERSION_CODE := 39
-const ANDROID_APP_NAME := "Spider Swing Zones 4-8 (dev)"
+const BUILD_VERSION := "0.22.0-audio-playtest"
+const ANDROID_VERSION_CODE := 40
+const ANDROID_APP_NAME := "Spider Swing Audio Playtest (dev)"
 const DEBUG_KEYSTORE_PATH := "res://.github/android/debug.keystore"
 const DEBUG_KEYSTORE_SHA256 := \
 	"e9104672477e0238b6cc2f7d6b994c459e37f130cae06a37aff05001f101bbda"
-const EXPECTED_CHECK_COUNT := 159
+const EXPECTED_CHECK_COUNT := 165
 const REQUIRED_INPUT_ACTIONS := [
 	"web_action", "reel_in", "burst_action", "pause", "restart_run",
 	"toggle_debug"]
@@ -39,6 +41,7 @@ func _initialize() -> void:
 	_check_difficulty()
 	_check_upgrade_audit()
 	_check_economy()
+	_check_audio_presentation()
 	_check_mobile_hud_layout()
 	_check_front_end_flow()
 	print("")
@@ -345,6 +348,18 @@ func _check_spider_biology() -> void:
 		return
 	for failure: String in failures:
 		_fail("Spider biology — %s" % failure)
+
+
+func _check_audio_presentation() -> void:
+	var result := AudioPresentationSuite.run()
+	var failures: PackedStringArray = result["failures"]
+	if failures.is_empty():
+		_passed += int(result["passed"])
+		print("  ✓ Generated SFX: %d source, asset, and wiring contracts" %
+			int(result["passed"]))
+		return
+	for failure: String in failures:
+		_fail("Generated SFX — %s" % failure)
 
 
 func _check_mobile_hud_layout() -> void:

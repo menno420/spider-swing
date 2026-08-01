@@ -39,6 +39,8 @@ var _tutorial_next: Button
 var _preset_buttons: Dictionary = {}
 var _hints_toggle: CheckButton
 var _motion_toggle: CheckButton
+var _effects_toggle: CheckButton
+var _haptics_toggle: CheckButton
 var _debug_toggle: CheckButton
 var _garage_name: Label
 var _garage_role: Label
@@ -404,6 +406,22 @@ func _build_settings() -> void:
 	content.add_child(_setting_description(
 		"Stops decorative menu motion and tutorial animation, and removes "
 		+ "camera easing during play."))
+
+	content.add_child(_setting_heading("AUDIO & FEEDBACK"))
+	_effects_toggle = _toggle("Gameplay sound effects")
+	_effects_toggle.name = "EffectsToggle"
+	_effects_toggle.toggled.connect(_on_effects_toggled)
+	content.add_child(_effects_toggle)
+	content.add_child(_setting_description(
+		"Plays the current generated silk, movement, pickup, impact, and "
+		+ "later-zone warning samples."))
+
+	_haptics_toggle = _toggle("Handheld haptics")
+	_haptics_toggle.name = "HapticsToggle"
+	_haptics_toggle.toggled.connect(_on_haptics_toggled)
+	content.add_child(_haptics_toggle)
+	content.add_child(_setting_description(
+		"Keeps Reel, Burst, Dive, and shell feedback tactile on supported devices."))
 
 	_debug_toggle = _toggle("Show laboratory debug tools")
 	_debug_toggle.toggled.connect(_on_debug_toggled)
@@ -1118,6 +1136,8 @@ func _render() -> void:
 		)
 	_hints_toggle.button_pressed = _state.settings.show_control_hints
 	_motion_toggle.button_pressed = _state.settings.reduced_motion
+	_effects_toggle.button_pressed = _state.settings.effects_enabled
+	_haptics_toggle.button_pressed = _state.settings.haptics_enabled
 	_debug_toggle.button_pressed = _state.settings.show_debug_tools
 	_syncing_settings = false
 	_syncing_progress = true
@@ -1572,6 +1592,16 @@ func _on_hints_toggled(enabled: bool) -> void:
 func _on_motion_toggled(enabled: bool) -> void:
 	if _state != null and not _syncing_settings:
 		_state.set_reduced_motion(enabled)
+
+
+func _on_effects_toggled(enabled: bool) -> void:
+	if _state != null and not _syncing_settings:
+		_state.set_effects_enabled(enabled)
+
+
+func _on_haptics_toggled(enabled: bool) -> void:
+	if _state != null and not _syncing_settings:
+		_state.set_haptics_enabled(enabled)
 
 
 func _on_debug_toggled(enabled: bool) -> void:

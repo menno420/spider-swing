@@ -21,15 +21,19 @@ endpoints; it does not drive physics (GDD § 17.2).
 ## Current contents
 
 - `front_end.tscn` + `front_end.gd` — responsive Home, Garage, mobile-scrollable
-  seven-track Shop, Tutorial, Course Lab, and Settings surfaces bound to
-  application-owned state. The forest-web background and all selectors use
-  presentation state only.
+  seven-track Shop, Tutorial, Campaign, Course Lab, Region Practice, Field Guide,
+  and Settings surfaces bound to application-owned state. The forest-web
+  background and all selectors use presentation state only.
 - `spider_ui_theme.gd` — one Ancient-Forest-aligned theme for panels, buttons,
   focus/disabled states, touch scroll configuration, descendant gesture
   bubbling, and silk-like scrollbars.
 - `silk_preview.gd` — compact visual-only Classic/Dew/Ember thread preview for
   the Garage's custom Silk card rail.
 - `tutorial_preview.gd` — reduced-motion-aware in-engine mechanics animation.
+- `audio_asset_catalog.gd` + `audio_director.gd` — event-to-sample mapping,
+  bounded voice playback, high-frequency variants/cooldowns, and a continuous
+  Reel loop. They consume authoritative events/snapshots and never emit gameplay
+  intent.
 - `swing_lab.tscn` + `swing_lab.gd` — Phase 0 camera, anchors, spider, web,
   HUD, Reel energy, opening/rescue/profile feedback,
   authoritative-event-driven action flashes, and opt-in collision/web-guide

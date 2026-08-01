@@ -2,13 +2,14 @@
 
 > **Status:** `reference`
 >
-> Playable percentage-pull traversal candidate; owner device playtest and
-> baseline approval remain open.
+> Playable percentage-pull traversal reference. Balanced is the approved
+> physics baseline; integrated device feel and long-distance acceptance remain
+> open.
 
 The Swing Laboratory answers whether attaching, swinging, releasing, reeling,
-bursting, diving, and avoiding readable hazards feels good on a real phone. The
-current silhouettes and course loop are test instrumentation, not approved
-Phase 1 content.
+bursting, diving, and avoiding readable hazards feels good on a real phone. Its
+instrumentation remains available around the shipped eight-zone pre-alpha course
+so device evidence can still drive presentation and balance.
 
 Each run now begins on a normal ceiling web with a deterministic safe
 trajectory. The player may override it immediately, but no input is required for
@@ -49,7 +50,7 @@ velocity. That `RELEASE` behavior remains the default. DEBUG can switch to
 an empty-world tap still releases.
 
 Reel immediately shortens the authoritative rope length at 320 px/s in the
-Balanced candidate while energy is available. A full level-zero meter lasts
+Balanced baseline while energy is available. A full level-zero meter lasts
 2.0 seconds and can therefore remove about 640 px. Maxing Silk Winder raises
 the Garden response to 416 px/s; maxing Silk Reserve as well extends that rate
 to 2.48 seconds. The constraint removes outward motion and applies capped position
@@ -146,9 +147,9 @@ art asset is missing, presentation falls back to the
 textured geometry instead of creating an invisible hazard. Normal play removes
 graphic collision outlines and web-target guides; the two independent OVERLAYS
 switches restore only the requested diagnostics.
-The other three material packs remain prototype comparisons. Moving hazards,
-production balancing, and final art for the other spider profiles remain
-deferred.
+The other three material packs remain prototype comparisons. Later zones now
+own distinct art and deterministic mechanics, including moving hazards; their
+on-device readability and production balancing remain open.
 
 The default floating-hazard scale is 90%, edge-grown obstacles use 94%, and gate
 openings use 112%. Small hazards receive a gradual 8–16% post-runway growth
@@ -163,9 +164,9 @@ four configurable seconds; it does not grant extra Dive Pull charges. Death
 creates one idempotent settlement through `ProgressionService`;
 `SaveRepository` atomically persists lifetime and spendable fly totals,
 profile-specific upgrade levels, selections, the local creator pattern, and
-cosmetic milestones. Schema 5 retains the proportional former-five-level
-migration, records reached 5000 m region checkpoints, and infers existing
-schema-4 checkpoint access from standard best distance exactly once. Practice
+cosmetic milestones. Schema 7 retains the proportional former-five-level
+migration, per-difficulty records and Campaign stars, records reached 5000 m
+region checkpoints, and preserves the older checkpoint inference. Practice
 settlements grant no flies and cannot update records. The current fly costs are
 comparison values only.
 
@@ -336,7 +337,7 @@ product decisions.
 
 ## Owner device playtest
 
-Install `0.21.0-zones-4-8` over `0.19.0-depth-testing` or any later
+Install `0.22.0-audio-playtest` over `0.19.0-depth-testing` or any later
 stable-key build without uninstalling; both use the stable signer and the update
 should preserve the save.
 Only a device that never installed `0.19.0` or later needs the one final
@@ -371,10 +372,11 @@ Before the traversal checklist, prove the new depth-access gate:
   centre line. Compare `OWNED` and `MAX`: Reel should reward an early route read
   and arc setup, while Burst remains the faster late height correction. This is
   a role check, not a request to make both controls equal;
-- at 10000 m, record Silk Hollow's gameplay separately. Its dedicated
-  background/obstacle pack is not built yet, and the current stream remains
-  Silk Hollow after 10000 m; do not count either limitation as a Bramble
-  regression.
+- start at 10000, 15000, 20000, 25000, 30000, and 35000 m and judge each
+  region's frozen success sentence in `docs/product/zone-progression.md` at full
+  speed. Confirm the five later-zone warning sounds lead their visible hazard,
+  and that disabling Effects mutes them without disabling Haptics (and vice
+  versa).
 
 Then check the traversal baseline:
 
