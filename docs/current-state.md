@@ -286,11 +286,12 @@ without a reported regression.
   Confirmed and measured — **arc per web 21.4° against the endorsed 58.9°**,
   attaching 1.34×/s against 0.63. Web angle and length barely differ, so the
   giveaway is that the web never *goes* anywhere.
-- **A speed-based chaser cannot fix it.** The exploit runs at 59.0 m/s, inside
-  the owner's own demonstrated 44.7–78.6 m/s range — his `17dd734b` averages
-  44.7 and spends 20 s at 16 m/s stabilising, which the calibration document
-  already records as correct play. No chaser speed catches the exploit and
-  spares him.
+- **A speed-based chaser cannot fix it, in principle.** `SpiderMotor` drives
+  horizontal velocity toward `target_speed_at(distance)`, so ground speed is
+  pinned near the pace curve for every style. The exploit runs at 59.0 m/s
+  where its range's mean target is 57.2 — it is travelling at the speed the
+  game sets, not dawdling. The curve has already equalised the thing a chaser
+  would measure.
 - Candidate fixes act on **arc**, not speed, and are unimplemented owner calls:
   reward momentum by arc swept (preferred, extends the existing principle),
   or scale the attach catch by how vertical the new web is.

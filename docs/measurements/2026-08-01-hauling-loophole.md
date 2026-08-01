@@ -7,8 +7,9 @@
 > itself the whole time… the game really isn't meant to be played like this."*
 >
 > **He is right, and the exploit is now measured.** But the fix he proposed —
-> a chasing predator enforcing a minimum speed — **cannot separate it from his
-> own play**, because the exploit is faster than his own slowest genuine run.
+> a chasing predator enforcing a minimum speed — **cannot separate hauling from
+> swinging in principle**, because `SpiderMotor` drives horizontal velocity
+> toward the pace curve and has already equalised ground speed across styles.
 > This document exists so that design decision is made on numbers.
 
 ## The exploit, measured
@@ -43,42 +44,53 @@ really slow" is correct in direction. The magnitude is not:
 | Endorsed policy | 79.1 m/s |
 | **Flagged policy** | **59.0 m/s** — 25% slower, not 3× |
 
+(Both figures come from the simulation, not from video, so playback speed does
+not touch them.)
+
 It *looks* far slower than 25% because the motion is low-amplitude and
 repetitive: small ratcheting arcs under the ceiling read as slow even when the
-camera is moving at a decent clip. That perceptual gap is real and worth
-designing for — but a chaser is tuned in metres per second, not in vibes.
+camera is moving at a decent clip. **And the owner watched those clips at 2×
+playback** — so the real thing is twice as slow to watch as the impression he
+formed, which makes his read an understatement rather than an exaggeration.
 
-Against the owner's own recorded runs:
+That perceptual gap is real and worth designing for. But a chaser is tuned in
+metres per second, and the next section is why that will not work.
 
-| run | speed | |
-| --- | ---: | --- |
-| `726dcc65` | 78.6 m/s | |
-| `4185b2b4` | 74.2 m/s | |
-| `256bd884` | 73.9 m/s | |
-| `07a46d98` | 66.3 m/s | |
-| **`17dd734b`** | **44.7 m/s** | **slower than the exploit** |
+### The real reason, which is stronger: the game pins ground speed
 
-And within `17dd734b`, the first 20 seconds cover 320 m — **16.0 m/s** — while
-he hangs on a long web and stabilises before running 1 467 m in the next 20.
-The calibration document already flags that passage as *correct play* a
-distance-maximising model cannot produce.
+An earlier draft argued this from the owner's `17dd734b` averaging 44.7 m/s —
+slower than the exploit. **That figure was wrong.** It is net progress divided
+by duration on a run that spent its rescue, and the rescue returns the player
+*upstream*; it was never a speed. It is also below the pace curve's own floor
+for that distance range (76.0 m/s), which is impossible to sustain — a number
+that cannot happen is a clue the statistic is wrong, not the player.
 
-So:
+The correct argument does not need his recordings at all. `SpiderMotor`
+**drives** horizontal velocity toward `target_speed_at(distance)` whenever the
+player is below it. Ground speed is therefore pinned near the pace curve for
+*everybody*, whatever their style:
 
-| bird speed | catches the exploit | catches the owner's slowest run |
-| ---: | --- | --- |
-| 50–59 m/s | **no** | yes |
-| 65–70 m/s | yes | yes |
+| | distance range | mean target | observed |
+| --- | --- | ---: | ---: |
+| **exploit** | 0 – 5 310 m | 57.2 m/s | **59.0 m/s** |
+| owner `726dcc65` | 5 020 – 8 555 m | 76.0 m/s | 78.6 m/s |
 
-**There is no setting that catches the exploit and spares him.** The exploit's
-59 m/s sits *inside* his demonstrated 44.7–78.6 m/s range. A chaser tuned to
-kill hauling would kill his stabilise-then-run pattern first.
+**The exploit is not dawdling — it is travelling at the speed the game sets
+for where it is.** It reads as 25% slower than the endorsed policy only
+because that policy runs at 5 000 m+, where the curve is already at its 76 m/s
+ceiling, while the exploit spends most of its run in the low-target early
+course.
 
-A position-based chaser (constant world speed, so being ahead buys a buffer)
-is better than an instantaneous speed floor and would forgive *brief* slow
-passages — but it does not close the overlap, because hauling is sustained and
-his slow passages are not the only thing at risk: his whole 44.7 m/s run
-averages below the exploit.
+So a speed-based chaser cannot separate playstyles **in principle**: the pace
+curve has already equalised the thing it would measure. The only speed
+variance between styles is the swing gain on top of the drive, and that is
+small compared to the curve itself.
+
+A position-based chaser (constant world rate, so distance banked is a buffer)
+remains the right *form* if a chaser ships — it forgives the brief stabilising
+passages the recordings show are correct play. It simply cannot be the
+anti-hauling mechanic, because at any given distance hauling and swinging move
+at the same speed.
 
 ## What the axis actually is
 
