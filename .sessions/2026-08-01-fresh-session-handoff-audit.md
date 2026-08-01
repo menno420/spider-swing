@@ -141,4 +141,4 @@ Make evidence authority explicit in every fresh-session handoff:
 That prevents green CI or attractive seeded captures from silently becoming a
 claim about phone-scale feel.
 
-- **📊 Model:** gpt-5.6-sol · high · repository audit and handoff
+- **📊 Model:** gpt-5.6-sol · high · review/verify
