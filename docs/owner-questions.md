@@ -15,7 +15,7 @@
 Two forks remain from the 2026-08-01 overnight systems run (OQ-9, OQ-10). Two
 others (OQ-8, OQ-11) were **closed by owner device evidence the same morning** —
 the lab audit behind them was wrong. **OQ-12 was answered the same evening** and
-opened three follow-ups that the earned-speed work needs (OQ-13 … OQ-15).
+opened the earned-speed follow-ups OQ-13 … OQ-16.
 
 ### OQ-13 · What does *Quick Feet* become when the drive is gone?
 
@@ -58,6 +58,22 @@ screen** so the number is found by playing.
 
 **The fork:** the values themselves, after one device playtest of a no-drive
 build. No recording is needed — only a verdict.
+
+### OQ-16 · Does earned release feel strong and legible, without becoming a tap engine?
+
+**The problem:** headless contracts can prove which releases qualify and that
+the award is deterministic and bounded; they cannot prove that a player feels
+the connection between timing and speed on a phone. The bot cannot pump, so it
+is explicitly not a tuning instrument for this question.
+
+**Default:** build `0.25.0-earned-release-playtest` uses an `assumed` 100 px/s
+maximum award and an `assumed` 90° full-arc threshold. The release must be
+forward, right of the anchor, and rising; falling, backward, forced-detach, and
+near-zero-arc releases receive no meaningful award.
+
+**The fork:** keep, strengthen, weaken, or reshape those two assumed values after
+one device playtest. No recording is needed — only whether good timing feels
+rewarding and whether repeated shallow releases read as an exploit.
 
 ### OQ-9 · Should Harsh pay a fly premium?
 

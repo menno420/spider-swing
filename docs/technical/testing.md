@@ -89,13 +89,14 @@ Run directly:
 godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-181 checks, grouped so one subsystem failure never hides the rest:
+184 checks, grouped so one subsystem failure never hides the rest:
 
 - engine, main-scene, input-action, 60 Hz, renderer/viewport, Android preset,
   inward-dependency, and no-autoload bootstrap contracts;
-- fifty-seven deterministic physics contracts, including extended arbitrary-point
-  solid attachment, larger aim forgiveness, momentum preservation, speed-neutral
-  Reel and automatic take-up, a bounded 2.0-second/520-pixel base Reel budget,
+- sixty deterministic physics contracts, including extended arbitrary-point
+  solid attachment, larger aim forgiveness, bounded arc/rise-scored manual
+  release momentum, forced-detach exclusion, wrap-safe attachment history,
+  speed-neutral Reel and automatic take-up, a bounded 2.0-second/640-pixel base Reel budget,
   deterministic non-compounding Reel upgrade resolution, runtime full-meter
   hold-time tuning, maxed Balanced Flow producing a shorter web,
   exact Burst/Dive distance shares and minimum

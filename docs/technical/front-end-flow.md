@@ -33,7 +33,7 @@ The tutorial is data-driven by `FrontEndState.TUTORIAL_STEPS` and illustrated by
 
 1. automatic forward movement and distance;
 2. forgiving solid ceiling/obstacle targets, optional aim guides, and range;
-3. manual release with momentum preservation;
+3. manual momentum carry plus the bounded wide/rising release award;
 4. speed-neutral rope-shortening Reel use and finite energy;
 5. percentage-based Anchor Burst, detached double-tap targeting, one-shot
    downward Dive Pull, and immediate recovery-web interruption;

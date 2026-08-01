@@ -18,10 +18,10 @@ class_name TraceCatalog
 
 ## Identity of a trace document. Lives here, in domain, because both the
 ## producer (`tools/simulate.gd`) and the consumer (`SwingLabSession`) must
-## agree on it and neither may own it. Bump it when the record shape changes so
-## an old trace is refused rather than replayed into a world it was never
-## recorded in.
-const INPUT_TRACE_FORMAT := "spider-swing-input-trace@1"
+## agree on it and neither may own it. Bump it when the record shape or
+## authoritative physics semantics changes so an old trace is refused rather
+## than replayed into a world it was never recorded in.
+const INPUT_TRACE_FORMAT := "spider-swing-input-trace@2"
 const TRACE_DIRECTORY := "res://assets/runtime/traces"
 const TRACE_EXTENSION := ".json"
 const PIXELS_PER_METRE := 10.0

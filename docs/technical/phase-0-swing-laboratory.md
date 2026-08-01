@@ -44,10 +44,17 @@ stop pointer events before world input, so neither control releases a web.
 ## Traversal response contract
 
 Normal attachment creates a persistent maximum-length rope with an 8% gentle
-catch. It does not add velocity. Tapping again releases and preserves the current
-velocity. That `RELEASE` behavior remains the default. DEBUG can switch to
-`RETARGET`, where tapping another valid upper solid atomically replaces the web;
-an empty-world tap still releases.
+catch. It does not add velocity. Tapping again manually releases, carries the
+current velocity vector, and may add a bounded horizontal award when the spider
+is moving forward, is right of the anchor, and is still rising. Arc quality is
+covered attachment range divided by an `assumed` 90° full-quality threshold;
+rise quality is upward velocity divided by total speed; their product scales an
+`assumed` 100 px/s maximum award. An `inferred` safety rule caps only that award
+at the existing reference target plus horizontal overspeed allowance; it does
+not drive velocity toward the reference. Falling, backward, zero-arc, disabled,
+and Burst/Dive forced-detach paths earn no release award. DEBUG can switch the
+tap policy to `RETARGET`, where another valid upper solid atomically replaces
+the web; an empty-world tap still releases.
 
 Reel immediately shortens the authoritative rope length at 320 px/s in the
 Balanced baseline while energy is available. A full level-zero meter lasts
@@ -273,7 +280,8 @@ product decisions.
 `python3 tools/verify.py --require-godot` guards:
 
 - all presets and every requested debug-control mapping;
-- release-time momentum preservation and speed-neutral Reel shortening;
+- bounded rising/arc-scaled release momentum, forced-detach exclusion, and
+  speed-neutral Reel shortening;
 - speed-neutral configurable automatic slack take-up;
 - arbitrary solid-edge attachment, larger aim forgiveness, and extended range;
 - detached targeted Burst, exact configured traversal with an upgradeable
@@ -341,12 +349,12 @@ product decisions.
 ## Owner device playtest
 
 The checklist below is a regression catalogue, not one session's scope. For the
-current recording-led continuation, use the prioritized
-[`fresh-session handoff`](../planning/fresh-session-handoff-2026-08-01.md):
-diagnose one recording, finish one zone or system, and wait for the device
-verdict before selecting the next item.
+current mechanics continuation, use
+[`next-session-brief-2026-08-01-mechanics.md`](../planning/next-session-brief-2026-08-01-mechanics.md)
+and its earned-speed specification. No new recording is expected; device-only
+questions require a playtest verdict.
 
-Install `0.24.0-environment-finish-playtest` over `0.19.0-depth-testing` or any later
+Install `0.25.0-earned-release-playtest` over `0.19.0-depth-testing` or any later
 stable-key build without uninstalling; both use the stable signer and the update
 should preserve the save.
 Only a device that never installed `0.19.0` or later needs the one final

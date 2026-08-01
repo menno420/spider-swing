@@ -13,6 +13,13 @@
 > `measured` by reading the live source on 2026-08-01. Every *number proposed
 > for tuning* is `assumed` and marked as such — see § "What cannot be tuned from
 > the lab", which is the most important section in this document.
+>
+> **Implementation status (2026-08-01):** ordered slice 1, release quality, is
+> implemented in build `0.25.0-earned-release-playtest`. Its maximum award
+> (`assumed` 100 px/s) and full-arc threshold (`assumed` 90°) deliberately await
+> a device verdict; the headless contracts establish deterministic eligibility,
+> scaling, bounds, reset behavior, and forced-detach exclusion. Slices 2–5 remain
+> in the order below. The free drive and bird are unchanged in slice 1.
 
 ## The owner's brief, verbatim
 
@@ -112,11 +119,14 @@ Speed sources that already exist and are **kept**:
 | Burst / Dive exit | `_advance_pull` completion `simulation_world.gd:1173-1178`: `velocity = _pull_tangential_velocity + _pull_direction * _pull_exit_speed` | real; note it is an **absolute assignment, not an add** |
 | Moving highway anchor | `_web_anchor_motion` `simulation_world.gd:296-306`, `HIGHWAY_ANCHOR_SPEED = 410` | real, injects speed via the anchor frame |
 
-## What does not exist and the brief requires
+## What did not exist when this spec was written
 
-**Release quality.** `WebConstraint.release()` (`web_constraint.gd:61-65`) clears
-four fields and preserves velocity exactly. There is **no angle test, no apex
-detection, no timing window, no release-quality score anywhere in `game/`**.
+At the spec baseline, `WebConstraint.release()` cleared four fields and
+preserved velocity exactly: there was no angle test, timing window, or
+release-quality score anywhere in `game/`. Slice 1 now keeps wrap-safe covered
+arc history on `WebConstraint`; `SimulationWorld._release_web()` alone converts
+the arc/rise score into bounded forward momentum. Forced detach still calls the
+plain release path and earns nothing.
 
 The game already *promises* this mechanic to the player. Tutorial copy at
 `game/application/front_end_state.gd:68,72` reads **"RELEASE WITH MOMENTUM"** and

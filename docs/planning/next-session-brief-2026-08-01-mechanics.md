@@ -10,6 +10,9 @@
 >
 > **No new recordings will be supplied.** Everything the next session needs is
 > in the repository. That constraint shapes the whole brief.
+>
+> **Progress:** ordered slice 1 (release quality) is implemented in
+> `0.25.0-earned-release-playtest`; the next session starts at slice 2, drive → 0.
 
 ## What changed, in the owner's words
 
@@ -76,11 +79,10 @@ number by playing. This is OQ-15.
 - **Burst and Dive already have an escape job.** `_find_dive_tap` screens every
   candidate with a swept clearance test. The bird gives them a *second kind of
   thing* to escape from, not a new role.
-- **Release quality does not exist.** `WebConstraint.release()` preserves
-  velocity exactly — no angle, timing, or apex test anywhere in `game/`. The
-  tutorial already promises it (*"Release while rising to carry momentum
-  forward"*), so this is a design debt, not a new idea. It is the highest-value
-  item in the mechanical work.
+- **Release quality was the first design debt and now exists.** The spec
+  baseline had no angle or timing test even though the tutorial promised one.
+  Slice 1 now scores wrap-safe covered arc and upward motion only on deliberate
+  release, with bounded forward momentum and no forced-detach award.
 - **`skitter_drive` / Quick Feet is invalidated** by removing the drive. That is
   OQ-13 and is owner-facing.
 
@@ -91,8 +93,8 @@ number by playing. This is OQ-15.
   which is exactly why it should be a single revertible config value.
 - **Zones 1–3 are frozen.** Their ids key persisted checkpoints.
 - **Verify with `python3 tools/verify.py --require-godot`.** Without the flag
-  the engine checks are skipped and green proves almost nothing. 181 contracts
-  as of this writing.
+  the engine checks are skipped and green proves almost nothing. 184 contracts
+  after the release-quality slice.
 - **Falsify every new contract before trusting it:** break the code it guards,
   confirm the suite fails, restore, confirm it passes.
 - **Mark every published number** `measured` (with method *and* the instrument's
@@ -105,8 +107,8 @@ number by playing. This is OQ-15.
 
 Each is independently shippable and independently revertible:
 
-1. **Release quality** — pure simulation, headless-testable, no visuals. The
-   missing mechanic that makes "swing control" a real speed source.
+1. **Release quality — implemented.** Pure simulation, headless-testable, no
+   new gameplay visual. Swing control now has a deterministic speed reward.
 2. **Drive → 0**, with the five coupling sites explicitly decided.
 3. **The bird as simulation state** — position, advance law, kill reusing the
    `camera_boundary` path, snapshot fields, contract tests.
@@ -118,7 +120,10 @@ owner's eye.
 
 ---
 
-## Paste-ready first prompt for the fresh session
+## Completed slice-1 prompt — historical
+
+This is the exact prompt that produced the implemented release-quality slice.
+Do not paste it into the next session; continue at ordered slice 2.
 
 ```
 Continue Spider Swing from live `main`. Read, in order:

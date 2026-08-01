@@ -1196,12 +1196,41 @@ func _cancel_pull(clear_identity: bool = true) -> void:
 func _release_web(events: Array[SimulationEvent]) -> void:
 	if not web.attached:
 		return
+	var velocity_before := velocity
+	var release := web.release_quality(position, velocity)
+	var requested_bonus := (
+		config.release_momentum_bonus_speed * float(release["quality"])
+	)
+	# `inferred` safety rule: retain the existing named reference-speed ceiling
+	# so repeated releases cannot manufacture unbounded speed. This does not
+	# drive the spider toward the curve; it only limits this one earned award.
+	var forward_cap := (
+		config.target_speed_at(distance_pixels)
+		+ config.maximum_horizontal_overspeed
+	)
+	var forward_bonus := minf(
+		requested_bonus,
+		maxf(0.0, forward_cap - velocity.x),
+	)
+	velocity.x += forward_bonus
 	web.release()
 	_clear_web_anchor_binding(true)
 	events.append(SimulationEvent.make(
 		SimulationEvent.Kind.RELEASED,
 		position,
-		"Momentum preserved",
+		"Rising release carried momentum forward"
+			if forward_bonus > 0.001 else "Momentum preserved",
+		{
+			"release_arc_degrees": rad_to_deg(float(release["arc_radians"])),
+			"arc_quality": float(release["arc_quality"]),
+			"rise_quality": float(release["rise_quality"]),
+			"release_quality": float(release["quality"]),
+			"forward_bonus": forward_bonus,
+			"velocity_before_x": velocity_before.x,
+			"velocity_before_y": velocity_before.y,
+			"velocity_after_x": velocity.x,
+			"velocity_after_y": velocity.y,
+		},
 	))
 
 
