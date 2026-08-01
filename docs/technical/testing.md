@@ -89,7 +89,7 @@ Run directly:
 godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-171 checks, grouped so one subsystem failure never hides the rest:
+175 checks, grouped so one subsystem failure never hides the rest:
 
 - engine, main-scene, input-action, 60 Hz, renderer/viewport, Android preset,
   inward-dependency, and no-autoload bootstrap contracts;
@@ -121,12 +121,13 @@ godot --headless --path . --script res://tests/test_runner.gd
   exact off-grid polygons plus identity/anchor/motion descriptors through every
   owned late zone, and identical trajectories from
   simulated 30/60/90/120 Hz render loops;
-- eleven zone-progression contracts proving the append-only 5 km schedule, explicit
+- fifteen zone-progression contracts proving the append-only 5 km schedule, explicit
   hazard eligibility, pure seeded phase sampling, swept moving collision,
   energy-safe moving-pivot binding, all documented density thresholds, typed
   highway/sticky/rotten anchors, audio-first Mist cues, explicit finished-art
-  routing for the recorded Silk/Arboretum obstacle families, and a current
-  20-asset source/runtime/25% alpha plus silhouette audit;
+  routing for all recorded 10–30 km obstacle/surface families, two-plane depth,
+  diagnostic-only outlines, ceiling-support continuity, and a current 33-asset
+  source/runtime/25% alpha plus silhouette audit;
 - eleven spider-biology contracts keep profile identity and disclosures separate
   from balance data;
 - ten Campaign contracts prove verb-gated clears, fixed seeds, one-time stars,

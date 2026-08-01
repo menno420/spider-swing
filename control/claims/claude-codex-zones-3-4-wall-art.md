@@ -1,1 +1,0 @@
-- `claude/codex-zones-3-4-wall-art` · **finish Silk Hollow and Ruined Arboretum corridor wall presentation without geometry or physics changes** · game/presentation/world_renderer.gd, assets/runtime/zones, tests, docs/evidence · 2026-08-01

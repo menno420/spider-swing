@@ -36,7 +36,7 @@ without a reported regression.
   pattern, reached checkpoints, and bounded idempotent-settlement history.
   Older settings default audio/haptics on; every progression migration remains
   one-way and explicit.
-- Build `0.23.0-obstacle-art-playtest` (Android version code 42, package
+- Build `0.24.0-environment-finish-playtest` (Android version code 43, package
   `com.menno420.spiderswing.dev`) retains the stable conventional public debug
   identity introduced by `0.19.0-depth-testing` in
   `.github/android/debug.keystore`. The workflow pins its file and certificate
@@ -157,9 +157,9 @@ without a reported regression.
 
 **Verification**
 
-- Local source passes the 171-contract engine runner with the exact
+- Local source passes the 175-contract engine runner with the exact
   `4.7.1.stable.official.a13da4feb` Standard binary. The declared suite contains
-  11 bootstrap/build, 57 deterministic physics, 11 zone, 11 spider-biology,
+  11 bootstrap/build, 57 deterministic physics, 15 zone, 11 spider-biology,
   10 Campaign, 9 difficulty, 4 upgrade-wiring, 4 simulation-lab input,
   2 economy, 6 generated-SFX, 25 mobile GUI/layout, and 21 front-end/settings/
   progression checks. The full
@@ -348,15 +348,22 @@ lightning; Web City adds ridable and sticky safe-anchor classes plus phased
 residents; Ashen Hollow adds once-only timed anchors and falling embers; Deep
 Mist spends draw distance while preserving lit targets and 700–820 px audio
 cues, now backed by distinct generated warning samples. Every lethal polygon
-carries explicit tap eligibility. Twenty generated RGBA assets pass source/
+carries explicit tap eligibility. Thirty-three generated RGBA assets pass source/
 runtime/25% fringe inspection, and eight actual seeded
 world captures remain sortable as 320×180 pure-black silhouettes. Android
 small-screen readability and all six human success sentences remain owner
 playtest gates. The owner's 2026-08-01 10 km/15 km recordings accepted the
 backgrounds but rejected flat obstacle fallbacks; build
-`0.23.0-obstacle-art-playtest` replaces those bars with explicit cocoon,
+`0.23.0-obstacle-art-playtest` replaced those bars with explicit cocoon,
 spindle, lattice, beam, rotor, hub, and collapsed-frame art while preserving
-the exact polygons and phase descriptors.
+the exact polygons and phase descriptors. Build
+`0.24.0-environment-finish-playtest` then compares all six owner recordings:
+Zones 10–30 km gain a second independently scrolling backdrop plane, finished
+corridor material, outline-free resolved art, and explicit Storm scree/City
+highway/egg routes. Arboretum beams, Storm spires, and the City egg tether now
+use narrow authoritative supports to meet the actual local ceiling profile;
+their primary silhouettes, corridor profiles, route guides, and physics are
+unchanged.
 
 **Bramble clearance device correction (PR #86).** Five owner recordings from
 `0.22.0-audio-playtest` reject PR #69's passability claim: the new silhouettes
@@ -420,6 +427,12 @@ with hook-vine and leaf-shutter geometry without retuning either control; the
 
 ## Recently shipped (newest first)
 
+- **2026-08-01 — Recorded Zones 3–6 environment finish.** The six owner
+  recordings establish Ancient Forest and Bramble as the benchmark. Four later
+  recorded zones now match their depth/material hierarchy with two scroll
+  planes, continuous walls, explicit safe-surface/obstacle art, no normal-play
+  polygon ghosts, and collision-honest ceiling joins. Thirty-three runtime
+  assets pass source/runtime/25% alpha checks; all 175 contracts pass.
 - **2026-08-01 — Zones 3–4 obstacle-art correction (PR #87).** Seven original
   single-object assets replace the flat collision-fill fallbacks visible in the
   owner's Silk Hollow and Ruined Arboretum recordings. Stable visual/content

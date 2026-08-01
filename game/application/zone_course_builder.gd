@@ -56,14 +56,14 @@ static func append_challenge(
 	elif String(pattern_id).begins_with("arboretum_"):
 		_append_arboretum(
 			result, start_x, ceiling_y, floor_y, pattern_id,
-			distance_at_chunk, chunk_index, course_seed)
+			route_lane, distance_at_chunk, chunk_index, course_seed)
 	elif String(pattern_id).begins_with("ridge_"):
 		_append_ridge(
 			result, start_x, ceiling_y, floor_y, pattern_id,
-			distance_at_chunk, chunk_index, course_seed)
+			route_lane, distance_at_chunk, chunk_index, course_seed)
 	elif String(pattern_id).begins_with("city_"):
 		_append_city(
-			result, start_x, pattern_id, distance_at_chunk,
+			result, start_x, ceiling_y, pattern_id, route_lane, distance_at_chunk,
 			chunk_index, course_seed)
 	elif String(pattern_id).begins_with("ashen_"):
 		_append_ashen(
@@ -184,6 +184,28 @@ static func _profile(
 	for index in range(xs.size()):
 		result.append(Vector2(start_x + float(xs[index]), base_y + float(offsets[index])))
 	return result
+
+
+static func _boundary_edge_y_at(
+	start_x: float,
+	world_x: float,
+	base_y: float,
+	route_lane: StringName,
+	is_ceiling: bool,
+) -> float:
+	var profile := boundary_profile(start_x, base_y, route_lane, is_ceiling)
+	if profile.is_empty():
+		return base_y
+	for index in range(profile.size() - 1):
+		var first := profile[index]
+		var second := profile[index + 1]
+		if world_x < first.x or world_x > second.x:
+			continue
+		var span := second.x - first.x
+		if is_zero_approx(span):
+			return first.y
+		return lerpf(first.y, second.y, (world_x - first.x) / span)
+	return profile[0].y if world_x < profile[0].x else profile[-1].y
 
 
 static func _append_hollow(
@@ -320,6 +342,7 @@ static func _append_arboretum(
 	ceiling_y: float,
 	floor_y: float,
 	pattern_id: StringName,
+	route_lane: StringName,
 	distance_at_chunk: float,
 	chunk_index: int,
 	course_seed: int,
@@ -327,23 +350,37 @@ static func _append_arboretum(
 	var metres := distance_at_chunk / CourseRegionCatalog.PIXELS_PER_METRE
 	match pattern_id:
 		&"arboretum_beam_high", &"arboretum_frame_rest_high":
-			_append_broken_beam(result, start_x + 650.0, ceiling_y + 150.0, -0.18, true)
+			_append_broken_beam(
+				result, start_x + 650.0, ceiling_y + 150.0, -0.18, true,
+				start_x, ceiling_y, route_lane)
 		&"arboretum_beam_low", &"arboretum_frame_rest_low":
-			_append_broken_beam(result, start_x + 650.0, ceiling_y + 112.0, 0.18, true)
+			_append_broken_beam(
+				result, start_x + 650.0, ceiling_y + 112.0, 0.18, true,
+				start_x, ceiling_y, route_lane)
 		&"arboretum_drip_arch_high":
-			_append_broken_beam(result, start_x + 620.0, ceiling_y + 168.0, -0.42, true)
+			_append_broken_beam(
+				result, start_x + 620.0, ceiling_y + 168.0, -0.42, true,
+				start_x, ceiling_y, route_lane)
 			_append_drip_guides(
 				result, start_x + 720.0, ceiling_y, chunk_index, course_seed, 13)
 		&"arboretum_drip_arch_low":
-			_append_broken_beam(result, start_x + 620.0, ceiling_y + 138.0, 0.42, true)
+			_append_broken_beam(
+				result, start_x + 620.0, ceiling_y + 138.0, 0.42, true,
+				start_x, ceiling_y, route_lane)
 			_append_drip_guides(
 				result, start_x + 760.0, ceiling_y, chunk_index, course_seed, 17)
 		&"arboretum_beam_corridor":
-			_append_broken_beam(result, start_x + 590.0, ceiling_y + 115.0, 0.14, true)
-			_append_broken_beam(result, start_x + 800.0, ceiling_y + 265.0, -0.14, true)
+			_append_broken_beam(
+				result, start_x + 590.0, ceiling_y + 115.0, 0.14, true,
+				start_x, ceiling_y, route_lane)
+			_append_broken_beam(
+				result, start_x + 800.0, ceiling_y + 265.0, -0.14, true,
+				start_x, ceiling_y, route_lane)
 		&"arboretum_collapsed_high", &"arboretum_broken_span":
 			if pattern_id == &"arboretum_broken_span":
-				_append_broken_beam(result, start_x + 650.0, ceiling_y + 175.0, -0.34, true)
+				_append_broken_beam(
+					result, start_x + 650.0, ceiling_y + 175.0, -0.34, true,
+					start_x, ceiling_y, route_lane)
 			else:
 				_append_collapsed_frame(result, start_x + 650.0, floor_y, false)
 		&"arboretum_collapsed_low":
@@ -377,17 +414,25 @@ static func _append_broken_beam(
 	centre_y: float,
 	angle: float,
 	ceiling_grown: bool,
+	start_x: float,
+	ceiling_y: float,
+	route_lane: StringName,
 ) -> void:
 	var beam := _oriented_box(Vector2(centre_x, centre_y), Vector2(310.0, 38.0), angle)
 	result.append_obstacle(
 		beam, ceiling_grown, CourseObstacleCatalog.UNSPECIFIED,
 		&"arboretum_broken_beam", V_ARBORETUM_BEAM, {},
 		CourseGeometry.ANCHOR_FIXED)
-	if ceiling_grown and centre_y > 138.0:
-		var support_height := centre_y - 112.0
+	if ceiling_grown:
+		var support_x := centre_x - 92.0
+		var support_top_y := _boundary_edge_y_at(
+			start_x, support_x, ceiling_y, route_lane, true)
+		var support_height := centre_y - support_top_y
+		if support_height <= 4.0:
+			return
 		result.append_obstacle(
 			_oriented_box(
-				Vector2(centre_x - 92.0, 112.0 + support_height * 0.5),
+				Vector2(support_x, support_top_y + support_height * 0.5),
 				Vector2(24.0, support_height), 0.0),
 			true, CourseObstacleCatalog.UNSPECIFIED,
 			&"arboretum_beam_support", V_ARBORETUM_BEAM, {},
@@ -508,6 +553,7 @@ static func _append_ridge(
 	ceiling_y: float,
 	floor_y: float,
 	pattern_id: StringName,
+	route_lane: StringName,
 	distance_at_chunk: float,
 	chunk_index: int,
 	course_seed: int,
@@ -519,18 +565,28 @@ static func _append_ridge(
 		return
 	match pattern_id:
 		&"ridge_spire_high", &"ridge_wind_tree_high":
-			_append_spire(result, start_x + 660.0, ceiling_y, true, 238.0)
+			_append_spire(
+				result, start_x + 660.0, ceiling_y, true, 238.0,
+				start_x, route_lane)
 		&"ridge_spire_low", &"ridge_wind_tree_low":
-			_append_spire(result, start_x + 660.0, ceiling_y, true, 310.0)
+			_append_spire(
+				result, start_x + 660.0, ceiling_y, true, 310.0,
+				start_x, route_lane)
 		&"ridge_scree_high", &"ridge_scree_chute":
 			_append_scree(result, start_x + 660.0, floor_y, 290.0)
 		&"ridge_gust_arch", &"ridge_open_gust":
-			_append_spire(result, start_x + 820.0, ceiling_y, true, 172.0)
+			_append_spire(
+				result, start_x + 820.0, ceiling_y, true, 172.0,
+				start_x, route_lane)
 		&"ridge_split_spires":
-			_append_spire(result, start_x + 560.0, ceiling_y, true, 216.0)
+			_append_spire(
+				result, start_x + 560.0, ceiling_y, true, 216.0,
+				start_x, route_lane)
 			_append_scree(result, start_x + 810.0, floor_y, 170.0)
 		&"ridge_lightning_high", &"ridge_lightning_low":
-			_append_spire(result, start_x + 650.0, ceiling_y, true, 226.0)
+			_append_spire(
+				result, start_x + 650.0, ceiling_y, true, 226.0,
+				start_x, route_lane)
 			if metres >= 23500.0:
 				_append_lightning(
 					result, start_x + 650.0, ceiling_y + 226.0,
@@ -543,7 +599,21 @@ static func _append_spire(
 	ceiling_y: float,
 	from_ceiling: bool,
 	height: float,
+	start_x: float,
+	route_lane: StringName,
 ) -> void:
+	if from_ceiling:
+		var support_top_y := _boundary_edge_y_at(
+			start_x, x, ceiling_y, route_lane, true)
+		var support_height := ceiling_y - support_top_y
+		if support_height > 4.0:
+			result.append_obstacle(
+				_oriented_box(
+					Vector2(x, support_top_y + support_height * 0.5),
+					Vector2(38.0, support_height), 0.0),
+				true, CourseObstacleCatalog.UNSPECIFIED,
+				&"ridge_spire_support", V_RIDGE_SPIRE, {},
+				CourseGeometry.ANCHOR_FIXED)
 	var direction := 1.0 if from_ceiling else -1.0
 	var polygon := PackedVector2Array([
 		Vector2(x - 46.0, ceiling_y), Vector2(x + 42.0, ceiling_y),
@@ -607,7 +677,9 @@ static func _append_lightning(
 static func _append_city(
 	result: CourseGeometry,
 	start_x: float,
+	ceiling_y: float,
 	pattern_id: StringName,
+	route_lane: StringName,
 	distance_at_chunk: float,
 	chunk_index: int,
 	course_seed: int,
@@ -625,7 +697,7 @@ static func _append_city(
 		&"city_sticky_low":
 			_append_highway(result, start_x, 510.0, 0.05, metres >= 27000.0)
 		&"city_egg_arch":
-			_append_egg_arch(result, start_x)
+			_append_egg_arch(result, start_x, ceiling_y, route_lane)
 		&"city_resident_high", &"city_resident_low":
 			_append_highway(result, start_x, 300.0 if pattern_id.ends_with("high") else 500.0, 0.0, false)
 			if metres >= 28000.0:
@@ -667,9 +739,20 @@ static func _append_highway(
 				content, visual)
 
 
-static func _append_egg_arch(result: CourseGeometry, start_x: float) -> void:
+static func _append_egg_arch(
+	result: CourseGeometry,
+	start_x: float,
+	ceiling_y: float,
+	route_lane: StringName,
+) -> void:
+	var support_x := start_x + 652.0
+	var support_top_y := _boundary_edge_y_at(
+		start_x, support_x, ceiling_y, route_lane, true)
+	var support_bottom_y := 188.0
 	result.append_obstacle(
-		_oriented_box(Vector2(start_x + 652.0, 150.0), Vector2(20.0, 76.0), 0.0),
+		_oriented_box(
+			Vector2(support_x, (support_top_y + support_bottom_y) * 0.5),
+			Vector2(20.0, support_bottom_y - support_top_y), 0.0),
 		true, CourseObstacleCatalog.UNSPECIFIED,
 		&"city_egg_support", V_CITY_EGG, {}, CourseGeometry.ANCHOR_FIXED)
 	for offset: Vector2 in [Vector2(0, 0), Vector2(78, 36), Vector2(32, 104)]:

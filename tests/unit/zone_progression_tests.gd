@@ -18,6 +18,10 @@ static func run() -> Dictionary:
 	passed += _test_ashen_timed_anchors_fail_once(failures)
 	passed += _test_deep_mist_is_sparse_and_audio_first(failures)
 	passed += _test_recorded_zone_obstacles_resolve_finished_art(failures)
+	passed += _test_recorded_zone_walls_resolve_finished_art(failures)
+	passed += _test_recorded_zone_depth_and_surfaces_resolve_finished_art(failures)
+	passed += _test_ceiling_supports_join_the_authored_boundary(failures)
+	passed += _test_finished_art_outlines_are_debug_only(failures)
 	passed += _test_zone_art_audit_is_current_and_clean(failures)
 	return {"passed": passed, "failures": failures}
 
@@ -505,7 +509,7 @@ static func _test_zone_art_audit_is_current_and_clean(
 		return 0
 	var audit := parsed as Dictionary
 	var assets: Array = audit.get("assets", [])
-	if assets.size() != 20 or not (audit.get("failures", []) as Array).is_empty():
+	if assets.size() != 33 or not (audit.get("failures", []) as Array).is_empty():
 		failures.append("zone art audit is incomplete or records a failure")
 		return 0
 	for asset_value in assets:
@@ -526,6 +530,201 @@ static func _test_zone_art_audit_is_current_and_clean(
 	if float((audit.get("highest_pair_iou", {}) as Dictionary).get(
 		"intersection_over_union", 1.0)) > 0.55:
 		failures.append("25% zone silhouette separation regressed above IoU 0.55")
+		return 0
+	return 1
+
+
+static func _test_recorded_zone_walls_resolve_finished_art(
+	failures: PackedStringArray,
+) -> int:
+	# The owner's PR #87 screenshot exposed these four corridor edges as the
+	# remaining prototype layer. Ceiling and floor routes stay distinct because
+	# only the former may visually promise a web target.
+	var cases := [
+		[CourseRegionCatalog.VISUAL_HOLLOW, true,
+			ArtAssetCatalog.HOLLOW_CEILING_WALL, 118.0],
+		[CourseRegionCatalog.VISUAL_HOLLOW, false,
+			ArtAssetCatalog.HOLLOW_FLOOR_WALL, 108.0],
+		[CourseRegionCatalog.VISUAL_ARBORETUM, true,
+			ArtAssetCatalog.ARBORETUM_CEILING_WALL, 108.0],
+		[CourseRegionCatalog.VISUAL_ARBORETUM, false,
+			ArtAssetCatalog.ARBORETUM_FLOOR_WALL, 112.0],
+		[CourseRegionCatalog.VISUAL_STORM, true,
+			ArtAssetCatalog.STORM_WALL, 106.0],
+		[CourseRegionCatalog.VISUAL_STORM, false,
+			ArtAssetCatalog.STORM_WALL, 106.0],
+		[CourseRegionCatalog.VISUAL_WEB_CITY, true,
+			ArtAssetCatalog.WEB_CITY_WALL, 112.0],
+		[CourseRegionCatalog.VISUAL_WEB_CITY, false,
+			ArtAssetCatalog.WEB_CITY_WALL, 112.0],
+	]
+	for case: Array in cases:
+		var spec := ArtAssetCatalog.zone_boundary_art_spec(case[0], case[1])
+		if StringName(spec.get("asset_id", &"")) != case[2] or \
+				not is_equal_approx(float(spec.get("draw_height", 0.0)), case[3]):
+			failures.append("zone wall %s/%s has no explicit finished-art route" % [
+				case[0], "ceiling" if case[1] else "floor"])
+			return 0
+		if float(spec.get("world_repeat", 0.0)) < 1280.0 or \
+				float(spec.get("segment_overlap", 0.0)) < 12.0:
+			failures.append("zone wall repeats within one frame or leaves contour seams")
+			return 0
+		var path := ArtAssetCatalog.texture_path(case[2])
+		if path.is_empty() or not ResourceLoader.exists(path):
+			failures.append("recorded zone wall art is missing: %s" % path)
+			return 0
+		var texture := load(path) as Texture2D
+		if texture == null or texture.get_size() != Vector2(2048.0, 192.0):
+			failures.append("recorded zone wall art has wrong runtime dimensions: %s" % path)
+			return 0
+	if ArtAssetCatalog.HOLLOW_CEILING_WALL == ArtAssetCatalog.HOLLOW_FLOOR_WALL or \
+			ArtAssetCatalog.ARBORETUM_CEILING_WALL == \
+			ArtAssetCatalog.ARBORETUM_FLOOR_WALL:
+		failures.append("ceiling and floor wall affordances share one asset")
+		return 0
+	for profile: StringName in [
+		CourseRegionCatalog.VISUAL_STORM,
+		CourseRegionCatalog.VISUAL_WEB_CITY,
+	]:
+		if not bool(ArtAssetCatalog.zone_boundary_art_spec(
+				profile, false).get("mirror_outward", false)):
+			failures.append("shared recorded-zone wall cannot mirror honestly to floor")
+			return 0
+	return 1
+
+
+static func _test_recorded_zone_depth_and_surfaces_resolve_finished_art(
+	failures: PackedStringArray,
+) -> int:
+	var cases := [
+		[CourseRegionCatalog.VISUAL_HOLLOW,
+			ArtAssetCatalog.HOLLOW_BACKDROP, ArtAssetCatalog.HOLLOW_BACKDROP_NEAR],
+		[CourseRegionCatalog.VISUAL_ARBORETUM,
+			ArtAssetCatalog.ARBORETUM_BACKDROP,
+			ArtAssetCatalog.ARBORETUM_BACKDROP_NEAR],
+		[CourseRegionCatalog.VISUAL_STORM,
+			ArtAssetCatalog.STORM_BACKDROP, ArtAssetCatalog.STORM_BACKDROP_NEAR],
+		[CourseRegionCatalog.VISUAL_WEB_CITY,
+			ArtAssetCatalog.WEB_CITY_BACKDROP,
+			ArtAssetCatalog.WEB_CITY_BACKDROP_NEAR],
+	]
+	for case: Array in cases:
+		var layers := ArtAssetCatalog.zone_backdrop_art_specs(case[0])
+		if layers.size() != 2 or \
+				StringName(layers[0].get("asset_id", &"")) != case[1] or \
+				StringName(layers[1].get("asset_id", &"")) != case[2]:
+			failures.append("recorded zone %s is not a two-layer backdrop" % case[0])
+			return 0
+		if float(layers[1].get("scroll_scale", 0.0)) - \
+				float(layers[0].get("scroll_scale", 0.0)) < 0.08 or \
+				float(layers[1].get("opacity", 1.0)) > 0.25:
+			failures.append("recorded zone %s has no receding parallax hierarchy" % case[0])
+			return 0
+		for layer: Dictionary in layers:
+			var path := ArtAssetCatalog.texture_path(
+				StringName(layer.get("asset_id", &"")))
+			if path.is_empty() or not ResourceLoader.exists(path):
+				failures.append("recorded backdrop layer is missing: %s" % path)
+				return 0
+			var texture := load(path) as Texture2D
+			if texture == null or texture.get_size() != Vector2(1280.0, 720.0):
+				failures.append("recorded backdrop layer has wrong dimensions: %s" % path)
+				return 0
+	for visual_id: StringName in [
+		ZoneCourseBuilder.V_CITY_HIGHWAY,
+		ZoneCourseBuilder.V_CITY_STICKY,
+	]:
+		var surface_spec := ArtAssetCatalog.zone_surface_art_spec(
+			visual_id,
+			CourseGeometry.ANCHOR_STICKY if \
+				visual_id == ZoneCourseBuilder.V_CITY_STICKY \
+				else CourseGeometry.ANCHOR_HIGHWAY)
+		if StringName(surface_spec.get("asset_id", &"")) != \
+				ArtAssetCatalog.WEB_CITY_HIGHWAY:
+			failures.append("Web City safe surface has no finished silk route")
+			return 0
+	return 1
+
+
+static func _test_ceiling_supports_join_the_authored_boundary(
+	failures: PackedStringArray,
+) -> int:
+	var cases := [
+		{
+			"pattern": &"arboretum_beam_high",
+			"lane": &"high",
+			"distance": 158000.0,
+			"content": &"arboretum_beam_support",
+			"expected_width": 24.0,
+			"legacy_top": CourseStream.CEILING_Y,
+			"expected_bottom": CourseStream.CEILING_Y + 150.0,
+		},
+		{
+			"pattern": &"ridge_spire_high",
+			"lane": &"high",
+			"distance": 240000.0,
+			"content": &"ridge_spire_support",
+			"expected_width": 38.0,
+			"legacy_top": CourseStream.CEILING_Y,
+			"expected_bottom": CourseStream.CEILING_Y,
+		},
+		{
+			"pattern": &"city_egg_arch",
+			"lane": &"high",
+			"distance": 290000.0,
+			"content": &"city_egg_support",
+			"expected_width": 20.0,
+			"legacy_top": CourseStream.CEILING_Y,
+			"expected_bottom": 188.0,
+		},
+	]
+	for case: Dictionary in cases:
+		var start_x := ZoneCourseBuilder.COURSE_START_X + \
+			float(case["distance"]) - ZoneCourseBuilder.CHUNK_WIDTH * 0.5
+		var geometry := CourseGeometry.new()
+		ZoneCourseBuilder.append_challenge(
+			geometry, start_x, CourseStream.CEILING_Y, CourseStream.FLOOR_Y,
+			StringName(case["pattern"]), StringName(case["lane"]),
+			float(case["distance"]), 197, 707)
+		var support_index := -1
+		for index in range(geometry.obstacles.size()):
+			if geometry.obstacle_id(index) == StringName(case["content"]):
+				support_index = index
+				break
+		if support_index < 0:
+			failures.append("%s has no ceiling attachment support" % case["pattern"])
+			return 0
+		var support := geometry.obstacles[support_index]
+		var bounds := SolidGeometry.bounds(support)
+		var profile := ZoneCourseBuilder.boundary_profile(
+			start_x, CourseStream.CEILING_Y, StringName(case["lane"]), true)
+		var boundary_y := _profile_y_at(profile, bounds.get_center().x)
+		if not is_equal_approx(bounds.position.y, boundary_y) or \
+				not is_equal_approx(bounds.size.x, float(case["expected_width"])) or \
+				not is_equal_approx(bounds.end.y, float(case["expected_bottom"])):
+			failures.append("%s does not join its exact ceiling profile" % case["pattern"])
+			return 0
+		if bounds.position.y > float(case["legacy_top"]) + 0.01 or \
+				bounds.end.y > float(case["expected_bottom"]) + 0.01:
+			failures.append("%s support intrudes beyond its old hazard envelope" % case["pattern"])
+			return 0
+		if not geometry.is_obstacle_anchorable(support_index):
+			failures.append("ceiling support lost the parent hazard's tap contract")
+			return 0
+	return 1
+
+
+static func _test_finished_art_outlines_are_debug_only(
+	failures: PackedStringArray,
+) -> int:
+	var source := FileAccess.get_file_as_string(
+		"res://game/presentation/scripts/swing_lab.gd")
+	if source.contains("var finished_edge"):
+		failures.append("finished obstacle art still receives a semantic polygon rim")
+		return 0
+	var ghost_clause := "if _snapshot.collision_outlines_visible and \\\n\t\t\t\tobstacle_index < _snapshot.obstacle_rest_polygons.size()"
+	if not source.contains(ghost_clause):
+		failures.append("moving rest-position ghosts are not gated by diagnostics")
 		return 0
 	return 1
 
@@ -555,6 +754,18 @@ static func _test_recorded_zone_obstacles_resolve_finished_art(
 			ArtAssetCatalog.ARBORETUM_ROTOR_ARM, &"oriented", Vector2(768.0, 96.0)],
 		[ZoneCourseBuilder.V_ARBORETUM_ROTOR, &"arboretum_rotor_hub", false,
 			ArtAssetCatalog.ARBORETUM_ROTOR_HUB, &"contain", Vector2(256.0, 256.0)],
+		[ZoneCourseBuilder.V_RIDGE_SPIRE, &"ridge_exposed_spire", true,
+			ArtAssetCatalog.STORM_SPIRE, &"contain", Vector2(512.0, 512.0)],
+		[ZoneCourseBuilder.V_RIDGE_SPIRE, &"ridge_spire_support", true,
+			ArtAssetCatalog.STORM_SPIRE, &"oriented", Vector2(512.0, 512.0)],
+		[ZoneCourseBuilder.V_RIDGE_SCREE, &"ridge_loose_scree", false,
+			ArtAssetCatalog.STORM_SCREE, &"contain", Vector2(768.0, 512.0)],
+		[ZoneCourseBuilder.V_CITY_RESIDENT, &"city_resident_spider", false,
+			ArtAssetCatalog.WEB_CITY_RESIDENT, &"contain", Vector2(512.0, 512.0)],
+		[ZoneCourseBuilder.V_CITY_EGG, &"city_egg_sac", true,
+			ArtAssetCatalog.WEB_CITY_EGG, &"contain", Vector2(256.0, 512.0)],
+		[ZoneCourseBuilder.V_CITY_EGG, &"city_egg_support", true,
+			ArtAssetCatalog.WEB_CITY_HIGHWAY, &"oriented", Vector2(1024.0, 96.0)],
 	]
 	for case: Array in cases:
 		var spec := ArtAssetCatalog.zone_obstacle_art_spec(
@@ -598,6 +809,19 @@ static func _stream_at(metres: float, seed: int) -> CourseGeometry:
 
 static func _polygon_centre(polygon: PackedVector2Array) -> Vector2:
 	return SolidGeometry.bounds(polygon).get_center()
+
+
+static func _profile_y_at(profile: PackedVector2Array, world_x: float) -> float:
+	for index in range(profile.size() - 1):
+		var first := profile[index]
+		var second := profile[index + 1]
+		if world_x < first.x or world_x > second.x:
+			continue
+		return lerpf(
+			first.y, second.y,
+			(world_x - first.x) / maxf(second.x - first.x, 0.001),
+		)
+	return INF
 
 
 static func _contains_event(events: Array[SimulationEvent], kind: int) -> bool:
