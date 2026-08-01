@@ -132,15 +132,42 @@ qualitatively different:
 | Dives per web | **0.96** | **0.28** |
 | Webs per run | 13.6 | **130.1** |
 
-It did not merely do more of what he endorsed — **it abandoned Dive** (the
-verb he uses for roughly half his aimed taps) and replaced it with web volume.
-130 attaches per run against the endorsed 13.6.
+**Correction — it did not abandon Dive.** The falling *ratio* invited that
+reading and an earlier draft of this document made it; the absolute counts say
+otherwise:
+
+| | endorsed | flagged |
+| --- | ---: | ---: |
+| Dives per run | 13.1 | **36.2** |
+| Dives per second | 0.60 | 0.37 |
+| Webs per second | 0.63 | **1.34** |
+
+It dives nearly **three times as often per run** and only a little less often
+per second. `dives_per_attach` collapsed because **web attaches doubled per
+second**, not because diving stopped — a denominator effect. What is genuinely
+unusual is the web rate: better than one attach per second, sustained for a
+minute and a half.
+
+A ratio flag needs its denominator read before it is described.
 
 A verified trace of the most extreme run — **10 773 m, 640 commands** — is
 bundled as `lab-flagged-webspam-standing-l20.json` for exactly this judgement.
 Until it is watched, **no conclusion in this document rests on the standing-L20
 optimum**, and the upgrade findings above are stated from the L0 optimum and
 the default policy, both of which stay inside ordinary play.
+
+## Two things the review conversation surfaced
+
+**The bot cannot see obstacles.** Watching the traces, the owner read them as
+recognising and avoiding obstacles. It never reads the obstacle list; the
+apparent avoidance is emergent from following the fly trail, which is a
+compliment to the route design rather than the model. Recorded in
+`docs/technical/simulation-lab.md` § "What the model can actually see".
+
+**The reel gap, made vivid.** The bundled 10 773 m trace is 640 commands over
+97 seconds and contains **9 reel presses**. The owner taps reel roughly once
+per second and empties the meter repeatedly at L0. The model effectively does
+not use the reel — which is exactly why no reel-upgrade claim may come from it.
 
 ## A fidelity gap, now measured at both ends
 
