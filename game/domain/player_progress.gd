@@ -2,9 +2,10 @@ extends RefCounted
 class_name PlayerProgress
 ## Versioned player progression value object.
 
-const SCHEMA_VERSION := 5
+const SCHEMA_VERSION := 6
 const TWENTY_LEVEL_SCHEMA_VERSION := 4
 const REGION_CHECKPOINT_SCHEMA_VERSION := 5
+const CAMPAIGN_STAR_SCHEMA_VERSION := 6
 const STYLE_GARDEN := &"garden"
 const STYLE_AMBER := &"amber"
 const STYLE_COMET := &"comet"
@@ -41,6 +42,9 @@ var creator_pattern: Array[StringName] = [
 ]
 var unlocked_region_checkpoints: Array[StringName] = []
 var applied_settlement_ids: PackedStringArray = PackedStringArray()
+## Campaign level id -> stars earned. Stars are the campaign's only
+## currency; campaign play never pays flies (D-0033).
+var campaign_stars: Dictionary = {}
 
 
 static func defaults() -> PlayerProgress:
@@ -147,6 +151,18 @@ static func from_dictionary(data: Dictionary) -> PlayerProgress:
 					progress.best_distance_pixels):
 			if region_id not in progress.unlocked_region_checkpoints:
 				progress.unlocked_region_checkpoints.append(region_id)
+	# Schema 6 adds campaign stars. A schema-5 save simply has none: the
+	# campaign did not exist, so an empty ledger is the truthful migration
+	# rather than anything inferred.
+	var raw_stars: Variant = data.get("campaign_stars", {})
+	if raw_stars is Dictionary:
+		for raw_key: Variant in (raw_stars as Dictionary):
+			var level_id := StringName(str(raw_key))
+			if not CampaignCatalog.has_level(level_id):
+				continue
+			var stars := int((raw_stars as Dictionary)[raw_key])
+			if stars > 0:
+				progress.campaign_stars[str(level_id)] = mini(stars, 1)
 	for raw_id: Variant in data.get("applied_settlement_ids", []):
 		var settlement_id := str(raw_id)
 		if not settlement_id.is_empty():
@@ -189,6 +205,7 @@ func to_dictionary() -> Dictionary:
 		"creator_pattern": pattern,
 		"unlocked_region_checkpoints": checkpoints,
 		"applied_settlement_ids": Array(applied_settlement_ids),
+		"campaign_stars": campaign_stars.duplicate(true),
 	}
 
 
@@ -202,3 +219,14 @@ func upgrade_level(upgrade_id: StringName) -> int:
 
 func has_region_checkpoint(region_id: StringName) -> bool:
 	return region_id in unlocked_region_checkpoints
+
+
+func campaign_stars_for(level_id: StringName) -> int:
+	return maxi(0, int(campaign_stars.get(str(level_id), 0)))
+
+
+func total_campaign_stars() -> int:
+	var total := 0
+	for level_id: StringName in CampaignCatalog.level_ids():
+		total += campaign_stars_for(level_id)
+	return total

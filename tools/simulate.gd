@@ -28,6 +28,11 @@ extends SceneTree
 ##                        *travelled* (`distance_m - start_m`), never on the
 ##                        absolute course position, so a warped band's rates
 ##                        stay comparable with an unwarped one's.
+##   --ablate=            comma-separated verbs the bot may NOT use:
+##                        reel | burst | dive. Bot restriction only — the
+##                        simulation is untouched — so a segment can be asked
+##                        "is this passable WITHOUT reeling?" instead of just
+##                        "is this hard?".
 ##   --reel-style=adaptive  adaptive | tap | hold — how the bot spends Reel
 ##   --save-bursts=on     on | off — emergency Burst when no web can save it
 ##   --moving-anchor-proof  run the deterministic moving-pivot energy probe and
@@ -127,6 +132,10 @@ func _initialize() -> void:
 		options["max_seconds"], options["start_m"],
 		options["reel_style"], "on" if bool(options["save_bursts"]) else "off",
 	])
+	var ablated_verbs := _parse_ablation(str(options["ablate"]))
+	if not ablated_verbs.is_empty():
+		print("[simulate] ABLATED verbs (bot may not use): %s" %
+			", ".join(Array(ablated_verbs).map(func(v): return str(v))))
 
 	var all_rows: Array[Dictionary] = []
 	var summaries: Array[Dictionary] = []
@@ -221,6 +230,7 @@ func _run_batch(
 			bool(options["save_bursts"]),
 			float(int(options["start_m"])) * PIXELS_PER_METRE,
 			course_seed,
+			_parse_ablation(str(options["ablate"])),
 		)
 		var row := driver.run(max_ticks)
 		row["spider"] = str(spider)
@@ -419,6 +429,25 @@ func _percentile(sorted_values: Array[float], fraction: float) -> float:
 	return sorted_values[index]
 
 
+## `reel`, `burst`, `dive`, comma-separated — verbs the bot may not use.
+## Unknown names are reported and ignored rather than silently dropped, so a
+## typo cannot quietly turn an ablation proof into an ordinary run.
+func _parse_ablation(spec: String) -> Array[StringName]:
+	var result: Array[StringName] = []
+	if spec.strip_edges().is_empty():
+		return result
+	for raw: String in spec.split(","):
+		var name := raw.strip_edges().to_lower()
+		if name.is_empty():
+			continue
+		if name in ["reel", "burst", "dive"]:
+			if not StringName(name) in result:
+				result.append(StringName(name))
+		else:
+			printerr("[simulate] unknown --ablate verb '%s'" % name)
+	return result
+
+
 func _expand(requested: String, known: Array) -> Array[StringName]:
 	var result: Array[StringName] = []
 	if requested == "all":
@@ -479,6 +508,7 @@ func _parse_options(arguments: PackedStringArray) -> Dictionary:
 		"course_seeds": 1,
 		"max_seconds": 240,
 		"start_m": 0,
+		"ablate": "",
 		"reel_style": "adaptive",
 		"save_bursts": true,
 		"moving_anchor_proof": false,
@@ -515,6 +545,8 @@ func _parse_options(arguments: PackedStringArray) -> Dictionary:
 				options["max_seconds"] = maxi(10, int(value))
 			"start-m":
 				options["start_m"] = maxi(0, int(value))
+			"ablate":
+				options["ablate"] = value
 			"reel-style":
 				if value in ["adaptive", "tap", "hold"]:
 					options["reel_style"] = value
@@ -757,6 +789,7 @@ class RunDriver:
 	var burst_reach := 460.0
 	var course_seed := 1337
 	var start_m := 0.0
+	var ablated: Array[StringName] = []
 
 	func setup(
 		active_config: SwingConfig,
@@ -766,6 +799,7 @@ class RunDriver:
 		defensive_bursts: bool,
 		start_offset_px: float = 0.0,
 		course_seed_value: int = 1337,
+		ablated_verbs: Array[StringName] = [],
 	) -> void:
 		config = active_config
 		profile = skill_profile
@@ -774,6 +808,7 @@ class RunDriver:
 		save_bursts_enabled = defensive_bursts
 		course_seed = course_seed_value
 		start_m = start_offset_px / PIXELS_PER_METRE
+		ablated = ablated_verbs.duplicate()
 		_derive_adaptations()
 		stream.reset(
 			config.middle_hazard_start_distance,
@@ -1055,12 +1090,21 @@ class RunDriver:
 		return total / count
 
 	func _set_reel(active: bool) -> void:
+		# Ablation has to bite at the DECISION, not at the command. Dropping
+		# only the queued REEL_START leaves `wants_reel` latched true while the
+		# meter never drains, so `_decide_attached` waits forever for a reel it
+		# never got and the bot hangs on its opening web — 0 webs, 0 bursts,
+		# 58 m travelled. Refusing to want it keeps the model coherent.
+		if active and &"reel" in ablated:
+			return
 		if wants_reel == active:
 			return
 		wants_reel = active
 		_schedule(InputCommand.reel(active, _next_sequence(), world.tick))
 
 	func _schedule(command: InputCommand) -> void:
+		if _is_ablated(command):
+			return
 		var family := _command_family(command)
 		if family != &"other":
 			for entry: Dictionary in pending:
@@ -1086,6 +1130,34 @@ class RunDriver:
 			else:
 				kept.append(entry)
 		pending = kept
+
+	## Verb ablation: refuse to emit one verb's input entirely, so a course
+	## segment can be asked "is this passable WITHOUT reeling?" rather than
+	## merely "is this hard?". Burst and Dive share one command kind — the
+	## world routes a downward target to the Dive path — so the split mirrors
+	## `SimulationWorld._is_downward_target`. Ablation is a bot restriction
+	## only; nothing in the simulation changes.
+	func _is_ablated(command: InputCommand) -> bool:
+		if ablated.is_empty():
+			return false
+		match command.kind:
+			# Only the START is dropped; a stray STOP is a harmless no-op and
+			# leaving it through keeps the world's reel state consistent.
+			InputCommand.Kind.REEL_START:
+				return &"reel" in ablated
+			InputCommand.Kind.BURST:
+				if not (&"burst" in ablated or &"dive" in ablated):
+					return false
+				var target := (
+					command.world_target
+					if command.has_world_target
+					else world.web.anchor
+				)
+				var downward := target.y >= \
+					world.position.y + config.downward_target_threshold
+				return (&"dive" in ablated) if downward \
+					else (&"burst" in ablated)
+		return false
 
 	func _command_family(command: InputCommand) -> StringName:
 		match command.kind:

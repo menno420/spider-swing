@@ -7,6 +7,10 @@ class_name FrontEndState
 
 signal changed
 signal play_requested(settings: PlayerSettings)
+signal campaign_play_requested(
+	settings: PlayerSettings,
+	level_id: StringName,
+)
 signal practice_play_requested(
 	settings: PlayerSettings,
 	region_id: StringName,
@@ -34,6 +38,7 @@ enum Screen {
 	SHOP,
 	CREATOR,
 	PRACTICE,
+	CAMPAIGN,
 	FIELD_GUIDE,
 	DEBUG_RUN_SETUP,
 }
@@ -183,6 +188,11 @@ func show_practice() -> void:
 	changed.emit()
 
 
+func show_campaign() -> void:
+	screen = Screen.CAMPAIGN
+	changed.emit()
+
+
 func show_debug_run_setup() -> void:
 	if not settings.show_debug_tools:
 		return
@@ -235,6 +245,25 @@ func request_creator_play() -> void:
 		settings.copy(),
 		progress.creator_pattern.duplicate(),
 	)
+
+
+## Campaign levels are always available — the teaching tier exists to be
+## reached before the player is good enough to unlock anything.
+func request_campaign(level_id: StringName) -> void:
+	if not CampaignCatalog.has_level(level_id):
+		return
+	_clear_debug_overlay_for_normal_run()
+	campaign_play_requested.emit(settings.copy(), level_id)
+
+
+func campaign_levels() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for level: Dictionary in CampaignCatalog.all_levels():
+		var entry := level.duplicate(true)
+		entry["stars"] = progress.campaign_stars_for(
+			StringName(level["id"]))
+		result.append(entry)
+	return result
 
 
 func request_practice(region_id: StringName) -> void:

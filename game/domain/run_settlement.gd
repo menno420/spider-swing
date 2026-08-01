@@ -12,6 +12,9 @@ var rewards_eligible: bool = true
 var records_eligible: bool = true
 var leaderboards_eligible: bool = true
 var course_seed: int = 0
+## Set only for a campaign clear. Names which teaching level was
+## completed so settlement can award its star; empty for every other run.
+var campaign_level_id: StringName = &""
 
 
 static func create(
@@ -35,4 +38,28 @@ static func create(
 	settlement.records_eligible = eligible
 	settlement.leaderboards_eligible = eligible
 	settlement.course_seed = seed
+	return settlement
+
+
+## A campaign clear settles like Region Practice — no flies, no records, no
+## leaderboard — and additionally names the level whose star it earns.
+static func campaign(
+	id: String,
+	distance: float,
+	cause: StringName,
+	level_id: StringName,
+	seed: int = 0,
+) -> RunSettlement:
+	var settlement := RunSettlement.new()
+	settlement.settlement_id = id
+	settlement.distance_pixels = maxf(0.0, distance)
+	settlement.flies_collected = 0
+	settlement.death_cause = cause
+	settlement.run_mode = &"campaign"
+	settlement.start_distance_pixels = 0.0
+	settlement.rewards_eligible = false
+	settlement.records_eligible = false
+	settlement.leaderboards_eligible = false
+	settlement.course_seed = seed
+	settlement.campaign_level_id = level_id
 	return settlement

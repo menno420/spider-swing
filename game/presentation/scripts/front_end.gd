@@ -25,6 +25,7 @@ var _garage: Control
 var _shop: Control
 var _creator: Control
 var _practice: Control
+var _campaign: Control
 var _debug_run_setup: Control
 var _field_guide: Control
 var _field_guide_back: Button
@@ -60,6 +61,7 @@ var _upgrade_descriptions: Dictionary = {}
 var _upgrade_milestones: Dictionary = {}
 var _creator_slot_buttons: Array[Button] = []
 var _practice_buttons: Dictionary = {}
+var _campaign_buttons: Dictionary = {}
 var _debug_run_route: Button
 var _debug_run_distance_entry: LineEdit
 var _debug_run_distance_value: Label
@@ -101,6 +103,7 @@ func ensure_interface() -> void:
 	_build_shop()
 	_build_creator()
 	_build_practice()
+	_build_campaign()
 	_build_debug_run_setup()
 	_build_field_guide()
 
@@ -244,6 +247,10 @@ func _build_home() -> void:
 	practice.pressed.connect(_on_practice)
 	practice.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	routes.add_child(practice)
+	var campaign := _button(&"Campaign", "CAMPAIGN", ORANGE, 54.0)
+	campaign.pressed.connect(_on_campaign)
+	campaign.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	routes.add_child(campaign)
 	var settings := _button(&"Settings", "SETTINGS", ORANGE, 54.0)
 	settings.pressed.connect(_on_settings)
 	settings.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -709,6 +716,48 @@ func _build_practice() -> void:
 	content.add_child(note)
 
 
+func _build_campaign() -> void:
+	_campaign = _full_screen(&"Campaign")
+	var back := _button(&"CampaignBack", "‹  HOME", CYAN, 50.0)
+	back.pressed.connect(_on_home)
+	_place(back, _campaign, 0.025, 0.035, 0.16, 0.11)
+
+	var heading := _label("CAMPAIGN", 38, INK)
+	_place(heading, _campaign, 0.19, 0.04, 0.62, 0.13)
+	var explanation := _label(
+		"Short levels that each ask you to perform one mechanic. Reaching "
+		+ "the goal is not enough — the level is only cleared once you have "
+		+ "used the move it teaches. Campaign runs award stars, never flies, "
+		+ "and set no records.",
+		19,
+		MUTED,
+	)
+	explanation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_place(explanation, _campaign, 0.19, 0.13, 0.92, 0.24)
+
+	var card := _panel(PANEL)
+	_place(card, _campaign, 0.17, 0.25, 0.83, 0.92)
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 12)
+	_fill_with_margin(content, card, 22.0)
+	content.add_child(_section_label("TEACHING TIER"))
+	for level: Dictionary in CampaignCatalog.all_levels():
+		var level_id := StringName(level["id"])
+		var button := _button(
+			_campaign_button_name(level_id),
+			"",
+			ORANGE,
+			84.0,
+		)
+		button.pressed.connect(_on_campaign_level.bind(level_id))
+		content.add_child(button)
+		_campaign_buttons[level_id] = button
+
+
+func _campaign_button_name(level_id: StringName) -> StringName:
+	return StringName("CampaignLevel_%s" % level_id)
+
+
 func _build_debug_run_setup() -> void:
 	_debug_run_setup = _full_screen(&"DebugRunSetupScreen")
 	var back := _button(&"DebugRunBack", "‹  HOME", CYAN, 50.0)
@@ -1001,6 +1050,9 @@ func _render() -> void:
 	_shop.visible = _state.screen == FrontEndState.Screen.SHOP
 	_creator.visible = _state.screen == FrontEndState.Screen.CREATOR
 	_practice.visible = _state.screen == FrontEndState.Screen.PRACTICE
+	_campaign.visible = _state.screen == FrontEndState.Screen.CAMPAIGN
+	if _campaign.visible:
+		_refresh_campaign_buttons()
 	_debug_run_setup.visible = \
 		_state.screen == FrontEndState.Screen.DEBUG_RUN_SETUP and \
 		_state.settings.show_debug_tools
@@ -1290,6 +1342,32 @@ func _on_creator() -> void:
 func _on_practice() -> void:
 	if _state != null:
 		_state.show_practice()
+
+
+func _on_campaign() -> void:
+	if _state != null:
+		_state.show_campaign()
+
+
+func _on_campaign_level(level_id: StringName) -> void:
+	if _state != null:
+		_state.request_campaign(level_id)
+
+
+func _refresh_campaign_buttons() -> void:
+	if _state == null:
+		return
+	for level: Dictionary in _state.campaign_levels():
+		var level_id := StringName(level["id"])
+		if not _campaign_buttons.has(level_id):
+			continue
+		var button: Button = _campaign_buttons[level_id]
+		var cleared := int(level["stars"]) > 0
+		button.text = "%s  %s\n%s" % [
+			"★" if cleared else "☆",
+			str(level["name"]),
+			str(level["objective"]),
+		]
 
 
 func _on_debug_run_setup() -> void:

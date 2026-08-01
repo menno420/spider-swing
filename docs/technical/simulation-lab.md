@@ -29,6 +29,7 @@ godot --headless --path . --script res://tools/simulate.gd -- \
 | `--course-seeds=N` | 1 | Consecutive course seeds rotated independently across runs |
 | `--max-seconds=S` | 240 | Simulated-time cap; a capped run reports `timeout` (alive), never a death |
 | `--start-m=N` | 0 | Warp the start N metres into the course at that distance's pace — tests late-game regimes without surviving to them. Every per-km rate normalizes on distance *travelled*, so a warped band stays comparable with an unwarped one |
+| `--ablate=` | — | Comma-separated verbs the bot may not use: `reel` · `burst` · `dive`. A bot restriction only — the simulation is untouched — so a segment can be asked "is this passable *without* reeling?" rather than merely "is this hard?" |
 | `--reel-style=` | `adaptive` | `adaptive` · `tap` · `hold` — how the bot spends Reel |
 | `--save-bursts=` | `on` | `on` · `off` — emergency Burst when no web can save it |
 | `--moving-anchor-proof` | off | Run the ADR 0004 moving-pivot energy probe against the production `WebConstraint`, then exit |
@@ -106,6 +107,29 @@ committed baseline is
 re-measure and diff against it rather than treating those numbers as permanent. The delayed command queue also permits only one pending
 web or Burst intent at a time, preventing repeated pre-delivery decisions from
 turning an accepted attachment into a stale release.
+
+## Verb ablation, and what it cannot prove
+
+`--ablate` was added to test whether a course segment *requires* a verb. It
+answers that for **Burst** and not for the other two, and the reasons are worth
+knowing before trusting a result:
+
+- **Burst — usable.** Ablating it cleanly zeroes Bursts and the bot keeps
+  playing. On Ancient Forest at expert it travelled 2 360 m without Burst
+  against 2 258 m with it: within noise, so **Burst is close to irrelevant to
+  survival** in the current tuning. That is a finding for the upgrade audit.
+- **Reel — not usable.** With Reel removed the bot does not merely do worse, it
+  stops functioning: 0 attaches, 58 m, every run timing out on its opening web.
+  `_decide_attached` only releases when rising fast or high enough, and without
+  Reel it never reaches either, so it hangs. This measures the bot model's
+  limit, not the course's.
+- **Dive — inert.** The bot never Dives at all (0.0 dives in every batch ever
+  run), so ablating it changes nothing.
+
+So a geometry-derived "this level cannot be passed without reeling" guarantee
+is **not** available from this lab today. That is why `CampaignCatalog` makes
+the verb an explicit objective instead: a claim the suite can check beats one
+nobody can.
 
 ## What it can and cannot answer
 

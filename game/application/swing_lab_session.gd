@@ -10,10 +10,12 @@ signal snapshot_published(snapshot: SimulationSnapshot)
 signal event_published(event: SimulationEvent)
 signal settlement_created(settlement: RunSettlement)
 signal checkpoint_reached(region_id: StringName, distance_pixels: float)
+signal campaign_level_completed(level_id: StringName)
 
 const FIXED_DELTA := 1.0 / 60.0
 const RUN_STANDARD := &"standard"
 const RUN_PRACTICE := &"practice"
+const RUN_CAMPAIGN := &"campaign"
 static var TUNING_PARAMETERS: Array[StringName] = TuningCatalog.parameter_ids()
 
 var _config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
@@ -27,6 +29,11 @@ var _progression_service := ProgressionService.new()
 var _creator_pattern: Array[StringName] = []
 var _run_mode: StringName = RUN_STANDARD
 var _start_distance_pixels: float = 0.0
+var _campaign_level_id: StringName = &""
+## Verbs the player actually performed this run. A campaign level is only
+## complete when its taught verb is in here, which is what stops a level
+## from being cleared by swinging past the goal.
+var _verbs_performed: Array[StringName] = []
 var _debug_start_active: bool = false
 var _course_seed: int = 1337
 var _course_seed_override: int = -1
@@ -83,9 +90,21 @@ func configure_run(
 	start_distance_pixels: float = 0.0,
 	course_seed_override: int = -1,
 	debug_start_requested: bool = false,
+	campaign_level_id: StringName = &"",
 ) -> void:
 	_debug_start_active = debug_start_requested
+	_verbs_performed.clear()
+	var requested_campaign := mode == RUN_CAMPAIGN and \
+		CampaignCatalog.has_level(campaign_level_id)
+	_campaign_level_id = campaign_level_id if requested_campaign else &""
 	var requested_practice := mode == RUN_PRACTICE
+	if requested_campaign:
+		# A campaign level is one fixed course for every player and attempt,
+		# so its seed is the level's, not the session's.
+		_run_mode = RUN_CAMPAIGN
+		_start_distance_pixels = 0.0
+		_course_seed_override = CampaignCatalog.course_seed(campaign_level_id)
+		return
 	_run_mode = (
 		RUN_PRACTICE
 		if requested_practice or \
@@ -457,6 +476,7 @@ func _step_once() -> void:
 					EffectState.BURST_FRENZY,
 					_config.burst_frenzy_duration,
 				)
+			_note_verb(event)
 			if event.kind == SimulationEvent.Kind.DEATH_REQUESTED:
 				if _rescue_available and _config.rescue_life_enabled:
 					_rescue_available = false
@@ -468,6 +488,7 @@ func _step_once() -> void:
 				_world.web.release()
 				_emit_settlement(cause)
 			event_published.emit(event)
+		_check_campaign_completion()
 	elif _run.state == RunStateMachine.State.DYING:
 		_run.advance(FIXED_DELTA)
 	_publish_snapshot()
@@ -695,6 +716,46 @@ func _populate_dive_preview(snapshot: SimulationSnapshot) -> void:
 	snapshot.dive_preview_anchor = best_anchor
 	snapshot.dive_preview_endpoint = preview["endpoint"]
 	snapshot.dive_preview_safe = bool(preview["safe"])
+
+
+## Map a simulation event onto the verb it proves. Only a STARTED event
+## counts: an UNAVAILABLE one means the player asked and the game said no,
+## which teaches nothing.
+func _note_verb(event: SimulationEvent) -> void:
+	if _campaign_level_id.is_empty():
+		return
+	var verb := &""
+	match event.kind:
+		SimulationEvent.Kind.REEL_STARTED:
+			verb = CampaignCatalog.VERB_REEL
+		SimulationEvent.Kind.BURST_STARTED:
+			verb = CampaignCatalog.VERB_BURST
+		SimulationEvent.Kind.DIVE_STARTED:
+			verb = CampaignCatalog.VERB_DIVE
+		_:
+			return
+	if not verb in _verbs_performed:
+		_verbs_performed.append(verb)
+
+
+func _check_campaign_completion() -> void:
+	if _campaign_level_id.is_empty() or _settlement_emitted:
+		return
+	if not CampaignCatalog.is_complete(
+			_campaign_level_id,
+			_world.distance_pixels,
+			_verbs_performed):
+		return
+	var level_id := _campaign_level_id
+	_settlement_emitted = true
+	settlement_created.emit(RunSettlement.campaign(
+		CampaignCatalog.settlement_id(level_id),
+		_world.distance_pixels,
+		&"campaign_complete",
+		level_id,
+		_course_seed,
+	))
+	campaign_level_completed.emit(level_id)
 
 
 func _emit_settlement(cause: StringName) -> void:
