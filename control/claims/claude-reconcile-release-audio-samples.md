@@ -1,0 +1,1 @@
+- `claude/reconcile-release-audio-samples` · **reconcile shipped-state and build identity drift; add generated core SFX samples only if the presentation seam and mobile quality bar can be proven** · docs/current-state.md, release identity files, presentation audio, generated audio assets/tests · 2026-08-01
