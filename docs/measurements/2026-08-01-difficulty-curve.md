@@ -32,9 +32,46 @@
 > the opening ramp rather than a warp, is the only reading here not contradicted
 > by device evidence — and it is still one scripted model, not a person.
 >
-> Kept rather than deleted so the failure is legible. What would replace it: a
-> device reading per zone, or a bot that Dives and engages the anchor classes
-> zones 4–8 introduced.
+> Kept rather than deleted so the failure is legible.
+
+## Owner verdict — the authoritative reading
+
+Stated 2026-08-01 from device play, and it **supersedes every difficulty
+conclusion in this document**:
+
+> "The difficulty is actually pretty balanced. Non-upgraded I reach about 2 K
+> and upgraded I can easily go well above 5 K. The speed and obstacles scale
+> pretty well, and the game is currently also randomized, so each run is
+> genuinely different from the last."
+
+**Retracted outright:** the "two cliffs" headline, the claim that Web City at
+25 km is far too easy, and the earlier claim that difficulty peaks around 6 km
+and falls after. None of them survive device play.
+
+### Where the lab is still usable — and this is the useful part
+
+The owner's unupgraded ceiling of **~2 km** matches the bot's 0 m band closely:
+intermediate 1 623 m, expert 2 193 m. So the model is a fair proxy for
+**unupgraded play from a standing start**, which is exactly the configuration
+the fly-income figures were measured in — those stand.
+
+It fails in two specific, now-understood regimes:
+
+- **With upgrades.** The owner goes from ~2 km to well above 5 km, a 2.5×
+  improvement. The bot reported upgrades as a 25% *loss*. The sign is wrong,
+  not just the size.
+- **Warped into high pace.** At a 5 km debug start the bot dies in under three
+  seconds where the owner travels 3 113 m.
+
+### A method limitation worth recording
+
+Production draws a **fresh course seed every run**
+(`SwingLabSession._next_course_seed`, `hash(session_id:run_sequence)`), so a
+player meets a different course each time. Every batch in this document used
+eight fixed seeds for reproducibility, which measures eight specific courses
+rather than the distribution a player experiences. Fixed seeds make a tuning
+change comparable; they do **not** describe felt variety, and nothing here
+should be read as if they did.
 
 ## Headline
 

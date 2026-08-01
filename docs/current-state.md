@@ -204,6 +204,20 @@ without a reported regression.
   intermediate play. Harsh currently pays no premium for roughly double the
   death rate.
 
+**Difficulty — owner verdict, 2026-08-01**
+
+- **The difficulty curve is balanced.** Owner from device play: ~2 km
+  unupgraded, well above 5 km upgraded, with speed and obstacles scaling well.
+  Every run draws a fresh course seed, so runs are genuinely different from one
+  another.
+- The overnight lab measurements that claimed otherwise — a difficulty peak
+  around 6 km, and Web City at 25 km being far too easy — are **retracted**.
+  They measured the bot failing at pace. Detail and the calibration numbers are
+  in `docs/measurements/2026-08-01-difficulty-curve.md`.
+- **Where the lab is still trustworthy:** unupgraded play from a standing start.
+  The bot's 0 m band (intermediate 1 623 m, expert 2 193 m) matches the owner's
+  ~2 km ceiling, which is the configuration the fly-income figures used.
+
 **Upgrade measurement — a lab finding the owner corrected**
 
 - A 2026-08-01 lab audit concluded the upgrade bundle made the player 25% worse
