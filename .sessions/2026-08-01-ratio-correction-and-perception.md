@@ -43,21 +43,62 @@ Corrected in the sweep measurement and in current-state.
 
 The owner watched the endorsed traces and read them as *"the simulation
 recognized the obstacles and did its best to avoid them."* They do look like
-that. **The bot never reads `world.obstacles`.**
-
-Its entire perception: own position and velocity, the fly trail, the
+that. Its entire perception is: own position and velocity, the fly trail, the
 nearest-solid query at an aimed tap, and the HUD's own pull-safety preview.
-A path lookahead that did read obstacles was built and deleted the same day
-for measuring worse.
+A general path lookahead was built and deleted the same day for measuring
+worse.
 
-So the apparent avoidance is **emergent from following the authored fly
-trail** — a finding about the level design, not the model: the fly route is
-good enough that following it competently keeps a player clear. It also
-explains the model's one real weakness, since 95% of its deaths are obstacle
-collisions and the trail is all it has when the trail is not enough.
+So the apparent *route* avoidance is **emergent from following the authored
+fly trail** — a finding about the level design, not the model: the fly route
+is good enough that following it competently keeps a player clear.
+
+I first wrote this as "the bot never reads `world.obstacles`". That is true of
+the bot file and **misleading about the system** — see the next section, where
+the owner's follow-up question exposed it. The pull-safety preview reaches
+obstacle data through another layer.
 
 Recorded in `docs/technical/simulation-lab.md` § "What the model can actually
-see", with the standing warning: **do not read intent into a replay.**
+see", with the standing warning: **do not read planning into a replay.**
+
+## Two more owner observations, both right, both correcting me
+
+**"I did see the bot use reel — just less than I do, probably because I also
+use it to gain a little speed."**
+
+Both halves check out, and both correct something I had written.
+
+*Usage.* My "the model effectively does not use the reel" came from 9 reel
+presses in the 97-second flagged trace. That is true of that run (1.5% of its
+duration) and false in general — the endorsed warp-L20 runs he actually
+watched hold reel **21.5% of the time**. I generalised a per-configuration
+number, and counted *presses* on a held control rather than time held.
+
+*Speed.* Tested by ablating reel on the endorsed policy, held-out seeds:
+**79.2 m/s with reel against 74.5 m/s without, and 1 908 m against 1 252 m.**
+Reel is worth **+6.2% speed and +52% distance**. He is right, and the
+repository's own phrase "speed-neutral Reel" is narrower than it reads: the
+retraction step adds no velocity, but the pendulum converts it and the effect
+is large. Nobody should read that phrase as "reeling does not make you
+faster".
+
+**"I spotted dives that narrowly avoided obstacles — how, if it cannot see
+them?"**
+
+Because "it cannot see obstacles" was too absolute, and this is the third
+overstatement he has caught today. `preview_pull` calls
+`_first_obstacle_contact`, which **sweeps the whole pull path** in half-radius
+steps. So the model has real obstacle awareness with an exact shape:
+
+- along a **candidate pull only** — never anywhere else;
+- **skill-gated** by `care` (0.40 novice → 0.95 expert);
+- `_find_dive_tap` **rejects every candidate whose swept path is blocked** and
+  takes the best of what survives.
+
+So a Dive threading a gap is a genuine selection among candidate paths by
+clearance — not planning, but not luck either. What is missing sits between
+the two things it does have: it checks the *pulls* it might commit and follows
+the *trail* for where to go, and nothing checks the **swing** it is about to
+take. That is where 95% of its deaths come from.
 
 ## The trust answer, as given
 
@@ -80,13 +121,22 @@ None new.
 
 ## 💡 Idea
 
-Both errors today were the same error at different scales. Comparing
+Every error today was the same error at different scales. Comparing
 best-per-configuration searches let *search luck* masquerade as an upgrade
 effect; quoting `dives_per_attach` let a *denominator change* masquerade as a
 verb being abandoned. In both cases a normalised number was reported as if it
 were an observation. **A ratio is a claim about two things; state both, or
 state the absolute count.** The near-miss reporting added earlier has the same
 shape and the same fix.
+
+The perception overstatements are a variant: "it never reads
+`world.obstacles`" was *literally true of the bot file* and false about the
+system, because the obstacle knowledge arrives through a query into another
+layer. **A negative claim about a component is not a negative claim about what
+it can learn.** Three of my summary sentences today were technically
+defensible and practically misleading, and in all three cases the owner caught
+it by comparing them against what he had watched. Watching beats reading, and
+he is the only one doing it.
 
 ## Next slice
 

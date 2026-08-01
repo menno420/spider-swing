@@ -143,24 +143,45 @@ Everything it perceives, in full:
 | `preview_pull` — the HUD's own safety preview | whether to commit a Burst or Dive |
 | `web`, `burst_charges`, `dive_ready`, `pull_active` | what verbs are available |
 
-It never reads `world.obstacles`. A path-lookahead that did was built and
-**deleted the same day** because it measured worse in both the attached and
-detached cases (see `2026-08-01-bot-model-v3.md`).
+It never reads `world.obstacles` directly, and a general path-lookahead that
+did was built and **deleted the same day** for measuring worse in both the
+attached and detached cases (see `2026-08-01-bot-model-v3.md`).
 
-So the apparent obstacle avoidance is **emergent from following the authored
-fly trail**. That is a finding about the level design rather than the model:
-the fly route is good enough that competently following it keeps a player
-clear of the geometry. It also explains the model's one real weakness — when
-the trail alone is not sufficient it has nothing else, and 95% of its deaths
-are obstacle collisions.
+### But it is not blind — the distinction is precise
 
-Two consequences worth carrying:
+`preview_pull` is not a geometric guess. It calls `_first_obstacle_contact`,
+which **sweeps the entire pull path** in steps of half a collision radius and
+reports the first contact. So the model has real obstacle awareness with an
+exact shape:
 
-- **Do not read intent into a replay.** Competent-looking motion here is
-  route-following plus a safety preview, not perception.
-- A model that *could* see obstacles is still the open opportunity, but the
-  one naive version of it lost distance. Prediction has to respect the
-  pendulum, not a straight line.
+- **Along a candidate pull only.** It knows whether *this* Burst or Dive would
+  hit something between here and its endpoint.
+- **Never anywhere else.** It cannot see an obstacle it is merely swinging
+  toward, drifting into, or falling onto.
+- **Skill-gated.** `_pull_looks_safe` consults it with probability `care`
+  (0.40 novice → 0.95 expert). A novice commits to unchecked pulls.
+
+`_find_dive_tap` scores a fan of candidate dives and **rejects every one whose
+swept path is not clear**, taking the best of what survives. That is why a
+replay can show a Dive threading a narrow gap and look like a deliberate save:
+it *is* a selection among candidate paths by clearance. It is simply not
+planning — it is refusing to pull into things, from a menu of options, several
+times a second.
+
+The owner independently reported both halves of this from watching replays:
+runs that "recognized the obstacles and did their best to avoid them", and
+specific dives that "narrowly avoided" hazards. The first is route-following;
+the second is this swept check.
+
+So the apparent avoidance is **the fly trail for where to go, plus a swept
+clearance test for what not to pull into**. The trail being good enough to
+follow is a finding about the level design. The model's one real weakness
+follows from what is missing between them: nothing checks the *swing* it is
+about to take, only the *pulls* it might commit — and 95% of its deaths are
+obstacle collisions.
+
+**Do not read planning into a replay.** Competent-looking motion here is
+route-following plus a per-candidate clearance test, several times a second.
 
 ## Watching a run instead of reading it
 
