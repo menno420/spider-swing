@@ -33,8 +33,14 @@ const BUCKLER_SPIDER := &"springtail_spider"
 const GOLDEN_FLY := &"golden_fly"
 const HOLLOW_BACKDROP := &"hollow_backdrop"
 const HOLLOW_COCOON := &"hollow_cocoon"
+const HOLLOW_SPINDLE := &"hollow_spindle"
+const HOLLOW_LATTICE_STRUT := &"hollow_lattice_strut"
 const ARBORETUM_BACKDROP := &"arboretum_backdrop"
 const ARBORETUM_PANE := &"arboretum_pane"
+const ARBORETUM_BEAM := &"arboretum_beam"
+const ARBORETUM_ROTOR_ARM := &"arboretum_rotor_arm"
+const ARBORETUM_ROTOR_HUB := &"arboretum_rotor_hub"
+const ARBORETUM_COLLAPSED_FRAME := &"arboretum_collapsed_frame"
 const STORM_BACKDROP := &"storm_backdrop"
 const STORM_SPIRE := &"storm_spire"
 const WEB_CITY_BACKDROP := &"web_city_backdrop"
@@ -93,11 +99,23 @@ const ASSETS := {
 	HOLLOW_BACKDROP:
 		"res://assets/runtime/zone-art/silk-hollow-backdrop.png",
 	HOLLOW_COCOON:
-		"res://assets/runtime/zone-art/silk-hollow-cocoon-cluster.png",
+		"res://assets/runtime/zone-art/silk-hollow-cocoon.png",
+	HOLLOW_SPINDLE:
+		"res://assets/runtime/zone-art/silk-hollow-spindle.png",
+	HOLLOW_LATTICE_STRUT:
+		"res://assets/runtime/zone-art/silk-hollow-lattice-strut.png",
 	ARBORETUM_BACKDROP:
 		"res://assets/runtime/zone-art/ruined-arboretum-backdrop.png",
 	ARBORETUM_PANE:
 		"res://assets/runtime/zone-art/ruined-arboretum-pane.png",
+	ARBORETUM_BEAM:
+		"res://assets/runtime/zone-art/ruined-arboretum-beam.png",
+	ARBORETUM_ROTOR_ARM:
+		"res://assets/runtime/zone-art/ruined-arboretum-rotor-arm.png",
+	ARBORETUM_ROTOR_HUB:
+		"res://assets/runtime/zone-art/ruined-arboretum-rotor-hub.png",
+	ARBORETUM_COLLAPSED_FRAME:
+		"res://assets/runtime/zone-art/ruined-arboretum-collapsed-frame.png",
 	STORM_BACKDROP:
 		"res://assets/runtime/zone-art/storm-ridge-backdrop.png",
 	STORM_SPIRE:
@@ -142,6 +160,84 @@ static func spider_style_tint(style: StringName) -> Color:
 		PlayerProgress.STYLE_COMET:
 			return Color(0.73, 0.88, 1.0, 1.0)
 	return Color.WHITE
+
+
+## Central presentation contract for authored-zone obstacle art.
+##
+## Collision, motion and tap eligibility stay in CourseGeometry. This table
+## only decides which inspected texture presents a stable visual/content id and
+## how that texture is fitted over the authoritative polygon. Keeping the
+## routing here prevents renderer fallbacks from silently becoming a zone's
+## player-facing obstacle vocabulary again.
+static func zone_obstacle_art_spec(
+	visual_id: StringName,
+	content_id: StringName,
+	anchorable: bool,
+) -> Dictionary:
+	match visual_id:
+		ZoneCourseBuilder.V_HOLLOW_COCOON:
+			return _art_spec(HOLLOW_COCOON, &"contain", Vector2(10.0, 10.0))
+		ZoneCourseBuilder.V_HOLLOW_SPINDLE:
+			return _art_spec(HOLLOW_SPINDLE, &"contain", Vector2(10.0, 10.0))
+		ZoneCourseBuilder.V_HOLLOW_FLOOR_NEEDLE:
+			return _art_spec(
+				HOLLOW_SPINDLE, &"contain", Vector2(10.0, 10.0),
+				Vector2.ZERO, false, true)
+		ZoneCourseBuilder.V_HOLLOW_LATTICE:
+			return _art_spec(
+				HOLLOW_LATTICE_STRUT, &"oriented", Vector2(14.0, 8.0))
+		ZoneCourseBuilder.V_ARBORETUM_BEAM:
+			if content_id == &"arboretum_collapsed_frame":
+				return _art_spec(
+					ARBORETUM_COLLAPSED_FRAME, &"contain",
+					Vector2(8.0, 8.0), Vector2.ZERO, false, anchorable)
+			return _art_spec(
+				ARBORETUM_BEAM, &"oriented", Vector2(18.0, 8.0))
+		ZoneCourseBuilder.V_ARBORETUM_PANE:
+			return _art_spec(
+				ARBORETUM_PANE, &"contain", Vector2(10.0, 10.0),
+				Vector2(132.0, 260.0))
+		ZoneCourseBuilder.V_ARBORETUM_ROTOR:
+			if content_id == &"arboretum_rotor_hub":
+				return _art_spec(
+					ARBORETUM_ROTOR_HUB, &"contain", Vector2(8.0, 8.0),
+					Vector2(84.0, 84.0))
+			return _art_spec(
+				ARBORETUM_ROTOR_ARM, &"oriented", Vector2(16.0, 8.0))
+		ZoneCourseBuilder.V_RIDGE_SPIRE:
+			return _art_spec(
+				STORM_SPIRE, &"contain", Vector2(10.0, 10.0),
+				Vector2(132.0, 260.0))
+		ZoneCourseBuilder.V_CITY_RESIDENT:
+			return _art_spec(
+				WEB_CITY_RESIDENT, &"contain", Vector2.ZERO,
+				Vector2(184.0, 184.0))
+		ZoneCourseBuilder.V_ASH_ROTTEN:
+			return _art_spec(ASHEN_ROTTEN, &"contain", Vector2(28.0, 28.0))
+		ZoneCourseBuilder.V_ASH_SOUND:
+			return _art_spec(ASHEN_SOUND, &"contain", Vector2(28.0, 28.0))
+		ZoneCourseBuilder.V_MIST_LIT:
+			return _art_spec(MIST_LIT_BEAM, &"contain", Vector2(10.0, 10.0))
+		_:
+			return {}
+
+
+static func _art_spec(
+	asset_id: StringName,
+	placement: StringName,
+	overscan: Vector2,
+	minimum_size: Vector2 = Vector2.ZERO,
+	flip_x: bool = false,
+	flip_y: bool = false,
+) -> Dictionary:
+	return {
+		"asset_id": asset_id,
+		"placement": placement,
+		"overscan": overscan,
+		"minimum_size": minimum_size,
+		"flip_x": flip_x,
+		"flip_y": flip_y,
+	}
 
 
 static func texture_paths() -> PackedStringArray:

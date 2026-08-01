@@ -165,7 +165,7 @@ Burst and Dive Pull, collectible fly routes, and one temporary Burst boost.
   catch, aim forgiveness, range, RELEASE/RETARGET behavior,
   deterministic input recording/replay, visual-theme comparison, independent
   opt-in overlays, and diagnostic export.
-- A 165-contract Godot suite covering bootstrap/build identity, deterministic
+- A 170-contract Godot suite covering bootstrap/build identity, deterministic
   physics, all eight zones, spider biology, Campaign, difficulty, upgrades,
   economy, generated audio, mobile layout, settings, and progression. It includes
   interruptible recovery webs, double-tap fallback, explicit

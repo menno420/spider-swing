@@ -9,7 +9,8 @@ runtime foreground art, writes the full-colour world captures, reduces the same
 structure to pure black, and shrinks it to 25%.
 
 The fixed 6000 m Bramble capture deliberately includes its hook-vine and
-leaf-shutter signature families; `--bramble-metres=<value>` supports comparison
+leaf-shutter signature families. `--bramble-metres=<value>`,
+`--silk-metres=<value>`, and `--arboretum-metres=<value>` support comparison
 probes without changing the recorded sample.
 
 Run:

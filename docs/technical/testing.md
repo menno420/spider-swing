@@ -89,7 +89,7 @@ Run directly:
 godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-165 checks, grouped so one subsystem failure never hides the rest:
+170 checks, grouped so one subsystem failure never hides the rest:
 
 - engine, main-scene, input-action, 60 Hz, renderer/viewport, Android preset,
   inward-dependency, and no-autoload bootstrap contracts;
@@ -121,11 +121,12 @@ godot --headless --path . --script res://tests/test_runner.gd
   exact off-grid polygons plus identity/anchor/motion descriptors through every
   owned late zone, and identical trajectories from
   simulated 30/60/90/120 Hz render loops;
-- ten zone-progression contracts proving the append-only 5 km schedule, explicit
+- eleven zone-progression contracts proving the append-only 5 km schedule, explicit
   hazard eligibility, pure seeded phase sampling, swept moving collision,
   energy-safe moving-pivot binding, all documented density thresholds, typed
-  highway/sticky/rotten anchors, audio-first Mist cues, and a current 13-asset
-  source/runtime/25% alpha plus silhouette audit;
+  highway/sticky/rotten anchors, audio-first Mist cues, explicit finished-art
+  routing for the recorded Silk/Arboretum obstacle families, and a current
+  20-asset source/runtime/25% alpha plus silhouette audit;
 - eleven spider-biology contracts keep profile identity and disclosures separate
   from balance data;
 - ten Campaign contracts prove verb-gated clears, fixed seeds, one-time stars,
@@ -134,6 +135,9 @@ godot --headless --path . --script res://tests/test_runner.gd
   without any physics change;
 - four upgrade-wiring contracts retain all seven saleable tracks and guard the
   simulator's known blind spots;
+- four simulation-lab input contracts prove the measurement tool receives
+  typed anchor classes, timed-anchor life, and the real Dive input path without
+  freezing any bot conclusion;
 - two economy contracts keep flies and Campaign stars in their declared lanes;
 - six generated-SFX contracts prove original/reproducible provenance, exact
   catalog parity, Android-sized PCM/headroom, core-event coverage, variant and

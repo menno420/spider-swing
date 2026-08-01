@@ -10,7 +10,7 @@ const CAMERA_LEFT_OFFSET := VIEW_SIZE.x / 3.0
 const COURSE_SEED := 1337
 const SAMPLE_TICK := 137
 const SAMPLE_DISTANCES_METRES := [
-	2500.0, 6000.0, 12500.0, 18750.0,
+	2500.0, 6000.0, 12500.0, 15100.0,
 	23750.0, 28750.0, 33750.0, 37500.0,
 ]
 
@@ -24,6 +24,12 @@ func _initialize() -> void:
 		elif argument.begins_with("--bramble-metres="):
 			sample_distances[1] = float(argument.trim_prefix(
 				"--bramble-metres="))
+		elif argument.begins_with("--silk-metres="):
+			sample_distances[2] = float(argument.trim_prefix(
+				"--silk-metres="))
+		elif argument.begins_with("--arboretum-metres="):
+			sample_distances[3] = float(argument.trim_prefix(
+				"--arboretum-metres="))
 	var zones: Array[Dictionary] = []
 	for metres: float in sample_distances:
 		zones.append(_capture_zone(metres))
@@ -84,6 +90,7 @@ func _capture_zone(metres: float) -> Dictionary:
 			decorations.append(_polygon_rows(polygon, world_left))
 	var obstacles: Array = []
 	var obstacle_anchorable: Array = []
+	var obstacle_content_ids: Array = []
 	var obstacle_visual_ids: Array = []
 	for index in range(geometry.obstacles.size()):
 		var sample := CourseMotion.sample_polygon(
@@ -95,6 +102,7 @@ func _capture_zone(metres: float) -> Dictionary:
 		if _visible(polygon, world_left):
 			obstacles.append(_polygon_rows(polygon, world_left))
 			obstacle_anchorable.append(geometry.is_obstacle_anchorable(index))
+			obstacle_content_ids.append(str(geometry.obstacle_id(index)))
 			obstacle_visual_ids.append(str(geometry.obstacle_visual_id(index)))
 	var flies: Array = []
 	for fly: Vector2 in geometry.fly_positions:
@@ -113,6 +121,7 @@ func _capture_zone(metres: float) -> Dictionary:
 		"decorations": decorations,
 		"obstacles": obstacles,
 		"obstacle_anchorable": obstacle_anchorable,
+		"obstacle_content_ids": obstacle_content_ids,
 		"obstacle_visual_ids": obstacle_visual_ids,
 		"flies": flies,
 	}

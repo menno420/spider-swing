@@ -6,10 +6,11 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 from pathlib import Path
 from typing import Any
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -30,6 +31,19 @@ ASSETS: dict[str, tuple[tuple[int, int], tuple[int, int]]] = {
     "ashen-hollow-sound-branch": ((1774, 887), (768, 384)),
     "deep-mist-backdrop": ((1672, 941), (1280, 720)),
     "deep-mist-lit-beam": ((2172, 724), (768, 256)),
+    "silk-hollow-cocoon": ((1024, 1536), (384, 768)),
+    "silk-hollow-spindle": ((1024, 1536), (256, 768)),
+    "silk-hollow-lattice-strut": ((1816, 866), (768, 128)),
+    "ruined-arboretum-beam": ((2172, 724), (768, 96)),
+    "ruined-arboretum-rotor-arm": ((1774, 887), (768, 96)),
+    "ruined-arboretum-rotor-hub": ((1254, 1254), (256, 256)),
+    "ruined-arboretum-collapsed-frame": ((1254, 1254), (640, 512)),
+}
+
+GREEN_KEY_ASSETS = {
+    "silk-hollow-cocoon",
+    "silk-hollow-spindle",
+    "silk-hollow-lattice-strut",
 }
 
 BACKDROPS = {
@@ -70,6 +84,60 @@ ZONE_COLORS: dict[str, dict[str, str]] = {
     },
 }
 
+# Mirrors ArtAssetCatalog.zone_obstacle_art_spec for reproducible review
+# captures. Geometry remains authoritative: these entries only replace the
+# prototype fill when a stable visual/content id has inspected runtime art.
+OBSTACLE_ART: dict[str, dict[str, Any]] = {
+    "hollow_cocoon": {
+        "asset": "silk-hollow-cocoon", "placement": "contain",
+        "overscan": (10, 10),
+    },
+    "hollow_spindle": {
+        "asset": "silk-hollow-spindle", "placement": "contain",
+        "overscan": (10, 10),
+    },
+    "hollow_floor_needle": {
+        "asset": "silk-hollow-spindle", "placement": "contain",
+        "overscan": (10, 10), "flip_y": True,
+    },
+    "hollow_lattice": {
+        "asset": "silk-hollow-lattice-strut", "placement": "oriented",
+        "overscan": (14, 8),
+    },
+    "arboretum_beam": {
+        "asset": "ruined-arboretum-beam", "placement": "oriented",
+        "overscan": (18, 8),
+    },
+    "arboretum_pane": {
+        "asset": "ruined-arboretum-pane", "placement": "contain",
+        "overscan": (10, 10), "minimum_size": (132, 260),
+    },
+    "arboretum_rotor": {
+        "asset": "ruined-arboretum-rotor-arm", "placement": "oriented",
+        "overscan": (16, 8),
+    },
+    "ridge_spire": {
+        "asset": "storm-ridge-spire", "placement": "contain",
+        "overscan": (10, 10), "minimum_size": (132, 260),
+    },
+    "city_resident": {
+        "asset": "web-city-resident", "placement": "contain",
+        "overscan": (0, 0), "minimum_size": (184, 184),
+    },
+    "ashen_rotten": {
+        "asset": "ashen-hollow-rotten-branch", "placement": "contain",
+        "overscan": (28, 28),
+    },
+    "ashen_sound": {
+        "asset": "ashen-hollow-sound-branch", "placement": "contain",
+        "overscan": (28, 28),
+    },
+    "mist_lit_anchor": {
+        "asset": "deep-mist-lit-beam", "placement": "contain",
+        "overscan": (10, 10),
+    },
+}
+
 
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
@@ -79,9 +147,10 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _alpha_stats(image: Image.Image) -> dict[str, int]:
+def _alpha_stats(image: Image.Image, key_family: str = "magenta") -> dict[str, int]:
     rgba = image.convert("RGBA")
-    transparent = partial = opaque = fringe = edge = 0
+    transparent = partial = opaque = chroma_fringe = edge = 0
+    magenta_fringe = green_fringe = 0
     for red, green, blue, alpha in rgba.get_flattened_data():
         if alpha == 0:
             transparent += 1
@@ -93,19 +162,31 @@ def _alpha_stats(image: Image.Image) -> dict[str, int]:
             # Lanczos can reconstruct hidden RGB into 1–9/255 alpha texels.
             # Those are below the helper's own visible-noise floor at source
             # scale; only count chroma that can survive gameplay compositing.
-            if (
+            is_magenta = (
                 alpha >= 12
                 and red > green + 28
                 and blue > green + 28
                 and abs(red - blue) <= 32
-            ):
-                fringe += 1
+            )
+            is_green = (
+                alpha >= 12
+                and green >= 150
+                and green > red + 72
+                and green > blue + 72
+            )
+            magenta_fringe += int(is_magenta)
+            green_fringe += int(is_green)
+            chroma_fringe += int(
+                is_green if key_family == "green" else is_magenta
+            )
     return {
         "transparent": transparent,
         "partial": partial,
         "opaque": opaque,
         "edge_pixels": edge,
-        "magenta_fringe_pixels": fringe,
+        "magenta_fringe_pixels": magenta_fringe,
+        "green_fringe_pixels": green_fringe,
+        "chroma_fringe_pixels": chroma_fringe,
     }
 
 
@@ -116,6 +197,7 @@ def _audit_assets(
     rows: list[dict[str, Any]] = []
     failures: list[str] = []
     for name, (source_size, runtime_size) in ASSETS.items():
+        key_family = "green" if name in GREEN_KEY_ASSETS else "magenta"
         source_path = SOURCE / f"{name}-keyed.png"
         runtime_path = RUNTIME / f"{name}.png"
         if not runtime_path.exists():
@@ -135,11 +217,15 @@ def _audit_assets(
                 source = source_image.convert("RGBA")
             if source.size != source_size:
                 failures.append(f"{name}: source {source.size}, expected {source_size}")
-            source_stats = _alpha_stats(source)
+            source_stats = _alpha_stats(source, key_family)
             source_sha = _sha256(SOURCE / f"{name}-chroma.png")
             keyed_source_sha = _sha256(source_path)
         elif previous:
-            source_stats = previous["alpha"]["source"]
+            source_stats = dict(previous["alpha"]["source"])
+            source_stats.setdefault(
+                "chroma_fringe_pixels",
+                source_stats.get("magenta_fringe_pixels", 0),
+            )
             source_sha = previous["source_sha256"]
             keyed_source_sha = previous["keyed_source_sha256"]
         else:
@@ -149,17 +235,18 @@ def _audit_assets(
             keyed_source_sha = ""
         states = {
             "source": source_stats,
-            "runtime": _alpha_stats(runtime),
-            "gameplay_25_percent": _alpha_stats(gameplay),
+            "runtime": _alpha_stats(runtime, key_family),
+            "gameplay_25_percent": _alpha_stats(gameplay, key_family),
         }
         for state, stats in states.items():
             if not stats:
                 continue
             if stats["transparent"] == 0:
                 failures.append(f"{name}/{state}: no transparent pixels")
-            if stats["magenta_fringe_pixels"] > 0:
+            if stats["chroma_fringe_pixels"] > 0:
                 failures.append(
-                    f"{name}/{state}: {stats['magenta_fringe_pixels']} magenta edge pixels"
+                    f"{name}/{state}: {stats['chroma_fringe_pixels']} "
+                    f"{key_family} chroma edge pixels"
                 )
         rows.append(
             {
@@ -167,6 +254,7 @@ def _audit_assets(
                 "source_size": list(source_size),
                 "runtime_size": list(runtime.size),
                 "gameplay_audit_size": list(gameplay.size),
+                "key_family": key_family,
                 "source_sha256": source_sha,
                 "keyed_source_sha256": keyed_source_sha,
                 "runtime_sha256": _sha256(runtime_path),
@@ -205,6 +293,119 @@ def _draw_polygons(mask: Image.Image, zone: dict[str, Any]) -> None:
         for polygon in zone[collection]:
             if len(polygon) >= 3:
                 draw.polygon([(float(x), float(y)) for x, y in polygon], fill=255)
+
+
+def _obstacle_art_spec(
+    visual_id: str, content_id: str, anchorable: bool
+) -> dict[str, Any] | None:
+    spec = OBSTACLE_ART.get(visual_id)
+    if spec is None:
+        return None
+    resolved = dict(spec)
+    if visual_id == "arboretum_beam" and content_id == "arboretum_collapsed_frame":
+        resolved = {
+            "asset": "ruined-arboretum-collapsed-frame",
+            "placement": "contain", "overscan": (8, 8),
+            "flip_y": anchorable,
+        }
+    elif visual_id == "arboretum_rotor" and content_id == "arboretum_rotor_hub":
+        resolved = {
+            "asset": "ruined-arboretum-rotor-hub",
+            "placement": "contain", "overscan": (8, 8),
+            "minimum_size": (84, 84),
+        }
+    return resolved
+
+
+def _polygon_bounds(points: list[tuple[float, float]]) -> tuple[float, float, float, float]:
+    xs = [point[0] for point in points]
+    ys = [point[1] for point in points]
+    return min(xs), min(ys), max(xs), max(ys)
+
+
+def _composite_contain(
+    canvas: Image.Image,
+    artwork: Image.Image,
+    points: list[tuple[float, float]],
+    spec: dict[str, Any],
+) -> None:
+    left, top, right, bottom = _polygon_bounds(points)
+    overscan_x, overscan_y = spec.get("overscan", (10, 10))
+    width = right - left + overscan_x * 2
+    height = bottom - top + overscan_y * 2
+    minimum_width, minimum_height = spec.get("minimum_size", (0, 0))
+    width = max(width, minimum_width)
+    height = max(height, minimum_height)
+    scale = min(width / artwork.width, height / artwork.height)
+    draw_size = (
+        max(1, round(artwork.width * scale)),
+        max(1, round(artwork.height * scale)),
+    )
+    placed = artwork.resize(draw_size, Image.Resampling.LANCZOS)
+    if spec.get("flip_x", False):
+        placed = ImageOps.mirror(placed)
+    if spec.get("flip_y", False):
+        placed = ImageOps.flip(placed)
+    centre_x = (left + right) * 0.5
+    centre_y = (top + bottom) * 0.5
+    canvas.alpha_composite(
+        placed,
+        (round(centre_x - placed.width * 0.5), round(centre_y - placed.height * 0.5)),
+    )
+
+
+def _composite_oriented(
+    canvas: Image.Image,
+    artwork: Image.Image,
+    points: list[tuple[float, float]],
+    spec: dict[str, Any],
+) -> None:
+    axis = (1.0, 0.0)
+    longest_squared = 0.0
+    for index, first in enumerate(points):
+        second = points[(index + 1) % len(points)]
+        edge = (second[0] - first[0], second[1] - first[1])
+        edge_squared = edge[0] * edge[0] + edge[1] * edge[1]
+        if edge_squared > longest_squared:
+            longest_squared = edge_squared
+            length = math.sqrt(edge_squared)
+            axis = (edge[0] / length, edge[1] / length)
+    normal = (-axis[1], axis[0])
+    along = [point[0] * axis[0] + point[1] * axis[1] for point in points]
+    across = [point[0] * normal[0] + point[1] * normal[1] for point in points]
+    overscan_x, overscan_y = spec.get("overscan", (10, 10))
+    draw_size = (
+        max(1, round(max(along) - min(along) + overscan_x * 2)),
+        max(1, round(max(across) - min(across) + overscan_y * 2)),
+    )
+    centre_along = (min(along) + max(along)) * 0.5
+    centre_across = (min(across) + max(across)) * 0.5
+    centre = (
+        axis[0] * centre_along + normal[0] * centre_across,
+        axis[1] * centre_along + normal[1] * centre_across,
+    )
+    stretched = artwork.resize(draw_size, Image.Resampling.LANCZOS)
+    # Godot's positive 2D rotation follows the screen-space, y-down axis. PIL
+    # uses the opposite visual sign, so negate the Vector2 angle here.
+    angle = -math.degrees(math.atan2(axis[1], axis[0]))
+    placed = stretched.rotate(angle, Image.Resampling.BICUBIC, expand=True)
+    canvas.alpha_composite(
+        placed,
+        (round(centre[0] - placed.width * 0.5), round(centre[1] - placed.height * 0.5)),
+    )
+
+
+def _composite_obstacle_art(
+    canvas: Image.Image,
+    points: list[tuple[float, float]],
+    spec: dict[str, Any],
+) -> None:
+    with Image.open(RUNTIME / f"{spec['asset']}.png") as opened:
+        artwork = opened.convert("RGBA")
+    if spec.get("placement") == "oriented":
+        _composite_oriented(canvas, artwork, points, spec)
+    else:
+        _composite_contain(canvas, artwork, points, spec)
 
 
 def _iou(first: Image.Image, second: Image.Image) -> float:
@@ -307,13 +508,22 @@ def _build_screenshots(geometry_path: Path, output_dir: Path) -> Path:
                 continue
             anchorable = bool(zone["obstacle_anchorable"][index])
             visual_id = zone["obstacle_visual_ids"][index]
+            content_ids = zone.get("obstacle_content_ids", [])
+            content_id = content_ids[index] if index < len(content_ids) else ""
             if visual_id in {"ridge_lightning", "ashen_ember"}:
                 fill, edge = "#ff9b3d", "#fff2b0"
             else:
                 fill = "#25282b" if zone["id"] != "silk_hollow" else "#56352c"
                 edge = "#dffaff" if anchorable else "#ff765d"
-            draw.polygon(points, fill=fill)
-            draw.line(points + [points[0]], fill=edge, width=4, joint="curve")
+            art_spec = _obstacle_art_spec(visual_id, content_id, anchorable)
+            if art_spec is None:
+                draw.polygon(points, fill=fill)
+                draw.line(points + [points[0]], fill=edge, width=4, joint="curve")
+            else:
+                _composite_obstacle_art(preview, points, art_spec)
+                draw.line(
+                    points + [points[0]], fill=edge + "73", width=2, joint="curve"
+                )
 
         for x, y in zone.get("flies", []):
             draw.ellipse((x - 9, y - 9, x + 9, y + 9), fill="#ffd95a", outline="#fff7b0", width=2)
