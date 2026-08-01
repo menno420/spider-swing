@@ -182,10 +182,6 @@ func purchase_upgrade(
 	if item.is_empty() or StringName(item["profile"]) != \
 			progress.selected_spider_id:
 		return {"purchased": false, "reason": "wrong_spider"}
-	if not SpiderCatalog.is_purchasable(upgrade_id):
-		# Checked before affordability so the refusal reason is the real one:
-		# the track is withdrawn, not the player short of flies.
-		return {"purchased": false, "reason": "suspended"}
 	var level := progress.upgrade_level(upgrade_id)
 	if level >= SpiderCatalog.MAX_UPGRADE_LEVEL:
 		return {"purchased": false, "reason": "maximum"}

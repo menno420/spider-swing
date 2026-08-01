@@ -13,7 +13,7 @@ const ANDROID_APP_NAME := "Spider Swing Zones 4-8 (dev)"
 const DEBUG_KEYSTORE_PATH := "res://.github/android/debug.keystore"
 const DEBUG_KEYSTORE_SHA256 := \
 	"e9104672477e0238b6cc2f7d6b994c459e37f130cae06a37aff05001f101bbda"
-const EXPECTED_CHECK_COUNT := 163
+const EXPECTED_CHECK_COUNT := 159
 const REQUIRED_INPUT_ACTIONS := [
 	"web_action", "reel_in", "burst_action", "pause", "restart_run",
 	"toggle_debug"]
