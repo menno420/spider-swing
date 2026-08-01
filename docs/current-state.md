@@ -185,6 +185,23 @@ without a reported regression.
   all six Bramble textures plus source/build provenance, and independently
   reports the pinned `83ff0bc2…` certificate.
 
+**Measured and unresolved — present, but not doing what the shop implies**
+
+- **Two upgrade tracks are inert.** Silk Reserve (Reel capacity) and Rapid
+  Recovery (Reel regeneration and empty-lockout) change the resolved config and
+  produce bit-identical play at every skill tier, because the Reel meter never
+  empties in any band, mode or reel style — they sell headroom on a limit the
+  player never reaches. Measured per track in isolation; the config change was
+  verified directly so the null is not a broken harness.
+- **The upgrade bundle is a net negative for the lab bot.** Every track at
+  level 20 survives 25% less far than level 0, monotone from level 10. Silk
+  Winder (−10.4%) and Anchor Drive (−6.2%) are negative at every tier; nothing
+  is positive by more than 2%. Direction is trustworthy, magnitude is not:
+  these are bot-preference results, and the lab has already disagreed with an
+  owner device finding on the Reel-rate axis. **Nothing was retuned on this** —
+  it is recorded for a device playtest and an owner call. See
+  `docs/measurements/2026-08-01-upgrade-audit.md`.
+
 **Deliberately absent — scope boundaries, not gaps**
 
 - Weighty and Agile are untuned. They are kept, not deleted, but they were
