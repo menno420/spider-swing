@@ -1,6 +1,6 @@
 # Earned speed and pursuing bird
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 
@@ -14,6 +14,12 @@ Test Run isolation controls, replay compatibility, exploit regression, build
 identity, contracts, and living handoff. Preserve course replay purity,
 progression/economy, difficulty, persisted identity, collision geometry, and all
 owner-approved traversal values except the explicitly chosen drive config.
+
+## Shipped
+
+- `game/domain`, `game/simulation`, `game/application`, `game/presentation`,
+  runtime bird art, replay evidence, tests, build identity, and living docs ship
+  together in remote implementation commit `f443478f04467b01a0f5cc4dd472e120beabf5bc`.
 
 ## Previous-session review
 
@@ -79,8 +85,8 @@ identical worlds.
 - Focused presentation/replay gate: 61/61.
 - `python3 tools/verify.py --require-godot`: exact Godot
   `4.7.1.stable.official.a13da4feb`, 197/197 contracts.
-- `python3 bootstrap.py check --strict`: pending the deliberate final lifecycle
-  flip; before that flip its expected blocker is this `in-progress` card.
+- `python3 bootstrap.py check --strict`: passed after the final lifecycle flip;
+  only non-exit-affecting capability/headroom/stale-wall advisories remain.
 
 ## Owner questions
 
@@ -99,7 +105,8 @@ until then, only naturally terminal traces should be bundled as exact evidence.
 
 ## Final lifecycle
 
-The claim withdrawal, `complete` badge, final strict gate, remote CI, merge and
-Android artifact are deliberately deferred to the final repository edit.
+The card is `complete`, the coordination claim is withdrawn, and both local
+gates pass on the final tree. Remote CI, merge and Android artifact are probed
+after this final lifecycle commit is published.
 
 - **📊 Model:** gpt-5 · high · feature build
