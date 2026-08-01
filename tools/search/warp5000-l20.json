@@ -1,0 +1,345 @@
+{
+  "format": "spider-swing/bot-policy-search@1",
+  "config": "warp5000-l20",
+  "note": "the owner's own recording condition",
+  "fairness": "Perception limits (decision cadence, reaction delay, aim error) are frozen at measured human values and are not searchable. No statistic here certifies fair play \u2014 the best runs are meant to be watched and judged.",
+  "runs_per_candidate": 24,
+  "generations": 12,
+  "population": 16,
+  "baseline": {
+    "reach": {
+      "mean_m": 719.6,
+      "median_m": 651.8,
+      "p90_m": 1112.6,
+      "furthest_single_run_m": 1497.4,
+      "timeout_runs": 0
+    },
+    "fingerprint": {
+      "taps_per_second": 4.9969,
+      "dives_per_attach": 0.6631,
+      "mean_attaches": 11.75,
+      "mean_bursts": 5.4583,
+      "mean_save_bursts": 0.0,
+      "mean_reel_time_s": 1.9694,
+      "mean_reel_empties": 0.0,
+      "mean_highway_attaches": 0.0,
+      "mean_sticky_attaches": 0.0,
+      "mean_timed_anchor_attaches": 0.0,
+      "class_choice_rate": 0.0,
+      "flies_per_km": 17.8925,
+      "deaths_per_km": 2.7794,
+      "mean_seconds": 10.0479
+    }
+  },
+  "best": {
+    "reach": {
+      "mean_m": 1714.6,
+      "median_m": 1497.9,
+      "p90_m": 2385.5,
+      "furthest_single_run_m": 4295.6,
+      "timeout_runs": 0
+    },
+    "fingerprint": {
+      "taps_per_second": 3.4898,
+      "dives_per_attach": 0.9602,
+      "mean_attaches": 13.625,
+      "mean_bursts": 13.375,
+      "mean_save_bursts": 0.0,
+      "mean_reel_time_s": 4.6576,
+      "mean_reel_empties": 0.0,
+      "mean_highway_attaches": 0.0,
+      "mean_sticky_attaches": 0.0,
+      "mean_timed_anchor_attaches": 0.0,
+      "class_choice_rate": 0.0,
+      "flies_per_km": 20.8986,
+      "deaths_per_km": 1.1664,
+      "mean_seconds": 21.6347
+    }
+  },
+  "gain_percent": 138.3,
+  "anomaly_flags": [],
+  "best_knobs": {
+    "band_px": 83.43545,
+    "reel_band_px": 25.91832,
+    "panic_fall_speed": 497.35339,
+    "release_rise_speed": 205.57088,
+    "burst_chance": 0.34164,
+    "dive_chance": 0.97419,
+    "care": 0.99792,
+    "class_read": 0.88599,
+    "attach_fan_top_deg": -60.97899,
+    "attach_fan_bottom_deg": -17.81602,
+    "attach_reach_frac": 0.49,
+    "dive_fan_top_deg": 33.44183,
+    "dive_fan_bottom_deg": 62.68544,
+    "dive_reach_frac": 0.86364,
+    "dive_floor_y": 575.89396,
+    "reel_reserve_scale": 1.1662,
+    "reel_floor_scale": 0.77038,
+    "decision_period_ticks": 5.83402,
+    "reaction_delay_ticks": 2.0
+  },
+  "replay": "--bot=band_px:83.43545,reel_band_px:25.91832,panic_fall_speed:497.35339,release_rise_speed:205.57088,burst_chance:0.34164,dive_chance:0.97419,care:0.99792,class_read:0.88599,attach_fan_top_deg:-60.97899,attach_fan_bottom_deg:-17.81602,attach_reach_frac:0.49000,dive_fan_top_deg:33.44183,dive_fan_bottom_deg:62.68544,dive_reach_frac:0.86364,dive_floor_y:575.89396,reel_reserve_scale:1.16620,reel_floor_scale:0.77038,decision_period_ticks:5.83402,reaction_delay_ticks:2.00000",
+  "history": [
+    {
+      "generation": 0,
+      "best_m": 719.6,
+      "fingerprint": {
+        "taps_per_second": 4.9969,
+        "dives_per_attach": 0.6631,
+        "mean_attaches": 11.75,
+        "mean_bursts": 5.4583,
+        "mean_save_bursts": 0.0,
+        "mean_reel_time_s": 1.9694,
+        "mean_reel_empties": 0.0,
+        "mean_highway_attaches": 0.0,
+        "mean_sticky_attaches": 0.0,
+        "mean_timed_anchor_attaches": 0.0,
+        "class_choice_rate": 0.0,
+        "flies_per_km": 17.8925,
+        "deaths_per_km": 2.7794,
+        "mean_seconds": 10.0479
+      }
+    },
+    {
+      "generation": 1,
+      "best_m": 1001.4,
+      "fingerprint": {
+        "taps_per_second": 4.5356,
+        "dives_per_attach": 0.6783,
+        "mean_attaches": 11.9167,
+        "mean_bursts": 12.6667,
+        "mean_save_bursts": 0.0,
+        "mean_reel_time_s": 1.0382,
+        "mean_reel_empties": 0.0,
+        "mean_highway_attaches": 0.0,
+        "mean_sticky_attaches": 0.0,
+        "mean_timed_anchor_attaches": 0.0,
+        "class_choice_rate": 0.0,
+        "flies_per_km": 19.0987,
+        "deaths_per_km": 1.9973,
+        "mean_seconds": 13.1368
+      }
+    },
+    {
+      "generation": 2,
+      "best_m": 1092.4,
+      "fingerprint": {
+        "taps_per_second": 2.9886,
+        "dives_per_attach": 1.0045,
+        "mean_attaches": 9.2917,
+        "mean_bursts": 9.6667,
+        "mean_save_bursts": 0.0,
+        "mean_reel_time_s": 1.3847,
+        "mean_reel_empties": 0.0,
+        "mean_highway_attaches": 0.0,
+        "mean_sticky_attaches": 0.0,
+        "mean_timed_anchor_attaches": 0.0,
+        "class_choice_rate": 0.0,
+        "flies_per_km": 19.6821,
+        "deaths_per_km": 1.8309,
+        "mean_seconds": 14.625
+      }
+    },
+    {
+      "generation": 3,
+      "best_m": 1181.9,
+      "fingerprint": {
+        "taps_per_second": 4.6871,
+        "dives_per_attach": 0.7213,
+        "mean_attaches": 15.25,
+        "mean_bursts": 9.75,
+        "mean_save_bursts": 0.0,
+        "mean_reel_time_s": 2.8701,
+        "mean_reel_empties": 0.0,
+        "mean_highway_attaches": 0.0,
+        "mean_sticky_attaches": 0.0,
+        "mean_timed_anchor_attaches": 0.0,
+        "class_choice_rate": 0.0,
+        "flies_per_km": 18.7202,
+        "deaths_per_km": 1.6922,
+        "mean_seconds": 15.6368
+      }
+    },
+    {
+      "generation": 4,
+      "best_m": 1582.8,
+      "fingerprint": {
+        "taps_per_second": 4.9578,
+        "dives_per_attach": 0.7387,
+        "mean_attaches": 20.25,
+        "mean_bursts": 13.9583,
+        "mean_save_bursts": 0.0,
+        "mean_reel_time_s": 4.0819,
+        "mean_reel_empties": 0.0,
+        "mean_highway_attaches": 0.0,
+        "mean_sticky_attaches": 0.0,
+        "mean_timed_anchor_attaches": 0.0,
+        "class_choice_rate": 0.0,
+        "flies_per_km": 19.981,
+        "deaths_per_km": 1.2636,
+        "mean_seconds": 20.641
+      }
+    },
+    {
+      "generation": 5,
+      "best_m": 1255.3,
+      "fingerprint": {
+        "taps_per_second": 3.2181,
+        "dives_per_attach": 1.081,
+        "mean_attaches": 8.75,
+        "mean_bursts": 11.25,
+        "mean_save_bursts": 0.0,
+        "mean_reel_time_s": 3.3104,
+        "mean_reel_empties": 0.0,
+        "mean_highway_attaches": 0.0,
+        "mean_sticky_attaches": 0.0,
+        "mean_timed_anchor_attaches": 0.0,
+        "class_choice_rate": 0.0,
+        "flies_per_km": 20.114,
+        "deaths_per_km": 1.5932,
+        "mean_seconds": 15.9646
+      }
+    },
+    {
+      "generation": 6,
+      "best_m": 1359.1,
+      "fingerprint": {
+        "taps_per_second": 3.4676,
+        "dives_per_attach": 0.9963,
+        "mean_attaches": 11.3333,
+        "mean_bursts": 11.75,
+        "mean_save_bursts": 0.0,
+        "mean_reel_time_s": 3.2465,
+        "mean_reel_empties": 0.0,
+        "mean_highway_attaches": 0.0,
+        "mean_sticky_attaches": 0.0,
+        "mean_timed_anchor_attaches": 0.0,
+        "class_choice_rate": 0.0,
+        "flies_per_km": 20.173,
+        "deaths_per_km": 1.4716,
+        "mean_seconds": 17.7354
+      }
+    },
+    {
+      "generation": 7,
+      "best_m": 1602.9,
+      "fingerprint": {
+        "taps_per_second": 3.4036,
+        "dives_per_attach": 1.0487,
+        "mean_attaches": 12.8333,
+        "mean_bursts": 12.2083,
+        "mean_save_bursts": 0.0,
+        "mean_reel_time_s": 4.4771,
+        "mean_reel_empties": 0.0,
+        "mean_highway_attaches": 0.0,
+        "mean_sticky_attaches": 0.0,
+        "mean_timed_anchor_attaches": 0.0,
+        "class_choice_rate": 0.0,
+        "flies_per_km": 19.4178,
+        "deaths_per_km": 1.2477,
+        "mean_seconds": 20.2361
+      }
+    },
+    {
+      "generation": 8,
+      "best_m": 1464.6,
+      "fingerprint": {
+        "taps_per_second": 3.4727,
+        "dives_per_attach": 1.0418,
+        "mean_attaches": 10.9583,
+        "mean_bursts": 12.5417,
+        "mean_save_bursts": 0.0,
+        "mean_reel_time_s": 3.8681,
+        "mean_reel_empties": 0.0,
+        "mean_highway_attaches": 0.0,
+        "mean_sticky_attaches": 0.0,
+        "mean_timed_anchor_attaches": 0.0,
+        "class_choice_rate": 0.0,
+        "flies_per_km": 19.7146,
+        "deaths_per_km": 1.3655,
+        "mean_seconds": 18.1417
+      }
+    },
+    {
+      "generation": 9,
+      "best_m": 1555.8,
+      "fingerprint": {
+        "taps_per_second": 3.3472,
+        "dives_per_attach": 1.0735,
+        "mean_attaches": 11.3333,
+        "mean_bursts": 13.2083,
+        "mean_save_bursts": 0.0,
+        "mean_reel_time_s": 4.1861,
+        "mean_reel_empties": 0.0,
+        "mean_highway_attaches": 0.0,
+        "mean_sticky_attaches": 0.0,
+        "mean_timed_anchor_attaches": 0.0,
+        "class_choice_rate": 0.0,
+        "flies_per_km": 19.2565,
+        "deaths_per_km": 1.2856,
+        "mean_seconds": 19.3069
+      }
+    },
+    {
+      "generation": 10,
+      "best_m": 1596.9,
+      "fingerprint": {
+        "taps_per_second": 3.3363,
+        "dives_per_attach": 0.9825,
+        "mean_attaches": 11.9167,
+        "mean_bursts": 12.0833,
+        "mean_save_bursts": 0.0,
+        "mean_reel_time_s": 4.2931,
+        "mean_reel_empties": 0.0,
+        "mean_highway_attaches": 0.0,
+        "mean_sticky_attaches": 0.0,
+        "mean_timed_anchor_attaches": 0.0,
+        "class_choice_rate": 0.0,
+        "flies_per_km": 19.6736,
+        "deaths_per_km": 1.2524,
+        "mean_seconds": 20.0819
+      }
+    },
+    {
+      "generation": 11,
+      "best_m": 1698.1,
+      "fingerprint": {
+        "taps_per_second": 3.3862,
+        "dives_per_attach": 0.966,
+        "mean_attaches": 13.5,
+        "mean_bursts": 13.875,
+        "mean_save_bursts": 0.0,
+        "mean_reel_time_s": 4.2042,
+        "mean_reel_empties": 0.0,
+        "mean_highway_attaches": 0.0,
+        "mean_sticky_attaches": 0.0,
+        "mean_timed_anchor_attaches": 0.0,
+        "class_choice_rate": 0.0,
+        "flies_per_km": 20.9549,
+        "deaths_per_km": 1.1778,
+        "mean_seconds": 21.8042
+      }
+    },
+    {
+      "generation": 12,
+      "best_m": 1714.6,
+      "fingerprint": {
+        "taps_per_second": 3.4898,
+        "dives_per_attach": 0.9602,
+        "mean_attaches": 13.625,
+        "mean_bursts": 13.375,
+        "mean_save_bursts": 0.0,
+        "mean_reel_time_s": 4.6576,
+        "mean_reel_empties": 0.0,
+        "mean_highway_attaches": 0.0,
+        "mean_sticky_attaches": 0.0,
+        "mean_timed_anchor_attaches": 0.0,
+        "class_choice_rate": 0.0,
+        "flies_per_km": 20.8986,
+        "deaths_per_km": 1.1664,
+        "mean_seconds": 21.6347
+      }
+    }
+  ]
+}
