@@ -126,6 +126,42 @@ Standard's 2.04 while killing the player twice as fast. Summaries now report
 `deaths_per_run` beside the rate so the cause is visible. **Compare modes on
 distance survived.**
 
+## What the model can actually see
+
+Worth stating plainly, because watching a replay invites the opposite
+conclusion. Reviewing the bundled traces in game on 2026-08-01, the owner
+read them as *"the simulation recognized the obstacles and did its best to
+avoid them."* They do look like that. **The bot cannot see obstacles at all.**
+
+Everything it perceives, in full:
+
+| Reads | Used for |
+| --- | --- |
+| its own position and velocity | every decision |
+| **the fly trail** (`world.fly_positions`) | the route height it steers toward |
+| `nearest_solid_point` at an aimed tap | whether a tap would attach, and to what class of anchor |
+| `preview_pull` — the HUD's own safety preview | whether to commit a Burst or Dive |
+| `web`, `burst_charges`, `dive_ready`, `pull_active` | what verbs are available |
+
+It never reads `world.obstacles`. A path-lookahead that did was built and
+**deleted the same day** because it measured worse in both the attached and
+detached cases (see `2026-08-01-bot-model-v3.md`).
+
+So the apparent obstacle avoidance is **emergent from following the authored
+fly trail**. That is a finding about the level design rather than the model:
+the fly route is good enough that competently following it keeps a player
+clear of the geometry. It also explains the model's one real weakness — when
+the trail alone is not sufficient it has nothing else, and 95% of its deaths
+are obstacle collisions.
+
+Two consequences worth carrying:
+
+- **Do not read intent into a replay.** Competent-looking motion here is
+  route-following plus a safety preview, not perception.
+- A model that *could* see obstacles is still the open opportunity, but the
+  one naive version of it lost distance. Prediction has to respect the
+  pendulum, not a straight line.
+
 ## Watching a run instead of reading it
 
 A search rewarded for distance uses whatever the physics allows, and **no

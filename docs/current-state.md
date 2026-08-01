@@ -303,8 +303,9 @@ without a reported regression.
   against a 2.5× threshold that had been guessed, so the alarm sits just above
   endorsed play.
 - **Awaiting judgement:** `lab-flagged-webspam-standing-l20.json`, a verified
-  10 773 m run that abandons Dive (0.28 per web vs the endorsed 0.96) for 130
-  web attaches per run. No published conclusion rests on it.
+  10 773 m run at 1.34 web attaches per second (endorsed: 0.63). It does not
+  abandon Dive — 36 dives per run against the endorsed 13 — the per-web ratio
+  falls only because web volume doubled. No published conclusion rests on it.
 
 **Difficulty — owner verdict, 2026-08-01**
 
