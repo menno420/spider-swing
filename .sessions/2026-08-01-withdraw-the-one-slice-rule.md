@@ -117,6 +117,24 @@ where the code is.** Worth proposing to substrate-kit with the two earlier
 brief-template ideas; all three are about the same document and the same
 failure of writing plans for the writer rather than the reader.
 
+## Addendum — the prompt is now time-boxed
+
+Same slice, added minutes later. The owner said he intends to run this tonight
+and take a few runs before sleeping. That changes what a good outcome is: **an
+installable APK beats a perfect PR.**
+
+The prompt now states the priority order (drive → bird simulation → a bird
+visual that is correct rather than polished → exploit regression) and says
+explicitly which item to **drop** if the session runs long: the
+exploit-regression search, because it is measurement rather than gameplay and
+can follow tomorrow. It also names the one thing that must **not** be dropped —
+the debug tunables — because without them he cannot isolate the two changes, and
+that isolation is the entire reason they were allowed to ship together.
+
+It closes by asking for the two lines he actually needs: which Actions run holds
+the APK, and what to change on the Test Run screen to try bird-off, bird-slow
+and bird-fast.
+
 ## Next slice
 
 **Drive → 0 and the bird, one PR.** Prompt is in the brief, ready to paste.
