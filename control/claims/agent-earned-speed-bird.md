@@ -1,0 +1,1 @@
+- `agent/earned-speed-bird` · **earned speed and pursuing bird** — remove free drive, add deterministic bird state/visuals, and expose Test Run tunables · `game/domain`, `game/simulation`, `game/application`, `game/presentation`, `tests`, `docs` · 2026-08-01
