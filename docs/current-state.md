@@ -279,6 +279,25 @@ without a reported regression.
   simply not the run in the report.
 - Mechanics: `docs/technical/replay-review-loop.md`.
 
+**First confirmed exploit — hauling, 2026-08-01**
+
+- The owner watched the lab's 10 773 m run and named it a loophole: it keeps
+  the web nearly overhead and hauls along the ceiling instead of swinging.
+  Confirmed and measured — **arc per web 21.4° against the endorsed 58.9°**,
+  attaching 1.34×/s against 0.63. Web angle and length barely differ, so the
+  giveaway is that the web never *goes* anywhere.
+- **A speed-based chaser cannot fix it.** The exploit runs at 59.0 m/s, inside
+  the owner's own demonstrated 44.7–78.6 m/s range — his `17dd734b` averages
+  44.7 and spends 20 s at 16 m/s stabilising, which the calibration document
+  already records as correct play. No chaser speed catches the exploit and
+  spares him.
+- Candidate fixes act on **arc**, not speed, and are unimplemented owner calls:
+  reward momentum by arc swept (preferred, extends the existing principle),
+  or scale the attach catch by how vertical the new web is.
+- The lab now reports swing shape every batch, so any fix can be tested by
+  re-running the search and checking whether hauling still wins.
+  See `docs/measurements/2026-08-01-hauling-loophole.md`.
+
 **Upgrades — what they buy, 2026-08-01**
 
 - Measured with one policy held constant across levels on held-out seeds:

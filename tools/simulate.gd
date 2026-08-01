@@ -239,6 +239,12 @@ const ANCHOR_CLASS_SCORE := {
 	CourseGeometry.ANCHOR_COLLAPSING: -150.0,
 }
 
+## A web within this many degrees of straight-down counts as "hanging", not
+## swinging. Chosen so an ordinary swing's bottom-of-arc passage does not read
+## as hanging: a real swing crosses this band briefly every pass, while a
+## hauling style sits inside it.
+const VERTICAL_HANG_DEGREES := 20.0
+
 ## Anchor classes that expire while you hang on them.
 const TIMED_ANCHOR_CLASSES := [
 	CourseGeometry.ANCHOR_ROTTEN,
@@ -447,6 +453,8 @@ func _summarize(
 		"timed_anchor_attaches": 0.0, "sticky_attaches": 0.0,
 		"highway_attaches": 0.0, "anchor_failures": 0.0,
 		"attach_searches": 0.0, "class_choices": 0.0,
+		"mean_web_angle_deg": 0.0, "vertical_share": 0.0,
+		"mean_swing_arc_deg": 0.0, "mean_web_length_px": 0.0,
 	}
 	var rescues := 0
 	var pull_deaths := 0
@@ -542,6 +550,13 @@ func _summarize(
 		"mean_sticky_attaches": float(totals["sticky_attaches"]) / count,
 		"mean_highway_attaches": float(totals["highway_attaches"]) / count,
 		"mean_anchor_failures": float(totals["anchor_failures"]) / count,
+		# Swing shape. `vertical_share` is the fraction of attached time spent
+		# within VERTICAL_HANG_DEGREES of straight down — a hauling style sits
+		# high here, a swinging style does not.
+		"mean_web_angle_deg": float(totals["mean_web_angle_deg"]) / count,
+		"vertical_share": float(totals["vertical_share"]) / count,
+		"mean_swing_arc_deg": float(totals["mean_swing_arc_deg"]) / count,
+		"mean_web_length_px": float(totals["mean_web_length_px"]) / count,
 		# Share of web searches that offered more than one anchor class, i.e.
 		# the share in which the class preference could change anything at all.
 		"class_choice_rate": 0.0 if totals["attach_searches"] <= 0.0
@@ -591,6 +606,9 @@ func _print_summary(summary: Dictionary) -> void:
 		summary["mean_anchor_failures"]])
 	print("  anchor pick %.1f%% of web searches offered a class choice" % [
 		summary["class_choice_rate"] * 100.0])
+	print("  swing shape %.1f° mean web angle · %.0f px web · %.1f° arc per web · %.0f%% of hang time near-vertical" % [
+		summary["mean_web_angle_deg"], summary["mean_web_length_px"],
+		summary["mean_swing_arc_deg"], summary["vertical_share"] * 100.0])
 	print("  reel        %.2fs held · %.1f energy spent · %.2f empties · %.2fs at empty" % [
 		summary["mean_reel_time_s"], summary["mean_reel_energy_spent"],
 		summary["mean_reel_empties"], summary["mean_time_empty_s"]])
@@ -1260,6 +1278,20 @@ class RunDriver:
 	var sticky_attaches := 0
 	var highway_attaches := 0
 	var anchor_failures := 0
+	## Swing shape. A web held near-vertical is a player hanging under an
+	## anchor and hauling themselves along it; a web that sweeps through a
+	## wide arc is a player swinging. The owner identified the first as a
+	## loophole on 2026-08-01 after watching a replay — "instead of swinging
+	## it basically keeps the web exactly above itself the whole time" — so
+	## the distinction is measured here rather than left to the eye.
+	var attached_ticks := 0
+	var vertical_ticks := 0
+	var web_angle_sum := 0.0
+	var web_length_sum := 0.0
+	var swing_arc_sum := 0.0
+	var attach_angle_min := 0.0
+	var attach_angle_max := 0.0
+	var attach_arc_open := false
 	var attach_searches := 0
 	var class_choices := 0
 	var course_seed := 1337
@@ -1383,6 +1415,27 @@ class RunDriver:
 					world.position.x,
 					config.middle_hazard_start_distance,
 				))
+			if world.web.attached:
+				var offset := world.position - world.web.anchor
+				# Angle from straight down, in degrees. 0 = hanging directly
+				# under the anchor; 90 = level with it.
+				var angle := absf(rad_to_deg(atan2(offset.x, maxf(0.001, offset.y))))
+				attached_ticks += 1
+				web_angle_sum += angle
+				web_length_sum += offset.length()
+				if angle <= VERTICAL_HANG_DEGREES:
+					vertical_ticks += 1
+				var signed := rad_to_deg(atan2(offset.x, maxf(0.001, offset.y)))
+				if not attach_arc_open:
+					attach_arc_open = true
+					attach_angle_min = signed
+					attach_angle_max = signed
+				else:
+					attach_angle_min = minf(attach_angle_min, signed)
+					attach_angle_max = maxf(attach_angle_max, signed)
+			elif attach_arc_open:
+				swing_arc_sum += attach_angle_max - attach_angle_min
+				attach_arc_open = false
 			var was_pulling := world.pull_active
 			var was_reeling := world.web.reel_active
 			var energy_before := world.web.reel_energy
@@ -1495,6 +1548,19 @@ class RunDriver:
 			"region": str(region["id"]),
 			"pattern": str(stream.pattern_id_for_chunk(chunk_index)),
 			"commands": trace.size(),
+			# Swing shape, the loophole axis. `vertical_share` near 1.0 means
+			# the run was spent hanging under its anchor rather than swinging.
+			"mean_web_angle_deg": (
+				web_angle_sum / attached_ticks if attached_ticks > 0 else 0.0),
+			"mean_web_length_px": (
+				web_length_sum / attached_ticks if attached_ticks > 0 else 0.0),
+			"vertical_share": (
+				float(vertical_ticks) / attached_ticks
+				if attached_ticks > 0 else 0.0),
+			"mean_swing_arc_deg": (
+				swing_arc_sum / attaches if attaches > 0 else 0.0),
+			"attached_share": (
+				float(attached_ticks) / maxi(1, world.tick)),
 		}
 
 	## The whole player model. It reads only what a player could see: its own
