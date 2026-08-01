@@ -309,12 +309,17 @@ without a reported regression.
   reel-as-accelerator (already worth 6.2% speed / 52% distance). They are
   mutually enabling, which is why evaluating them one at a time produced two
   wrong verdicts.
-- **Open risk:** the lab cannot tune the bird. Without the drive the bot
-  manages ~13 m/s against today's 55–76, but the model **cannot pump** — its
-  reel policy is height-based, not swing-phase-based — and pumping is the
-  skill the design makes central. Physics allows the pace (a 380 px web swung
-  from horizontal reaches 92 m/s). The bird's speed needs a device playtest of
-  a no-drive build, not a bot number.
+- **Wide swinging wins outright in the no-drive world.** Re-measured there on
+  held-out seeds: hauling 65 m (dangling), searched no-drive optimum 2 424 m
+  at 27.6° arc, **endorsed wide-swinging 2 717 m at 48.4 m/s holding a 61.2°
+  arc**. The intended style becomes optimal *by physics*, with no rule saying
+  "you must swing".
+- **Open risk:** 48.4 m/s against today's 55–76, so the pace curve needs
+  re-tuning around it — and the bird's speed still cannot come from bot
+  numbers, because the model **cannot pump** (height-based reel policy, not
+  swing-phase-based) and pumping is the skill the design makes central.
+  Physics allows far more (92 m/s at the bottom of a 380 px swing). Needs a
+  device playtest of a no-drive build.
 - Fallback candidates if the drive stays: **silk as a per-web cost**, or
   **generalised spent anchors** (reuses `_spent_anchor_sources`).
 - The lab now reports swing shape every batch, so any fix can be tested by

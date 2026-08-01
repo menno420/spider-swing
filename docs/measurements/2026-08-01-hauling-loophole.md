@@ -228,22 +228,45 @@ currently lack entirely; they are used opportunistically for traversal only.
 The proposals are **mutually enabling**, which is why evaluating them one at a
 time produced two wrong verdicts here.
 
-### The open risk, stated plainly
+### The decisive test: what wins in the no-drive world
 
-Without the drive the bot manages roughly **13 m/s** against the current
-55–76 m/s pace. That is a floor, not a ceiling, for two reasons: the policy
-was optimised for a world with a drive, and more importantly **the model
-cannot pump.** Its reel policy is height-based, not swing-phase-based, so it
-cannot add energy at the bottom of an arc — the single skill the proposal
-makes central.
+A first estimate here said the bot manages "~13 m/s" without the drive. That
+was wrong, and wrong in the way this document keeps warning about — it used a
+policy optimised for a world *with* a drive. A search run inside the no-drive
+world, and every policy re-measured there on held-out seeds:
 
-The physics do allow the pace: a 380 px web swung from horizontal reaches
-`sqrt(2gL)` = **92 m/s** at the bottom. Sustaining that requires putting
-energy back in every arc, which is exactly what pumping is.
+| policy in the no-drive world | distance | speed | arc per web |
+| --- | ---: | ---: | ---: |
+| hauling (the exploit) | **65 m** | — | 76.0° (dangling, not travelling) |
+| **endorsed — wide swinging** | **2 717 m** | **48.4 m/s** | **61.2°** |
+| searched no-drive optimum | 2 424 m | 46.5 m/s | 27.6° |
 
-**So the bird cannot be tuned from bot numbers.** Its speed has to come from a
-device playtest of the no-drive build, because the only evidence that matters
-is what a pumping human can sustain, and no measurement here can produce it.
+**Wide swinging is not merely permitted without the drive — it is the best
+style available.** It beats the policy specifically searched for that world,
+while holding a 61.2° arc. The exploit does not survive at all: 65 m, dangling
+in place, because the engine it was riding is gone.
+
+That is the design goal reached exactly. The intended style becomes optimal
+*by physics* rather than by prohibition, and no rule had to be written saying
+"you must swing".
+
+Two honest caveats:
+
+- **48.4 m/s against today's 55–76.** Somewhat slower, and the pace curve
+  would need re-tuning around it. But the bot **cannot pump** — its reel
+  policy is height-based, not swing-phase-based, so it cannot add energy at
+  the bottom of an arc, the single skill this design makes central. The
+  physics allow far more: a 380 px web swung from horizontal reaches
+  `sqrt(2gL)` = **92 m/s** at the bottom. A pumping human should exceed the
+  bot here by more than in any other configuration measured today.
+- **The search under-converged again**, finding 3 416 m on its own seeds and
+  2 424 m held-out — worse than the unmodified endorsed policy. Read the
+  endorsed row, not the searched one.
+
+**The bird's speed still cannot be tuned from these numbers**, for the pumping
+reason. It needs a device playtest of a no-drive build. But the question that
+playtest has to answer is now much narrower: not "does this work" — it does —
+but "how fast can a human sustain it".
 
 ## How the bird earns its place
 
