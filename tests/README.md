@@ -22,15 +22,17 @@ failure never hides the rest.
 | `test_runner.gd` | Headless entry point and bootstrap/build contracts. |
 | `unit/phase0_physics_tests.gd` | Fixed-step movement, web, rope actions, course, collision, and trajectory contracts. |
 | `unit/zone_progression_tests.gd` | Zones 3–8 geometry, deterministic motion, density gates, anchor classes, cues, and visual-audit contracts. |
+| `unit/audio_presentation_tests.gd` | Generated-SFX provenance, PCM budget/headroom, event mappings, warning cues, variation/cooldowns, and optional feedback wiring. |
 | `unit/mobile_hud_layout_tests.gd` | GUI ownership, shared hit geometry, gesture separation, and action-feedback wiring. |
-| `integration/front_end_flow_tests.gd` | Home, Tutorial, Settings, persistence, and run-mounting contracts. |
+| `integration/front_end_flow_tests.gd` | Home routes, Campaign, Settings, persistence, progression, and run-mounting contracts. |
 | `fixtures/` | Deterministic inputs — fixed seeds, recorded input traces, save files. |
 
 ## What exists now
 
-133 runtime contracts: eleven bootstrap/build checks plus fifty-five
-deterministic physics, ten zone-progression, eleven spider-biology, twenty-five
-mobile HUD, and twenty-one front-end checks. The bootstrap group pins the public stable debug signer and
+165 runtime contracts: eleven bootstrap/build checks plus fifty-six
+deterministic physics, ten zone-progression, eleven spider-biology, ten
+Campaign, nine difficulty, four upgrade-wiring, two economy, six generated-SFX,
+twenty-five mobile HUD, and twenty-one front-end checks. The bootstrap group pins the public stable debug signer and
 rejects per-run key generation. The physics group proves continuous
 solid targeting, larger aim forgiveness, momentum-preserving release,
 speed-neutral Reel and automatic take-up, the two-second base resource plus the
@@ -48,7 +50,9 @@ through simulated 30/60/90/120 Hz render loops. The zone group proves the
 append-only 5 km schedule, pattern-pool diversity, explicit tap eligibility,
 pure periodic phase motion, swept moving collision, moving-pivot binding, each
 documented density gate, highway/sticky/timed anchor semantics, Mist's audio
-lead, and the current 25% silhouette/alpha audit. The HUD group proves the 228×228 thumb
+lead, and the current 25% silhouette/alpha audit. The audio group proves all 25
+original WAVs reproduce exactly, remain within the mobile PCM/headroom budget,
+cover their event/cue catalog, and keep high-frequency variation bounded. The HUD group proves the 228×228 thumb
 targets, event consumption, shared geometry, gesture separation, success
 feedback, independent off-by-default collision/web-guide diagnostics, a
 sprite-only finished forest obstacle policy, mipmapped 384×181 transparent art

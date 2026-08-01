@@ -423,6 +423,20 @@ func set_reduced_motion(enabled: bool) -> void:
 	_publish_settings()
 
 
+func set_effects_enabled(enabled: bool) -> void:
+	if settings.effects_enabled == enabled:
+		return
+	settings.effects_enabled = enabled
+	_publish_settings()
+
+
+func set_haptics_enabled(enabled: bool) -> void:
+	if settings.haptics_enabled == enabled:
+		return
+	settings.haptics_enabled = enabled
+	_publish_settings()
+
+
 func set_debug_tools(enabled: bool) -> void:
 	if settings.show_debug_tools == enabled:
 		return

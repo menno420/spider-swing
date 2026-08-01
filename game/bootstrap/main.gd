@@ -12,6 +12,8 @@ const SWING_LAB_SESSION := preload(
 const PROGRESSION_SERVICE_SCRIPT := preload(
 	"res://game/application/progression_service.gd")
 const INPUT_ROUTER := preload("res://game/adapters/input_router.gd")
+const AUDIO_DIRECTOR := preload(
+	"res://game/presentation/scripts/audio_director.gd")
 const SMOKE_TEST_FLAG := "--smoke-test"
 const EXIT_OK := 0
 const EXIT_BOOT_FAILED := 1
@@ -24,6 +26,7 @@ var _progress: PlayerProgress
 var _session: SwingLabSession
 var _input_router: InputRouter
 var _view: SwingLabView
+var _audio_director: AudioDirector
 var _active_run_is_debug_test: bool = false
 
 
@@ -231,14 +234,17 @@ func _mount_swing_lab(
 
 	_session = SWING_LAB_SESSION.new() as SwingLabSession
 	_input_router = INPUT_ROUTER.new() as InputRouter
-	if _session == null or _input_router == null:
-		failures.append("application or input adapter failed to instantiate")
+	_audio_director = AUDIO_DIRECTOR.new() as AudioDirector
+	if _session == null or _input_router == null or _audio_director == null:
+		failures.append("run session, input, or audio presentation failed to instantiate")
 		return failures
 
 	_session.snapshot_published.connect(_view.present)
 	_session.snapshot_published.connect(_input_router.present_snapshot)
+	_session.snapshot_published.connect(_audio_director.present_snapshot)
 	_session.event_published.connect(_view.present_event)
 	_session.event_published.connect(_input_router.present_simulation_event)
+	_session.event_published.connect(_audio_director.present_event)
 	_session.settlement_created.connect(_apply_settlement)
 	_session.checkpoint_reached.connect(_unlock_region_checkpoint)
 	_session.configure_progress(_progress, _progression_service)
@@ -276,7 +282,10 @@ func _mount_swing_lab(
 	_input_router.replay_requested.connect(_session.replay_recording)
 	_input_router.diagnostic_export_requested.connect(_session.export_diagnostic)
 
+	_audio_director.configure_effects(settings.effects_enabled)
+	_input_router.configure_haptics(settings.haptics_enabled)
 	add_child(_view)
+	add_child(_audio_director)
 	add_child(_session)
 	add_child(_input_router)
 	_view.configure_player_options(
@@ -326,6 +335,11 @@ func _unmount_swing_lab() -> void:
 		remove_child(_session)
 		_session.queue_free()
 		_session = null
+	if _audio_director != null:
+		_audio_director.stop_all()
+		remove_child(_audio_director)
+		_audio_director.queue_free()
+		_audio_director = null
 	if _view != null:
 		remove_child(_view)
 		_view.queue_free()

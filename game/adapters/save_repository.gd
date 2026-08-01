@@ -2,8 +2,8 @@ extends RefCounted
 class_name SaveRepository
 ## Exclusive persistent writer for player-owned state.
 ##
-## Settings use the same versioned, recoverable write seam that future
-## progression will extend. Presentation and application never write files.
+## Settings and progression share one versioned, recoverable write seam.
+## Presentation and application never write files directly.
 
 const SETTINGS_PATH := "user://player_settings.json"
 const PROGRESS_PATH := "user://player_progress.json"

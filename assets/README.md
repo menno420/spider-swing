@@ -10,21 +10,21 @@ Art, audio, and other media. Split by whether the engine loads it.
 The split exists so a large authoring file never has to be imported by Godot or
 carried in the APK.
 
-## Empty at bootstrap
+## Current asset policy
 
-There is no production art. The GDD is explicit that art direction is a later
-phase: high-contrast 2D silhouettes in oversized natural or household
-environments, one coherent biome for the first release (GDD § 17.1). Phase 0 uses a
-graybox debug course.
+Runtime art now covers the player roster and eight authored zone identities;
+the generated SFX playtest pack covers core actions and later-zone warnings.
+Every generated or externally sourced asset needs a source/provenance record,
+and externally sourced audio still requires per-file CC0 verification. Graybox
+fallbacks remain available for diagnostics.
 
 Avoid visual similarity to Spider-Man or other superhero properties (GDD § 17.1).
 
 ## No Git LFS yet
 
-Deliberate. There are no large binary assets, and enabling LFS before they exist
-imposes a clone-time dependency for nothing. When real production art lands, decide
-it then and record it as an ADR — enabling LFS retroactively rewrites history, so it
-is worth a decision rather than a reflex.
+Deliberate. Current optimized runtime binaries remain practical in ordinary Git;
+enabling LFS would add a clone-time dependency. Revisit the decision if future
+source art, music, or ambience materially changes repository size.
 
 ## Readability constraints that apply to every asset
 

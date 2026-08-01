@@ -31,16 +31,16 @@ unimplemented, and expose build `0.21.0-zones-4-8` for a materially newer game.
   a fresh exact-engine run.
 - Treat generated SFX as a contained presentation slice: reproducible source,
   headroom/peak/duration audit, event-driven playback, high-frequency
-  variation/cooldown rules, and an effects-volume control.
+  variation/cooldown rules, and independent effects/haptics controls.
 - Run `python3 tools/verify.py --require-godot` and
   `python3 bootstrap.py check --strict`; build the exact Android artifact if
   audio or visible identity changes ship.
 
 ## 💡 Session idea
 
-Pending the implementation checkpoint: decide whether the reproducible SFX
-generator and automated loudness/headroom audit deserve a permanent repository
-workflow rather than a one-off script.
+The reproducible SFX generator and automated headroom/size audit are useful as a
+permanent verification step: a regenerated sample cannot silently drift from
+its manifest or exceed the Android budget. Subjective mix approval remains a
+device-listening decision, not an automated score.
 
 - **📊 Model:** gpt-5.6 · high · repository reconciliation and audio prototype
-

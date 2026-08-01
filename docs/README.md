@@ -22,7 +22,7 @@
 | [`product/name-status.md`](product/name-status.md) | Why "Spider Swing" is a codename, and what naming/trademark/store review remains. |
 | [`product/spider-biology-folio.md`](product/spider-biology-folio.md) | **Spider identity source of truth.** The naming rule (real name first, otherwise name the science), the approved mapping per profile, editorial voice, art and image-sourcing rules, and the parked candidate backlog. |
 | [`product/spider-biology-verification-2026-07-31.md`](product/spider-biology-verification-2026-07-31.md) | Dated verification log for the second deep-research report — what was re-checked, against what, and what was deliberately not adopted. |
-| [`product/zone-progression.md`](product/zone-progression.md) | **Zone source of truth.** The axis each 5000 m zone owns, its hazards, mechanics, density curve and the one sentence a playtester must say. Zones 4–8 have an implementation candidate; their human success sentences remain device-playtest gates. |
+| [`product/zone-progression.md`](product/zone-progression.md) | **Zone source of truth.** The axis each 5000 m zone owns, its hazards, mechanics, density curve and the one sentence a playtester must say. Zones 4–8 are shipped; their human success sentences remain device-playtest gates. |
 | [`planning/overnight-brief-2026-08-01.md`](planning/overnight-brief-2026-08-01.md) | Slice backlog and standing constraints for the unattended overnight session that builds zones 4+. |
 | [`product/economy-model.md`](product/economy-model.md) | **Economy source of truth.** What each currency is for, what it buys, what cannot be bought at any price, and what happens to the measurably inert upgrade tracks. |
 | [`owner-questions.md`](owner-questions.md) | Open owner-only forks, each with the default the work proceeds under, plus the answered ones. |
@@ -84,5 +84,9 @@ hand-editing the output.
 - [`../README.md`](../README.md) — project entry point: what Spider Swing is, how to
   open it, how to get an Android debug build.
 - [`../CONSTITUTION.md`](../CONSTITUTION.md) — the binding working contract.
+- [`../assets/source/audio/README.md`](../assets/source/audio/README.md) — original
+  generated-SFX policy, regeneration, and provenance.
+- [`../assets/runtime/audio/README.md`](../assets/runtime/audio/README.md) — the
+  25-sample playtest pack and runtime audit contract.
 - `../control/` — the coordination bus: status heartbeat, inbox, claims.
 - `../.sessions/` — append-only session memory.

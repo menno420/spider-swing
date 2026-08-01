@@ -53,8 +53,8 @@ static func _test_primary_routes_are_real_buttons(
 	var view := FrontEndView.new()
 	view.bind_state(state)
 	for button_name: StringName in [
-		&"Play", &"Garage", &"Shop", &"Tutorial", &"Creator", &"Practice",
-		&"Settings", &"FieldGuide",
+		&"Play", &"Garage", &"Shop", &"Tutorial", &"Campaign", &"Creator",
+		&"Practice", &"Settings", &"FieldGuide",
 	]:
 		var button := view.front_end_button(button_name)
 		if button == null or button.mouse_filter != Control.MOUSE_FILTER_STOP:
@@ -119,14 +119,18 @@ static func _test_settings_are_validated_and_emitted(
 	state.set_swing_preset(SwingConfig.PRESET_AGILE)
 	state.set_control_hints(false)
 	state.set_reduced_motion(true)
+	state.set_effects_enabled(false)
+	state.set_haptics_enabled(false)
 	state.set_debug_tools(false)
 	state.set_swing_preset(&"not_a_real_preset")
-	if published.size() != 4:
+	if published.size() != 6:
 		failures.append("settings changes were not emitted exactly once each")
 		return 0
 	if state.settings.swing_preset != SwingConfig.PRESET_AGILE or \
 			state.settings.show_control_hints or \
 			not state.settings.reduced_motion or \
+			state.settings.effects_enabled or \
+			state.settings.haptics_enabled or \
 			state.settings.show_debug_tools:
 		failures.append("settings state did not retain validated choices")
 		return 0
@@ -149,6 +153,8 @@ static func _test_settings_are_scrollable_and_mobile_readable(
 	) as HBoxContainer
 	var reset := view.front_end_button(&"ResetSettings")
 	var play := view.front_end_button(&"SettingsPlay")
+	var effects := view.find_child("EffectsToggle", true, false) as CheckButton
+	var haptics := view.find_child("HapticsToggle", true, false) as CheckButton
 	if scroll == null or content == null:
 		failures.append("Settings is not backed by a named scrolling content area")
 		view.free()
@@ -186,6 +192,12 @@ static func _test_settings_are_scrollable_and_mobile_readable(
 		failures.append("Settings action buttons remain too small for mobile")
 		view.free()
 		return 0
+	if effects == null or haptics == null or \
+			effects.custom_minimum_size.y < 52.0 or \
+			haptics.custom_minimum_size.y < 52.0:
+		failures.append("audio and haptic controls are missing or too small")
+		view.free()
+		return 0
 	if content.get_theme_constant("separation") < 18:
 		failures.append("Settings content remains visually cramped")
 		view.free()
@@ -201,6 +213,8 @@ static func _test_settings_codec_round_trip(
 	expected.swing_preset = SwingConfig.PRESET_WEIGHTY
 	expected.show_control_hints = false
 	expected.reduced_motion = true
+	expected.effects_enabled = false
+	expected.haptics_enabled = false
 	expected.show_debug_tools = false
 	var decoded := SaveRepository.decode_settings(JSON.stringify(
 		expected.to_dictionary()))
@@ -211,6 +225,10 @@ static func _test_settings_codec_round_trip(
 		"{\"swing_preset\":\"impossible\"}")
 	if invalid.swing_preset != SwingConfig.PRESET_BALANCED:
 		failures.append("invalid persisted preset did not fall back safely")
+		return 0
+	var legacy := PlayerSettings.from_dictionary({"schema_version": 1})
+	if not legacy.effects_enabled or not legacy.haptics_enabled:
+		failures.append("pre-audio settings did not migrate to audible defaults")
 		return 0
 	return 1
 
@@ -227,6 +245,8 @@ static func _test_settings_repository_round_trip(
 	expected.swing_preset = SwingConfig.PRESET_AGILE
 	expected.show_control_hints = false
 	expected.reduced_motion = true
+	expected.effects_enabled = false
+	expected.haptics_enabled = false
 	if not repository.save_settings(expected):
 		failures.append("SaveRepository could not atomically write settings")
 		return 0

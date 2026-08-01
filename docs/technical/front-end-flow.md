@@ -16,6 +16,7 @@ The first visible screen presents these real routes:
 - **Garage** — compares spider profiles, palettes, and web treatments;
 - **Shop** — spends laboratory flies on shared core and profile-identity tracks;
 - **Tutorial** — opens the six-step animated mechanics guide;
+- **Campaign** — opens three verb-gated teaching runs that award one star each;
 - **Course Lab** — edits and playtests a six-piece local deterministic pattern;
 - **Region Practice** — starts at a reached 5000 m checkpoint without rewards
   or record eligibility;
@@ -106,6 +107,8 @@ The current options all affect runtime behavior:
 | Swing feel | Applies Balanced, Weighty, or Agile before the run starts |
 | Control hints | Shows or hides run guidance and feedback text |
 | Reduced motion | Stops decorative front-end/tutorial motion and removes camera easing/parallax |
+| Gameplay sound effects | Enables or mutes the presentation-owned SFX layer |
+| Handheld haptics | Enables or suppresses Android vibration feedback independently |
 | Debug tools | Shows or removes the laboratory DEBUG control and panel hit regions |
 
 DEBUG availability is a player setting; world overlays are not. Every new run
@@ -152,7 +155,7 @@ No global manager or autoload is introduced.
 `python3 tools/verify.py --require-godot` verifies:
 
 - startup mounts Home without creating gameplay;
-- Play, Garage, Shop, Tutorial, Course Lab, Region Practice, and Settings are real
+- Play, Garage, Shop, Tutorial, Campaign, Course Lab, Region Practice, and Settings are real
   event-consuming Buttons;
 - the tutorial has exactly six steps and covers the live mechanics;
 - Settings owns a vertical scroll surface with readable type and mobile-sized
@@ -169,4 +172,6 @@ No global manager or autoload is introduced.
   settlements that cannot alter flies or best distance;
 - the composition root enters gameplay only through the Play request;
 - Menu emits one return request without leaking into a web action;
+- effects and haptics migrate on for older settings, persist independently, and
+  cannot alter gameplay events;
 - disabling debug tools removes their touch surface.

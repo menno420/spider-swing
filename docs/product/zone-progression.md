@@ -2,9 +2,10 @@
 
 > **Status:** `owner-guidance`
 >
-> Owner-approved direction (2026-07-31). Zones 1–3 are **shipped** and their
-> stable ids/ranges are frozen for save compatibility; owner-rejected content
-> remains correctable. Zones 4–8 have an implementation candidate in PR #73.
+> Owner-approved direction (2026-07-31). Zones 1–8 are **shipped**; Zones 1–3
+> retain frozen persisted ids/ranges, while Zones 4–8 are append-only content.
+> Owner-rejected content remains correctable. PR #73 implemented Zones 4–8;
+> their success sentences remain real-device acceptance gates.
 > This document remains the source of
 > truth for zone identity, hazards and mechanics. Balance numbers live in
 > `SwingConfig` and the pattern catalog, never here.
@@ -27,11 +28,11 @@ ends up feeling like a re-skin.
 | 1 | Ancient Forest | 0–5 000 | Teaching — wide recovery rhythm | **shipped** |
 | 2 | Bramble Canopy | 5 000–10 000 | Vertical displacement | **shipped · device-corrected** |
 | 3 | Silk Hollow | 10 000–15 000 | Precision around suspended hazards | **shipped** |
-| 4 | Ruined Arboretum | 15 000–20 000 | **Timing** — the world moves | implementation candidate |
-| 5 | Storm Ridge | 20 000–25 000 | **External force** — your arc is fought | implementation candidate |
-| 6 | Web City | 25 000–30 000 | **Route choice** — the world offers help | implementation candidate |
-| 7 | Ashen Hollow | 30 000–35 000 | **Trust** — anchors fail | implementation candidate |
-| 8 | Deep Mist | 35 000+ | **Information** — you cannot see it coming | implementation candidate |
+| 4 | Ruined Arboretum | 15 000–20 000 | **Timing** — the world moves | **shipped · device gate open** |
+| 5 | Storm Ridge | 20 000–25 000 | **External force** — your arc is fought | **shipped · device gate open** |
+| 6 | Web City | 25 000–30 000 | **Route choice** — the world offers help | **shipped · device gate open** |
+| 7 | Ashen Hollow | 30 000–35 000 | **Trust** — anchors fail | **shipped · device gate open** |
+| 8 | Deep Mist | 35 000+ | **Information** — you cannot see it coming | **shipped · device gate open** |
 
 Zones 1–3 have frozen ids and ranges. Their ids (`ancient_forest`,
 `bramble_canopy`, `silk_hollow`) key persisted checkpoints, so renaming them
@@ -52,7 +53,8 @@ exact geometry equality for an off-grid debug start. So a moving hazard must be
 a pure function of `(chunk_index, course_seed, tick)` — a phase, not a physics
 body, and never a runtime RNG draw. Wind is a deterministic field over distance.
 A swinging shard has a phase derived from its chunk index. Nothing may drift.
-**This needs its own ADR before the first moving part lands.**
+ADR 0004 was written before the first moving part landed and now binds this
+contract.
 
 **2. Readability budget: about one second.**
 At 76 m/s the player crosses 76 m per second and roughly 760 px of lead is all
@@ -314,15 +316,16 @@ This is a recommendation, not a decision — flagged for the owner.
 
 ---
 
-## Build order
+## Implemented build order
 
-1. **ADR for deterministic moving parts** — required before Zone 4.
-2. **Zone 4, Ruined Arboretum** — end to end, including the moving-anchor case
-   proved in the simulator.
-3. **Zone 5, Storm Ridge** — reuses Zone 4's phase machinery, adds the force
+1. **ADR for deterministic moving parts** — landed before Zone 4.
+2. **Zone 4, Ruined Arboretum** — landed with the production moving-anchor
+   proof.
+3. **Zone 5, Storm Ridge** — reused Zone 4's phase machinery and added the force
    field.
-4. **Zone 6, Web City** — needs the new ridable-silk anchor class.
-5. **Zones 7 and 8** — designed here; build after 4–6 are felt on device.
+4. **Zone 6, Web City** — added the ridable/sticky silk anchor classes.
+5. **Zones 7 and 8** — added timed anchors, embers, restricted visibility and
+   audio-first warnings.
 
 Zones 4–8 are additive: append to `REGIONS`, add a `*_PATTERNS` set per zone,
 and extend the pattern-band logic. Ancient Forest and Bramble Canopy geometry
@@ -336,8 +339,12 @@ remain owned by their existing builders.
 - `tools/simulate.gd --moving-anchor-proof` passes the production moving-pivot
   solver for twenty complete cycles without accumulating relative energy.
 - Every region pool contains at least seven patterns and admits multiple
-  coprime seeded strides; the 133-contract suite covers each density gate and
-  mechanic above without changing the approved Balanced physics values.
+  coprime seeded strides; the dedicated 10-contract zone group covers each
+  density gate and mechanic above without changing the approved Balanced
+  physics values. The complete live suite is 165 contracts.
+- Build `0.22.0-audio-playtest` replaces the temporary generated sine warnings
+  with five distinct original samples for mist, glass, rot, gust, and charge;
+  their 700–820 px deterministic lead remains simulation-owned.
 - The full-color captures and 25% black-silhouette sort test live under
   `docs/visual/zones/`; all thirteen generated assets pass source, runtime, and
   gameplay-scale transparency/fringe inspection.

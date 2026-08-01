@@ -21,4 +21,5 @@ rather than anecdotal.
   changed fixture is a visible decision rather than silent drift.
 - **Never wall-clock.** Fixed timestep only.
 
-Empty at bootstrap.
+`phase0_trace.json` is the current versioned input trace used by deterministic
+record/replay coverage.

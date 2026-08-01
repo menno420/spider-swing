@@ -7,7 +7,7 @@ Coordinates the run. Owns lifecycle and sequencing; does not own physics truth.
 ## What belongs here
 
 - **Front-end State** — owns
-  Home/Garage/Shop/Tutorial/Course Lab/Region Practice/Settings navigation,
+  Home/Garage/Shop/Tutorial/Campaign/Course Lab/Region Practice/Field Guide/Settings navigation,
   tutorial progression, validated player settings, and run requests.
 - **Run State Machine** — countdown, active run, dying, settlement, results,
   restart. Requests exactly one `RunSettlement` after death (GDD § 19.1).
@@ -31,8 +31,8 @@ Coordinates the run. Owns lifecycle and sequencing; does not own physics truth.
   transition band; two compact silk-burr patterns add only a small central
   decision. Fly-advertised root passages
   grow from both rails and expose a verified steering envelope rather than a
-  centre-line-only hole. Phase 1 extends this seam with selected authored chunks
-  and pooling.
+  centre-line-only hole. Eight region pools now extend the stream through Deep
+  Mist with deterministic moving/special-surface descriptors.
 - **Effect State** — applies, refreshes, expires, and reports power-ups. Refresh
   does not stack strength unless explicitly specified (GDD § 11.3).
 - **Score and Settlement** — tracks distance and run stats, creates one
@@ -51,9 +51,10 @@ Coordinates the run. Owns lifecycle and sequencing; does not own physics truth.
 
 ## Current contents
 
-`FrontEndState` owns pre-run navigation, Garage/Shop/Course Lab/Region Practice
-intent, and settings intent. `ProgressionService` is the only mutator for
-fly-funded upgrades, selections, creator slots, and reached region checkpoints.
+`FrontEndState` owns pre-run navigation, Campaign, Garage/Shop/Course Lab/Region
+Practice intent, and settings intent. `ProgressionService` is the only mutator
+for fly-funded upgrades, Campaign stars, per-difficulty records, selections,
+creator slots, and reached region checkpoints.
 Upgrade purchases report whether the
 new level is a 5/10/15/20 breakthrough so presentation can acknowledge a real
 milestone without owning progression truth.

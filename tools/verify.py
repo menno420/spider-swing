@@ -5,11 +5,13 @@
 
 Runs, in order:
 
-  1. locate the Godot executable (GODOT_BIN, GODOT, GODOT4, then PATH)
-  2. assert it reports the version pinned in .godot-version
-  3. tools/check_architecture.py --self-test, then the repository scan
-  4. a headless project import / editor smoke validation
-  5. tests/test_runner.gd, headlessly
+  1. regenerate the original gameplay SFX in a temporary directory and compare
+     exact bytes
+  2. tools/check_architecture.py --self-test, then the repository scan
+  3. locate the Godot executable (GODOT_BIN, GODOT, GODOT4, then PATH)
+  4. assert it reports the version pinned in .godot-version
+  5. a headless project import / editor smoke validation
+  6. tests/test_runner.gd, headlessly
 
 Contract:
 
@@ -270,11 +272,27 @@ def main(argv: list[str] | None = None) -> int:
 
     report = Report()
     checker = REPO_ROOT / "tools" / "check_architecture.py"
+    audio_generator = REPO_ROOT / "tools" / "generate_audio_samples.py"
     if not checker.is_file():
         fail(f"missing {checker.relative_to(REPO_ROOT)}")
         return 1
+    if not audio_generator.is_file():
+        fail(f"missing {audio_generator.relative_to(REPO_ROOT)}")
+        return 1
 
     # --- engine-independent checks -------------------------------------------
+    start = time.monotonic()
+    ok = run_step(
+        "generated audio reproducibility",
+        [sys.executable, str(audio_generator), "--check"],
+        timeout=120,
+        cwd=REPO_ROOT,
+    )
+    (report.ok if ok else report.failed)(
+        "generated audio reproducibility", time.monotonic() - start
+    )
+    all_ok = ok
+
     start = time.monotonic()
     ok = run_step(
         "architecture checker self-test",
@@ -285,7 +303,7 @@ def main(argv: list[str] | None = None) -> int:
     (report.ok if ok else report.failed)(
         "architecture checker self-test", time.monotonic() - start
     )
-    all_ok = ok
+    all_ok = all_ok and ok
 
     start = time.monotonic()
     ok = run_step(

@@ -16,24 +16,25 @@ The product *is* the swinging. Everything else exists to support it.
 > `com.menno420.spiderswing.dev` are all development identifiers and are all
 > expected to change.
 
-## Current phase: Phase 0.25 depth testing
+## Current phase: integrated pre-alpha playtesting
 
-**The first playable traversal test is implemented.** The project opens on a
-player-facing Home screen with Play, Garage, Shop, a six-step Tutorial, Course
-Lab, Region Practice, Field Guide, and readable scrolling Settings. Play begins on a real ceiling web that
-provides a safe first swing before the player must react. The endless laboratory
-keeps forgiving solid-object attachment, momentum-preserving release, naturally
-retained rope shortening, interruptible percentage-based Anchor Burst and Dive
-Pull, a paced organic prototype course, collectible fly routes, and one temporary
-Burst boost.
+**The traversal core and an integrated content test build are implemented.** The
+project opens on a player-facing Home screen with Play, Garage, Shop, a six-step
+Tutorial, three-level Campaign, Course Lab, Region Practice, Field Guide, and
+readable scrolling Settings. Play begins on a real ceiling web that provides a
+safe first swing before the player must react. The deterministic endless course
+now spans eight authored zones while retaining forgiving solid-object attachment,
+momentum-preserving release, speed-neutral Reel shortening, interruptible Anchor
+Burst and Dive Pull, collectible fly routes, and one temporary Burst boost.
 
 ### What exists
 
-- A responsive starting screen with Play, Garage, Shop, Tutorial, Course Lab,
-  Region Practice, Field Guide, and Settings. One forest-web skin supplies the bark/moss/silk palette,
-  natural web backdrop, controls, panels, focus states, and silk-like
-  scrollbars across every screen; settings persist the swing candidate,
-  control hints, reduced motion, and debug-tool visibility.
+- A responsive starting screen with Play, Garage, Shop, Tutorial, Campaign,
+  Course Lab, Region Practice, Field Guide, and Settings. One forest-web skin
+  supplies the bark/moss/silk palette, natural web backdrop, controls, panels,
+  focus states, and silk-like scrollbars across every screen; settings persist
+  swing feel, control hints, reduced motion, effects, haptics, and debug-tool
+  visibility.
 - A data-defined Garage with five comparison spiders—balanced, small/agile,
   heavy, gliding, and one-charge rail recovery—plus three web treatments and
   palette selection. Every
@@ -51,8 +52,8 @@ Burst boost.
 - A six-slot Course Lab that cycles deterministic EMPTY/LEAF/POD/VINE/GATE
   pieces, saves the pattern locally, and can playtest it immediately.
 - A data-driven six-step animated tutorial plus an in-game Menu return path.
-- A deterministic 60 Hz point-mass spider motor with the owner-tested 1120
-  gravity candidate, a smooth 5000 m default speed-learning curve, forward drive, drag,
+- A deterministic 60 Hz point-mass spider motor with the owner-approved
+  Balanced baseline's 1120 gravity, a smooth 5000 m default speed-learning curve, forward drive, drag,
   world boundaries, and a capped maximum-length web constraint.
 - A deterministic opening trajectory that uses the ordinary web constraint and
   remains interruptible from the first tick, plus one optional rescue charge per
@@ -88,6 +89,14 @@ Burst boost.
   collision-checked, but only Burst uses a timer. Dive rearms after the next
   successful upper/obstacle web attachment. Either pull can be cancelled
   immediately by a recovery-web tap.
+- Eight structurally distinct endless regions: Ancient Forest, Bramble Canopy,
+  Silk Hollow, Ruined Arboretum, Storm Ridge, Web City, Ashen Hollow, and Deep
+  Mist. Their authored mechanics include deterministic moving anchors, wind and
+  lightning, safe and sticky silk highways, expiring anchors, embers, and
+  audio-first fog warnings without changing the approved swing physics.
+- Relaxed, Standard, and Harsh modes vary obstacle presentation and recovery
+  policy while preserving every physics field. Three Campaign lessons require
+  Reel, Burst, and Dive respectively and award one non-repeatable star each.
 - Small post-runway hazards gain only 8–16% size across later distance bands,
   with independent DEBUG controls for edge obstacle size, floating obstacle
   size, and gate opening size. The broad passage is not narrowed. Collision and
@@ -144,7 +153,9 @@ Burst boost.
   normal Play clears the overlay. DEBUG → RUN retains the same live controls;
   both surfaces disappear when Debug Tools is off.
 - A presentation view with camera follow, 228-pixel thumb targets,
-  action flashes/haptics, pause/frame-step/slow-motion, and an eleven-section,
+  action flashes, independently optional haptics, and 25 original generated
+  sound-effect samples for traversal, pickups, failure, and later-zone warnings.
+  It also provides pause/frame-step/slow-motion and an eleven-section,
   touch-first DEBUG panel with direct values for Burst/Dive percentages and
   durations, Burst cooldown, Reel shortening speed and full-meter hold time,
   natural take-up mode/percentage, rail presence/lethality, obstacle sizes,
@@ -154,8 +165,10 @@ Burst boost.
   catch, aim forgiveness, range, RELEASE/RETARGET behavior,
   deterministic input recording/replay, visual-theme comparison, independent
   opt-in overlays, and diagnostic export.
-- Fifty-one deterministic physics tests (116 runtime contracts total),
-  including interruptible recovery webs, double-tap fallback, explicit
+- A 165-contract Godot suite covering bootstrap/build identity, deterministic
+  physics, all eight zones, spider biology, Campaign, difficulty, upgrades,
+  economy, generated audio, mobile layout, settings, and progression. It includes
+  interruptible recovery webs, double-tap fallback, explicit
   release/retarget modes, opening-runway pacing, lower anchor coverage, exact
   pull-distance shares, speed-neutral Reel/take-up shortening, rail policy,
   swept pickups, idempotent progression, polygon anchors/collisions, and
@@ -173,22 +186,21 @@ Burst boost.
 
 ### What is deliberately not implemented
 
-No authored Phase 1 chunk pack, moving hazards, finalized currency/economy,
-missions, production monetization, or approved production art. Temporary
-spider-style modes, ability-bearing spider locks, and fixed-stat Challenge runs
-are deliberately deferred until the new progression
-foundation and the isolated Reel rebaseline are device-balanced. The generated environment tiles, fly-funded upgrades,
-temporary boost, one-run rescue, spider profiles, and local Course Lab are
-deliberately small architecture-proving slices—not approved balance or
-production content. There is no Google Play Billing SDK, real-money catalogue,
-purchase verification, server entitlement, hourly life timer, course sharing,
+Missions, longer Campaign tiers, a star-funded cosmetic sink, ambience, music,
+production monetization, cloud saves, leaderboards, analytics, ads, and store
+publishing remain absent. The generated environment art, fly-funded upgrades,
+temporary boost, one-run rescue, spider profiles, local Course Lab, difficulty
+modes, and three Campaign lessons are integrated pre-alpha slices—not approved
+production balance or a finished economy. There is no Google Play Billing SDK,
+real-money catalogue, purchase verification, server entitlement, course sharing,
 or moderation. Those require explicit later product and infrastructure work.
 
 The implementation order and the ideas deliberately rejected or deferred are in
 [the deep progression direction](docs/product/deep-progression-direction.md).
 
-Phase 0 is tracked in [issue #2](../../issues/2). The implementation is ready for
-device playtesting, but none of its three presets is an approved baseline yet.
+Phase 0 is tracked in [issue #2](../../issues/2). Balanced is the approved
+physics baseline; the issue remains open for the broader owner-judged feel and
+long-distance device gates.
 See the [Swing Laboratory playtest guide](docs/technical/phase-0-swing-laboratory.md).
 
 ## Requirements
@@ -208,9 +220,9 @@ refuses to run against a different version, and refuses a Mono build outright.
 2. Clone this repository.
 3. In the Godot project manager choose **Import**, select `project.godot` in the
    repository root, and open it.
-4. Press F5. You should see the Spider Swing Home screen. Choose **Tutorial** for
-   the complete mechanics guide, **Settings** to select a swing candidate and
-   accessibility options, or **Play** to enter the laboratory.
+4. Press F5. You should see the Spider Swing Home screen. Choose **Tutorial** or
+   **Campaign** for guided mechanics, **Settings** for feedback/accessibility
+   options, or **Play** to enter the endless course.
 
 The engine will create `.godot/` on first open — that is regenerated import data
 and is git-ignored.
