@@ -65,7 +65,8 @@ upgrade overlay that never serializes and restores exact owned levels.
 
 Audio contracts deliberately stop at reproducibility, safe technical levels,
 and wiring. Phone-speaker readability, fatigue, and emotional fit remain an
-owner listening gate.
+owner listening gate; record the build label and playback route with that
+verdict.
 
 ## Writing tests
 
