@@ -143,6 +143,26 @@ The question is not "was it good" — the search already established that. It is
 A run that survives that reading is evidence about the game. One that does not
 is a bug report, which is just as valuable and arrives before a player finds it.
 
+## The loop has run once, and it worked
+
+On 2026-08-01 the owner watched the two bundled warp-L20 traces in game and
+returned a verdict: *"genuinely good and match my own playstyle, a little
+excessive on the burst and dives, but that's not bad."* Fair play, with a
+named reservation.
+
+Two things follow, and the second was not anticipated:
+
+1. Lab output from that configuration has a **human fair-play verdict** behind
+   it for the first time.
+2. The verdict **calibrated the anomaly detector**. Those runs measure 2.45×
+   Burst use against a 2.5× flag threshold that had been chosen by guess — so
+   a human reading "slightly excessive, still fair" corresponds to a
+   near-miss warning, and the threshold sits just above endorsed play. The eye
+   and the detector agreed on the same axis independently.
+
+The reservation is the useful part: it tells the next search which direction
+it is already at the edge of, which no distance number would have said.
+
 ## Adding traces
 
 ```bash

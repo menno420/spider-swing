@@ -219,6 +219,41 @@ The lab still cannot see any of this: bot v3's reel use is far lighter than
 the owner's (`reel empties` 0.00 in every batch at every level), so the reel
 tracks remain unmeasurable by bot — now confirmed from both ends of the track.
 
+## Owner verdict on a lab run — 2026-08-01
+
+The first search result watched in game rather than read. The owner replayed
+both bundled warp-5 000 m L20 traces (3 335 m and 2 969 m) through the debug
+Test Run screen and judged:
+
+> *"They are genuinely good and match my own playstyle, a little excessive on
+> the burst and dives, but that's not bad."*
+
+**That is a fair-play verdict on lab output, and the first one that exists.**
+It is what the replay review loop was built to obtain, and no statistic
+substitutes for it.
+
+It also **calibrates the anomaly detector**, which until now carried guessed
+thresholds. Those endorsed runs measure:
+
+| Measure | Endorsed run | Flag threshold |
+| --- | ---: | ---: |
+| Burst use vs default | **2.45×** | 2.5× |
+| Web use vs default | 1.16× | 2.5× |
+| Dives per web | **0.96** | — |
+
+So "2.45× Burst and roughly one Dive per web" is what *slightly excessive but
+still fair* looks like to the person who plays this game. The 2.5× threshold
+sits just above endorsed play — which is exactly where a warning belongs, and
+it was a guess before this. The owner's eye and the detector agree on the same
+axis, independently.
+
+**What this does not endorse.** The standing-start optima are considerably
+further out — 3.4× Burst with 2.7× web use at L0, and the warm-started L20
+re-search reaching ~130 web attaches per run with dives nearly abandoned
+(0.15 per web, against the endorsed 0.96). Those are outside anything the
+owner has looked at, and the verdict above must not be stretched to cover
+them. They need their own review.
+
 ## Acceptance targets
 
 A simulation model may not be used to draw conclusions about difficulty,

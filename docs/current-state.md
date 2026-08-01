@@ -265,6 +265,33 @@ without a reported regression.
   simply not the run in the report.
 - Mechanics: `docs/technical/replay-review-loop.md`.
 
+**Upgrades — what they buy, 2026-08-01**
+
+- Measured with one policy held constant across levels on held-out seeds:
+  deaths/km 0.55 → 0.51, runs surviving to the cap 1 → 3, duration +21%,
+  input −20%, reel time −45% — at **flat distance**. Upgrades buy **survival
+  and economy of effort**, not distance. Whether that converts into distance
+  depends on what was limiting the player; the bot is limited by route choice
+  and cannot convert it, a survival-limited human converts it directly.
+- The gradient −12.0% (weak policy) → −1.6% (searched) → strongly positive
+  (owner) says **the better the play, the better upgrades pay**.
+- **Never compare best-per-configuration searches directly** — cross-apply
+  each policy to the other configuration first. A 12% under-converged search
+  reads exactly like a 12% upgrade penalty.
+  See `docs/measurements/2026-08-01-upgrade-playstyle-sweep.md`.
+
+**Replay review — first verdict, 2026-08-01**
+
+- The owner watched both bundled warp-L20 lab traces in game and judged them
+  fair: *"genuinely good and match my own playstyle, a little excessive on the
+  burst and dives."* First fair-play verdict on lab output.
+- It **calibrated the anomaly detector**: those runs measure 2.45× Burst
+  against a 2.5× threshold that had been guessed, so the alarm sits just above
+  endorsed play.
+- **Awaiting judgement:** `lab-flagged-webspam-standing-l20.json`, a verified
+  10 773 m run that abandons Dive (0.28 per web vs the endorsed 0.96) for 130
+  web attaches per run. No published conclusion rests on it.
+
 **Difficulty — owner verdict, 2026-08-01**
 
 - **The difficulty curve is balanced.** Owner from device play: ~2 km
@@ -432,7 +459,7 @@ with hook-vine and leaf-shutter geometry without retuning either control; the
   recorded zones now match their depth/material hierarchy with two scroll
   planes, continuous walls, explicit safe-surface/obstacle art, no normal-play
   polygon ghosts, and collision-honest ceiling joins. Thirty-three runtime
-  assets pass source/runtime/25% alpha checks; all 175 contracts pass.
+  assets pass source/runtime/25% alpha checks; the full suite passes. (The live total is `EXPECTED_CHECK_COUNT` in `tests/test_runner.gd` — quoting it in prose goes stale on the next merge, and has twice.)
 - **2026-08-01 — Zones 3–4 obstacle-art correction (PR #87).** Seven original
   single-object assets replace the flat collision-fill fallbacks visible in the
   owner's Silk Hollow and Ruined Arboretum recordings. Stable visual/content
