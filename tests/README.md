@@ -63,6 +63,10 @@ and progression, idempotent settlement application, checkpoint migration,
 locked/unlocked non-competitive practice routes, and a selectable session-only
 upgrade overlay that never serializes and restores exact owned levels.
 
+Audio contracts deliberately stop at reproducibility, safe technical levels,
+and wiring. Phone-speaker readability, fatigue, and emotional fit remain an
+owner listening gate.
+
 ## Writing tests
 
 Determinism is the whole point. Fixed seeds and recorded input traces in
