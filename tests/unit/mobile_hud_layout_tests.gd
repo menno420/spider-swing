@@ -685,9 +685,9 @@ static func _test_environment_theme_packs_are_visual_only(
 			failures.append("environment texture is not a 384 px runtime tile")
 			return 0
 	var art_paths := ArtAssetCatalog.texture_paths()
-	# 16 forest/canopy assets, 19 Zones 3–8 assets, one asset per
+	# 16 forest/canopy assets, 32 Zones 3–8 assets, one asset per
 	# spider profile, and the golden fly.
-	var expected_art_count := 16 + 19 + SpiderCatalog.ALL_IDS.size() + 1
+	var expected_art_count := 16 + 32 + SpiderCatalog.ALL_IDS.size() + 1
 	if art_paths.size() != expected_art_count:
 		failures.append(
 			"art catalog does not expose the zone packs, one asset per spider "

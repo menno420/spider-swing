@@ -323,15 +323,19 @@ func _draw_region_backdrop(
 ) -> void:
 	if alpha <= 0.0:
 		return
-	var zone_asset := _zone_backdrop_asset(profile)
-	if not zone_asset.is_empty():
-		_draw_forest_backdrop_layer(
-			zone_asset,
-			size,
-			parallax_x,
-			0.065,
-			Color(1.0, 1.0, 1.0, 0.78 * alpha),
-		)
+	var zone_layers := ArtAssetCatalog.zone_backdrop_art_specs(profile)
+	if not zone_layers.is_empty():
+		for layer: Dictionary in zone_layers:
+			_draw_forest_backdrop_layer(
+				StringName(layer.get("asset_id", &"")),
+				size,
+				parallax_x,
+				float(layer.get("scroll_scale", 0.065)),
+				Color(
+					1.0, 1.0, 1.0,
+					float(layer.get("opacity", 0.78)) * alpha,
+				),
+			)
 		_draw_region_ambience(size, parallax_x, profile, alpha)
 		return
 	if profile == CourseRegionCatalog.VISUAL_CANOPY:
@@ -526,13 +530,34 @@ func _draw_course(size: Vector2) -> void:
 			if surface_index < _snapshot.surface_anchor_classes.size() \
 			else CourseGeometry.ANCHOR_FIXED
 		var surface_color := _zone_surface_color(anchor_class)
-		draw_colored_polygon(screen_surface, surface_color)
-		_draw_closed_polyline(
-			screen_surface,
-			Color(0.82, 1.0, 1.0, 0.94),
-			4.0 if anchor_class == CourseGeometry.ANCHOR_MOVING_PIVOT else 2.5,
-		)
-		if anchor_class == CourseGeometry.ANCHOR_STICKY:
+		var visual_id := _snapshot.surface_visual_ids[surface_index] \
+			if surface_index < _snapshot.surface_visual_ids.size() else &""
+		var surface_art := ArtAssetCatalog.zone_surface_art_spec(
+			visual_id, anchor_class)
+		var surface_asset := StringName(surface_art.get("asset_id", &""))
+		var surface_texture := _art_texture(surface_asset) \
+			if not surface_asset.is_empty() else null
+		var is_sticky_bead := anchor_class == CourseGeometry.ANCHOR_STICKY and \
+			maxf(surface_bounds.size.x, surface_bounds.size.y) < 100.0
+		if surface_texture != null and not is_sticky_bead:
+			_draw_texture_oriented(
+				surface_texture,
+				screen_surface,
+				surface_art.get("overscan", Vector2(10.0, 6.0)) as Vector2,
+				Color(1.0, 0.78, 0.58, 1.0) \
+					if anchor_class == CourseGeometry.ANCHOR_STICKY \
+					else Color.WHITE,
+			)
+		else:
+			draw_colored_polygon(screen_surface, surface_color)
+			if surface_texture == null:
+				_draw_closed_polyline(
+					screen_surface,
+					Color(0.82, 1.0, 1.0, 0.94),
+					4.0 if anchor_class == CourseGeometry.ANCHOR_MOVING_PIVOT \
+					else 2.5,
+				)
+		if anchor_class == CourseGeometry.ANCHOR_STICKY and not is_sticky_bead:
 			var bounds := _polygon_bounds(screen_surface)
 			for bead_index in range(4):
 				draw_circle(
@@ -586,12 +611,15 @@ func _draw_course(size: Vector2) -> void:
 				fill,
 			)
 		else:
-			var zone_colors := _zone_boundary_colors(
-				_snapshot.region_visual_profile)
+			var boundary_profile := _visual_profile_for_world_polygon(boundary)
+			var zone_colors := _zone_boundary_colors(boundary_profile)
 			fill = zone_colors["fill"]
 			outline = zone_colors["edge"]
 			draw_colored_polygon(screen_boundary, fill)
-			_draw_closed_polyline(screen_boundary, outline, 3.0)
+			var boundary_art := ArtAssetCatalog.zone_boundary_art_spec(
+				boundary_profile, _boundary_is_ceiling(boundary))
+			if boundary_art.is_empty():
+				_draw_closed_polyline(screen_boundary, outline, 3.0)
 		if _snapshot.collision_outlines_visible:
 			_draw_closed_polyline(
 				screen_boundary,
@@ -614,7 +642,8 @@ func _draw_course(size: Vector2) -> void:
 
 	var obstacle_index := 0
 	while obstacle_index < _snapshot.obstacles.size():
-		if obstacle_index < _snapshot.obstacle_rest_polygons.size() and \
+		if _snapshot.collision_outlines_visible and \
+				obstacle_index < _snapshot.obstacle_rest_polygons.size() and \
 				_snapshot.obstacle_rest_polygons[obstacle_index] != \
 				_snapshot.obstacles[obstacle_index]:
 			var rest := _polygon_to_screen(
@@ -636,6 +665,8 @@ func _draw_course(size: Vector2) -> void:
 
 	if _uses_forest_art():
 		_redraw_forest_boundary_edges(size)
+	elif _uses_curated_zone_art():
+		_redraw_authored_zone_boundary_edges(size)
 
 	for fly: Vector2 in _snapshot.fly_positions:
 		var fly_screen := _world_to_screen(fly)
@@ -745,6 +776,95 @@ func _redraw_forest_boundary_edges(viewport_size: Vector2) -> void:
 				bounds.position.x > viewport_size.x + 80.0:
 			continue
 		_draw_continuous_forest_profile(boundary, screen_boundary)
+
+
+func _draw_continuous_zone_profile(
+	world_polygon: PackedVector2Array,
+	screen_polygon: PackedVector2Array,
+) -> void:
+	if screen_polygon.size() < 4:
+		return
+	var is_ceiling := _boundary_is_ceiling(world_polygon)
+	var profile := _visual_profile_for_world_polygon(world_polygon)
+	var art_spec := ArtAssetCatalog.zone_boundary_art_spec(profile, is_ceiling)
+	if art_spec.is_empty():
+		return
+	var asset_id := StringName(art_spec.get("asset_id", &""))
+	var texture := _art_texture(asset_id)
+	if texture == null:
+		return
+
+	# Boundary polygons store the playable profile first and their outward
+	# thickness in reverse. Every wall tile is authored with its playable edge
+	# flush to the texture edge, so drawing outward from the profile cannot make
+	# the corridor look narrower than the authoritative collision geometry.
+	var profile_size := floori(float(screen_polygon.size()) * 0.5)
+	var draw_height := float(art_spec.get("draw_height", 108.0))
+	var world_repeat := float(art_spec.get("world_repeat", 2048.0))
+	var overlap := float(art_spec.get("segment_overlap", 24.0))
+	var mirror_outward := bool(art_spec.get("mirror_outward", false))
+	for index in range(profile_size - 1):
+		var start := screen_polygon[index]
+		var finish := screen_polygon[index + 1]
+		var world_start := world_polygon[index]
+		var world_finish := world_polygon[index + 1]
+		if start.x > finish.x:
+			var screen_swap := start
+			start = finish
+			finish = screen_swap
+			var world_swap := world_start
+			world_start = world_finish
+			world_finish = world_swap
+		var segment := finish - start
+		if segment.length() < 8.0:
+			continue
+		var visual_length := segment.length() + overlap * 2.0
+		var source_world_start := minf(world_start.x, world_finish.x) - overlap
+		var source_x := source_world_start / world_repeat * \
+			float(texture.get_width())
+		var source_width := visual_length / world_repeat * \
+			float(texture.get_width())
+		var mirror_floor := mirror_outward and not is_ceiling
+		draw_set_transform(
+			start.lerp(finish, 0.5),
+			segment.angle(),
+			Vector2(1.0, -1.0 if mirror_floor else 1.0),
+		)
+		draw_texture_rect_region(
+			texture,
+			Rect2(
+				Vector2(
+					-visual_length * 0.5,
+					-draw_height if is_ceiling or mirror_floor else 0.0,
+				),
+				Vector2(visual_length, draw_height),
+			),
+			Rect2(
+				Vector2(source_x, 0.0),
+				Vector2(source_width, float(texture.get_height())),
+			),
+			Color.WHITE,
+			false,
+			false,
+		)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+
+func _redraw_authored_zone_boundary_edges(viewport_size: Vector2) -> void:
+	# Draw the material edge after obstacles so ceiling/floor-grown objects meet
+	# a continuous finished wall instead of exposing transparent joins.
+	for boundary: PackedVector2Array in _snapshot.boundary_surfaces:
+		var screen_boundary := _polygon_to_screen(boundary)
+		var bounds := _polygon_bounds(screen_boundary)
+		if bounds.end.x < -80.0 or \
+				bounds.position.x > viewport_size.x + 80.0:
+			continue
+		_draw_continuous_zone_profile(boundary, screen_boundary)
+
+
+func _boundary_is_ceiling(world_polygon: PackedVector2Array) -> bool:
+	return _polygon_bounds(world_polygon).get_center().y < \
+		(CourseStream.CEILING_Y + CourseStream.FLOOR_Y) * 0.5
 
 
 func _draw_obstacle(
@@ -940,7 +1060,12 @@ func _draw_zone_obstacle(
 	var bounds := _polygon_bounds(polygon)
 	if asset_id == ArtAssetCatalog.WEB_CITY_RESIDENT and \
 			minf(bounds.size.x, bounds.size.y) < 30.0:
-		texture = null
+		# The resident texture is drawn once over its body and already includes
+		# every leg. Component leg polygons remain authoritative collision, but
+		# their old fallback outlines made the finished sprite look wireframed.
+		if _snapshot.collision_outlines_visible:
+			_draw_closed_polyline(polygon, CYAN, 2.0)
+		return
 	if texture == null:
 		draw_colored_polygon(polygon, fill)
 		_draw_closed_polyline(polygon, edge, 3.5 if anchorable else 4.0)
@@ -971,13 +1096,6 @@ func _draw_zone_obstacle(
 			bool(art_spec.get("flip_y", false)),
 		)
 
-	# A restrained semantic rim keeps tappable versus lethal reads available at
-	# full speed without flattening the finished object into a debug polygon.
-	var finished_edge := Color(
-		edge,
-		edge.a * (0.38 if anchorable else 0.48),
-	)
-	_draw_closed_polyline(polygon, finished_edge, 1.8 if anchorable else 2.2)
 	if _snapshot.collision_outlines_visible:
 		_draw_closed_polyline(polygon, CYAN, 2.0)
 
@@ -2089,24 +2207,6 @@ func _uses_forest_art() -> bool:
 func _uses_curated_zone_art() -> bool:
 	return StringName(_environment_theme()["id"]) == \
 		EnvironmentThemeCatalog.ANCIENT_FOREST
-
-
-func _zone_backdrop_asset(profile: StringName) -> StringName:
-	match profile:
-		CourseRegionCatalog.VISUAL_HOLLOW:
-			return ArtAssetCatalog.HOLLOW_BACKDROP
-		CourseRegionCatalog.VISUAL_ARBORETUM:
-			return ArtAssetCatalog.ARBORETUM_BACKDROP
-		CourseRegionCatalog.VISUAL_STORM:
-			return ArtAssetCatalog.STORM_BACKDROP
-		CourseRegionCatalog.VISUAL_WEB_CITY:
-			return ArtAssetCatalog.WEB_CITY_BACKDROP
-		CourseRegionCatalog.VISUAL_ASHEN:
-			return ArtAssetCatalog.ASHEN_BACKDROP
-		CourseRegionCatalog.VISUAL_MIST:
-			return ArtAssetCatalog.MIST_BACKDROP
-		_:
-			return &""
 
 
 func _visual_profile_for_world_polygon(

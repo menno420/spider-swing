@@ -37,10 +37,58 @@
           "chroma_fringe_pixels": 0
         },
         "gameplay_25_percent": {
-          "transparent": 22318,
-          "partial": 15251,
-          "opaque": 20031,
-          "edge_pixels": 15251,
+          "transparent": 23103,
+          "partial": 14014,
+          "opaque": 20483,
+          "edge_pixels": 14014,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        }
+      }
+    },
+    {
+      "asset": "silk-hollow-backdrop-near",
+      "source_size": [
+        1672,
+        941
+      ],
+      "runtime_size": [
+        1280,
+        720
+      ],
+      "gameplay_audit_size": [
+        320,
+        180
+      ],
+      "key_family": "green",
+      "source_sha256": "74719e1275fa431f2234c6bd2cf93bd09955f3c7e2765c222f70b5129b26164f",
+      "keyed_source_sha256": "9a4b591ed2173dad929903d05d032e1d6a3a717ed8e228de573cbb00950350af",
+      "runtime_sha256": "b8a6d213ad82e9b4fabcafb1e69330df771e166a9829d15f28a3a66aae8f2d9e",
+      "alpha": {
+        "source": {
+          "transparent": 1032988,
+          "partial": 64638,
+          "opaque": 475726,
+          "edge_pixels": 64638,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        },
+        "runtime": {
+          "transparent": 604478,
+          "partial": 38930,
+          "opaque": 278192,
+          "edge_pixels": 38930,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        },
+        "gameplay_25_percent": {
+          "transparent": 34005,
+          "partial": 10942,
+          "opaque": 12653,
+          "edge_pixels": 10942,
           "magenta_fringe_pixels": 0,
           "green_fringe_pixels": 0,
           "chroma_fringe_pixels": 0
@@ -84,10 +132,10 @@
           "chroma_fringe_pixels": 0
         },
         "gameplay_25_percent": {
-          "transparent": 11233,
-          "partial": 2375,
-          "opaque": 2776,
-          "edge_pixels": 2375,
+          "transparent": 11460,
+          "partial": 1997,
+          "opaque": 2927,
+          "edge_pixels": 1997,
           "magenta_fringe_pixels": 0,
           "green_fringe_pixels": 0,
           "chroma_fringe_pixels": 0
@@ -131,10 +179,58 @@
           "chroma_fringe_pixels": 0
         },
         "gameplay_25_percent": {
-          "transparent": 25305,
-          "partial": 12297,
-          "opaque": 19998,
-          "edge_pixels": 12297,
+          "transparent": 25545,
+          "partial": 11869,
+          "opaque": 20186,
+          "edge_pixels": 11869,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        }
+      }
+    },
+    {
+      "asset": "ruined-arboretum-backdrop-near",
+      "source_size": [
+        1672,
+        941
+      ],
+      "runtime_size": [
+        1280,
+        720
+      ],
+      "gameplay_audit_size": [
+        320,
+        180
+      ],
+      "key_family": "magenta",
+      "source_sha256": "fa405bd2c8c30d97ac86e8acbb6579677892a26626cb52064ac631c6c58cad2a",
+      "keyed_source_sha256": "25513dae0611ff0f1395856cf880b4a109f7bf690965ca4cd4ad0d390bc552f2",
+      "runtime_sha256": "efa920977c503cdcc83c442f1361999f3a627ab407f8858dbeb6aeb820e6fe05",
+      "alpha": {
+        "source": {
+          "transparent": 965125,
+          "partial": 108807,
+          "opaque": 499420,
+          "edge_pixels": 108807,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        },
+        "runtime": {
+          "transparent": 564600,
+          "partial": 64402,
+          "opaque": 292598,
+          "edge_pixels": 64402,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        },
+        "gameplay_25_percent": {
+          "transparent": 32332,
+          "partial": 10978,
+          "opaque": 14290,
+          "edge_pixels": 10978,
           "magenta_fringe_pixels": 0,
           "green_fringe_pixels": 0,
           "chroma_fringe_pixels": 0
@@ -178,10 +274,10 @@
           "chroma_fringe_pixels": 0
         },
         "gameplay_25_percent": {
-          "transparent": 14260,
-          "partial": 1176,
-          "opaque": 948,
-          "edge_pixels": 1176,
+          "transparent": 14474,
+          "partial": 866,
+          "opaque": 1044,
+          "edge_pixels": 866,
           "magenta_fringe_pixels": 0,
           "green_fringe_pixels": 0,
           "chroma_fringe_pixels": 0
@@ -225,10 +321,58 @@
           "chroma_fringe_pixels": 0
         },
         "gameplay_25_percent": {
-          "transparent": 45199,
-          "partial": 5333,
-          "opaque": 7068,
-          "edge_pixels": 5333,
+          "transparent": 45584,
+          "partial": 4980,
+          "opaque": 7036,
+          "edge_pixels": 4980,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        }
+      }
+    },
+    {
+      "asset": "storm-ridge-backdrop-near",
+      "source_size": [
+        1672,
+        941
+      ],
+      "runtime_size": [
+        1280,
+        720
+      ],
+      "gameplay_audit_size": [
+        320,
+        180
+      ],
+      "key_family": "magenta",
+      "source_sha256": "640dd7967220c0158dbb5b95744dbefe42913931a33a179707a083599978892e",
+      "keyed_source_sha256": "63fa017ab02addc2591eba3d2408753c018fdd9ba9c0c9c710fa0bc601963a2e",
+      "runtime_sha256": "795b9f2df714efa83272097ea7b2328e5befdaeac2bc9d1b049d8b0d1f5db3a0",
+      "alpha": {
+        "source": {
+          "transparent": 1072006,
+          "partial": 15215,
+          "opaque": 486131,
+          "edge_pixels": 15215,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        },
+        "runtime": {
+          "transparent": 627564,
+          "partial": 9310,
+          "opaque": 284726,
+          "edge_pixels": 9310,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        },
+        "gameplay_25_percent": {
+          "transparent": 37824,
+          "partial": 2923,
+          "opaque": 16853,
+          "edge_pixels": 2923,
           "magenta_fringe_pixels": 0,
           "green_fringe_pixels": 0,
           "chroma_fringe_pixels": 0
@@ -272,10 +416,106 @@
           "chroma_fringe_pixels": 0
         },
         "gameplay_25_percent": {
-          "transparent": 13560,
-          "partial": 1413,
-          "opaque": 1411,
-          "edge_pixels": 1413,
+          "transparent": 13753,
+          "partial": 1116,
+          "opaque": 1515,
+          "edge_pixels": 1116,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        }
+      }
+    },
+    {
+      "asset": "storm-ridge-scree",
+      "source_size": [
+        1536,
+        1024
+      ],
+      "runtime_size": [
+        768,
+        512
+      ],
+      "gameplay_audit_size": [
+        192,
+        128
+      ],
+      "key_family": "magenta",
+      "source_sha256": "653f28db0762aab77c968647bfa45b00dfd4475afab0a97f36ed494b9f052d6c",
+      "keyed_source_sha256": "325eee8e0e8670fe69cb3897eeda83e29ee932ee3671506eaa85ca004a88489f",
+      "runtime_sha256": "e02650925dbfc0e19bf02227ae6de80c34d6cb5788e6b5c9454933747187171e",
+      "alpha": {
+        "source": {
+          "transparent": 982368,
+          "partial": 5812,
+          "opaque": 584684,
+          "edge_pixels": 5812,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        },
+        "runtime": {
+          "transparent": 205070,
+          "partial": 2352,
+          "opaque": 185794,
+          "edge_pixels": 2352,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        },
+        "gameplay_25_percent": {
+          "transparent": 12346,
+          "partial": 1178,
+          "opaque": 11052,
+          "edge_pixels": 1178,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        }
+      }
+    },
+    {
+      "asset": "storm-ridge-wall",
+      "source_size": [
+        1774,
+        887
+      ],
+      "runtime_size": [
+        2048,
+        192
+      ],
+      "gameplay_audit_size": [
+        512,
+        48
+      ],
+      "key_family": "magenta",
+      "source_sha256": "c15d46e1dacabff2c588ff90205b7f5c7717878c6b373abdc386ba91dc7178cb",
+      "keyed_source_sha256": "eda80e3fb5e30c6cc637396d0fb6bcc683649d46b725ca9d9437dc590fd2eed6",
+      "runtime_sha256": "8ac36f574a5bd9cbc3a6a935f8eb44d3149f4b515186dbb97d836c472ba2c6dd",
+      "alpha": {
+        "source": {
+          "transparent": 1133788,
+          "partial": 19702,
+          "opaque": 420048,
+          "edge_pixels": 19702,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        },
+        "runtime": {
+          "transparent": 218097,
+          "partial": 9971,
+          "opaque": 165148,
+          "edge_pixels": 9971,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        },
+        "gameplay_25_percent": {
+          "transparent": 11914,
+          "partial": 3690,
+          "opaque": 8972,
+          "edge_pixels": 3690,
           "magenta_fringe_pixels": 0,
           "green_fringe_pixels": 0,
           "chroma_fringe_pixels": 0
@@ -319,10 +559,58 @@
           "chroma_fringe_pixels": 0
         },
         "gameplay_25_percent": {
-          "transparent": 37638,
-          "partial": 10127,
-          "opaque": 9835,
-          "edge_pixels": 10127,
+          "transparent": 37962,
+          "partial": 9455,
+          "opaque": 10183,
+          "edge_pixels": 9455,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        }
+      }
+    },
+    {
+      "asset": "web-city-backdrop-near",
+      "source_size": [
+        1672,
+        941
+      ],
+      "runtime_size": [
+        1280,
+        720
+      ],
+      "gameplay_audit_size": [
+        320,
+        180
+      ],
+      "key_family": "magenta",
+      "source_sha256": "46297a6f22cf630db6036929edccd2bcd35b68173124d87929cdfb44da5f73de",
+      "keyed_source_sha256": "3ef0f591ecd2ecbc815b94946cbc1e98244b7d014649d8710970e19bff5fc19d",
+      "runtime_sha256": "7bfecf3c520bd967d039120f190f6ae48fbc15468e1d2f910ea6d10470aea44a",
+      "alpha": {
+        "source": {
+          "transparent": 994832,
+          "partial": 198975,
+          "opaque": 379545,
+          "edge_pixels": 198975,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        },
+        "runtime": {
+          "transparent": 581946,
+          "partial": 117185,
+          "opaque": 222469,
+          "edge_pixels": 117185,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        },
+        "gameplay_25_percent": {
+          "transparent": 32115,
+          "partial": 14031,
+          "opaque": 11454,
+          "edge_pixels": 14031,
           "magenta_fringe_pixels": 0,
           "green_fringe_pixels": 0,
           "chroma_fringe_pixels": 0
@@ -366,10 +654,154 @@
           "chroma_fringe_pixels": 0
         },
         "gameplay_25_percent": {
-          "transparent": 12156,
-          "partial": 3774,
-          "opaque": 454,
-          "edge_pixels": 3774,
+          "transparent": 12539,
+          "partial": 3703,
+          "opaque": 142,
+          "edge_pixels": 3703,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        }
+      }
+    },
+    {
+      "asset": "web-city-highway",
+      "source_size": [
+        1774,
+        887
+      ],
+      "runtime_size": [
+        1024,
+        96
+      ],
+      "gameplay_audit_size": [
+        256,
+        24
+      ],
+      "key_family": "green",
+      "source_sha256": "c5a6b1707b71d988ffa4ac60e1fe16652e7084f666b0faed5a0c987b3cc61683",
+      "keyed_source_sha256": "e4ae35f0d7725589cefe249daa2f7bc4ecfa03c46c750b7884c8ce8b744a44dc",
+      "runtime_sha256": "da6291665de8317f1252fe172fc51d2aea47318425e10b5c8c8d4b55184e8079",
+      "alpha": {
+        "source": {
+          "transparent": 1439455,
+          "partial": 5584,
+          "opaque": 128499,
+          "edge_pixels": 5584,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        },
+        "runtime": {
+          "transparent": 8824,
+          "partial": 3335,
+          "opaque": 86145,
+          "edge_pixels": 3335,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        },
+        "gameplay_25_percent": {
+          "transparent": 54,
+          "partial": 1142,
+          "opaque": 4948,
+          "edge_pixels": 1142,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        }
+      }
+    },
+    {
+      "asset": "web-city-egg",
+      "source_size": [
+        1024,
+        1536
+      ],
+      "runtime_size": [
+        256,
+        512
+      ],
+      "gameplay_audit_size": [
+        64,
+        128
+      ],
+      "key_family": "magenta",
+      "source_sha256": "a5fe05bb2bc9256db52981f5f16e1de58855a2bfadc53ad507337dd137c7cade",
+      "keyed_source_sha256": "828fc889cd8e23a36f260a335368ca7d20db4031d32a828f7e3b6e3c85f5e698",
+      "runtime_sha256": "1b02a85bf15a8f156145506735c2ef7dbadac5fe7a8bf84ee3da896df6c30dc0",
+      "alpha": {
+        "source": {
+          "transparent": 1229122,
+          "partial": 22506,
+          "opaque": 321236,
+          "edge_pixels": 22506,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        },
+        "runtime": {
+          "transparent": 71040,
+          "partial": 4103,
+          "opaque": 55929,
+          "edge_pixels": 4103,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        },
+        "gameplay_25_percent": {
+          "transparent": 4149,
+          "partial": 1434,
+          "opaque": 2609,
+          "edge_pixels": 1434,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        }
+      }
+    },
+    {
+      "asset": "web-city-wall",
+      "source_size": [
+        1774,
+        887
+      ],
+      "runtime_size": [
+        2048,
+        192
+      ],
+      "gameplay_audit_size": [
+        512,
+        48
+      ],
+      "key_family": "green",
+      "source_sha256": "cfa18669335bf41dd0eb424eed7841bba4db8f35b33523f6b7e0f564b9e3c781",
+      "keyed_source_sha256": "1ec0944a7f4f1c4ae62b727072891504a7213899079fd24589c3a27593a8195f",
+      "runtime_sha256": "16266e525cc5459cf92ec439cbd4d77879584518cb27004a8a9b5c29469d4ee6",
+      "alpha": {
+        "source": {
+          "transparent": 1078795,
+          "partial": 70316,
+          "opaque": 424427,
+          "edge_pixels": 70316,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        },
+        "runtime": {
+          "transparent": 205126,
+          "partial": 29395,
+          "opaque": 158695,
+          "edge_pixels": 29395,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        },
+        "gameplay_25_percent": {
+          "transparent": 11034,
+          "partial": 6544,
+          "opaque": 6998,
+          "edge_pixels": 6544,
           "magenta_fringe_pixels": 0,
           "green_fringe_pixels": 0,
           "chroma_fringe_pixels": 0
@@ -413,10 +845,10 @@
           "chroma_fringe_pixels": 0
         },
         "gameplay_25_percent": {
-          "transparent": 35250,
-          "partial": 10664,
-          "opaque": 11686,
-          "edge_pixels": 10664,
+          "transparent": 36105,
+          "partial": 9265,
+          "opaque": 12230,
+          "edge_pixels": 9265,
           "magenta_fringe_pixels": 0,
           "green_fringe_pixels": 0,
           "chroma_fringe_pixels": 0
@@ -460,10 +892,10 @@
           "chroma_fringe_pixels": 0
         },
         "gameplay_25_percent": {
-          "transparent": 14880,
-          "partial": 1981,
-          "opaque": 1571,
-          "edge_pixels": 1981,
+          "transparent": 15097,
+          "partial": 1609,
+          "opaque": 1726,
+          "edge_pixels": 1609,
           "magenta_fringe_pixels": 0,
           "green_fringe_pixels": 0,
           "chroma_fringe_pixels": 0
@@ -507,10 +939,10 @@
           "chroma_fringe_pixels": 0
         },
         "gameplay_25_percent": {
-          "transparent": 13811,
-          "partial": 1445,
-          "opaque": 3176,
-          "edge_pixels": 1445,
+          "transparent": 14053,
+          "partial": 983,
+          "opaque": 3396,
+          "edge_pixels": 983,
           "magenta_fringe_pixels": 0,
           "green_fringe_pixels": 0,
           "chroma_fringe_pixels": 0
@@ -554,10 +986,10 @@
           "chroma_fringe_pixels": 0
         },
         "gameplay_25_percent": {
-          "transparent": 54455,
-          "partial": 3138,
-          "opaque": 7,
-          "edge_pixels": 3138,
+          "transparent": 54569,
+          "partial": 3031,
+          "opaque": 0,
+          "edge_pixels": 3031,
           "magenta_fringe_pixels": 0,
           "green_fringe_pixels": 0,
           "chroma_fringe_pixels": 0
@@ -601,10 +1033,10 @@
           "chroma_fringe_pixels": 0
         },
         "gameplay_25_percent": {
-          "transparent": 9602,
-          "partial": 999,
-          "opaque": 1687,
-          "edge_pixels": 999,
+          "transparent": 9819,
+          "partial": 613,
+          "opaque": 1856,
+          "edge_pixels": 613,
           "magenta_fringe_pixels": 0,
           "green_fringe_pixels": 0,
           "chroma_fringe_pixels": 0
@@ -649,10 +1081,10 @@
           "chroma_fringe_pixels": 0
         },
         "gameplay_25_percent": {
-          "transparent": 9721,
-          "partial": 1461,
-          "opaque": 7250,
-          "edge_pixels": 1461,
+          "transparent": 9925,
+          "partial": 1048,
+          "opaque": 7459,
+          "edge_pixels": 1048,
           "magenta_fringe_pixels": 0,
           "green_fringe_pixels": 0,
           "chroma_fringe_pixels": 0
@@ -697,10 +1129,10 @@
           "chroma_fringe_pixels": 0
         },
         "gameplay_25_percent": {
-          "transparent": 8290,
-          "partial": 1360,
-          "opaque": 2638,
-          "edge_pixels": 1360,
+          "transparent": 8518,
+          "partial": 1001,
+          "opaque": 2769,
+          "edge_pixels": 1001,
           "magenta_fringe_pixels": 0,
           "green_fringe_pixels": 0,
           "chroma_fringe_pixels": 0
@@ -745,10 +1177,106 @@
           "chroma_fringe_pixels": 0
         },
         "gameplay_25_percent": {
-          "transparent": 1828,
-          "partial": 1349,
-          "opaque": 2967,
-          "edge_pixels": 1349,
+          "transparent": 2110,
+          "partial": 857,
+          "opaque": 3177,
+          "edge_pixels": 857,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        }
+      }
+    },
+    {
+      "asset": "silk-hollow-ceiling-wall",
+      "source_size": [
+        2027,
+        776
+      ],
+      "runtime_size": [
+        2048,
+        192
+      ],
+      "gameplay_audit_size": [
+        512,
+        48
+      ],
+      "key_family": "green",
+      "source_sha256": "931aa116be86ef529a1f0277d36dfcb2714e31c2d8dfbb4ed7e3dddc41aef19f",
+      "keyed_source_sha256": "420ad2699115299f629fd6aaff78efd6269385aa2419d47167adb223f6926b5d",
+      "runtime_sha256": "a56d096f3104bd6f9b162361c71a73efaf93cbc4a6e0393f66935a40d864878a",
+      "alpha": {
+        "source": {
+          "transparent": 732827,
+          "partial": 925,
+          "opaque": 839200,
+          "edge_pixels": 925,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        },
+        "runtime": {
+          "transparent": 32768,
+          "partial": 0,
+          "opaque": 360448,
+          "edge_pixels": 0,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        },
+        "gameplay_25_percent": {
+          "transparent": 1536,
+          "partial": 1024,
+          "opaque": 22016,
+          "edge_pixels": 1024,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        }
+      }
+    },
+    {
+      "asset": "silk-hollow-floor-wall",
+      "source_size": [
+        1930,
+        815
+      ],
+      "runtime_size": [
+        2048,
+        192
+      ],
+      "gameplay_audit_size": [
+        512,
+        48
+      ],
+      "key_family": "green",
+      "source_sha256": "38ef433b25dad35fb49093229471e7558a2970ea8bf4dca2d2b588904e6fe00e",
+      "keyed_source_sha256": "53e8af885808d662a6d703a545adc2c312817a1f95d4d3c01b6635782de0e66b",
+      "runtime_sha256": "e47923ec953d9595c1a08ba1af72c9f76b9bd75bdbc7b40f0d6f40acb53ac8bc",
+      "alpha": {
+        "source": {
+          "transparent": 1219466,
+          "partial": 4226,
+          "opaque": 349258,
+          "edge_pixels": 4226,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        },
+        "runtime": {
+          "transparent": 48110,
+          "partial": 14074,
+          "opaque": 331032,
+          "edge_pixels": 14074,
+          "magenta_fringe_pixels": 46,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        },
+        "gameplay_25_percent": {
+          "transparent": 2376,
+          "partial": 2228,
+          "opaque": 19972,
+          "edge_pixels": 2228,
           "magenta_fringe_pixels": 0,
           "green_fringe_pixels": 0,
           "chroma_fringe_pixels": 0
@@ -793,10 +1321,10 @@
           "chroma_fringe_pixels": 0
         },
         "gameplay_25_percent": {
-          "transparent": 983,
-          "partial": 2079,
-          "opaque": 1546,
-          "edge_pixels": 2079,
+          "transparent": 1174,
+          "partial": 1393,
+          "opaque": 2041,
+          "edge_pixels": 1393,
           "magenta_fringe_pixels": 0,
           "green_fringe_pixels": 0,
           "chroma_fringe_pixels": 0
@@ -841,10 +1369,10 @@
           "chroma_fringe_pixels": 0
         },
         "gameplay_25_percent": {
-          "transparent": 2485,
-          "partial": 1139,
-          "opaque": 984,
-          "edge_pixels": 1139,
+          "transparent": 2650,
+          "partial": 832,
+          "opaque": 1126,
+          "edge_pixels": 832,
           "magenta_fringe_pixels": 0,
           "green_fringe_pixels": 0,
           "chroma_fringe_pixels": 0
@@ -889,10 +1417,10 @@
           "chroma_fringe_pixels": 0
         },
         "gameplay_25_percent": {
-          "transparent": 1486,
-          "partial": 635,
-          "opaque": 1975,
-          "edge_pixels": 635,
+          "transparent": 1588,
+          "partial": 443,
+          "opaque": 2065,
+          "edge_pixels": 443,
           "magenta_fringe_pixels": 0,
           "green_fringe_pixels": 0,
           "chroma_fringe_pixels": 0
@@ -937,10 +1465,106 @@
           "chroma_fringe_pixels": 0
         },
         "gameplay_25_percent": {
-          "transparent": 11746,
-          "partial": 1934,
-          "opaque": 6800,
-          "edge_pixels": 1934,
+          "transparent": 11874,
+          "partial": 1679,
+          "opaque": 6927,
+          "edge_pixels": 1679,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        }
+      }
+    },
+    {
+      "asset": "ruined-arboretum-ceiling-wall",
+      "source_size": [
+        2172,
+        724
+      ],
+      "runtime_size": [
+        2048,
+        192
+      ],
+      "gameplay_audit_size": [
+        512,
+        48
+      ],
+      "key_family": "magenta",
+      "source_sha256": "b87eaf1c675d511601b4e48517aa05d368673da8d49156533567130da4588d44",
+      "keyed_source_sha256": "4a99db06dc96233a5d1dadac2f51239da2565335aba59bc33a249468e5e0fd6c",
+      "runtime_sha256": "a8c580df7735e91e57c52c364b80c5363f73ab222939e7470053955f65a20461",
+      "alpha": {
+        "source": {
+          "transparent": 1232852,
+          "partial": 8573,
+          "opaque": 331103,
+          "edge_pixels": 8573,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        },
+        "runtime": {
+          "transparent": 32768,
+          "partial": 0,
+          "opaque": 360448,
+          "edge_pixels": 0,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        },
+        "gameplay_25_percent": {
+          "transparent": 1536,
+          "partial": 1024,
+          "opaque": 22016,
+          "edge_pixels": 1024,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        }
+      }
+    },
+    {
+      "asset": "ruined-arboretum-floor-wall",
+      "source_size": [
+        2172,
+        724
+      ],
+      "runtime_size": [
+        2048,
+        192
+      ],
+      "gameplay_audit_size": [
+        512,
+        48
+      ],
+      "key_family": "magenta",
+      "source_sha256": "4769a247f8f9713c0458f866bad80fa852a4b8f6f93fb249d02b8211de7db933",
+      "keyed_source_sha256": "e0b26de985e352b506397d076bf33042fe1b9744b99461d1d31d71271ea3fdcd",
+      "runtime_sha256": "b66115b287240709aebbbe285e82e83e53dc101eb6ea317481d3867b1cf58d3c",
+      "alpha": {
+        "source": {
+          "transparent": 1064043,
+          "partial": 6574,
+          "opaque": 501911,
+          "edge_pixels": 6574,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        },
+        "runtime": {
+          "transparent": 11572,
+          "partial": 10294,
+          "opaque": 371350,
+          "edge_pixels": 10294,
+          "magenta_fringe_pixels": 0,
+          "green_fringe_pixels": 0,
+          "chroma_fringe_pixels": 0
+        },
+        "gameplay_25_percent": {
+          "transparent": 96,
+          "partial": 1704,
+          "opaque": 22776,
+          "edge_pixels": 1704,
           "magenta_fringe_pixels": 0,
           "green_fringe_pixels": 0,
           "chroma_fringe_pixels": 0
@@ -957,27 +1581,27 @@
     {
       "first": "ancient_forest",
       "second": "silk_hollow",
-      "intersection_over_union": 0.4877
+      "intersection_over_union": 0.486335
     },
     {
       "first": "ancient_forest",
       "second": "ruined_arboretum",
-      "intersection_over_union": 0.464299
+      "intersection_over_union": 0.467151
     },
     {
       "first": "bramble_canopy",
       "second": "silk_hollow",
-      "intersection_over_union": 0.461241
-    },
-    {
-      "first": "silk_hollow",
-      "second": "ruined_arboretum",
-      "intersection_over_union": 0.418379
+      "intersection_over_union": 0.459808
     },
     {
       "first": "silk_hollow",
       "second": "ashen_hollow",
-      "intersection_over_union": 0.418256
+      "intersection_over_union": 0.419901
+    },
+    {
+      "first": "silk_hollow",
+      "second": "ruined_arboretum",
+      "intersection_over_union": 0.415626
     },
     {
       "first": "bramble_canopy",
@@ -987,7 +1611,7 @@
     {
       "first": "storm_ridge",
       "second": "ashen_hollow",
-      "intersection_over_union": 0.395545
+      "intersection_over_union": 0.399751
     },
     {
       "first": "ancient_forest",
@@ -997,62 +1621,62 @@
     {
       "first": "bramble_canopy",
       "second": "ruined_arboretum",
-      "intersection_over_union": 0.393399
+      "intersection_over_union": 0.394373
     },
     {
       "first": "ancient_forest",
       "second": "storm_ridge",
-      "intersection_over_union": 0.367562
+      "intersection_over_union": 0.37071
     },
     {
       "first": "bramble_canopy",
       "second": "storm_ridge",
-      "intersection_over_union": 0.340433
+      "intersection_over_union": 0.343278
     },
     {
       "first": "ruined_arboretum",
       "second": "ashen_hollow",
-      "intersection_over_union": 0.320966
+      "intersection_over_union": 0.323567
     },
     {
       "first": "ruined_arboretum",
       "second": "storm_ridge",
-      "intersection_over_union": 0.318915
+      "intersection_over_union": 0.321087
     },
     {
       "first": "silk_hollow",
       "second": "web_city",
-      "intersection_over_union": 0.302542
+      "intersection_over_union": 0.30007
     },
     {
       "first": "ruined_arboretum",
       "second": "web_city",
-      "intersection_over_union": 0.299055
+      "intersection_over_union": 0.297824
     },
     {
       "first": "storm_ridge",
       "second": "web_city",
-      "intersection_over_union": 0.293278
+      "intersection_over_union": 0.296162
     },
     {
       "first": "ancient_forest",
       "second": "web_city",
-      "intersection_over_union": 0.286755
+      "intersection_over_union": 0.285944
     },
     {
       "first": "bramble_canopy",
       "second": "web_city",
-      "intersection_over_union": 0.26998
+      "intersection_over_union": 0.269799
     },
     {
       "first": "silk_hollow",
       "second": "storm_ridge",
-      "intersection_over_union": 0.267903
+      "intersection_over_union": 0.269065
     },
     {
       "first": "web_city",
       "second": "ashen_hollow",
-      "intersection_over_union": 0.24807
+      "intersection_over_union": 0.24599
     },
     {
       "first": "ancient_forest",
@@ -1062,7 +1686,7 @@
     {
       "first": "storm_ridge",
       "second": "deep_mist",
-      "intersection_over_union": 0.139752
+      "intersection_over_union": 0.141929
     },
     {
       "first": "bramble_canopy",
@@ -1072,12 +1696,12 @@
     {
       "first": "web_city",
       "second": "deep_mist",
-      "intersection_over_union": 0.100706
+      "intersection_over_union": 0.102868
     },
     {
       "first": "ruined_arboretum",
       "second": "deep_mist",
-      "intersection_over_union": 0.080301
+      "intersection_over_union": 0.081827
     },
     {
       "first": "ashen_hollow",
@@ -1087,7 +1711,7 @@
     {
       "first": "silk_hollow",
       "second": "deep_mist",
-      "intersection_over_union": 0.068911
+      "intersection_over_union": 0.068922
     }
   ],
   "highest_pair_iou": {

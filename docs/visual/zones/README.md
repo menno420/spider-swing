@@ -5,8 +5,9 @@
 These captures are reproducible review evidence for the endless-course zones.
 `tools/export_zone_geometry.gd` exports the actual seeded `CourseStream`
 polygons at tick 137; `tools/zone_art_audit.py` combines those polygons with the
-runtime foreground art, writes the full-colour world captures, reduces the same
-structure to pure black, and shrinks it to 25%.
+ordered backdrop layers, boundary/surface materials, and foreground art,
+writes the full-colour world captures, reduces the same structure to pure
+black, and shrinks it to 25%.
 
 The fixed 6000 m Bramble capture deliberately includes its hook-vine and
 leaf-shutter signature families. `--bramble-metres=<value>`,
@@ -45,6 +46,14 @@ Every owned zone remains below 0.488 against every other zone. Per-zone nearest
 confusion, every asset's exact source/runtime dimensions and rationale, its
 **ANCHORABLE**/**NOT** state, hashes, and source/runtime/25% fringe counts are
 recorded in `assets/source/zone-art/README.md` and `zone-art-audit.json`.
+
+The 2026-08-01 recording comparison also proves a presentation-specific gate:
+Silk Hollow, Ruined Arboretum, Storm Ridge, and Web City each render two
+different scroll planes; all four resolve finished wall material; Storm scree,
+City highways, and City eggs no longer use polygon fallbacks; and finished art
+has no non-debug collision rim or moving rest-position ghost. Narrow
+authoritative ceiling supports are included in the same geometry export, so
+visible joins do not paint across empty collision space.
 
 These files demonstrate separable structure; they do not replace the required
 small-screen Android readability and success-sentence playtests.
