@@ -13,6 +13,29 @@
 > with Silk Hollow's pattern pool untouched. When the simulation moves, the
 > whole curve moves.
 
+> **SUPERSEDED for every warped band (5 km and up) by owner device evidence,
+> 2026-08-01.** A 48-second recording of the owner playing a debug start at
+> 5 000 m with maxed upgrades — the *same warp condition* these bands use —
+> measures him at **3 113 m to his first death (0.32 deaths/km)**, still alive
+> at 8 554 m, averaging 78.6 m/s.
+>
+> The bot on that band travels **196 m** and dies at **10.23 deaths/km**. The
+> owner goes **18× further** and dies **32× less often per kilometre**.
+>
+> So the warped-band numbers below measure the bot failing at pace, not how
+> hard the course is. Two visible causes: the bot has **never performed a Dive**
+> in any batch, while the recording shows the owner using Dive Pull constantly
+> as a primary verb; and its fixed decision cadence is not viable at ~78 m/s,
+> where it dies in under three seconds.
+>
+> **Do not read zone difficulty off this document.** The 0 m band, which runs
+> the opening ramp rather than a warp, is the only reading here not contradicted
+> by device evidence — and it is still one scripted model, not a person.
+>
+> Kept rather than deleted so the failure is legible. What would replace it: a
+> device reading per zone, or a bot that Dives and engages the anchor classes
+> zones 4–8 introduced.
+
 ## Headline
 
 **The curve now has two cliffs, and the second one is new.** Intermediate bot,
