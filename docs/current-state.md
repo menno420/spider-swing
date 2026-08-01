@@ -185,6 +185,28 @@ without a reported regression.
   all six Bramble textures plus source/build provenance, and independently
   reports the pinned `83ff0bc2…` certificate.
 
+**The economy now has a written model**
+
+- `docs/product/economy-model.md` states the whole currency design before it is
+  built: **flies buy power, stars buy appearance, nothing buys mastery.** Flies
+  are earned only in records-eligible modes and sink only into upgrade tracks;
+  stars are minted once per campaign level and are designed to sink into
+  cosmetics; difficulty modes, region checkpoints, the rescue life and
+  leaderboard standing cannot be bought at any price.
+- **Landed with it:** the two inert upgrade tracks are **withdrawn from sale**.
+  Silk Reserve and Rapid Recovery stay in the catalog, keep their ids, and keep
+  any levels a save already bought — they still apply to a player who paid —
+  but the shop no longer offers them and says why. They were 29% of the total
+  upgrade spend (282 of 987 flies) for zero measured effect.
+- **Designed but deliberately not implemented:** the star sink, a Harsh fly
+  premium, and cosmetic pricing. Each waits on an owner decision recorded in
+  the model, and half-building an economy is worse than describing one.
+- Measured income, full runs from 0 m: ~13 flies/km, near-invariant across
+  skill and difficulty (~46 flies/min at intermediate in both banking modes).
+  Maxing Classic's seven tracks costs 987 flies — about **21.5 minutes** of
+  intermediate play. Harsh currently pays no premium for roughly double the
+  death rate.
+
 **Measured and unresolved — present, but not doing what the shop implies**
 
 - **Two upgrade tracks are inert.** Silk Reserve (Reel capacity) and Rapid
@@ -209,9 +231,11 @@ without a reported regression.
   and tuned for days, so they are stale by an unmeasured margin and were never
   evaluated against it. Treat a difference between them and the baseline as
   missing tuning, not as a tuning signal.
-- No final economy, missions, production monetization, billing SDK, server
-  entitlement, course sharing, moderation, analytics, ads, cloud save, or store
-  publishing. Those remain separate from the authored zone implementation.
+- No missions, production monetization, billing SDK, server entitlement,
+  course sharing, moderation, analytics, ads, cloud save, or store publishing.
+  Those remain separate from the authored zone implementation. The economy is
+  no longer absent — it has a written model and a first implementation step;
+  see above.
 - **The campaign teaching tier now exists** — this boundary moved on purpose.
   Three levels (Reel, Burst, Dive) are reachable from Home → CAMPAIGN. A level
   is cleared only by reaching its goal **and** performing the verb it teaches,

@@ -131,6 +131,19 @@ const ELASTIC_GUARD := &"elastic_guard"
 
 # These five definitions are instantiated for every spider. Keeping the kinds
 # in one table prevents profiles from quietly receiving different core systems.
+## Tracks withdrawn from sale because they are measurably inert.
+##
+## Silk Reserve and Rapid Recovery both change the resolved config and produce
+## bit-identical play at every skill tier: the Reel meter never empties, so
+## capacity, regeneration and empty-lockout are all headroom on a limit the
+## player never reaches (docs/measurements/2026-08-01-upgrade-audit.md).
+##
+## Suspended rather than removed. Levels already bought stay bought, the ids
+## stay valid, and unsuspending is a one-line change if the meter is ever made
+## to bind. What the tracks should ultimately become is an owner decision —
+## see docs/product/economy-model.md.
+const SUSPENDED_TRACK_SUFFIXES := [&"reel_capacity", &"reel_recovery"]
+
 const CORE_TRACKS := [
 	{
 		"suffix": &"reel",
@@ -287,6 +300,14 @@ static func all_upgrades() -> Array[Dictionary]:
 	return result
 
 
+## A suspended track cannot be bought at any level. It is still resolved,
+## still applied at whatever level a save already holds, and still listed —
+## only the purchase is refused.
+static func is_purchasable(upgrade_id: StringName) -> bool:
+	var item := upgrade(upgrade_id)
+	return not item.is_empty() and bool(item.get("purchasable", true))
+
+
 static func cost_for_level(current_level: int) -> int:
 	if current_level < 0 or current_level >= MAX_UPGRADE_LEVEL:
 		return 0
@@ -422,5 +443,7 @@ static func _instantiate_track(
 	item["profile"] = profile_id
 	item["scope"] = scope
 	item["breakthrough_interval"] = BREAKTHROUGH_INTERVAL
+	item["purchasable"] = not StringName(template["suffix"]) in \
+		SUSPENDED_TRACK_SUFFIXES
 	item.erase("suffix")
 	return item
