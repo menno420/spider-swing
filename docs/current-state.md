@@ -279,6 +279,27 @@ without a reported regression.
   simply not the run in the report.
 - Mechanics: `docs/technical/replay-review-loop.md`.
 
+**The model's real gap is recovery, not route choice — 2026-08-01**
+
+- **88–100% of the model's deaths happen with an unused escape in hand**
+  (Burst, Dive or both), and 58–75% happen while detached — in flight toward
+  the thing that kills it, holding a tool that could have changed the outcome.
+  Its explicit panic path (`save_bursts`) fires **0.00 times per run** in every
+  policy at every configuration.
+- This **supersedes the "route choice" diagnosis** carried since the v3
+  rebuild. A route-choice failure arrives with no options; this arrives with
+  options and does not take them. The dive clearance screen only runs on pulls
+  the model was already choosing to make — its awareness is attached to
+  intention, never to danger.
+- Prompted by the owner's account of why Dive and Burst matter: a person ends
+  up somewhere unplanned and uses them to get out. The model gets surprised
+  just as often (95% obstacle deaths) and has no repertoire for the moment
+  after.
+- **Do not hand-write a recovery loop.** The tap stream already holds the
+  owner's own dives and bursts, timestamped, in the moments after things went
+  wrong — fitting it from those is the honest route.
+  See `docs/measurements/2026-08-01-recovery-gap.md`.
+
 **First confirmed exploit — hauling, 2026-08-01**
 
 - The owner watched the lab's 10 773 m run and named it a loophole: it keeps
