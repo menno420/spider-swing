@@ -171,8 +171,8 @@ are easy to get wrong:
 
 ## Bumping the format
 
-`TraceCatalog.INPUT_TRACE_FORMAT` is the single definition, in `domain`,
-because the producer (`tools/simulate.gd`) and the consumer
-(`SwingLabSession`) must agree and neither may own it. Change the record shape
-→ bump the identity in both places → old traces are refused rather than
-replayed into a world they were never recorded in.
+`TraceCatalog.INPUT_TRACE_FORMAT` is the single definition, in `domain`;
+the producer (`tools/simulate.gd`) and the consumer (`SwingLabSession`) both
+reference it and neither carries its own copy. Change the record shape → bump
+that one constant → old traces are refused rather than replayed into a world
+they were never recorded in.

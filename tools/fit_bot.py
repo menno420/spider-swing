@@ -252,6 +252,18 @@ def anomalies(best: dict, baseline: dict) -> list[str]:
         if value is not None and value < 0.25:
             flags.append(f"{label} use fell to {value:.1f}x the default")
 
+    # Near-misses are reported too. The first search's burst ratio was 2.45
+    # against the 2.5 threshold, and "no anomaly flags" was quietly two
+    # percent away from being false — a silence that fragile must be visible.
+    for key, label, threshold in (
+            ("mean_bursts", "Burst", 2.5), ("mean_attaches", "web", 2.5)):
+        value = ratio(key)
+        if value is not None and 0.8 * threshold < value <= threshold:
+            flags.append(
+                f"NEAR MISS: {label} use {value:.2f}x the default, threshold "
+                f"{threshold} — the flag stayed silent by "
+                f"{(threshold - value) / threshold:.0%}")
+
     sticky = float(best.get("mean_sticky_attaches", 0.0))
     if sticky > 0.0 and float(baseline.get("mean_sticky_attaches", 0.0)) <= 0.0:
         flags.append(

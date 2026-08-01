@@ -1177,12 +1177,19 @@ static func _test_trace_watch_is_reachable_and_debug_only(
 		return 0
 	view.free()
 
-	# Stepping wraps, so one tap from either end always lands somewhere real.
+	# Stepping must actually move the selection — a +1/−1 round trip returning
+	# to the start is satisfied by a picker that never moves at all, which is
+	# the bug the first version of this assertion could not see. Two traces
+	# are bundled precisely so this has something real to step between.
 	var first := str(state.selected_trace()["path"])
-	state.select_debug_trace(1)
-	state.select_debug_trace(-1)
+	if traces.size() >= 2:
+		state.select_debug_trace(1)
+		if str(state.selected_trace()["path"]) == first:
+			failures.append("stepping the trace picker did not change the selection")
+			return 0
+		state.select_debug_trace(-1)
 	if str(state.selected_trace()["path"]) != first:
-		failures.append("stepping the trace picker forward and back moved it")
+		failures.append("stepping forward and back did not return to the start")
 		return 0
 
 	state.request_watch_trace()

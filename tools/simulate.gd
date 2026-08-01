@@ -51,6 +51,16 @@ extends SceneTree
 ##                        (max 60 combined points; needs one skill + spider).
 ##                        Names: TuningCatalog ids first, else raw SwingConfig
 ##                        property names (e.g. reel_regeneration_rate).
+##   --bot=k:v,k:v        override the selected tier's POLICY knobs (see
+##                        FITTABLE_PROFILE_KEYS). Perception stays guarded:
+##                        aim error is refused by name, and the rate knobs
+##                        are floored at 2 ticks.
+##   --trace-top=N        write the batch's N furthest runs as replayable
+##                        input traces (requires --trace-dir)
+##   --trace-dir=path     directory the traces are written into
+##   --replay=path        replay one trace and exit 0 only if it lands on
+##                        its own recorded outcome — the determinism check
+##                        behind docs/technical/replay-review-loop.md
 ##   --json=path          write per-run rows and summaries as JSON
 ##
 ## Bot v3 adapts to the configuration it is handed, the way a player learns
@@ -77,9 +87,6 @@ extends SceneTree
 ## playing the same game, whatever its distance says.
 
 const BOT_MODEL_VERSION := 3
-## Trace document identity. Bump when the record shape changes so an old trace
-## fails loudly instead of replaying into a different world.
-const TRACE_FORMAT := "spider-swing-input-trace@1"
 const FIXED_DELTA := 1.0 / 60.0
 const PIXELS_PER_METRE := 10.0
 const DISTANCE_BANDS_M := [500.0, 1000.0, 2000.0, 3500.0]
@@ -1053,19 +1060,28 @@ func _write_traces(
 		var entry: Dictionary = sorted_runs[index]
 		var row: Dictionary = entry["row"]
 		var payload := {
-			"format": TRACE_FORMAT,
+			"format": TraceCatalog.INPUT_TRACE_FORMAT,
 			"bot_model": BOT_MODEL_VERSION,
 			# Everything needed to rebuild the identical world.
 			"setup": {
 				"preset": options["preset"],
-				"spider": options["spider"],
-				"skill": options["skill"],
+				# The ROW's values, never the options': a batch run with
+				# --skill=all or --spider=all would stamp the literal "all"
+				# into setup, and such a trace can neither be verified nor
+				# replayed.
+				"spider": row["spider"],
+				"skill": row["skill"],
 				"upgrades": options["upgrades"],
 				"track": options["track"],
 				"difficulty": options["difficulty"],
 				"reel_style": options["reel_style"],
 				"save_bursts": options["save_bursts"],
 				"start_m": options["start_m"],
+				# The cap the run was captured under. A run that ended at the
+				# cap (cause "timeout") only reproduces if the replay stops at
+				# the same wall — replayed open-ended it keeps going, inputless,
+				# past its own recording and lands somewhere else.
+				"max_seconds": options["max_seconds"],
 				"course_seed": row["course_seed"],
 				"bot_seed": row["seed"],
 				"bot": options["bot"],
@@ -1114,9 +1130,9 @@ func _verify_trace(path: String) -> bool:
 		printerr("[simulate] %s is not a trace document" % path)
 		return false
 	var trace: Dictionary = parsed
-	if str(trace.get("format", "")) != TRACE_FORMAT:
+	if str(trace.get("format", "")) != TraceCatalog.INPUT_TRACE_FORMAT:
 		printerr("[simulate] %s has format '%s', expected '%s'" % [
-			path, trace.get("format", ""), TRACE_FORMAT])
+			path, trace.get("format", ""), TraceCatalog.INPUT_TRACE_FORMAT])
 		return false
 	var setup: Dictionary = trace.get("setup", {})
 	var expected: Dictionary = trace.get("expected", {})
@@ -1145,9 +1161,13 @@ func _verify_trace(path: String) -> bool:
 		[],
 	)
 	driver.replay_records = trace.get("commands", [])
-	# Generous cap: the trace ends when its commands run out or the run dies,
-	# and a cap that truncated it would read as a mismatch.
-	var row := driver.run(int(600.0 / FIXED_DELTA))
+	# Replay under the SAME cap the run was captured under. A death-ended run
+	# is indifferent to it; a timeout-ended run only lands on its recorded
+	# outcome if the replay stops at the same wall. Traces from before the
+	# field existed fall back to a generous 600 s, which those death-ended
+	# traces never reach.
+	var cap_seconds := float(setup.get("max_seconds", 600))
+	var row := driver.run(int(cap_seconds / FIXED_DELTA))
 
 	var checks := [
 		["travelled_m", 0.05], ["distance_m", 0.05], ["seconds", 0.02],
