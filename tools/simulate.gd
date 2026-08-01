@@ -16,6 +16,12 @@ extends SceneTree
 ##                        buckler | all
 ##   --preset=balanced_baseline   named SwingConfig preset
 ##   --upgrades=0         0..20, applied to EVERY track of the selected spider
+##   --track=             isolate ONE upgrade track: `<suffix>` or the full
+##                        `<spider>_<suffix>` id (e.g. `reel_capacity`). Only
+##                        that track is levelled; every other stays at 0, so a
+##                        null result names the track rather than the bundle.
+##                        Combines with --upgrades, which then means "the level
+##                        for this one track".
 ##   --seed=1             base seed for the bot-imperfection RNG
 ##   --course-seed=1337   first production course seed
 ##   --course-seeds=1     number of consecutive course seeds to rotate through
@@ -66,6 +72,9 @@ const SWEEP_MAX_POINTS := 60
 ## Set once from --difficulty before configs resolve; `_resolve_config` is
 ## static-ish in spirit and reads it rather than threading another parameter.
 static var _difficulty_mode: StringName = DifficultyCatalog.MODE_STANDARD
+
+## Set from --track; empty means "every track", the historic behaviour.
+static var _isolated_track: String = ""
 
 ## Imperfection model per skill tier. Ticks are 60 Hz simulation ticks.
 ## `care` is the probability of checking the pull-safety preview (the same
@@ -139,6 +148,10 @@ func _initialize() -> void:
 		options["reel_style"], "on" if bool(options["save_bursts"]) else "off",
 	])
 	_difficulty_mode = StringName(options["difficulty"])
+	_isolated_track = str(options["track"]).strip_edges()
+	if not _isolated_track.is_empty():
+		print("[simulate] isolated upgrade track: %s @ level %d" % [
+			_isolated_track, int(options["upgrades"])])
 	if _difficulty_mode != DifficultyCatalog.MODE_STANDARD:
 		print("[simulate] difficulty mode: %s" % _difficulty_mode)
 	var ablated_verbs := _parse_ablation(str(options["ablate"]))
@@ -194,11 +207,26 @@ func _resolve_config(
 	var progress := PlayerProgress.defaults()
 	progress.selected_spider_id = spider
 	if upgrade_level > 0:
+		var isolated := _isolated_track
+		var matched := isolated.is_empty()
 		for upgrade: Dictionary in SpiderCatalog.upgrades_for(spider):
-			progress.upgrade_levels[StringName(upgrade["id"])] = mini(
+			var upgrade_id := StringName(upgrade["id"])
+			if not isolated.is_empty():
+				# Accept the bare suffix as well as the full `<spider>_<suffix>`
+				# id, so a sweep script does not have to know the spider.
+				var full := str(upgrade_id)
+				if full != isolated and \
+						not full.ends_with("_%s" % isolated):
+					continue
+				matched = true
+			progress.upgrade_levels[upgrade_id] = mini(
 				upgrade_level,
 				SpiderCatalog.MAX_UPGRADE_LEVEL,
 			)
+		if not matched:
+			printerr("[simulate] --track '%s' matches no track on %s" % [
+				isolated, spider])
+			return null
 	var config := SpiderCatalog.resolved_config(preset, progress)
 	DifficultyCatalog.apply_to_config(config, _difficulty_mode)
 	for name: String in overrides:
@@ -526,6 +554,7 @@ func _parse_options(arguments: PackedStringArray) -> Dictionary:
 		"start_m": 0,
 		"ablate": "",
 		"difficulty": "standard",
+		"track": "",
 		"reel_style": "adaptive",
 		"save_bursts": true,
 		"moving_anchor_proof": false,
@@ -564,6 +593,8 @@ func _parse_options(arguments: PackedStringArray) -> Dictionary:
 				options["start_m"] = maxi(0, int(value))
 			"ablate":
 				options["ablate"] = value
+			"track":
+				options["track"] = value
 			"difficulty":
 				if DifficultyCatalog.has_mode(StringName(value)):
 					options["difficulty"] = value
