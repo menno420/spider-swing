@@ -62,6 +62,7 @@ var _upgrade_milestones: Dictionary = {}
 var _creator_slot_buttons: Array[Button] = []
 var _practice_buttons: Dictionary = {}
 var _campaign_buttons: Dictionary = {}
+var _difficulty_buttons: Dictionary = {}
 var _debug_run_route: Button
 var _debug_run_distance_entry: LineEdit
 var _debug_run_distance_value: Label
@@ -222,6 +223,26 @@ func _build_home() -> void:
 	var play := _button(&"Play", "PLAY", GREEN, 68.0)
 	play.pressed.connect(_on_play)
 	menu.add_child(play)
+	# Difficulty governs the standard PLAY run, so it is chosen here rather
+	# than buried in Settings.
+	menu.add_child(_section_label("DIFFICULTY"))
+	var difficulty_row := GridContainer.new()
+	difficulty_row.columns = 3
+	difficulty_row.add_theme_constant_override("h_separation", 8)
+	menu.add_child(difficulty_row)
+	for mode: Dictionary in DifficultyCatalog.all_modes():
+		var mode_id := StringName(mode["id"])
+		var button := _button(
+			StringName("Difficulty_%s" % mode_id),
+			str(mode["name"]),
+			CYAN,
+			48.0,
+		)
+		button.pressed.connect(_on_difficulty.bind(mode_id))
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		difficulty_row.add_child(button)
+		_difficulty_buttons[mode_id] = button
+
 	var routes := GridContainer.new()
 	routes.columns = 2
 	routes.add_theme_constant_override("h_separation", 10)
@@ -1050,6 +1071,8 @@ func _render() -> void:
 	_shop.visible = _state.screen == FrontEndState.Screen.SHOP
 	_creator.visible = _state.screen == FrontEndState.Screen.CREATOR
 	_practice.visible = _state.screen == FrontEndState.Screen.PRACTICE
+	if _home.visible:
+		_refresh_difficulty_buttons()
 	_campaign.visible = _state.screen == FrontEndState.Screen.CAMPAIGN
 	if _campaign.visible:
 		_refresh_campaign_buttons()
@@ -1342,6 +1365,28 @@ func _on_creator() -> void:
 func _on_practice() -> void:
 	if _state != null:
 		_state.show_practice()
+
+
+func _on_difficulty(mode_id: StringName) -> void:
+	if _state != null:
+		_state.request_difficulty(mode_id)
+
+
+func _refresh_difficulty_buttons() -> void:
+	if _state == null:
+		return
+	for mode: Dictionary in _state.difficulty_modes():
+		var mode_id := StringName(mode["id"])
+		if not _difficulty_buttons.has(mode_id):
+			continue
+		var button: Button = _difficulty_buttons[mode_id]
+		var best_m := float(mode["best_distance_pixels"]) / 10.0
+		button.text = "%s%s\n%s" % [
+			"▸ " if bool(mode["selected"]) else "",
+			str(mode["name"]),
+			"best %.0f m" % best_m if best_m > 0.0 else "no run yet",
+		]
+		button.disabled = bool(mode["selected"])
 
 
 func _on_campaign() -> void:

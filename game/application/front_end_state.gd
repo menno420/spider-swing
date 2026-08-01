@@ -7,6 +7,7 @@ class_name FrontEndState
 
 signal changed
 signal play_requested(settings: PlayerSettings)
+signal difficulty_requested(mode_id: StringName)
 signal campaign_play_requested(
 	settings: PlayerSettings,
 	level_id: StringName,
@@ -249,6 +250,28 @@ func request_creator_play() -> void:
 
 ## Campaign levels are always available — the teaching tier exists to be
 ## reached before the player is good enough to unlock anything.
+func request_difficulty(mode_id: StringName) -> void:
+	if not DifficultyCatalog.has_mode(mode_id):
+		return
+	difficulty_requested.emit(mode_id)
+
+
+func difficulty_modes() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for mode: Dictionary in DifficultyCatalog.all_modes():
+		var entry := mode.duplicate(true)
+		entry["selected"] = StringName(mode["id"]) == \
+			DifficultyCatalog.resolve(progress.selected_difficulty)
+		entry["best_distance_pixels"] = progress.best_distance_for_mode(
+			StringName(mode["id"]))
+		result.append(entry)
+	return result
+
+
+func selected_difficulty() -> StringName:
+	return DifficultyCatalog.resolve(progress.selected_difficulty)
+
+
 func request_campaign(level_id: StringName) -> void:
 	if not CampaignCatalog.has_level(level_id):
 		return

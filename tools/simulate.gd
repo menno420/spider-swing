@@ -28,6 +28,8 @@ extends SceneTree
 ##                        *travelled* (`distance_m - start_m`), never on the
 ##                        absolute course position, so a warped band's rates
 ##                        stay comparable with an unwarped one's.
+##   --difficulty=standard  relaxed | standard | harsh — the difficulty mode's
+##                        content and recovery overrides. Never physics.
 ##   --ablate=            comma-separated verbs the bot may NOT use:
 ##                        reel | burst | dive. Bot restriction only — the
 ##                        simulation is untouched — so a segment can be asked
@@ -60,6 +62,10 @@ const FIXED_DELTA := 1.0 / 60.0
 const PIXELS_PER_METRE := 10.0
 const DISTANCE_BANDS_M := [500.0, 1000.0, 2000.0, 3500.0]
 const SWEEP_MAX_POINTS := 60
+
+## Set once from --difficulty before configs resolve; `_resolve_config` is
+## static-ish in spirit and reads it rather than threading another parameter.
+static var _difficulty_mode: StringName = DifficultyCatalog.MODE_STANDARD
 
 ## Imperfection model per skill tier. Ticks are 60 Hz simulation ticks.
 ## `care` is the probability of checking the pull-safety preview (the same
@@ -132,6 +138,9 @@ func _initialize() -> void:
 		options["max_seconds"], options["start_m"],
 		options["reel_style"], "on" if bool(options["save_bursts"]) else "off",
 	])
+	_difficulty_mode = StringName(options["difficulty"])
+	if _difficulty_mode != DifficultyCatalog.MODE_STANDARD:
+		print("[simulate] difficulty mode: %s" % _difficulty_mode)
 	var ablated_verbs := _parse_ablation(str(options["ablate"]))
 	if not ablated_verbs.is_empty():
 		print("[simulate] ABLATED verbs (bot may not use): %s" %
@@ -191,6 +200,7 @@ func _resolve_config(
 				SpiderCatalog.MAX_UPGRADE_LEVEL,
 			)
 	var config := SpiderCatalog.resolved_config(preset, progress)
+	DifficultyCatalog.apply_to_config(config, _difficulty_mode)
 	for name: String in overrides:
 		var value := float(overrides[name])
 		if not TuningCatalog.descriptor(StringName(name)).is_empty():
@@ -312,6 +322,12 @@ func _summarize(
 		"travelled_p90_m": _percentile(travelled, 0.90),
 		"travelled_total_km": total_km,
 		"deaths": int(totals["deaths"]),
+		# Deaths per RUN, not per km. Modes differ in how many lives a run
+		# holds (Harsh disables the rescue life), and deaths/km silently
+		# rewards the mode with fewer lives — Harsh reads 1.64 against
+		# Standard's 2.04 while killing the player twice as fast. Compare
+		# modes on distance survived, and read this to see why a rate moved.
+		"deaths_per_run": float(totals["deaths"]) / count,
 		"deaths_per_km": 0.0 if total_km <= 0.0
 			else float(totals["deaths"]) / total_km,
 		# Poisson standard error on the rate: deaths are counted events, so the
@@ -361,10 +377,10 @@ func _print_summary(summary: Dictionary) -> void:
 		summary["travelled_mean_m"], summary["travelled_median_m"],
 		summary["travelled_p10_m"], summary["travelled_p90_m"],
 		summary["travelled_total_km"]])
-	print("  difficulty  %.2f ±%.2f deaths/km (%d death(s) over %.2f km) · %d timeout run(s)" % [
+	print("  difficulty  %.2f ±%.2f deaths/km · %.2f deaths/run (%d over %.2f km) · %d timeout run(s)" % [
 		summary["deaths_per_km"], summary["deaths_per_km_se"],
-		summary["deaths"], summary["travelled_total_km"],
-		summary["timeout_runs"]])
+		summary["deaths_per_run"], summary["deaths"],
+		summary["travelled_total_km"], summary["timeout_runs"]])
 	print("  per run     %.1fs · %.1f flies (%.1f/km) · %.1f webs · %.1f bursts (%.1f saves) · %.1f dives" % [
 		summary["mean_seconds"], summary["mean_flies"],
 		summary["flies_per_km"], summary["mean_attaches"],
@@ -509,6 +525,7 @@ func _parse_options(arguments: PackedStringArray) -> Dictionary:
 		"max_seconds": 240,
 		"start_m": 0,
 		"ablate": "",
+		"difficulty": "standard",
 		"reel_style": "adaptive",
 		"save_bursts": true,
 		"moving_anchor_proof": false,
@@ -547,6 +564,11 @@ func _parse_options(arguments: PackedStringArray) -> Dictionary:
 				options["start_m"] = maxi(0, int(value))
 			"ablate":
 				options["ablate"] = value
+			"difficulty":
+				if DifficultyCatalog.has_mode(StringName(value)):
+					options["difficulty"] = value
+				else:
+					printerr("[simulate] unknown --difficulty '%s'" % value)
 			"reel-style":
 				if value in ["adaptive", "tap", "hold"]:
 					options["reel_style"] = value

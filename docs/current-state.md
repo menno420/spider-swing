@@ -206,9 +206,20 @@ without a reported regression.
   no leaderboard. Progression is schema 6; a schema-5 save loads with an empty
   star ledger. Later campaign tiers (combining verbs into challenges) and the
   difficulty modes remain unimplemented.
-- Difficulty, rewards beyond campaign stars, and audio still have approved
-  direction in D-0033 but no implementation: per-mode bests
-  with Standard alone competitive; cosmetics/stars rather than flies; generated
+- **Difficulty modes now exist** — this boundary also moved on purpose.
+  Relaxed, Standard and Harsh are chosen on Home and change only what the
+  stream serves and how much recovery there is: obstacle size, gate width, when
+  hazards and tight corridors begin, the rescue life, and whether the rails are
+  lethal. `DifficultyCatalog.PHYSICS_FIELDS` lists every value a mode may never
+  move and a contract asserts each mode leaves all of them identical to
+  Standard's, so the swing feels the same in all three. Standard is the
+  approved preset with an empty override set. Each mode keeps its own best
+  distance (schema 7); only records-eligible modes move the authoritative best
+  that region checkpoints unlock from, which excludes Relaxed because its rails
+  are not lethal; only Standard is leaderboard-eligible. Measured ordering is
+  monotone — Relaxed 3 096 m, Standard 1 714 m, Harsh 1 133 m at intermediate.
+- Rewards beyond campaign stars, and audio, still have approved
+  direction in D-0033 but no implementation: cosmetics/stars rather than flies; generated
   SFX plus individually verified CC0 ambience/music. Difficulty must not alter
   the approved physics preset.
 - No production signing or Google Play publishing. The stable debug key is not a

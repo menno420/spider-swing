@@ -2,10 +2,11 @@ extends RefCounted
 class_name PlayerProgress
 ## Versioned player progression value object.
 
-const SCHEMA_VERSION := 6
+const SCHEMA_VERSION := 7
 const TWENTY_LEVEL_SCHEMA_VERSION := 4
 const REGION_CHECKPOINT_SCHEMA_VERSION := 5
 const CAMPAIGN_STAR_SCHEMA_VERSION := 6
+const DIFFICULTY_MODE_SCHEMA_VERSION := 7
 const STYLE_GARDEN := &"garden"
 const STYLE_AMBER := &"amber"
 const STYLE_COMET := &"comet"
@@ -45,6 +46,10 @@ var applied_settlement_ids: PackedStringArray = PackedStringArray()
 ## Campaign level id -> stars earned. Stars are the campaign's only
 ## currency; campaign play never pays flies (D-0033).
 var campaign_stars: Dictionary = {}
+## Difficulty mode id -> best distance in pixels. Separate per mode (D-0033):
+## a Relaxed run must never read as equivalent to a Harsh one.
+var best_distance_by_mode: Dictionary = {}
+var selected_difficulty: StringName = DifficultyCatalog.MODE_STANDARD
 
 
 static func defaults() -> PlayerProgress:
@@ -151,6 +156,22 @@ static func from_dictionary(data: Dictionary) -> PlayerProgress:
 					progress.best_distance_pixels):
 			if region_id not in progress.unlocked_region_checkpoints:
 				progress.unlocked_region_checkpoints.append(region_id)
+	# Schema 7 splits best distance per difficulty mode. A schema-6 save has
+	# exactly one best and it was necessarily set on Standard, because no
+	# other mode existed — so it migrates to Standard's slot and nowhere else.
+	var raw_bests: Variant = data.get("best_distance_by_mode", {})
+	if raw_bests is Dictionary:
+		for raw_key: Variant in (raw_bests as Dictionary):
+			var mode_id := StringName(str(raw_key))
+			if not DifficultyCatalog.has_mode(mode_id):
+				continue
+			var value := maxf(0.0, float((raw_bests as Dictionary)[raw_key]))
+			progress.best_distance_by_mode[str(mode_id)] = value
+	if source_schema < DIFFICULTY_MODE_SCHEMA_VERSION:
+		progress.best_distance_by_mode[str(DifficultyCatalog.MODE_STANDARD)] = \
+			progress.best_distance_pixels
+	progress.selected_difficulty = DifficultyCatalog.resolve(StringName(str(
+		data.get("selected_difficulty", DifficultyCatalog.MODE_STANDARD))))
 	# Schema 6 adds campaign stars. A schema-5 save simply has none: the
 	# campaign did not exist, so an empty ledger is the truthful migration
 	# rather than anything inferred.
@@ -206,6 +227,8 @@ func to_dictionary() -> Dictionary:
 		"unlocked_region_checkpoints": checkpoints,
 		"applied_settlement_ids": Array(applied_settlement_ids),
 		"campaign_stars": campaign_stars.duplicate(true),
+		"best_distance_by_mode": best_distance_by_mode.duplicate(true),
+		"selected_difficulty": str(selected_difficulty),
 	}
 
 
@@ -219,6 +242,11 @@ func upgrade_level(upgrade_id: StringName) -> int:
 
 func has_region_checkpoint(region_id: StringName) -> bool:
 	return region_id in unlocked_region_checkpoints
+
+
+func best_distance_for_mode(mode_id: StringName) -> float:
+	return maxf(0.0, float(best_distance_by_mode.get(
+		str(DifficultyCatalog.resolve(mode_id)), 0.0)))
 
 
 func campaign_stars_for(level_id: StringName) -> int:

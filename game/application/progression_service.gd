@@ -76,6 +76,17 @@ func apply_settlement(
 	)
 	progress.total_flies += collected
 	progress.spendable_flies += collected
+	# Every mode keeps its own best, including the ones that set no record —
+	# that is what "separate best distance per mode" means. Only a
+	# records-eligible mode also moves the authoritative best, which is what
+	# region checkpoints unlock from.
+	var run_mode := DifficultyCatalog.resolve(settlement.run_mode)
+	var mode_key := str(run_mode)
+	if DifficultyCatalog.has_mode(settlement.run_mode):
+		progress.best_distance_by_mode[mode_key] = maxf(
+			float(progress.best_distance_by_mode.get(mode_key, 0.0)),
+			settlement.distance_pixels,
+		)
 	if settlement.records_eligible:
 		progress.best_distance_pixels = maxf(
 			progress.best_distance_pixels,
@@ -101,6 +112,7 @@ func apply_settlement(
 		"unlocked": unlocked,
 		"flies_granted": collected,
 		"records_eligible": settlement.records_eligible,
+		"leaderboards_eligible": settlement.leaderboards_eligible,
 		"star_granted": star_granted,
 	}
 
@@ -115,6 +127,18 @@ func unlock_region_checkpoint(
 			region_id in progress.unlocked_region_checkpoints:
 		return false
 	progress.unlocked_region_checkpoints.append(region_id)
+	return true
+
+
+func select_difficulty(
+	progress: PlayerProgress,
+	mode_id: StringName,
+) -> bool:
+	if not DifficultyCatalog.has_mode(mode_id):
+		return false
+	if progress.selected_difficulty == mode_id:
+		return false
+	progress.selected_difficulty = mode_id
 	return true
 
 
