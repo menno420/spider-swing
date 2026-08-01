@@ -314,8 +314,11 @@ product decisions.
   and the backdrop transition honors Reduced Motion.
 - Bramble's normal pool contains no Ancient Forest pattern id; representative
   seeds expose every hook/shutter variant, semantic art kinds survive geometry
-  copies and snapshots, every obstacle interrupts the neutral centre line, and
-  a conservative level-zero Garden route sweep remains clear.
+  copies and snapshots, every obstacle interrupts a neutral Garden path, and a
+  conservative level-zero route sweep remains clear. A device-led timed
+  envelope also requires open recovery around every hard chunk, at least 0.85
+  seconds between pair commitments at full speed, and bounded obstacle width
+  and corridor occupancy.
 - custom spider/web presentation interpolates fixed snapshots, snaps teleports,
   honors reduced motion, and uses mipmaps for heavily minified moving art.
 - an arbitrary debug start inherits practice settlement ownership and cannot
@@ -337,7 +340,7 @@ product decisions.
 
 ## Owner device playtest
 
-Install `0.22.0-audio-playtest` over `0.19.0-depth-testing` or any later
+Install `0.22.1-bramble-clearance` over `0.19.0-depth-testing` or any later
 stable-key build without uninstalling; both use the stable signer and the update
 should preserve the save.
 Only a device that never installed `0.19.0` or later needs the one final
@@ -366,9 +369,11 @@ Before the traversal checklist, prove the new depth-access gate:
   hazards should approach from the right before the lime-lit backdrop replaces
   Ancient Forest, while Reduced Motion makes the backdrop switch immediate;
 - start directly at 5000 m and confirm the Bramble pack appears at once. Normal
-  hazards must now read as deep sideways hook vines and enormous diagonal leaf
-  shutters—not green versions of the old mound, stump, or hanging pod. Mirrored
-  pairs should demand a visible high↔low commitment rather than a neutral
+  hazards must read as deep sideways hook vines and diagonal leaf shutters—not
+  green versions of the old mound, stump, or hanging pod. Every hard chunk must
+  be followed by visibly open preparation/recovery space; mirrored pairs should
+  give a readable high↔low transition instead of two near-touching walls. The
+  first sequence must be traversable at `MAX`, while still displacing a neutral
   centre line. Compare `OWNED` and `MAX`: Reel should reward an early route read
   and arc setup, while Burst remains the faster late height correction. This is
   a role check, not a request to make both controls equal;

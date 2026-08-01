@@ -44,6 +44,10 @@ frontmatter keeps the score.
 
 (Captured ideas, each with a state and a next destination — none left at `raw`.)
 
+- [Timed traversal envelopes for authored obstacle sequences](timed-traversal-envelopes-2026-08-01.md)
+  — routed to a structured cross-zone validator only after PR #86's Bramble
+  device verdict proves the first implementation.
+
 ## Shipped (survive window open)
 
 (Promoted ideas whose PR merged; the revert-scan flips them `survived`

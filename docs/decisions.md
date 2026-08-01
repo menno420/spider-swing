@@ -735,3 +735,29 @@
 - provenance: Menno's 2026-07-31 device verdict that the newly skinned
   obstacles were still pretty much the same and must be genuinely different so
   Bramble feels like a new area
+
+## [D-0040] Bramble difficulty comes from spaced vertical commitments, not obstacle density
+
+- status: decided
+- date: 2026-08-01
+- verdict: Bramble Canopy keeps its exclusive hook-vine and diagonal leaf-
+  shutter vocabulary, but every hard chunk is isolated by an open recovery
+  chunk. A pair owns one readable high↔low commitment across the chunk instead
+  of placing two almost-touching walls, and the authored Bramble silhouettes no
+  longer inherit Ancient Forest's generic distance-growth multiplier. The
+  Garden collision circle must still be displaced away from a neutral line;
+  distinct art is not permission for collision mass to consume the route.
+  Physics, maximum speed, Reel, Burst, Dive and upgrades remain unchanged.
+- why: Five 1040×480 owner recordings from `0.22.0-audio-playtest` show the
+  first few new Bramble obstacles are effectively impassable even with max
+  upgrades. Source explains the visual result: representative seeds can emit
+  four hard chunks consecutively, including three two-obstacle pairs; pair
+  centres provide only about 0.55 seconds at full pace; and the supposedly
+  authored region shapes are enlarged again by a generic late-distance scale.
+  The prior point-guide sweep proved only that an ideal circle could be placed
+  along a line. It did not prove that a swinging player had time to reach that
+  line. A timed envelope now rejects adjacent hard chunks, underspaced pairs,
+  and shapes occupying too much of the corridor.
+- provenance: Menno's five 2026-08-01 Android recordings and verdict that the
+  obstacles are very nice but too large and too close for the first sequence to
+  be passable

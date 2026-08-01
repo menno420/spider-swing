@@ -36,7 +36,7 @@ without a reported regression.
   pattern, reached checkpoints, and bounded idempotent-settlement history.
   Older settings default audio/haptics on; every progression migration remains
   one-way and explicit.
-- Build `0.22.0-audio-playtest` (Android version code 40, package
+- Build `0.22.1-bramble-clearance` (Android version code 41, package
   `com.menno420.spiderswing.dev`) retains the stable conventional public debug
   identity introduced by `0.19.0-depth-testing` in
   `.github/android/debug.keystore`. The workflow pins its file and certificate
@@ -85,9 +85,13 @@ without a reported regression.
   kind travels beside each polygon and anchor flag so presentation selects the
   inspected art explicitly. Foreground art resolves from obstacle world
   position; the backdrop crossfades for 2.2 seconds or changes immediately
-  under Reduced Motion. Silk Hollow now replaces shared forest silhouettes with
-  concave silk membranes, suspended cocoons, ceiling/floor-grown spindles,
-  lattices, and a supported thread-eye precision gap.
+  under Reduced Motion. Device correction now alternates every single/pair
+  commitment with a completely open chunk, expands pair timing from the former
+  overcrowded half-second change, and prevents the authored shapes from being
+  enlarged again by Ancient Forest's distance-growth curve. Silk Hollow now
+  replaces shared forest silhouettes with concave silk membranes, suspended
+  cocoons, ceiling/floor-grown spindles, lattices, and a supported thread-eye
+  precision gap.
 
 **Depth-testing access**
 
@@ -153,9 +157,9 @@ without a reported regression.
 
 **Verification**
 
-- Local source passes the 165-contract engine runner with the exact
+- Local source passes the 170-contract engine runner with the exact
   `4.7.1.stable.official.a13da4feb` Standard binary. The declared suite contains
-  11 bootstrap/build, 56 deterministic physics, 10 zone, 11 spider-biology,
+  11 bootstrap/build, 57 deterministic physics, 10 zone, 11 spider-biology,
   10 Campaign, 9 difficulty, 4 upgrade-wiring, 2 economy, 6 generated-SFX,
   25 mobile GUI/layout, and 21 front-end/settings/progression checks. The full
   required `python3 tools/verify.py --require-godot` result is recorded at
@@ -172,10 +176,13 @@ without a reported regression.
   have an explicit mobile commit path; pre-run `−`/`+` choices reach the real
   practice session; normal Play clears the overlay; and both surfaces gate
   correctly at 1280×720.
-- Bramble's content contract rejects any Ancient Forest pattern id, requires all
-  eight hook/shutter variants across representative seeds, preserves explicit
-  left/right art kinds through geometry snapshots, removes a neutral-centre
-  coast, and sweeps a conservative Garden-sized route between every guide.
+- Bramble's content contracts reject any Ancient Forest pattern id, require all
+  eight hook/shutter variants across representative seeds, preserve explicit
+  left/right art kinds through geometry snapshots, interrupt a neutral Garden
+  path, and sweep a conservative route between every guide. The device-led timed
+  envelope additionally rejects adjacent hard chunks, pair commitments below
+  0.85 seconds at full speed, widths above 340 px, or heights above 48% of the
+  usable corridor. It was falsified first against the shipped values.
 - `tools/check_architecture.py` passes all 14 self-test fixtures and the live
   source scan. `python3 bootstrap.py check --strict` passes all content checks;
   during implementation its only hold is the session card's deliberate
@@ -327,6 +334,16 @@ world captures remain sortable as 320×180 pure-black silhouettes. Android
 small-screen readability and all six human success sentences remain owner
 playtest gates.
 
+**Bramble clearance device correction (PR #86).** Five owner recordings from
+`0.22.0-audio-playtest` reject PR #69's passability claim: the new silhouettes
+are distinct, but the first sequence is too large and too dense to traverse.
+The static fly-guide test was insufficient. The correction keeps the art and
+vertical-displacement identity, isolates hard chunks with open recovery,
+spreads pair commitments across the authored route, and reduces collision
+occupancy without changing any movement value. A non-gating v3 bot smoke moved
+from its documented 217 m median to 652 m, but still fails owner calibration and
+is not balance evidence. The new APK remains the decisive device proof.
+
 **Web anchors are now surface-typed (2026-07-31, owner).** Rails, walls and
 ceiling-grown hazards answer web taps; floor-grown hazards are lethal but not
 tappable. Owner evidence: every accidental Dive Pull came from an obstacle, not
@@ -367,13 +384,19 @@ reference. The 5000 m recordings establish a healthy late-game distinction:
 Reel shapes an arc when the next route is read early, while Burst performs the
 fast late height correction. PR #62 preserved those values and fixed the
 background/material transition, but its first device review rejected the
-obstacles as old roles under new skins. This build replaces that inherited pool
-with hook-vine and leaf-shutter geometry without retuning either control. Silk
-Hollow and Zones 4–8 now have their own geometry and art; the decisive remaining
-gate is whether every zone stays readable and mechanically legible on-device.
+obstacles as old roles under new skins. PR #69 replaced that inherited pool
+with hook-vine and leaf-shutter geometry without retuning either control; the
+  owner's next device pass then rejected its scale and cadence. PR #86 is that
+  clearance correction. Silk Hollow and Zones 4–8 now have their own geometry
+  and art; the decisive remaining gate is whether every zone stays readable and
+  mechanically legible on-device.
 
 ## Recently shipped (newest first)
 
+- **2026-08-01 — Bramble clearance correction (PR #86).** Device evidence
+  supersedes the point-guide proof: Bramble now alternates open recovery with
+  smaller single/pair commitments, gives each pair a full readable transition,
+  and carries a timed full-speed envelope regression without retuning physics.
 - **2026-08-01 — Audio playtest slice.** Build `0.22.0-audio-playtest` replaces
   the renderer's temporary sine cue with 25 original generated samples, one
   event-driven audio director, persistent effects/haptics controls, exact

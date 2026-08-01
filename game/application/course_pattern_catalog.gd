@@ -70,16 +70,22 @@ const DEEP_FOREST_PATTERNS := [
 ## None of these ids are inherited from Ancient Forest: the device-reviewed
 ## material swap was not enough while the underlying obstacle roles remained
 ## stumps, pods, curtains, and ordinary alternating rail growth.
-const BRAMBLE_CANOPY_PATTERNS := [
+const BRAMBLE_CANOPY_SINGLE_PATTERNS := [
 	{"id": &"canopy_hook_high", "lane": &"high", "difficulty": 4},
 	{"id": &"canopy_hook_low", "lane": &"low", "difficulty": 4},
 	{"id": &"canopy_leaf_high", "lane": &"high", "difficulty": 4},
 	{"id": &"canopy_leaf_low", "lane": &"low", "difficulty": 4},
+]
+
+const BRAMBLE_CANOPY_PAIR_PATTERNS := [
 	{"id": &"canopy_hook_high_low", "lane": &"weave", "difficulty": 4},
 	{"id": &"canopy_hook_low_high", "lane": &"weave", "difficulty": 4},
 	{"id": &"canopy_shutter_high_low", "lane": &"weave", "difficulty": 4},
 	{"id": &"canopy_shutter_low_high", "lane": &"weave", "difficulty": 4},
 ]
+
+const BRAMBLE_CANOPY_PATTERNS := \
+	BRAMBLE_CANOPY_SINGLE_PATTERNS + BRAMBLE_CANOPY_PAIR_PATTERNS
 
 ## Region three emphasizes exact lines around suspended hazards and rail-grown
 ## openings. A fixed recovery pocket follows every short precision set.
@@ -264,8 +270,23 @@ static func _base_pattern_for_chunk(
 	if bool(region.get("checkpoint", false) or region.get("safe_entry", false)) \
 			and local_chunk == 0:
 		return RECOVERY_PATTERN.duplicate(true)
-	var recovery_interval := 6 \
-		if region_id == CourseRegionCatalog.BRAMBLE_CANOPY else 5
+	if region_id == CourseRegionCatalog.BRAMBLE_CANOPY:
+		# Bramble's axis is vertical displacement, not density. A whole open
+		# chunk before and after every commitment lets the player prepare and
+		# settle at full pace; pair slots still demand the authored high↔low
+		# change instead of stacking unrelated hazards around it.
+		if posmod(local_chunk, 2) == 0:
+			return RECOVERY_PATTERN.duplicate(true)
+		var bramble_pool := BRAMBLE_CANOPY_SINGLE_PATTERNS \
+			if posmod(local_chunk, 4) == 1 \
+			else BRAMBLE_CANOPY_PAIR_PATTERNS
+		return _seeded_pattern(
+			bramble_pool,
+			floori(float(local_chunk) / 2.0),
+			course_seed,
+			CourseRegionCatalog.region_index_for_id(region_id),
+		)
+	var recovery_interval := 5
 	if region_id != CourseRegionCatalog.ANCIENT_FOREST and \
 			posmod(local_chunk, recovery_interval) == recovery_interval - 1:
 		return RECOVERY_PATTERN.duplicate(true)
@@ -285,17 +306,6 @@ static func _base_pattern_for_chunk(
 		# The paired rotor/pane lesson is authored into the slot immediately
 		# before the existing recovery cadence (local chunk 4 modulo 5).
 		return RUINED_ARBORETUM_PATTERNS[7].duplicate(true)
-	if region_id == CourseRegionCatalog.BRAMBLE_CANOPY and \
-			posmod(local_chunk, 4) == 2:
-		return {
-			"id": (
-				&"canopy_shutter_high_low"
-					if posmod(local_chunk + course_seed, 2) == 0
-					else &"canopy_shutter_low_high"
-			),
-			"lane": &"weave",
-			"difficulty": 4,
-		}
 	return _seeded_pattern(
 		pool,
 		local_chunk,

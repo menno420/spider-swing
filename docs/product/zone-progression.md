@@ -4,8 +4,9 @@
 >
 > Owner-approved direction (2026-07-31). Zones 1–8 are **shipped**; Zones 1–3
 > retain frozen persisted ids/ranges, while Zones 4–8 are append-only content.
-> Owner-rejected content remains correctable. PR #73 implemented Zones 4–8;
-> their success sentences remain real-device acceptance gates.
+> Owner-rejected content remains correctable. Bramble's identity is shipped but
+> its revised clearance remains an open device gate. PR #73 implemented Zones
+> 4–8; their success sentences remain real-device acceptance gates.
 > This document remains the source of
 > truth for zone identity, hazards and mechanics. Balance numbers live in
 > `SwingConfig` and the pattern catalog, never here.
@@ -26,7 +27,7 @@ ends up feeling like a re-skin.
 | # | Zone | Range (m) | Axis it owns | State |
 |---|---|---|---|---|
 | 1 | Ancient Forest | 0–5 000 | Teaching — wide recovery rhythm | **shipped** |
-| 2 | Bramble Canopy | 5 000–10 000 | Vertical displacement | **shipped · device-corrected** |
+| 2 | Bramble Canopy | 5 000–10 000 | Vertical displacement | **shipped · clearance device gate open** |
 | 3 | Silk Hollow | 10 000–15 000 | Precision around suspended hazards | **shipped** |
 | 4 | Ruined Arboretum | 15 000–20 000 | **Timing** — the world moves | **shipped · device gate open** |
 | 5 | Storm Ridge | 20 000–25 000 | **External force** — your arc is fought | **shipped · device gate open** |
@@ -39,8 +40,11 @@ Zones 1–3 have frozen ids and ranges. Their ids (`ancient_forest`,
 breaks saves. That is not permission to freeze content the owner has tested and
 rejected: Bramble's first visual pass kept the old obstacle roles under new art,
 so its normal pool now owns hook-vine and diagonal leaf-shutter families that
-Ancient Forest cannot select. Zones 4–8 append to `REGIONS`; they do not
-restructure or renumber the persisted entries.
+Ancient Forest cannot select. Its first obstacle-identity pass then made those
+families too large and dense to traverse reliably. Bramble now isolates every
+vertical commitment with open preparation/recovery space; its axis is height
+change, not wall-to-wall obstacle density. Zones 4–8 append to `REGIONS`; they
+do not restructure or renumber the persisted entries.
 
 ## Constraints any zone must satisfy
 
