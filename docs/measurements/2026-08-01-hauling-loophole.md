@@ -92,6 +92,44 @@ passages the recordings show are correct play. It simply cannot be the
 anti-hauling mechanic, because at any given distance hauling and swinging move
 at the same speed.
 
+### What else fails to discriminate — measured, not assumed
+
+Before proposing a fix it is worth knowing which axes are dead ends. Each of
+these was measured across the two styles:
+
+| axis | swinging | hauling | discriminates? |
+| --- | ---: | ---: | --- |
+| Ground speed | 79.1 m/s | 59.0 m/s | **no** — both sit on their own pace-curve target |
+| Mean height | 385 px | 405 px | **no** — same band |
+| Vertical span | 432 px | 423 px | **no** — same band |
+| Web angle | 15.3° | 12.5° | no |
+| Web length | 382 px | 377 px | no |
+| **Arc per web** | **59.9°** | **21.3°** | **yes — 2.8×** |
+| **Attach rate** | **0.63/s** | **1.34/s** | **yes — 2.1×** |
+
+The height result specifically refutes an attractive idea: *"hauling hugs the
+ceiling, so threaten the ceiling."* It does not. Both styles use the same
+vertical band, so a predator patrolling the top cannot tell them apart either.
+
+### The structural reason, and what it rules out
+
+Hauling works because **the pace curve makes forward motion free.**
+`SpiderMotor` drives horizontal velocity toward target whether you swing or
+not, so the web is never needed for *propulsion* — only as fall-arrest. Once
+that is true, swinging is optional, and a style that uses the web purely to
+avoid falling is strictly less work.
+
+The corollary matters more than the diagnosis: **any penalty denominated in
+speed washes out**, because the drive restores it within about a second. That
+disqualifies, together:
+
+- a speed-based chaser;
+- momentum-on-release scaled by arc (my own earlier first choice — it
+  penalises exit speed, which the drive refunds);
+- an angle-dependent attach catch (same objection).
+
+A fix has to act on something the drive does not refund.
+
 ## What the axis actually is
 
 The two styles differ by **a factor of 2.8 in arc per web** and a factor of
@@ -102,32 +140,72 @@ Three candidates, in the order worth trying. All are physics changes to an
 owner-approved baseline, so all are his call and all need a device playtest —
 none are implemented.
 
-**1. Reward the arc (positive, preferred).** Momentum preserved on release
-scales with the arc swept since attach. A wide swing exits faster than a short
-haul. This *extends* the project's existing principle — "momentum preservation
-on release is the core skill" — rather than bolting on a punisher, and it
-makes swinging the profitable choice instead of the mandatory one.
+**1. Silk as a per-web cost (preferred).** Each attach spends from a finite
+silk pool that refills over time. At 0.63 attaches/s it sustains; at 1.34/s it
+does not. This caps **attach rate** — one of the only two discriminating axes —
+in a currency the horizontal drive cannot refund.
 
-**2. Angle-dependent attach catch.** `attachment_catch_fraction` is a flat
-0.08 today. Scale it with how vertical the new web is: catching a rope
-directly overhead while moving horizontally should cost more than swinging
-into one placed ahead. Physically motivated, and it taxes the exploit's
-signature move specifically.
+It is also the most thematically honest option in the game: a spider's silk is
+finite, the game is named for it, and the two upgrade tracks that currently
+buy relief on a meter the owner only strains at L0 (Silk Reserve, Rapid
+Recovery) would gain a second and much more legible job. It makes the resource
+the *web* budget, not only the *reel* budget.
 
-**3. Re-attach refractory window.** A brief lockout after release. Blunt, and
-it directly conflicts with the fast recoveries the owner values — he sustains
-18 taps/s when recovering. Listed for completeness; I would not start here.
+**2. Spent anchors, generalised (good companion).** The simulation already
+marks rotten and collapsing anchors spent via `_spent_anchor_sources`. Extend
+it: any anchor becomes unusable for a short window after release. Ratcheting
+in place stops working, and reaching a *fresh* anchor requires carrying
+momentum forward — which is a swing. Reuses machinery that already exists and
+is already tested.
 
-## The bird still earns its place
+**3. Momentum-on-release scaled by arc.** Attractive and probably too weak on
+its own — see the structural note above: the drive refunds exit speed. Worth
+keeping as *flavour* on top of 1 or 2, where it rewards the intended style
+without being the thing that enforces it.
 
-Nothing above argues against the predator. It solves a *different* and real
-problem — pacing pressure, tension, and a reason not to dawdle — and it fits
-the fiction. It simply is not this exploit's fix, and tuning it to be one is
-what this document exists to prevent.
+**4. Re-attach refractory window.** Blunt, and it directly conflicts with the
+fast recoveries the owner values — he sustains 18 taps/s when recovering.
+Listed for completeness; I would not start here. Note that option 2 achieves
+the same end without punishing a recovery aimed at a *different* anchor.
 
-If it ships, the position-based form (a chaser that advances at a steady world
-rate, so distance banked is a buffer) preserves the stabilise-then-run pattern
-the recordings show is correct play. A pure speed floor does not.
+## How the bird earns its place
+
+Not as the anti-hauling mechanic — measurement rules that out on both speed
+and height. It earns its place on experience, and one of those reasons is
+better than the rest.
+
+**It makes an invisible system visible.** The pace curve already pins the
+player's speed and already escalates with distance, and *nothing on screen
+says so*. A closing predator does not create pressure; it **reveals pressure
+that already exists**, and turns a silent tuning curve into something felt.
+That alone justifies it.
+
+**Failure gets a face.** Every run currently ends against geometry. A second,
+legible failure mode with an antagonist gives runs different endings and a
+villain, which a distance counter cannot.
+
+**It gives the rescue a cost.** The rescue life is currently close to free —
+it returns the player upstream and the run continues. If losing ground means
+the bird closes, the rescue becomes a *comeback arc* instead of a rewind, and
+the owner's recorded stabilise-then-run pattern becomes a deliberate, visible
+gamble rather than an invisible one.
+
+**It fits the identity work.** Birds are the spider's actual predator, and the
+project already maintains `docs/product/spider-biology-folio.md`. This is
+identity, not only mechanics.
+
+### The form it should take
+
+**Position-based, not speed-based.** A chaser advancing at a steady world rate
+means banked distance is a buffer, so the brief stabilising passages the
+recordings show as correct play survive. A speed floor kills them.
+
+**It needs a reason to vary.** If it advances at a constant rate against a
+speed the pace curve already pins, the outcome is deterministic and therefore
+dull — always escapable, or never. The cleanest source of variance is the one
+above: **the bird closes when ground is lost**, and ground is lost mainly by
+dying into the rescue. That couples it to the one existing mechanic that
+currently has no downside.
 
 ## The lab is now an exploit regression test
 

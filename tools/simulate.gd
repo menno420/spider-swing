@@ -455,6 +455,7 @@ func _summarize(
 		"attach_searches": 0.0, "class_choices": 0.0,
 		"mean_web_angle_deg": 0.0, "vertical_share": 0.0,
 		"mean_swing_arc_deg": 0.0, "mean_web_length_px": 0.0,
+		"mean_height_px": 0.0, "height_span_px": 0.0,
 	}
 	var rescues := 0
 	var pull_deaths := 0
@@ -557,6 +558,8 @@ func _summarize(
 		"vertical_share": float(totals["vertical_share"]) / count,
 		"mean_swing_arc_deg": float(totals["mean_swing_arc_deg"]) / count,
 		"mean_web_length_px": float(totals["mean_web_length_px"]) / count,
+		"mean_height_px": float(totals["mean_height_px"]) / count,
+		"height_span_px": float(totals["height_span_px"]) / count,
 		# Share of web searches that offered more than one anchor class, i.e.
 		# the share in which the class preference could change anything at all.
 		"class_choice_rate": 0.0 if totals["attach_searches"] <= 0.0
@@ -606,6 +609,8 @@ func _print_summary(summary: Dictionary) -> void:
 		summary["mean_anchor_failures"]])
 	print("  anchor pick %.1f%% of web searches offered a class choice" % [
 		summary["class_choice_rate"] * 100.0])
+	print("  height      mean y %.0f px · vertical span %.0f px (lower y = higher up)" % [
+		summary["mean_height_px"], summary["height_span_px"]])
 	print("  swing shape %.1f° mean web angle · %.0f px web · %.1f° arc per web · %.0f%% of hang time near-vertical" % [
 		summary["mean_web_angle_deg"], summary["mean_web_length_px"],
 		summary["mean_swing_arc_deg"], summary["vertical_share"] * 100.0])
@@ -1287,6 +1292,13 @@ class RunDriver:
 	var attached_ticks := 0
 	var vertical_ticks := 0
 	var web_angle_sum := 0.0
+	## Vertical band occupied. A style that hugs the ceiling can be pressured
+	## by something that threatens the ceiling; a style that uses the whole
+	## height cannot. Measured because the design decision rides on it.
+	var height_sum := 0.0
+	var height_min := 1.0e9
+	var height_max := -1.0e9
+	var height_ticks := 0
 	var web_length_sum := 0.0
 	var swing_arc_sum := 0.0
 	var attach_angle_min := 0.0
@@ -1436,6 +1448,10 @@ class RunDriver:
 			elif attach_arc_open:
 				swing_arc_sum += attach_angle_max - attach_angle_min
 				attach_arc_open = false
+			height_sum += world.position.y
+			height_min = minf(height_min, world.position.y)
+			height_max = maxf(height_max, world.position.y)
+			height_ticks += 1
 			var was_pulling := world.pull_active
 			var was_reeling := world.web.reel_active
 			var energy_before := world.web.reel_energy
@@ -1559,6 +1575,10 @@ class RunDriver:
 				if attached_ticks > 0 else 0.0),
 			"mean_swing_arc_deg": (
 				swing_arc_sum / attaches if attaches > 0 else 0.0),
+			"mean_height_px": (
+				height_sum / height_ticks if height_ticks > 0 else 0.0),
+			"height_span_px": (
+				height_max - height_min if height_ticks > 0 else 0.0),
 			"attached_share": (
 				float(attached_ticks) / maxi(1, world.tick)),
 		}

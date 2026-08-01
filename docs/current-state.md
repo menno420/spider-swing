@@ -292,9 +292,17 @@ without a reported regression.
   where its range's mean target is 57.2 — it is travelling at the speed the
   game sets, not dawdling. The curve has already equalised the thing a chaser
   would measure.
-- Candidate fixes act on **arc**, not speed, and are unimplemented owner calls:
-  reward momentum by arc swept (preferred, extends the existing principle),
-  or scale the attach catch by how vertical the new web is.
+- **Height does not discriminate either** — both styles occupy the same band
+  (mean y 405 vs 385, span 423 vs 432), so a ceiling-patrolling predator
+  cannot tell them apart. Only arc per web (2.8×) and attach rate (2.1×) do.
+- **Any penalty denominated in speed washes out**, because `SpiderMotor`
+  refunds it within about a second. That disqualifies a speed chaser, an
+  angle-dependent attach catch, and arc-scaled release momentum as *enforcers*.
+- Candidate fixes act on a currency the drive cannot refund, and are
+  unimplemented owner calls: **silk as a per-web cost** (caps attach rate,
+  thematically native, gives the reel upgrade tracks a second job), or
+  **generalised spent anchors** (reuses `_spent_anchor_sources`, forces
+  reaching forward to a fresh anchor, which requires a swing).
 - The lab now reports swing shape every batch, so any fix can be tested by
   re-running the search and checking whether hauling still wins.
   See `docs/measurements/2026-08-01-hauling-loophole.md`.
