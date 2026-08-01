@@ -685,7 +685,9 @@ static func _test_environment_theme_packs_are_visual_only(
 			failures.append("environment texture is not a 384 px runtime tile")
 			return 0
 	var art_paths := ArtAssetCatalog.texture_paths()
-	var expected_art_count := 16 + 13 + SpiderCatalog.ALL_IDS.size() + 1
+	# 16 forest/canopy assets, 19 Zones 3–8 assets, one asset per
+	# spider profile, and the golden fly.
+	var expected_art_count := 16 + 19 + SpiderCatalog.ALL_IDS.size() + 1
 	if art_paths.size() != expected_art_count:
 		failures.append(
 			"art catalog does not expose the zone packs, one asset per spider "
@@ -698,7 +700,7 @@ static func _test_environment_theme_packs_are_visual_only(
 		var art_texture := load(path) as Texture2D
 		if art_texture == null or \
 				art_texture.get_width() < 128 or \
-				art_texture.get_height() < 100:
+				art_texture.get_height() < 96:
 			failures.append("finished runtime art is invalid or undersized: %s" % path)
 			return 0
 

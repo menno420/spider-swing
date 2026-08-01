@@ -37,6 +37,16 @@
 > Kept, not deleted, because the method and its failure are worth reading. The
 > lab's blind spot is now recorded in `docs/technical/simulation-lab.md`.
 
+> **Second correction, 2026-08-01 afternoon.** Standing-start L0 recordings
+> settle the reel question from the other end: **at level 0 the owner empties
+> the meter in every recorded run** — four separate empty episodes in one of
+> them, up to 24% of a run spent at 0%, the "Reel energy empty" line on
+> screen. "A resource that is never exhausted cannot be improved by having
+> more of it" was an L20-only observation: the resource is never exhausted at
+> L20 *because* the upgrades relieved it. Silk Reserve and Rapid Recovery sell
+> relief that a reel-heavy player genuinely feels at low levels. Measured in
+> `2026-08-01-owner-play-calibration.md` § "The reel meter at L0".
+
 ## Headline
 
 **Buying every upgrade makes the player 25% worse, and no track measurably

@@ -9,7 +9,8 @@ runtime foreground art, writes the full-colour world captures, reduces the same
 structure to pure black, and shrinks it to 25%.
 
 The fixed 6000 m Bramble capture deliberately includes its hook-vine and
-leaf-shutter signature families; `--bramble-metres=<value>` supports comparison
+leaf-shutter signature families. `--bramble-metres=<value>`,
+`--silk-metres=<value>`, and `--arboretum-metres=<value>` support comparison
 probes without changing the recorded sample.
 
 Run:
@@ -39,7 +40,7 @@ and active hazards from the same captured tick.
 
 ## Result
 
-The highest pair overlap is 0.497, between the two pre-existing forest zones.
+The highest pair overlap is 0.504, between the two pre-existing forest zones.
 Every owned zone remains below 0.488 against every other zone. Per-zone nearest
 confusion, every asset's exact source/runtime dimensions and rationale, its
 **ANCHORABLE**/**NOT** state, hashes, and source/runtime/25% fringe counts are

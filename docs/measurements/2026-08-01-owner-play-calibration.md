@@ -138,14 +138,86 @@ read frame by frame rather than argued about. Run `726dcc65`, 1 459 frames at
 | Episodes below 90% | 17, longest 1.13 s |
 
 **A skilled player at L20 never brings the meter below three-quarters.** The
-deepest dip spends roughly 20 energy — 27% of the L20 reservoir, and still
-only 33% of the level-0 one. The meter does not bind at either end of the
-upgrade track for this player.
+deepest dip spends roughly 20 energy — 27% of the L20 reservoir.
+
+~~The meter does not bind at either end of the upgrade track for this
+player.~~ **Wrong, and corrected the same day** — this was inferred from L20
+footage alone. Standing-start L0 recordings (below) show the meter emptying in
+every run at level 0. The L20 half of the claim stands; the extrapolation to
+L0 was survivorship.
 
 That is worth recording precisely because it *rescues* a conclusion this
 document's first draft helped discard. Calling the bot's "the meter never
 empties" circular was correct about the method — its 6% stopping rule made the
 result unfalsifiable — but the claim itself is independently true on device.
+
+## Standing start, unupgraded — measured
+
+Three afternoon recordings (2026-08-01, build `0.23.0-obstacle-art-playtest`,
+**post-#86 geometry**), all normal runs from 0 m at **UPGRADES L0** via the
+debug screen, decoded at their native 120 fps. Clips were trimmed for upload
+limits, so two starts are cut; every run's **end** is on film, so these are
+completed runs, not lower bounds.
+
+| Run | Visible span | End of run | Deaths | Sustained speed |
+| --- | ---: | ---: | ---: | ---: |
+| *(tail only)* | — | 835.4 m | 2 | — |
+| `c089936c` | 0 → 1 358.5 m | **1 358.5 m** | 2 | ~73 m/s |
+| `4bb8e6b2` | 748.7 → 3 416.5 m | **3 416.5 m** | 2 | ~74 m/s |
+| `aa8c06e9` | 1 406.4 → 4 746.9 m | **4 746.9 m** | 2 | ~78 m/s |
+
+Median of the four completed runs: **~2.4 km**. The owner's earlier "~2 km
+unupgraded" statement was made before the #86 clearance fix and reads as
+conservative on this build — his best L0 run here is 4.7 km. The same
+kilometre-scale spread seen at the warp appears at L0 (0.8 km to 4.7 km).
+
+Input at L0 (same show-taps detection, native rate):
+
+| Run | Taps | Rate | Peak 1 s | Median gap |
+| --- | ---: | ---: | ---: | ---: |
+| `c089936c` | 62 | 2.89 /s | 8 /s | 67 ms |
+| `4bb8e6b2` | 145 | 3.68 /s | 12 /s | 122 ms |
+| `aa8c06e9` | 220 | 4.85 /s | 15 /s | 67 ms |
+
+Slower than his L20-warp 6.60/s average — input rate scales with game pace —
+but the burst structure is unchanged: 37–41% of gaps at or under 50 ms.
+
+### The reel meter at L0 — a correction
+
+> **Corrected 2026-08-01, same day.** The claim above that the meter "does not
+> bind at either end of the upgrade track" was made from L20 recordings only,
+> and the owner contradicted it from play: *"I ran out of reel on my first run
+> but used it excessively."* He is right. This is the third time today device
+> evidence has corrected a lab-side claim, and the second time the correction
+> came from him before the pipeline found it.
+
+Same ring-reading as the L20 measurement, pull-state frames excluded:
+
+| Run | Median fill | Minimum | Empty episodes (≤5%) | Time at empty |
+| --- | ---: | ---: | ---: | ---: |
+| `c089936c` (reel-heavy) | 55% | **0%** | **4** | **5.17 s — 24% of the run** |
+| `4bb8e6b2` | 82% | **0%** | 3 | 2.48 s |
+| `aa8c06e9` | 68% | **0%** | 2 | 3.24 s |
+
+One frame of `aa8c06e9` catches the feedback line **"Reel energy empty"** on
+screen. So the corrected, two-ended truth is:
+
+- **At L20 the meter never fell below 73%** across a full run. It does not
+  bind there.
+- **At L0 it empties routinely** — in every recorded run, up to a quarter of
+  one run's duration spent at empty.
+
+That reverses the upgrade story these two facts were previously read to
+support. Silk Reserve and Rapid Recovery do not "sell headroom on a resource
+that does not bind" — they sell **relief of a constraint that binds hard at
+L0** for a reel-heavy player, and the untroubled L20 meter is what a *relieved*
+constraint looks like, not an inert one. Measuring only L20 play and calling
+the tracks pointless was survivorship: the upgrade had already removed the
+problem being looked for.
+
+The lab still cannot see any of this: bot v3's reel use is far lighter than
+the owner's (`reel empties` 0.00 in every batch at every level), so the reel
+tracks remain unmeasurable by bot — now confirmed from both ends of the track.
 
 ## Acceptance targets
 
@@ -159,7 +231,7 @@ magnitude is.
 | Warp 5 000 m, upgrades L20 | median ≥1 500 m per life, ≤0.8 deaths/km | recordings above |
 | Warp 5 000 m, upgrades L20 | sustained 45–80 m/s | recordings above |
 | Warp 5 000 m, upgrades L20 | run-to-run spread of **kilometres**, not metres | recordings above |
-| Standing start, no upgrades | ~2 000 m | owner statement |
+| Standing start, no upgrades | inside 0.8–4.7 km, median ~2.4 km | measured, four completed runs |
 | Standing start, max upgrades | >5 000 m | owner statement |
 | Any configuration | upgrades must **improve** the result | owner statement |
 | Any configuration | run-average input ≤18 taps/s | 60 fps tap stream |

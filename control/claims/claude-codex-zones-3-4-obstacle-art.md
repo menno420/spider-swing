@@ -1,1 +1,0 @@
-- `claude/codex-zones-3-4-obstacle-art` · **Replace Silk Hollow and Ruined Arboretum placeholder obstacle rendering with production foreground art; preserve geometry, motion, anchor rules, physics, and backgrounds; exclude Bramble PR #86** · assets/runtime/zone-art, assets/source/zone-art, ArtAssetCatalog, SwingLabView, visual contracts, session/current-state records · 2026-08-01
