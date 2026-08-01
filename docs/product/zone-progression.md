@@ -343,17 +343,18 @@ remain owned by their existing builders.
 - `tools/simulate.gd --moving-anchor-proof` passes the production moving-pivot
   solver for twenty complete cycles without accumulating relative energy.
 - Every region pool contains at least seven patterns and admits multiple
-  coprime seeded strides; the dedicated 11-contract zone group covers each
+  coprime seeded strides; the dedicated 15-contract zone group covers each
   density gate and mechanic above without changing the approved Balanced
-  physics values. The complete live suite is 171 contracts; the added contract
-  locks finished-art routing for every obstacle family visible in the owner's
-  10 km/15 km recordings.
-- Build `0.23.0-obstacle-art-playtest` retains the five distinct original
+  physics values. The complete live suite is 175 contracts; the added contracts
+  lock two-plane depth, wall/surface/obstacle routing, diagnostic-only outlines,
+  and ceiling-support continuity for every family visible in the owner's
+  10–30 km recordings.
+- Build `0.24.0-environment-finish-playtest` retains the five distinct original
   samples for mist, glass, rot, gust, and charge and replaces the recorded flat
   Silk/Arboretum obstacle fallbacks with explicit single-object art. Their
   700–820 px deterministic lead remains simulation-owned.
 - The full-color captures and 25% black-silhouette sort test live under
-  `docs/visual/zones/`; all twenty generated assets pass source, runtime, and
+  `docs/visual/zones/`; all thirty-three generated assets pass source, runtime, and
   gameplay-scale transparency/fringe inspection.
 
 The success sentences above remain human device-playtest exit criteria. An

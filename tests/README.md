@@ -29,8 +29,8 @@ failure never hides the rest.
 
 ## What exists now
 
-171 runtime contracts: eleven bootstrap/build checks plus fifty-seven
-deterministic physics, eleven zone-progression, eleven spider-biology, ten
+175 runtime contracts: eleven bootstrap/build checks plus fifty-seven
+deterministic physics, fifteen zone-progression, eleven spider-biology, ten
 Campaign, nine difficulty, four upgrade-wiring, four simulation-lab input, two
 economy, six generated-SFX, twenty-five mobile HUD, and twenty-one front-end
 checks. The bootstrap group pins the public stable debug signer and

@@ -32,19 +32,32 @@ const BALLOONER_SPIDER := &"ballooner_spider"
 const BUCKLER_SPIDER := &"springtail_spider"
 const GOLDEN_FLY := &"golden_fly"
 const HOLLOW_BACKDROP := &"hollow_backdrop"
+const HOLLOW_BACKDROP_NEAR := &"hollow_backdrop_near"
 const HOLLOW_COCOON := &"hollow_cocoon"
 const HOLLOW_SPINDLE := &"hollow_spindle"
 const HOLLOW_LATTICE_STRUT := &"hollow_lattice_strut"
+const HOLLOW_CEILING_WALL := &"hollow_ceiling_wall"
+const HOLLOW_FLOOR_WALL := &"hollow_floor_wall"
 const ARBORETUM_BACKDROP := &"arboretum_backdrop"
+const ARBORETUM_BACKDROP_NEAR := &"arboretum_backdrop_near"
 const ARBORETUM_PANE := &"arboretum_pane"
 const ARBORETUM_BEAM := &"arboretum_beam"
 const ARBORETUM_ROTOR_ARM := &"arboretum_rotor_arm"
 const ARBORETUM_ROTOR_HUB := &"arboretum_rotor_hub"
 const ARBORETUM_COLLAPSED_FRAME := &"arboretum_collapsed_frame"
+const ARBORETUM_CEILING_WALL := &"arboretum_ceiling_wall"
+const ARBORETUM_FLOOR_WALL := &"arboretum_floor_wall"
 const STORM_BACKDROP := &"storm_backdrop"
+const STORM_BACKDROP_NEAR := &"storm_backdrop_near"
 const STORM_SPIRE := &"storm_spire"
+const STORM_SCREE := &"storm_scree"
+const STORM_WALL := &"storm_wall"
 const WEB_CITY_BACKDROP := &"web_city_backdrop"
+const WEB_CITY_BACKDROP_NEAR := &"web_city_backdrop_near"
 const WEB_CITY_RESIDENT := &"web_city_resident"
+const WEB_CITY_HIGHWAY := &"web_city_highway"
+const WEB_CITY_EGG := &"web_city_egg"
+const WEB_CITY_WALL := &"web_city_wall"
 const ASHEN_BACKDROP := &"ashen_backdrop"
 const ASHEN_ROTTEN := &"ashen_rotten"
 const ASHEN_SOUND := &"ashen_sound"
@@ -98,14 +111,22 @@ const ASSETS := {
 		"res://assets/runtime/collectibles/golden-forest-fly.png",
 	HOLLOW_BACKDROP:
 		"res://assets/runtime/zone-art/silk-hollow-backdrop.png",
+	HOLLOW_BACKDROP_NEAR:
+		"res://assets/runtime/zone-art/silk-hollow-backdrop-near.png",
 	HOLLOW_COCOON:
 		"res://assets/runtime/zone-art/silk-hollow-cocoon.png",
 	HOLLOW_SPINDLE:
 		"res://assets/runtime/zone-art/silk-hollow-spindle.png",
 	HOLLOW_LATTICE_STRUT:
 		"res://assets/runtime/zone-art/silk-hollow-lattice-strut.png",
+	HOLLOW_CEILING_WALL:
+		"res://assets/runtime/zone-art/silk-hollow-ceiling-wall.png",
+	HOLLOW_FLOOR_WALL:
+		"res://assets/runtime/zone-art/silk-hollow-floor-wall.png",
 	ARBORETUM_BACKDROP:
 		"res://assets/runtime/zone-art/ruined-arboretum-backdrop.png",
+	ARBORETUM_BACKDROP_NEAR:
+		"res://assets/runtime/zone-art/ruined-arboretum-backdrop-near.png",
 	ARBORETUM_PANE:
 		"res://assets/runtime/zone-art/ruined-arboretum-pane.png",
 	ARBORETUM_BEAM:
@@ -116,14 +137,32 @@ const ASSETS := {
 		"res://assets/runtime/zone-art/ruined-arboretum-rotor-hub.png",
 	ARBORETUM_COLLAPSED_FRAME:
 		"res://assets/runtime/zone-art/ruined-arboretum-collapsed-frame.png",
+	ARBORETUM_CEILING_WALL:
+		"res://assets/runtime/zone-art/ruined-arboretum-ceiling-wall.png",
+	ARBORETUM_FLOOR_WALL:
+		"res://assets/runtime/zone-art/ruined-arboretum-floor-wall.png",
 	STORM_BACKDROP:
 		"res://assets/runtime/zone-art/storm-ridge-backdrop.png",
+	STORM_BACKDROP_NEAR:
+		"res://assets/runtime/zone-art/storm-ridge-backdrop-near.png",
 	STORM_SPIRE:
 		"res://assets/runtime/zone-art/storm-ridge-spire.png",
+	STORM_SCREE:
+		"res://assets/runtime/zone-art/storm-ridge-scree.png",
+	STORM_WALL:
+		"res://assets/runtime/zone-art/storm-ridge-wall.png",
 	WEB_CITY_BACKDROP:
 		"res://assets/runtime/zone-art/web-city-backdrop.png",
+	WEB_CITY_BACKDROP_NEAR:
+		"res://assets/runtime/zone-art/web-city-backdrop-near.png",
 	WEB_CITY_RESIDENT:
 		"res://assets/runtime/zone-art/web-city-resident.png",
+	WEB_CITY_HIGHWAY:
+		"res://assets/runtime/zone-art/web-city-highway.png",
+	WEB_CITY_EGG:
+		"res://assets/runtime/zone-art/web-city-egg.png",
+	WEB_CITY_WALL:
+		"res://assets/runtime/zone-art/web-city-wall.png",
 	ASHEN_BACKDROP:
 		"res://assets/runtime/zone-art/ashen-hollow-backdrop.png",
 	ASHEN_ROTTEN:
@@ -160,6 +199,114 @@ static func spider_style_tint(style: StringName) -> Color:
 		PlayerProgress.STYLE_COMET:
 			return Color(0.73, 0.88, 1.0, 1.0)
 	return Color.WHITE
+
+
+## Ordered parallax layers for the recorded post-10 km environments.
+##
+## The first texture establishes distant identity while the transparent near
+## layer moves more than twice as quickly. Both stay below gameplay contrast;
+## they never encode collision, anchorability, or a safe route.
+static func zone_backdrop_art_specs(visual_profile: StringName) -> Array[Dictionary]:
+	match visual_profile:
+		CourseRegionCatalog.VISUAL_HOLLOW:
+			return [
+				_backdrop_art_spec(HOLLOW_BACKDROP, 0.050, 0.76),
+				_backdrop_art_spec(HOLLOW_BACKDROP_NEAR, 0.145, 0.22),
+			]
+		CourseRegionCatalog.VISUAL_ARBORETUM:
+			return [
+				_backdrop_art_spec(ARBORETUM_BACKDROP, 0.046, 0.76),
+				_backdrop_art_spec(ARBORETUM_BACKDROP_NEAR, 0.135, 0.24),
+			]
+		CourseRegionCatalog.VISUAL_STORM:
+			return [
+				_backdrop_art_spec(STORM_BACKDROP, 0.042, 0.78),
+				_backdrop_art_spec(STORM_BACKDROP_NEAR, 0.155, 0.22),
+			]
+		CourseRegionCatalog.VISUAL_WEB_CITY:
+			return [
+				_backdrop_art_spec(WEB_CITY_BACKDROP, 0.045, 0.78),
+				_backdrop_art_spec(WEB_CITY_BACKDROP_NEAR, 0.150, 0.20),
+			]
+		CourseRegionCatalog.VISUAL_ASHEN:
+			return [_backdrop_art_spec(ASHEN_BACKDROP, 0.065, 0.78)]
+		CourseRegionCatalog.VISUAL_MIST:
+			return [_backdrop_art_spec(MIST_BACKDROP, 0.065, 0.78)]
+		_:
+			return []
+
+
+static func _backdrop_art_spec(
+	asset_id: StringName,
+	scroll_scale: float,
+	opacity: float,
+) -> Dictionary:
+	return {
+		"asset_id": asset_id,
+		"scroll_scale": scroll_scale,
+		"opacity": opacity,
+	}
+
+
+## Finished material for a continuous authored-zone corridor boundary.
+##
+## The first half of every boundary polygon remains the authoritative playable
+## profile. These textures are aligned outward from that profile and never
+## define collision or add an inward silhouette. Separate ceiling/floor assets
+## preserve the affordance: ceiling rims read as overhead structure while
+## floor foundations stay blunt and are never reused for floor-grown hazards.
+static func zone_boundary_art_spec(
+	visual_profile: StringName,
+	is_ceiling: bool,
+) -> Dictionary:
+	match visual_profile:
+		CourseRegionCatalog.VISUAL_HOLLOW:
+			return _boundary_art_spec(
+				HOLLOW_CEILING_WALL if is_ceiling else HOLLOW_FLOOR_WALL,
+				118.0 if is_ceiling else 108.0,
+			)
+		CourseRegionCatalog.VISUAL_ARBORETUM:
+			return _boundary_art_spec(
+				ARBORETUM_CEILING_WALL if is_ceiling \
+				else ARBORETUM_FLOOR_WALL,
+				108.0 if is_ceiling else 112.0,
+			)
+		CourseRegionCatalog.VISUAL_STORM:
+			return _boundary_art_spec(STORM_WALL, 106.0, true)
+		CourseRegionCatalog.VISUAL_WEB_CITY:
+			return _boundary_art_spec(WEB_CITY_WALL, 112.0, true)
+		_:
+			return {}
+
+
+static func _boundary_art_spec(
+	asset_id: StringName,
+	draw_height: float,
+	mirror_outward: bool = false,
+) -> Dictionary:
+	return {
+		"asset_id": asset_id,
+		"draw_height": draw_height,
+		"world_repeat": 2048.0,
+		"segment_overlap": 24.0,
+		"mirror_outward": mirror_outward,
+	}
+
+
+## Finished art for safe non-obstacle anchor surfaces.
+static func zone_surface_art_spec(
+	visual_id: StringName,
+	anchor_class: StringName,
+) -> Dictionary:
+	if visual_id not in [
+		ZoneCourseBuilder.V_CITY_HIGHWAY,
+		ZoneCourseBuilder.V_CITY_STICKY,
+	]:
+		return {}
+	return _art_spec(
+		WEB_CITY_HIGHWAY, &"oriented",
+		Vector2(12.0, 8.0 if anchor_class == CourseGeometry.ANCHOR_STICKY else 5.0),
+	)
 
 
 ## Central presentation contract for authored-zone obstacle art.
@@ -205,9 +352,23 @@ static func zone_obstacle_art_spec(
 			return _art_spec(
 				ARBORETUM_ROTOR_ARM, &"oriented", Vector2(16.0, 8.0))
 		ZoneCourseBuilder.V_RIDGE_SPIRE:
+			if content_id == &"ridge_spire_support":
+				return _art_spec(
+					STORM_SPIRE, &"oriented", Vector2(8.0, 5.0))
 			return _art_spec(
 				STORM_SPIRE, &"contain", Vector2(10.0, 10.0),
 				Vector2(132.0, 260.0))
+		ZoneCourseBuilder.V_RIDGE_SCREE:
+			return _art_spec(
+				STORM_SCREE, &"contain", Vector2(8.0, 8.0),
+				Vector2(300.0, 220.0))
+		ZoneCourseBuilder.V_CITY_EGG:
+			if content_id == &"city_egg_support":
+				return _art_spec(
+					WEB_CITY_HIGHWAY, &"oriented", Vector2(8.0, 5.0))
+			return _art_spec(
+				WEB_CITY_EGG, &"contain", Vector2(8.0, 8.0),
+				Vector2(96.0, 150.0))
 		ZoneCourseBuilder.V_CITY_RESIDENT:
 			return _art_spec(
 				WEB_CITY_RESIDENT, &"contain", Vector2.ZERO,

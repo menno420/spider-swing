@@ -69,6 +69,7 @@ func _capture_zone(metres: float) -> Dictionary:
 			boundaries.append(_polygon_rows(polygon, world_left))
 	var surfaces: Array = []
 	var surface_anchor_classes: Array = []
+	var surface_visual_ids: Array = []
 	for index in range(geometry.surfaces.size()):
 		var sample := CourseMotion.sample_polygon(
 			geometry.surfaces[index], geometry.surface_motion_spec(index),
@@ -78,6 +79,7 @@ func _capture_zone(metres: float) -> Dictionary:
 			surfaces.append(_polygon_rows(polygon, world_left))
 			surface_anchor_classes.append(str(
 				geometry.surface_anchor_class(index)))
+			surface_visual_ids.append(str(geometry.surface_visual_id(index)))
 	var decorations: Array = []
 	for index in range(geometry.decorations.size()):
 		var sample := CourseMotion.sample_polygon(
@@ -118,6 +120,7 @@ func _capture_zone(metres: float) -> Dictionary:
 		"boundaries": boundaries,
 		"surfaces": surfaces,
 		"surface_anchor_classes": surface_anchor_classes,
+		"surface_visual_ids": surface_visual_ids,
 		"decorations": decorations,
 		"obstacles": obstacles,
 		"obstacle_anchorable": obstacle_anchorable,

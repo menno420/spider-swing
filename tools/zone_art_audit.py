@@ -19,13 +19,22 @@ SOURCE = ROOT / "assets/source/zone-art"
 
 ASSETS: dict[str, tuple[tuple[int, int], tuple[int, int]]] = {
     "silk-hollow-backdrop": ((1672, 941), (1280, 720)),
+    "silk-hollow-backdrop-near": ((1672, 941), (1280, 720)),
     "silk-hollow-cocoon-cluster": ((1254, 1254), (512, 512)),
     "ruined-arboretum-backdrop": ((1672, 941), (1280, 720)),
+    "ruined-arboretum-backdrop-near": ((1672, 941), (1280, 720)),
     "ruined-arboretum-pane": ((1254, 1254), (512, 512)),
     "storm-ridge-backdrop": ((1672, 941), (1280, 720)),
+    "storm-ridge-backdrop-near": ((1672, 941), (1280, 720)),
     "storm-ridge-spire": ((1254, 1254), (512, 512)),
+    "storm-ridge-scree": ((1536, 1024), (768, 512)),
+    "storm-ridge-wall": ((1774, 887), (2048, 192)),
     "web-city-backdrop": ((1672, 941), (1280, 720)),
+    "web-city-backdrop-near": ((1672, 941), (1280, 720)),
     "web-city-resident": ((1254, 1254), (512, 512)),
+    "web-city-highway": ((1774, 887), (1024, 96)),
+    "web-city-egg": ((1024, 1536), (256, 512)),
+    "web-city-wall": ((1774, 887), (2048, 192)),
     "ashen-hollow-backdrop": ((1672, 941), (1280, 720)),
     "ashen-hollow-rotten-branch": ((1774, 887), (768, 384)),
     "ashen-hollow-sound-branch": ((1774, 887), (768, 384)),
@@ -34,27 +43,52 @@ ASSETS: dict[str, tuple[tuple[int, int], tuple[int, int]]] = {
     "silk-hollow-cocoon": ((1024, 1536), (384, 768)),
     "silk-hollow-spindle": ((1024, 1536), (256, 768)),
     "silk-hollow-lattice-strut": ((1816, 866), (768, 128)),
+    "silk-hollow-ceiling-wall": ((2027, 776), (2048, 192)),
+    "silk-hollow-floor-wall": ((1930, 815), (2048, 192)),
     "ruined-arboretum-beam": ((2172, 724), (768, 96)),
     "ruined-arboretum-rotor-arm": ((1774, 887), (768, 96)),
     "ruined-arboretum-rotor-hub": ((1254, 1254), (256, 256)),
     "ruined-arboretum-collapsed-frame": ((1254, 1254), (640, 512)),
+    "ruined-arboretum-ceiling-wall": ((2172, 724), (2048, 192)),
+    "ruined-arboretum-floor-wall": ((2172, 724), (2048, 192)),
 }
 
 GREEN_KEY_ASSETS = {
     "silk-hollow-cocoon",
     "silk-hollow-spindle",
     "silk-hollow-lattice-strut",
+    "silk-hollow-backdrop-near",
+    "silk-hollow-ceiling-wall",
+    "silk-hollow-floor-wall",
+    "web-city-highway",
+    "web-city-wall",
 }
 
-BACKDROPS = {
-    "ancient_forest": ROOT / "assets/runtime/forest-biome/forest-backdrop-mid.png",
-    "bramble_canopy": ROOT / "assets/runtime/bramble-canopy/bramble-backdrop-mid.png",
-    "silk_hollow": RUNTIME / "silk-hollow-backdrop.png",
-    "ruined_arboretum": RUNTIME / "ruined-arboretum-backdrop.png",
-    "storm_ridge": RUNTIME / "storm-ridge-backdrop.png",
-    "web_city": RUNTIME / "web-city-backdrop.png",
-    "ashen_hollow": RUNTIME / "ashen-hollow-backdrop.png",
-    "deep_mist": RUNTIME / "deep-mist-backdrop.png",
+BACKDROP_LAYERS: dict[str, list[tuple[Path, float]]] = {
+    "ancient_forest": [
+        (ROOT / "assets/runtime/forest-biome/forest-backdrop-mid.png", 1.0)
+    ],
+    "bramble_canopy": [
+        (ROOT / "assets/runtime/bramble-canopy/bramble-backdrop-mid.png", 1.0)
+    ],
+    "silk_hollow": [
+        (RUNTIME / "silk-hollow-backdrop.png", 0.76),
+        (RUNTIME / "silk-hollow-backdrop-near.png", 0.22),
+    ],
+    "ruined_arboretum": [
+        (RUNTIME / "ruined-arboretum-backdrop.png", 0.76),
+        (RUNTIME / "ruined-arboretum-backdrop-near.png", 0.24),
+    ],
+    "storm_ridge": [
+        (RUNTIME / "storm-ridge-backdrop.png", 0.78),
+        (RUNTIME / "storm-ridge-backdrop-near.png", 0.22),
+    ],
+    "web_city": [
+        (RUNTIME / "web-city-backdrop.png", 0.78),
+        (RUNTIME / "web-city-backdrop-near.png", 0.20),
+    ],
+    "ashen_hollow": [(RUNTIME / "ashen-hollow-backdrop.png", 1.0)],
+    "deep_mist": [(RUNTIME / "deep-mist-backdrop.png", 1.0)],
 }
 
 ZONE_COLORS: dict[str, dict[str, str]] = {
@@ -120,6 +154,14 @@ OBSTACLE_ART: dict[str, dict[str, Any]] = {
         "asset": "storm-ridge-spire", "placement": "contain",
         "overscan": (10, 10), "minimum_size": (132, 260),
     },
+    "ridge_scree": {
+        "asset": "storm-ridge-scree", "placement": "contain",
+        "overscan": (8, 8), "minimum_size": (300, 220),
+    },
+    "city_egg": {
+        "asset": "web-city-egg", "placement": "contain",
+        "overscan": (8, 8), "minimum_size": (96, 150),
+    },
     "city_resident": {
         "asset": "web-city-resident", "placement": "contain",
         "overscan": (0, 0), "minimum_size": (184, 184),
@@ -135,6 +177,39 @@ OBSTACLE_ART: dict[str, dict[str, Any]] = {
     "mist_lit_anchor": {
         "asset": "deep-mist-lit-beam", "placement": "contain",
         "overscan": (10, 10),
+    },
+}
+
+BOUNDARY_ART: dict[str, dict[str, Any]] = {
+    "silk_hollow": {
+        "ceiling": "silk-hollow-ceiling-wall",
+        "floor": "silk-hollow-floor-wall",
+        "ceiling_height": 118,
+        "floor_height": 108,
+        "overlap": 24,
+    },
+    "ruined_arboretum": {
+        "ceiling": "ruined-arboretum-ceiling-wall",
+        "floor": "ruined-arboretum-floor-wall",
+        "ceiling_height": 108,
+        "floor_height": 112,
+        "overlap": 24,
+    },
+    "storm_ridge": {
+        "ceiling": "storm-ridge-wall",
+        "floor": "storm-ridge-wall",
+        "ceiling_height": 106,
+        "floor_height": 106,
+        "overlap": 24,
+        "mirror_floor": True,
+    },
+    "web_city": {
+        "ceiling": "web-city-wall",
+        "floor": "web-city-wall",
+        "ceiling_height": 112,
+        "floor_height": 112,
+        "overlap": 24,
+        "mirror_floor": True,
     },
 }
 
@@ -207,9 +282,12 @@ def _audit_assets(
             runtime = runtime_image.convert("RGBA")
         if runtime.size != runtime_size:
             failures.append(f"{name}: runtime {runtime.size}, expected {runtime_size}")
+        # Godot samples these runtime textures bilinearly. Audit that actual
+        # gameplay-scale reconstruction; Lanczos' negative lobes can invent a
+        # key-colored RGB overshoot that the renderer never produces.
         gameplay = runtime.resize(
             (max(1, runtime.width // 4), max(1, runtime.height // 4)),
-            Image.Resampling.LANCZOS,
+            Image.Resampling.BILINEAR,
         )
         previous = recorded.get(name, {})
         if source_path.exists():
@@ -265,9 +343,7 @@ def _audit_assets(
 
 
 def _backdrop_mask(zone_id: str) -> Image.Image:
-    path = BACKDROPS[zone_id]
-    with Image.open(path) as opened:
-        rgba = opened.convert("RGBA").resize((1280, 720), Image.Resampling.LANCZOS)
+    rgba = _backdrop_rgba(zone_id)
     alpha = rgba.getchannel("A")
     if zone_id == "bramble_canopy" and alpha.getextrema() == (255, 255):
         # PR #69's current source is chroma-preview white, not this session's
@@ -278,13 +354,21 @@ def _backdrop_mask(zone_id: str) -> Image.Image:
 
 
 def _backdrop_rgba(zone_id: str) -> Image.Image:
-    path = BACKDROPS[zone_id]
-    with Image.open(path) as opened:
-        rgba = opened.convert("RGBA").resize((1280, 720), Image.Resampling.LANCZOS)
-    if zone_id == "bramble_canopy" and rgba.getchannel("A").getextrema() == (255, 255):
-        luminance = rgba.convert("L")
-        rgba.putalpha(luminance.point(lambda value: 0 if value > 244 else 255))
-    return rgba
+    canvas = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
+    for path, opacity in BACKDROP_LAYERS[zone_id]:
+        with Image.open(path) as opened:
+            rgba = opened.convert("RGBA").resize(
+                (1280, 720), Image.Resampling.LANCZOS
+            )
+        if zone_id == "bramble_canopy" and rgba.getchannel("A").getextrema() == (255, 255):
+            luminance = rgba.convert("L")
+            rgba.putalpha(luminance.point(lambda value: 0 if value > 244 else 255))
+        if opacity < 1.0:
+            rgba.putalpha(rgba.getchannel("A").point(
+                lambda value: round(value * opacity)
+            ))
+        canvas.alpha_composite(rgba)
+    return canvas
 
 
 def _draw_polygons(mask: Image.Image, zone: dict[str, Any]) -> None:
@@ -313,6 +397,16 @@ def _obstacle_art_spec(
             "asset": "ruined-arboretum-rotor-hub",
             "placement": "contain", "overscan": (8, 8),
             "minimum_size": (84, 84),
+        }
+    elif visual_id == "ridge_spire" and content_id == "ridge_spire_support":
+        resolved = {
+            "asset": "storm-ridge-spire",
+            "placement": "oriented", "overscan": (8, 5),
+        }
+    elif visual_id == "city_egg" and content_id == "city_egg_support":
+        resolved = {
+            "asset": "web-city-highway",
+            "placement": "oriented", "overscan": (8, 5),
         }
     return resolved
 
@@ -408,6 +502,67 @@ def _composite_obstacle_art(
         _composite_contain(canvas, artwork, points, spec)
 
 
+def _repeat_horizontal_crop(
+    artwork: Image.Image, source_x: int, width: int
+) -> Image.Image:
+    repeated = Image.new("RGBA", (max(1, width), artwork.height), (0, 0, 0, 0))
+    target_x = 0
+    cursor = source_x % artwork.width
+    while target_x < repeated.width:
+        span = min(artwork.width - cursor, repeated.width - target_x)
+        repeated.alpha_composite(
+            artwork.crop((cursor, 0, cursor + span, artwork.height)),
+            (target_x, 0),
+        )
+        target_x += span
+        cursor = 0
+    return repeated
+
+
+def _composite_boundary_art(
+    canvas: Image.Image,
+    points: list[tuple[float, float]],
+    zone_id: str,
+) -> None:
+    spec = BOUNDARY_ART.get(zone_id)
+    if spec is None or len(points) < 4:
+        return
+    profile = points[: len(points) // 2]
+    is_ceiling = sum(point[1] for point in profile) / len(profile) < 360.0
+    asset_name = str(spec["ceiling"] if is_ceiling else spec["floor"])
+    draw_height = int(spec["ceiling_height"] if is_ceiling else spec["floor_height"])
+    overlap = int(spec["overlap"])
+    with Image.open(RUNTIME / f"{asset_name}.png") as opened:
+        artwork = opened.convert("RGBA")
+    for start, finish in zip(profile, profile[1:]):
+        if start[0] > finish[0]:
+            start, finish = finish, start
+        delta_x = finish[0] - start[0]
+        delta_y = finish[1] - start[1]
+        segment_length = math.hypot(delta_x, delta_y)
+        if segment_length < 8.0:
+            continue
+        visual_length = max(1, round(segment_length + overlap * 2))
+        strip = _repeat_horizontal_crop(
+            artwork, round(min(start[0], finish[0])) - overlap, visual_length
+        ).resize((visual_length, draw_height), Image.Resampling.LANCZOS)
+        if not is_ceiling and bool(spec.get("mirror_floor", False)):
+            strip = ImageOps.flip(strip)
+        angle = math.atan2(delta_y, delta_x)
+        rotated = strip.rotate(-math.degrees(angle), Image.Resampling.BICUBIC, expand=True)
+        normal = (-math.sin(angle), math.cos(angle))
+        outward = -1.0 if is_ceiling else 1.0
+        centre = (
+            (start[0] + finish[0]) * 0.5 + normal[0] * draw_height * 0.5 * outward,
+            (start[1] + finish[1]) * 0.5 + normal[1] * draw_height * 0.5 * outward,
+        )
+        canvas.alpha_composite(
+            rotated,
+            (round(centre[0] - rotated.width * 0.5),
+             round(centre[1] - rotated.height * 0.5)),
+        )
+
+
 def _iou(first: Image.Image, second: Image.Image) -> float:
     first_data = list(first.get_flattened_data())
     second_data = list(second.get_flattened_data())
@@ -486,16 +641,43 @@ def _build_screenshots(geometry_path: Path, output_dir: Path) -> Path:
             if len(points) < 3:
                 continue
             draw.polygon(points, fill=colors["boundary"])
-            draw.line(points + [points[0]], fill=colors["edge"], width=4, joint="curve")
+            if zone["id"] not in BOUNDARY_ART:
+                draw.line(
+                    points + [points[0]], fill=colors["edge"],
+                    width=4, joint="curve",
+                )
 
         for index, polygon in enumerate(zone["surfaces"]):
             points = [(float(x), float(y)) for x, y in polygon]
             if len(points) < 3:
                 continue
             anchor_class = zone["surface_anchor_classes"][index]
+            surface_ids = zone.get("surface_visual_ids", [])
+            visual_id = surface_ids[index] if index < len(surface_ids) else ""
             fill = "#a86648" if anchor_class == "sticky_silk" else "#d9f7ff"
-            draw.polygon(points, fill=fill)
-            draw.line(points + [points[0]], fill="#f4ffff", width=3, joint="curve")
+            left, top, right, bottom = _polygon_bounds(points)
+            sticky_bead = anchor_class == "sticky_silk" and max(
+                right - left, bottom - top
+            ) < 100.0
+            if visual_id in {"city_highway", "city_sticky"} and not sticky_bead:
+                with Image.open(RUNTIME / "web-city-highway.png") as opened:
+                    highway = opened.convert("RGBA")
+                if anchor_class == "sticky_silk":
+                    highway_alpha = highway.getchannel("A")
+                    amber = Image.new("RGBA", highway.size, (255, 199, 148, 255))
+                    highway = Image.blend(highway, amber, 0.24)
+                    highway.putalpha(highway_alpha)
+                _composite_oriented(
+                    preview, highway, points,
+                    {"overscan": (12, 8), "placement": "oriented"},
+                )
+            else:
+                draw.polygon(points, fill=fill)
+                if visual_id not in {"city_highway", "city_sticky"}:
+                    draw.line(
+                        points + [points[0]], fill="#f4ffff",
+                        width=3, joint="curve",
+                    )
 
         for polygon in zone["decorations"]:
             points = [(float(x), float(y)) for x, y in polygon]
@@ -520,10 +702,16 @@ def _build_screenshots(geometry_path: Path, output_dir: Path) -> Path:
                 draw.polygon(points, fill=fill)
                 draw.line(points + [points[0]], fill=edge, width=4, joint="curve")
             else:
+                left, top, right, bottom = _polygon_bounds(points)
+                if visual_id == "city_resident" and min(
+                    right - left, bottom - top
+                ) < 30.0:
+                    continue
                 _composite_obstacle_art(preview, points, art_spec)
-                draw.line(
-                    points + [points[0]], fill=edge + "73", width=2, joint="curve"
-                )
+
+        for polygon in zone["boundaries"]:
+            points = [(float(x), float(y)) for x, y in polygon]
+            _composite_boundary_art(preview, points, zone["id"])
 
         for x, y in zone.get("flies", []):
             draw.ellipse((x - 9, y - 9, x + 9, y + 9), fill="#ffd95a", outline="#fff7b0", width=2)

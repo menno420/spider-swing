@@ -308,8 +308,8 @@ product decisions.
 - one gameplay intent for each Android touchscreen press even though the
   Control-based HUD keeps Godot touch-to-mouse emulation enabled;
 - fixed-rate trajectory equivalence at simulated 30/60/90/120 Hz render rates.
-- all twenty-two finished-art runtime textures—including the eight-asset Bramble
-  Canopy pack—load through one presentation-owned catalog without changing
+- all fifty-four catalogued runtime textures—including the eight-asset Bramble
+  Canopy pack and thirty-two Zones 3–8 assets—load through one presentation-owned catalog without changing
   authoritative course geometry; foreground region selection is world-anchored
   and the backdrop transition honors Reduced Motion.
 - Bramble's normal pool contains no Ancient Forest pattern id; representative
@@ -340,7 +340,7 @@ product decisions.
 
 ## Owner device playtest
 
-Install `0.23.0-obstacle-art-playtest` over `0.19.0-depth-testing` or any later
+Install `0.24.0-environment-finish-playtest` over `0.19.0-depth-testing` or any later
 stable-key build without uninstalling; both use the stable signer and the update
 should preserve the save.
 Only a device that never installed `0.19.0` or later needs the one final
