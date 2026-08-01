@@ -303,6 +303,13 @@ without a reported regression.
   floor, above it 53–60% of the run); hauling is *carried* by it (−5.0 m/s,
   above it 21%). Ablating the drive costs the swinging style 33% and destroys
   hauling by **98%** — the drive was not helping hauling, it was its engine.
+- **Dive and Burst already are escape tools** — for obstacles a swing cannot
+  avoid or a reel cannot manage. The bird gives them a second thing to escape
+  (dynamic and behind, rather than static and ahead), extending a verb players
+  know rather than adding one. Note the fidelity gap: the bot's explicit
+  emergency path (`save_bursts`) reads **0.00 in every policy** — it screens
+  dives for clearance rather than escaping with them. The owner escapes; the
+  model avoids.
 - That change also **rescues three mechanics that fail on their own**: a
   speed-based chaser (the curve currently pins everyone, so speed says
   nothing), arc-scaled release momentum (the drive currently refunds it), and

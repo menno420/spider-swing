@@ -222,8 +222,31 @@ stops applying:
   costs 6.2% speed and 52% distance. Making it the deliberate accelerator
   formalises something the physics already does.
 
-Burst and Dive gain a defensive job — escaping a closing bird — which they
-currently lack entirely; they are used opportunistically for traversal only.
+**Burst and Dive already have an escape job — correcting a claim made here.**
+An earlier draft said they "lack a defensive job entirely" and are used only
+opportunistically. That is wrong about the game, and it contradicts this
+document's own finding two sections above: `_find_dive_tap` screens every
+candidate with a **swept clearance test** and discards any whose path is
+blocked, which is exactly why the owner saw dives threading narrow gaps.
+
+The owner states the design intent directly: Dive and Burst are what you reach
+for when *a swing alone cannot avoid an obstacle, or a reel alone cannot
+manage it*. That is escape, and it is their primary purpose.
+
+The bird therefore does not give them a new role — it gives them a **second
+kind of thing to escape from**. Today the threat is static and ahead of you;
+a pursuer is dynamic and behind you. That is a real difference in feel, but it
+extends a verb players already understand rather than introducing one, which
+makes it a *cheaper* design change than the earlier framing implied.
+
+There is a genuine fidelity gap underneath, worth keeping separate from the
+design point. The bot's *explicit* emergency path — `_find_emergency_tap`,
+counted as `save_bursts` — reads **0.00 in every policy measured**, at every
+configuration. The bot never panics. Its dives are screened traversal, not
+deliberate escapes; the clearance test keeps it out of trouble it never
+knowingly gets into. The owner escapes; the model avoids. Another instance of
+the model reaching similar outcomes by a different route, and another reason
+its verb statistics should not be read as statements about intent.
 
 The proposals are **mutually enabling**, which is why evaluating them one at a
 time produced two wrong verdicts here.
