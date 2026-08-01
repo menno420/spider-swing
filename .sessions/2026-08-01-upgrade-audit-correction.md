@@ -129,3 +129,39 @@ and how it avoids becoming a second progression system competing with upgrades.
 One thing this correction adds to it: mission objectives should be chosen from
 behaviour the *game* can observe, not from what the lab can measure. The two
 are not the same thing, and this slice is why.
+
+---
+
+## Addendum — owner gameplay recording, 2026-08-01
+
+The owner supplied a 48-second recording of his own play: **debug start at
+5 000 m, upgrades L20**, the same warp condition the difficulty bands use.
+Frames decoded at 4 fps.
+
+| | Owner (device) | Bot, expert, same band |
+| --- | ---: | ---: |
+| Distance to first death | **3 113 m** | 196 m |
+| Deaths per km | **0.32** | 10.23 |
+| Still travelling at | 8 554 m | — |
+| Speed | 78.6 m/s | — |
+
+**He goes 18× further and dies 32× less often per kilometre.** The bot is not a
+weaker player in this regime; it is a broken one — it dies in under three
+seconds at 78 m/s.
+
+Two causes are visible in the frames. The right-hand action button cycles
+ATTACH → BURST → PULL continuously, with "Dive Pull 40%" and "Anchor Burst 52%"
+in the feedback line: he uses **Dive as a primary verb**, and the bot has never
+performed a single Dive in any batch all night. And his input rate is several
+per second against the bot's decision every 7 ticks with a 6-tick reaction
+delay.
+
+Consequence applied: `docs/measurements/2026-08-01-difficulty-curve.md` now
+carries a superseded banner over **every warped band**, not just zones 4–8. The
+0 m band is the only reading there not contradicted by device evidence, because
+it runs the opening ramp instead of a warp.
+
+This is the third instance of one failure: **the bot's blind spots were
+undocumented, so its output was read as if it were competent.** Reel policy
+scale-invariance, never Diving, ignoring the new anchor classes — each was
+discoverable in the source before any of these measurements were published.
