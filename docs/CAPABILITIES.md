@@ -689,3 +689,16 @@ never edit.
   `353c469f360ec34afd69d297c3c1cfb9bba744dfa18c3bb4d6a3f6a0c865d473`;
   `build-info.txt` proves version `0.11.2-balanced-flow-copy-test`, exact source,
   dev package, and display name `Spider Swing Balanced Flow Copy (dev)`.
+- 2026-08-01 · capability · `owner-live` · **Owner-recording-to-finished-zone-
+  art correction works in this seat** · `ffmpeg` decoded both supplied 1040×480
+  Android MP4s into inspectable frame sequences; built-in image-reference
+  generation produced seven isolated Silk/Arboretum objects using only the
+  repository's approved zone art; the bundled `remove_chroma_key.py` pipeline
+  keyed and despilled green/magenta sources. `tools/zone_art_audit.py` reports
+  zero targeted chroma fringe at source, runtime, and 25% gameplay scale across
+  all 20 assets, while exact Godot `4.7.1.stable.official.a13da4feb` imports the
+  new PNGs and passes all 171 contracts after reconciliation with Bramble's
+  merged clearance regression. This re-verifies the seeded media-read
+  capability in an owner-live venue and supplies a repeatable path for future
+  recording-led visual corrections; Android/device acceptance remains a
+  separate owner judgement after CI export.

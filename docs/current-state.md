@@ -36,7 +36,7 @@ without a reported regression.
   pattern, reached checkpoints, and bounded idempotent-settlement history.
   Older settings default audio/haptics on; every progression migration remains
   one-way and explicit.
-- Build `0.22.1-bramble-clearance` (Android version code 41, package
+- Build `0.23.0-obstacle-art-playtest` (Android version code 42, package
   `com.menno420.spiderswing.dev`) retains the stable conventional public debug
   identity introduced by `0.19.0-depth-testing` in
   `.github/android/debug.keystore`. The workflow pins its file and certificate
@@ -157,11 +157,12 @@ without a reported regression.
 
 **Verification**
 
-- Local source passes the 170-contract engine runner with the exact
+- Local source passes the 171-contract engine runner with the exact
   `4.7.1.stable.official.a13da4feb` Standard binary. The declared suite contains
-  11 bootstrap/build, 57 deterministic physics, 10 zone, 11 spider-biology,
-  10 Campaign, 9 difficulty, 4 upgrade-wiring, 2 economy, 6 generated-SFX,
-  25 mobile GUI/layout, and 21 front-end/settings/progression checks. The full
+  11 bootstrap/build, 57 deterministic physics, 11 zone, 11 spider-biology,
+  10 Campaign, 9 difficulty, 4 upgrade-wiring, 4 simulation-lab input,
+  2 economy, 6 generated-SFX, 25 mobile GUI/layout, and 21 front-end/settings/
+  progression checks. The full
   required `python3 tools/verify.py --require-godot` result is recorded at
   session close.
 - The same gate regenerates all 25 WAVs in a temporary directory and compares
@@ -328,11 +329,15 @@ lightning; Web City adds ridable and sticky safe-anchor classes plus phased
 residents; Ashen Hollow adds once-only timed anchors and falling embers; Deep
 Mist spends draw distance while preserving lit targets and 700–820 px audio
 cues, now backed by distinct generated warning samples. Every lethal polygon
-carries explicit tap eligibility. Thirteen generated
-RGBA assets pass source/runtime/25% fringe inspection, and eight actual seeded
+carries explicit tap eligibility. Twenty generated RGBA assets pass source/
+runtime/25% fringe inspection, and eight actual seeded
 world captures remain sortable as 320×180 pure-black silhouettes. Android
 small-screen readability and all six human success sentences remain owner
-playtest gates.
+playtest gates. The owner's 2026-08-01 10 km/15 km recordings accepted the
+backgrounds but rejected flat obstacle fallbacks; build
+`0.23.0-obstacle-art-playtest` replaces those bars with explicit cocoon,
+spindle, lattice, beam, rotor, hub, and collapsed-frame art while preserving
+the exact polygons and phase descriptors.
 
 **Bramble clearance device correction (PR #86).** Five owner recordings from
 `0.22.0-audio-playtest` reject PR #69's passability claim: the new silhouettes
@@ -396,6 +401,11 @@ with hook-vine and leaf-shutter geometry without retuning either control; the
 
 ## Recently shipped (newest first)
 
+- **2026-08-01 — Zones 3–4 obstacle-art correction (PR #87).** Seven original
+  single-object assets replace the flat collision-fill fallbacks visible in the
+  owner's Silk Hollow and Ruined Arboretum recordings. Stable visual/content
+  ids select contain or long-axis placement; geometry, motion, anchor rules,
+  backgrounds, physics, and balance remain unchanged.
 - **2026-08-01 — Bramble clearance correction (PR #86).** Device evidence
   supersedes the point-guide proof: Bramble now alternates open recovery with
   smaller single/pair commitments, gives each pair a full readable transition,

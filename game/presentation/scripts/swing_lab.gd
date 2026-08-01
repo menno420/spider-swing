@@ -909,12 +909,17 @@ func _draw_obstacle(
 
 
 func _draw_zone_obstacle(
-	world_polygon: PackedVector2Array,
+	_world_polygon: PackedVector2Array,
 	polygon: PackedVector2Array,
 	obstacle_index: int,
 ) -> void:
+	# World geometry remains the authority. Finished art only replaces the
+	# prototype fill when an explicit visual/content-id route resolves to a
+	# loaded texture; missing assets retain the honest geometry fallback.
 	var visual_id := _snapshot.obstacle_visual_ids[obstacle_index] \
 		if obstacle_index < _snapshot.obstacle_visual_ids.size() else &""
+	var content_id := _snapshot.obstacle_ids[obstacle_index] \
+		if obstacle_index < _snapshot.obstacle_ids.size() else &""
 	var anchorable := obstacle_index >= _snapshot.obstacle_anchorable.size() or \
 		_snapshot.obstacle_anchorable[obstacle_index] != 0
 	var colors := _zone_obstacle_colors(
@@ -928,55 +933,53 @@ func _draw_zone_obstacle(
 	var edge: Color = colors["edge"]
 	fill.a *= visibility
 	edge.a *= visibility
-	draw_colored_polygon(polygon, fill)
-	_draw_closed_polyline(polygon, edge, 3.5 if anchorable else 4.0)
-
-	var asset_id := _zone_obstacle_asset(visual_id)
-	if asset_id.is_empty():
-		return
+	var art_spec := ArtAssetCatalog.zone_obstacle_art_spec(
+		visual_id, content_id, anchorable)
+	var asset_id := StringName(art_spec.get("asset_id", &""))
+	var texture := _art_texture(asset_id) if not asset_id.is_empty() else null
 	var bounds := _polygon_bounds(polygon)
 	if asset_id == ArtAssetCatalog.WEB_CITY_RESIDENT and \
 			minf(bounds.size.x, bounds.size.y) < 30.0:
-		return
-	var texture := _art_texture(asset_id)
+		texture = null
 	if texture == null:
+		draw_colored_polygon(polygon, fill)
+		_draw_closed_polyline(polygon, edge, 3.5 if anchorable else 4.0)
+		if _snapshot.collision_outlines_visible:
+			_draw_closed_polyline(polygon, CYAN, 2.0)
 		return
-	var art_bounds := bounds.grow(10.0)
-	if asset_id in [
-		ArtAssetCatalog.ARBORETUM_PANE,
-		ArtAssetCatalog.STORM_SPIRE,
-	]:
-		art_bounds = Rect2(
-			bounds.get_center() - Vector2(maxf(132.0, bounds.size.x),
-				maxf(260.0, bounds.size.y)) * 0.5,
-			Vector2(maxf(132.0, bounds.size.x), maxf(260.0, bounds.size.y)),
+
+	var overscan := art_spec.get("overscan", Vector2(10.0, 10.0)) as Vector2
+	var modulate := Color(1.0, 1.0, 1.0, visibility)
+	if StringName(art_spec.get("placement", &"contain")) == &"oriented":
+		_draw_texture_oriented(texture, polygon, overscan, modulate)
+	else:
+		var art_bounds := Rect2(
+			bounds.position - overscan,
+			bounds.size + overscan * 2.0,
 		)
-	elif asset_id == ArtAssetCatalog.WEB_CITY_RESIDENT:
-		art_bounds = Rect2(bounds.get_center() - Vector2(92.0, 92.0),
-			Vector2(184.0, 184.0))
-	elif asset_id in [ArtAssetCatalog.ASHEN_ROTTEN, ArtAssetCatalog.ASHEN_SOUND]:
-		art_bounds = art_bounds.grow(18.0)
-	_draw_texture_contain(texture, art_bounds, Color(1.0, 1.0, 1.0, visibility))
+		var minimum_size := art_spec.get("minimum_size", Vector2.ZERO) as Vector2
+		var fitted_size := Vector2(
+			maxf(art_bounds.size.x, minimum_size.x),
+			maxf(art_bounds.size.y, minimum_size.y),
+		)
+		art_bounds = Rect2(art_bounds.get_center() - fitted_size * 0.5, fitted_size)
+		_draw_texture_contain(
+			texture,
+			art_bounds,
+			modulate,
+			bool(art_spec.get("flip_x", false)),
+			bool(art_spec.get("flip_y", false)),
+		)
 
-
-func _zone_obstacle_asset(visual_id: StringName) -> StringName:
-	match visual_id:
-		ZoneCourseBuilder.V_HOLLOW_COCOON, ZoneCourseBuilder.V_HOLLOW_SPINDLE:
-			return ArtAssetCatalog.HOLLOW_COCOON
-		ZoneCourseBuilder.V_ARBORETUM_PANE:
-			return ArtAssetCatalog.ARBORETUM_PANE
-		ZoneCourseBuilder.V_RIDGE_SPIRE:
-			return ArtAssetCatalog.STORM_SPIRE
-		ZoneCourseBuilder.V_CITY_RESIDENT:
-			return ArtAssetCatalog.WEB_CITY_RESIDENT
-		ZoneCourseBuilder.V_ASH_ROTTEN:
-			return ArtAssetCatalog.ASHEN_ROTTEN
-		ZoneCourseBuilder.V_ASH_SOUND:
-			return ArtAssetCatalog.ASHEN_SOUND
-		ZoneCourseBuilder.V_MIST_LIT:
-			return ArtAssetCatalog.MIST_LIT_BEAM
-		_:
-			return &""
+	# A restrained semantic rim keeps tappable versus lethal reads available at
+	# full speed without flattening the finished object into a debug polygon.
+	var finished_edge := Color(
+		edge,
+		edge.a * (0.38 if anchorable else 0.48),
+	)
+	_draw_closed_polyline(polygon, finished_edge, 1.8 if anchorable else 2.2)
+	if _snapshot.collision_outlines_visible:
+		_draw_closed_polyline(polygon, CYAN, 2.0)
 
 
 func _zone_obstacle_colors(
@@ -1042,6 +1045,8 @@ func _draw_texture_contain(
 	texture: Texture2D,
 	bounds: Rect2,
 	modulate: Color = Color.WHITE,
+	flip_x: bool = false,
+	flip_y: bool = false,
 ) -> void:
 	var texture_size := texture.get_size()
 	if texture_size.x <= 0.0 or texture_size.y <= 0.0:
@@ -1051,12 +1056,61 @@ func _draw_texture_contain(
 		bounds.size.y / texture_size.y,
 	)
 	var draw_size := texture_size * scale
+	draw_set_transform(
+		bounds.get_center(),
+		0.0,
+		Vector2(-1.0 if flip_x else 1.0, -1.0 if flip_y else 1.0),
+	)
 	draw_texture_rect(
 		texture,
-		Rect2(bounds.get_center() - draw_size * 0.5, draw_size),
+		Rect2(-draw_size * 0.5, draw_size),
 		false,
 		modulate,
 	)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+
+func _draw_texture_oriented(
+	texture: Texture2D,
+	polygon: PackedVector2Array,
+	overscan: Vector2,
+	modulate: Color,
+) -> void:
+	if polygon.size() < 2:
+		return
+	var axis := Vector2.RIGHT
+	var longest_edge := 0.0
+	for index in range(polygon.size()):
+		var edge := polygon[(index + 1) % polygon.size()] - polygon[index]
+		if edge.length_squared() > longest_edge:
+			longest_edge = edge.length_squared()
+			axis = edge.normalized()
+	var normal := Vector2(-axis.y, axis.x)
+	var along_min := INF
+	var along_max := -INF
+	var across_min := INF
+	var across_max := -INF
+	for point: Vector2 in polygon:
+		var along := point.dot(axis)
+		var across := point.dot(normal)
+		along_min = minf(along_min, along)
+		along_max = maxf(along_max, along)
+		across_min = minf(across_min, across)
+		across_max = maxf(across_max, across)
+	var centre := axis * ((along_min + along_max) * 0.5) + \
+		normal * ((across_min + across_max) * 0.5)
+	var draw_size := Vector2(
+		along_max - along_min + overscan.x * 2.0,
+		across_max - across_min + overscan.y * 2.0,
+	)
+	draw_set_transform(centre, axis.angle(), Vector2.ONE)
+	draw_texture_rect(
+		texture,
+		Rect2(-draw_size * 0.5, draw_size),
+		false,
+		modulate,
+	)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
 func _draw_forest_growth_socket(

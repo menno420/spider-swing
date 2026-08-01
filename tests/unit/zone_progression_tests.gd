@@ -17,6 +17,7 @@ static func run() -> Dictionary:
 	passed += _test_web_city_route_classes_and_density(failures)
 	passed += _test_ashen_timed_anchors_fail_once(failures)
 	passed += _test_deep_mist_is_sparse_and_audio_first(failures)
+	passed += _test_recorded_zone_obstacles_resolve_finished_art(failures)
 	passed += _test_zone_art_audit_is_current_and_clean(failures)
 	return {"passed": passed, "failures": failures}
 
@@ -504,7 +505,7 @@ static func _test_zone_art_audit_is_current_and_clean(
 		return 0
 	var audit := parsed as Dictionary
 	var assets: Array = audit.get("assets", [])
-	if assets.size() != 13 or not (audit.get("failures", []) as Array).is_empty():
+	if assets.size() != 20 or not (audit.get("failures", []) as Array).is_empty():
 		failures.append("zone art audit is incomplete or records a failure")
 		return 0
 	for asset_value in assets:
@@ -513,7 +514,7 @@ static func _test_zone_art_audit_is_current_and_clean(
 		for state_name in ["source", "runtime", "gameplay_25_percent"]:
 			var state := states.get(state_name, {}) as Dictionary
 			if int(state.get("transparent", 0)) <= 0 or \
-					int(state.get("magenta_fringe_pixels", 1)) != 0:
+					int(state.get("chroma_fringe_pixels", 1)) != 0:
 				failures.append("%s fails alpha/fringe audit at %s" % [
 					asset.get("asset", "unknown"), state_name])
 				return 0
@@ -525,6 +526,62 @@ static func _test_zone_art_audit_is_current_and_clean(
 	if float((audit.get("highest_pair_iou", {}) as Dictionary).get(
 		"intersection_over_union", 1.0)) > 0.55:
 		failures.append("25% zone silhouette separation regressed above IoU 0.55")
+		return 0
+	return 1
+
+
+static func _test_recorded_zone_obstacles_resolve_finished_art(
+	failures: PackedStringArray,
+) -> int:
+	# These are the exact visual/content-id families visible as prototype bars
+	# in the owner's 10 km and 15 km Android recordings. Each route must remain
+	# explicit so a new renderer fallback cannot silently recreate that defect.
+	var cases := [
+		[ZoneCourseBuilder.V_HOLLOW_COCOON, &"silk_cocoon", true,
+			ArtAssetCatalog.HOLLOW_COCOON, &"contain", Vector2(384.0, 768.0)],
+		[ZoneCourseBuilder.V_HOLLOW_SPINDLE, &"silk_spindle", true,
+			ArtAssetCatalog.HOLLOW_SPINDLE, &"contain", Vector2(256.0, 768.0)],
+		[ZoneCourseBuilder.V_HOLLOW_FLOOR_NEEDLE, &"silk_spindle", false,
+			ArtAssetCatalog.HOLLOW_SPINDLE, &"contain", Vector2(256.0, 768.0)],
+		[ZoneCourseBuilder.V_HOLLOW_LATTICE, &"silk_lattice", true,
+			ArtAssetCatalog.HOLLOW_LATTICE_STRUT, &"oriented", Vector2(768.0, 128.0)],
+		[ZoneCourseBuilder.V_ARBORETUM_BEAM, &"arboretum_broken_beam", true,
+			ArtAssetCatalog.ARBORETUM_BEAM, &"oriented", Vector2(768.0, 96.0)],
+		[ZoneCourseBuilder.V_ARBORETUM_BEAM, &"arboretum_collapsed_frame", false,
+			ArtAssetCatalog.ARBORETUM_COLLAPSED_FRAME, &"contain", Vector2(640.0, 512.0)],
+		[ZoneCourseBuilder.V_ARBORETUM_PANE, &"arboretum_hanging_pane", false,
+			ArtAssetCatalog.ARBORETUM_PANE, &"contain", Vector2(512.0, 512.0)],
+		[ZoneCourseBuilder.V_ARBORETUM_ROTOR, &"arboretum_slow_rotor", false,
+			ArtAssetCatalog.ARBORETUM_ROTOR_ARM, &"oriented", Vector2(768.0, 96.0)],
+		[ZoneCourseBuilder.V_ARBORETUM_ROTOR, &"arboretum_rotor_hub", false,
+			ArtAssetCatalog.ARBORETUM_ROTOR_HUB, &"contain", Vector2(256.0, 256.0)],
+	]
+	for case: Array in cases:
+		var spec := ArtAssetCatalog.zone_obstacle_art_spec(
+			case[0], case[1], case[2])
+		if StringName(spec.get("asset_id", &"")) != case[3] or \
+				StringName(spec.get("placement", &"")) != case[4]:
+			failures.append("recorded obstacle %s/%s has no explicit finished-art route" % [
+				case[0], case[1]])
+			return 0
+		var path := ArtAssetCatalog.texture_path(case[3])
+		if path.is_empty() or not ResourceLoader.exists(path):
+			failures.append("recorded obstacle art is missing: %s" % path)
+			return 0
+		var texture := load(path) as Texture2D
+		if texture == null or texture.get_size() != case[5]:
+			failures.append("recorded obstacle art has wrong runtime dimensions: %s" % path)
+			return 0
+	var floor_spec := ArtAssetCatalog.zone_obstacle_art_spec(
+		ZoneCourseBuilder.V_HOLLOW_FLOOR_NEEDLE, &"silk_spindle", false)
+	if not bool(floor_spec.get("flip_y", false)):
+		failures.append("floor-grown Silk spindle art does not point up from the floor")
+		return 0
+	var ceiling_frame := ArtAssetCatalog.zone_obstacle_art_spec(
+		ZoneCourseBuilder.V_ARBORETUM_BEAM,
+		&"arboretum_collapsed_frame", true)
+	if not bool(ceiling_frame.get("flip_y", false)):
+		failures.append("ceiling-grown collapsed frame art does not mirror its geometry")
 		return 0
 	return 1
 

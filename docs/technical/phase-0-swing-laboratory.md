@@ -340,7 +340,7 @@ product decisions.
 
 ## Owner device playtest
 
-Install `0.22.1-bramble-clearance` over `0.19.0-depth-testing` or any later
+Install `0.23.0-obstacle-art-playtest` over `0.19.0-depth-testing` or any later
 stable-key build without uninstalling; both use the stable signer and the update
 should preserve the save.
 Only a device that never installed `0.19.0` or later needs the one final

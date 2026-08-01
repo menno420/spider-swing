@@ -29,10 +29,11 @@ failure never hides the rest.
 
 ## What exists now
 
-165 runtime contracts: eleven bootstrap/build checks plus fifty-six
-deterministic physics, ten zone-progression, eleven spider-biology, ten
-Campaign, nine difficulty, four upgrade-wiring, two economy, six generated-SFX,
-twenty-five mobile HUD, and twenty-one front-end checks. The bootstrap group pins the public stable debug signer and
+171 runtime contracts: eleven bootstrap/build checks plus fifty-seven
+deterministic physics, eleven zone-progression, eleven spider-biology, ten
+Campaign, nine difficulty, four upgrade-wiring, four simulation-lab input, two
+economy, six generated-SFX, twenty-five mobile HUD, and twenty-one front-end
+checks. The bootstrap group pins the public stable debug signer and
 rejects per-run key generation. The physics group proves continuous
 solid targeting, larger aim forgiveness, momentum-preserving release,
 speed-neutral Reel and automatic take-up, the two-second base resource plus the
@@ -50,7 +51,11 @@ through simulated 30/60/90/120 Hz render loops. The zone group proves the
 append-only 5 km schedule, pattern-pool diversity, explicit tap eligibility,
 pure periodic phase motion, swept moving collision, moving-pivot binding, each
 documented density gate, highway/sticky/timed anchor semantics, Mist's audio
-lead, and the current 25% silhouette/alpha audit. The audio group proves all 25
+lead, explicit finished-art routing for every obstacle family seen in the
+owner's 10 km/15 km recordings, and the current 25% silhouette/alpha audit. The
+simulation-lab input group proves the measurement tool receives anchor classes,
+timed-anchor life, and the actual Dive input path without asserting the bot's
+conclusions. The audio group proves all 25
 original WAVs reproduce exactly, remain within the mobile PCM/headroom budget,
 cover their event/cue catalog, and keep high-frequency variation bounded. The HUD group proves the 228×228 thumb
 targets, event consumption, shared geometry, gesture separation, success
