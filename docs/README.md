@@ -43,6 +43,7 @@ and diff rather than trusting a number forever.
 
 | Document | What it is |
 | --- | --- |
+| [`measurements/2026-08-01-owner-play-calibration.md`](measurements/2026-08-01-owner-play-calibration.md) | **Ground truth for how the game is actually played**, from owner device recordings — and the acceptance test any simulation model must pass before its output is published. |
 | [`measurements/2026-08-01-upgrade-audit.md`](measurements/2026-08-01-upgrade-audit.md) | What each upgrade track is actually worth, measured per track in isolation — including two that change the config and change nothing about play. |
 | [`measurements/2026-08-01-difficulty-curve.md`](measurements/2026-08-01-difficulty-curve.md) | Deaths per kilometre, survival, death causes and resource pressure across 0–20 km and three skill tiers — the baseline difficulty modes, the upgrade audit and economy tuning are judged against. |
 

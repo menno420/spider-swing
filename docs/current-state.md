@@ -216,6 +216,17 @@ without a reported regression.
   intermediate play. Harsh currently pays no premium for roughly double the
   death rate.
 
+**Simulation lab — now has an acceptance test**
+
+- `docs/measurements/2026-08-01-owner-play-calibration.md` records six owner
+  device recordings as ground truth: 0.47 deaths/km at ~52 m/s on a 5 000 m
+  debug start with L20 upgrades, with net progress ranging −122 m to 3 535 m.
+  The bot on the identical warp manages 196 m at 10.23 deaths/km.
+- **No simulation output may be used for conclusions about difficulty, upgrades
+  or the economy until the model meets the targets in that document** — the
+  cheapest of which is that upgrades must *improve* the result. The current bot
+  fails on sign, reporting a 25% loss where the owner gains 2.5×.
+
 **Difficulty — owner verdict, 2026-08-01**
 
 - **The difficulty curve is balanced.** Owner from device play: ~2 km
