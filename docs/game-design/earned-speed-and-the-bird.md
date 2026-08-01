@@ -1,0 +1,301 @@
+# Earned speed and the bird — design spec
+
+> **Status:** `plan`
+>
+> **The two mechanics the owner has chosen to build next, specified against the
+> live source.** Speed stops being handed to the player and starts being earned;
+> a pursuing bird makes the escalating pressure visible and gives Burst and Dive
+> a second kind of thing to escape from.
+>
+> **Provenance (PL-013):** the design argument is `measured` — see
+> [`../measurements/2026-08-01-hauling-loophole.md`](../measurements/2026-08-01-hauling-loophole.md)
+> § "The owner's proposal, tested". Every seam and line number below is
+> `measured` by reading the live source on 2026-08-01. Every *number proposed
+> for tuning* is `assumed` and marked as such — see § "What cannot be tuned from
+> the lab", which is the most important section in this document.
+
+## The owner's brief, verbatim
+
+> *"The important thing right now is that the speed at which the spider travels
+> also increases over time, which should probably happen in a player controlled
+> way by upgrades, swing control, reel and burst timing etc. So the game still
+> increases in difficulty through speed just in a different way."*
+
+> *"One visual thing that does need to be done properly right now is the
+> creation of the bird, and one that actually moves in a bird like way, follows
+> the spiders position and moves at a slightly increasing speed."*
+
+Earlier, on the same package:
+
+> *"Add the bird at a speed rate slightly slower than the current speed the game
+> forces you to go, and stop the forward motion that the game gives you, so only
+> swinging itself makes you go forward."*
+
+> *"Because how I play and how I intend this game to be played, I am mostly
+> going faster than the forced speed, even just slightly, so the forced speed is
+> basically useless."*
+
+## Why this is one change, not two
+
+Measured, and the reason evaluating the halves separately produced two wrong
+verdicts before:
+
+- **A speed-based chaser cannot discriminate playstyles today**, because
+  `SpiderMotor` drives everyone's horizontal velocity toward the same pace
+  curve. Remove the drive and speed becomes a real signal of skill.
+- **Arc-scaled release momentum is decoration today**, because the drive
+  refunds it within a second. Remove the drive and there is nothing to refund
+  it, so it becomes the game's actual propulsion reward.
+- **Removing the drive alone leaves no pressure at all.** The bird supplies it.
+
+Ablation, held-out seeds (`measured`):
+
+| policy | full drive | no drive | change |
+| --- | ---: | ---: | ---: |
+| hauling (the exploit) | 4 179 m | **78 m** | **−98%** |
+| default (swings) | 1 720 m | 1 147 m | −33% |
+
+And in a world searched *inside* the no-drive rules, wide swinging is not merely
+permitted — it **wins outright** (2 717 m at 61.2° arc, beating the policy
+searched specifically for that world). The intended style becomes optimal by
+physics rather than by prohibition. No rule saying "you must swing" is needed.
+
+### Re-verified against current `main`
+
+**Measured** — `tools/simulate.gd`, 12 runs, intermediate, L20, 6 course seeds,
+120 s cap, via `--sweep=horizontal_drive_acceleration:<v>:<v>:1`, run on the
+merged tree on 2026-08-01. Resolution: in-run counters at 1 tick; n=12, so the
+means carry real spread (the p10–p90 band is quoted for that reason).
+
+| drive | mean | median | p10–p90 | arc/web | near-vertical |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 470 (shipped) | 1 859 m | 1 672 m | 1 385 – 2 257 | 43.2° | 63% |
+| **0** | **1 171 m** | 1 011 m | 470 – 2 054 | 39.9° | 77% |
+
+The −37% here matches the −33% measured earlier for the same unadapted policy.
+More usefully, **the game runs cleanly at drive 0** — no crash, no stall, no
+degenerate state — so the central experiment is safe for a session to run on
+day one.
+
+**What this run does NOT show, and a session should not claim it does:** arc per
+web went *down* (43.2° → 39.9°) and near-vertical hang went *up*. That is the
+**default policy**, which is adapted to a world that has a drive; stripped of
+its engine it dangles rather than swings. The "wide swinging wins" result comes
+from a policy *endorsed or searched inside* the no-drive world. Reading this
+table as evidence against the design would be the exact error this project keeps
+making — measuring an adapted behaviour in an unadapted policy.
+
+---
+
+# Part 1 — Speed becomes earned
+
+## What creates speed today
+
+`SpiderMotor.apply_forces` (`game/simulation/spider_motor.gd:6`) is the free
+engine, and it has exactly **one caller**: `SimulationWorld.step`
+(`game/simulation/simulation_world.gd:417`), in the `else` branch — during a
+Burst/Dive pull the motor is bypassed entirely.
+
+```gdscript
+# spider_motor.gd:16-21 — the line this design removes
+if velocity.x < target_speed:
+    velocity.x = move_toward(velocity.x, target_speed,
+        config.horizontal_drive_acceleration * delta)
+```
+
+Speed sources that already exist and are **kept**:
+
+| Source | Where | Status |
+| --- | --- | --- |
+| Pendulum conversion | `WebConstraint.solve_moving_anchor` `web_constraint.gd:170-177` — kills only *outward* radial velocity, preserves tangential | real, and the whole point |
+| Reel | `advance_resource` `web_constraint.gd:86-90` shortens rope 320 px/s; speed gain is emergent from the constraint doing work | real, `measured` at **+6.2% speed / +52% distance** |
+| Burst / Dive exit | `_advance_pull` completion `simulation_world.gd:1173-1178`: `velocity = _pull_tangential_velocity + _pull_direction * _pull_exit_speed` | real; note it is an **absolute assignment, not an add** |
+| Moving highway anchor | `_web_anchor_motion` `simulation_world.gd:296-306`, `HIGHWAY_ANCHOR_SPEED = 410` | real, injects speed via the anchor frame |
+
+## What does not exist and the brief requires
+
+**Release quality.** `WebConstraint.release()` (`web_constraint.gd:61-65`) clears
+four fields and preserves velocity exactly. There is **no angle test, no apex
+detection, no timing window, no release-quality score anywhere in `game/`**.
+
+The game already *promises* this mechanic to the player. Tutorial copy at
+`game/application/front_end_state.gd:68,72` reads **"RELEASE WITH MOMENTUM"** and
+*"Release while rising to carry momentum forward."* That is a design debt, not a
+new idea: the tutorial teaches a skill the simulation does not implement.
+
+This is the single highest-value addition in Part 1, because it is what makes
+"swing control" a speed source rather than a phrase.
+
+## The couplings that break if the drive is simply deleted
+
+**Do not delete `target_speed_at` — it is load-bearing in five other places.**
+Each needs an explicit decision, and this list is the main reason a session
+should not start by editing `spider_motor.gd`:
+
+| Site | Line | What it uses `target_speed` for | Decision needed |
+| --- | --- | --- | --- |
+| `SimulationWorld.reset` | `simulation_world.gd:99` | seeds opening `velocity.x` | what is a standing start worth now? |
+| Rescue | `simulation_world.gd:1339` | `velocity = Vector2(max(300, target*0.88), -110)` | the anti-death-spiral valve — see below |
+| Guided opening | `simulation_world.gd:1379` | `velocity = target_speed_at(distance)` | tutorial hand-hold |
+| Camera look-ahead | `swing_lab.gd:222` | `max(0, velocity.x − target_speed)` | needs a new reference speed or the camera stops leading |
+| Profile / upgrade scaling | `spider_catalog.gd:347-349` | `speed_scale` multiplies start/max target speed | spider identity partly expressed through the curve |
+
+**One upgrade track is invalidated outright.** `skitter_drive` — *Quick Feet*,
+`QUICK_FEET` — multiplies `horizontal_drive_acceleration`
+(`spider_catalog.gd:393-394`). With no drive it buys **nothing**. It must be
+repurposed, not left as a dead purchase. That is an owner-facing product
+decision (it is a named, priced identity track on a shipped spider), so it goes
+to the queue rather than being decided in-session.
+
+**Recommended shape rather than deletion:** keep `target_speed_at` as a *named
+reference speed* — the number the camera, the rescue, and the bird are all
+expressed against — and reduce `horizontal_drive_acceleration` to zero (or near
+zero) as the actual behaviour change. That keeps five call sites working, keeps
+the tuning-lab keys meaningful, and makes the change a **one-value experiment**
+that can be reverted instantly. `tools/simulate.gd` already supports the
+no-drive ablation this way, which is how the measurements above were produced.
+
+## Where the difficulty ramp goes
+
+Today the ramp is `target_speed_at`: 360 → 760 px/s smoothstepped over 50 000 px
+(`swing_config.gd:220-229`). Under this design the ramp moves into **the bird**,
+and the player's own speed becomes the variable they control against it.
+
+That is the owner's sentence — *"the game still increases in difficulty through
+speed just in a different way"* — expressed mechanically.
+
+---
+
+# Part 2 — The bird
+
+## The bird already exists, invisibly
+
+`SimulationWorld.left_kill_boundary()` (`simulation_world.gd:554`) is
+`furthest_x − config.camera_left_kill_distance` (520 px). It is enforced in
+`step()` at `:471-477`, kills with `DEATH_REQUESTED` cause `camera_boundary`
+and message *"Lost behind the camera"*, and is already published to
+presentation as `snapshot.left_kill_boundary`
+(`swing_lab_session.gd:684`).
+
+**The bird is that line: made visible, given its own position state, and
+advanced by its own law instead of ratcheting off `furthest_x`.** Building it
+this way reuses a proven kill path and a snapshot field that already exists,
+rather than inventing a hazard type.
+
+It also delivers the design argument that survived measurement: *the pressure is
+already there and nothing on screen says so.* A pursuer does not create the
+pressure — it **reveals** it.
+
+## Do not build it with `CourseMotion`
+
+`game/simulation/course_motion.gd` is deliberately **stateless and pure** over
+`(base_polygon, motion_spec, tick, fixed_delta)`. It cannot read player
+position, by design, because that purity is what makes the course
+deterministic and replayable. A pursuer needs per-tick state.
+
+**The correct seam is state on `SimulationWorld`:** a field initialised in
+`reset()` (`:89`) and advanced in `step()` (`:384`), exactly as
+`left_kill_boundary` is derived today. Then new `SimulationSnapshot` fields for
+presentation to draw.
+
+## The movement law
+
+Two axes, and they should obey **different rules** — this is what produces
+"follows the spider" without producing a speed-matcher:
+
+- **X — the bird's own law.** Position-based, not speed-matching. It advances at
+  its own world rate, which increases slowly with distance. Banked distance is
+  the player's buffer: get far ahead and you have slack to spend on a careful
+  section. This is the form the hauling measurement concluded was right *"if a
+  chaser ships"* — a speed-matched chaser was ruled out on measurement.
+- **Y — follows the spider, with lag.** A damped follow of the player's height
+  (a first-order lag, not a hard track), so it reads as a creature tracking prey
+  rather than a slider on a rail. This is what makes it feel alive and is what
+  the owner asked for by "follows the spiders position".
+
+**Bird-like motion** (the owner's explicit visual requirement, "one that
+actually moves in a bird like way"):
+
+- a wing-flap cycle driven off `tick` so it stays deterministic;
+- gentle vertical bobbing **coupled to the flap phase** — a bird gains a little
+  height on the downstroke, so the bob should not be an independent sine;
+- **banking** — tilt into vertical velocity, which is the single cue that most
+  reads as "bird" rather than "sprite moving";
+- flap rate rising when it is closing and easing to a glide when it is not,
+  which turns the bird into a readable difficulty gauge.
+
+Determinism requirement: the bird's state must be a pure function of
+`(tick, course seed, the player's own history)` with no float accumulation that
+could drift, and it must be captured in the trace format so replays reproduce.
+`docs/technical/replay-review-loop.md` holds the existing contract; the
+cross-path replay contract in `tests/unit/simulation_lab_tests.gd` is what will
+catch a mistake here.
+
+## The death spiral, and the valve that already exists
+
+Earned speed plus an accelerating pursuer compounds: fall behind → less speed →
+bird closer → panic → less speed. Left unmanaged this is the design's main
+failure mode.
+
+The valve already exists and is well-placed. Rescue sets
+`velocity = Vector2(max(300, target_speed*0.88), −110)`
+(`simulation_world.gd:1339`) — an absolute speed grant on the one event that
+follows a mistake. Under this design the rescue's job grows: it is what buys a
+player back into a survivable gap. **That number is now load-bearing and should
+be treated as a tuning knob, not a constant.**
+
+---
+
+## What cannot be tuned from the lab
+
+**Read this before proposing any bird speed.**
+
+The bot **cannot pump**. Its reel policy is height-based, not swing-phase-based
+(`tools/simulate.gd`), so it cannot add energy at the bottom of an arc — the
+single skill this design makes central. Consequences, all `measured`:
+
+- No-drive bot reaches **48.4 m/s**.
+- The physics allow far more: a 380 px web swung from horizontal reaches
+  `sqrt(2gL)` ≈ **92 m/s** at the bottom.
+- Today's play sits at **55–76 m/s** with the drive helping.
+
+**So every bot number in the no-drive world is a floor, not a target**, and a
+bird speed derived from bot runs would be tuned against a player who cannot
+play the game the design is about. A human should beat the bot here by more
+than in any configuration measured so far.
+
+The owner has stated he cannot supply new recordings for this work. Therefore:
+
+1. **The bird's speed, acceleration and start offset must be exposed as debug
+   tunables** on the Test Run / Course Lab screen, so the owner can find the
+   number by playing rather than a session guessing it.
+2. **No bird speed constant may be justified by a bot run.** Ship a placeholder
+   that is explicitly labelled `assumed`, and say so in the doc.
+3. The bot lab remains useful for the thing it *can* answer: whether the
+   hauling exploit stays dead. `arc per web` is reported for every batch, so
+   re-running the search is a genuine regression test on the exploit.
+
+## Suggested build order
+
+Each step is independently shippable and independently revertible:
+
+1. **Release quality** — the missing mechanic, and the one that makes swing
+   control a speed source. Pure simulation, testable headless, no visuals.
+2. **Drive → 0 as a config value**, with the five coupling sites decided. One
+   value, instantly revertible, and `tools/simulate.gd` can measure it.
+3. **The bird as simulation state** — position, movement law, kill condition
+   reusing the `camera_boundary` path; snapshot fields; contract tests.
+4. **The bird as a visual** — flap, bank, bob, and the closing/gliding tell.
+5. **Re-run the exploit regression** — `arc per web` on a fresh search.
+
+Steps 1–3 are headless-verifiable. Step 4 is the one that needs the owner's eye.
+
+## Open forks for the owner
+
+Tracked in [`../owner-questions.md`](../owner-questions.md):
+
+- **OQ-12** — adopt this package (answered: yes, this document is the spec).
+- **OQ-13** — what does *Quick Feet* become when the drive is gone?
+- **OQ-14** — does the bird kill on contact, or push/stagger first?
+- **OQ-15** — how fast does the bird start, and how fast does it accelerate?
+  **Only a device playtest can answer this**, for the pumping reason above.

@@ -12,9 +12,52 @@
 
 ## Open
 
-Two forks remain open from the 2026-08-01 overnight systems run. Two others
-(OQ-8, OQ-11) were **closed by owner device evidence the same morning** and
-moved to Answered — the lab audit behind them was wrong.
+Two forks remain from the 2026-08-01 overnight systems run (OQ-9, OQ-10). Two
+others (OQ-8, OQ-11) were **closed by owner device evidence the same morning** —
+the lab audit behind them was wrong. **OQ-12 was answered the same evening** and
+opened three follow-ups that the earned-speed work needs (OQ-13 … OQ-15).
+
+### OQ-13 · What does *Quick Feet* become when the drive is gone?
+
+**The problem:** `skitter_drive` (*Quick Feet*, `QUICK_FEET`) multiplies
+`horizontal_drive_acceleration` (`game/domain/spider_catalog.gd:393-394`).
+Removing the free forward drive makes it buy **nothing**. It is a named, priced
+identity track on a shipped spider, so it cannot simply be left dead.
+
+**Default:** the work proceeds by repointing it at a *swing* speed term rather
+than the drive, so Skitter keeps its "fast" identity. Nothing is renamed or
+repriced without an answer here.
+
+**The fork:** which term. Release-momentum bonus, reel retraction rate, and
+burst exit speed all read as "quick", and they produce genuinely different
+spiders. That is a feel decision, not a measurable one.
+
+### OQ-14 · Does the bird kill on contact, or stagger first?
+
+**Default:** it kills, reusing the existing `camera_boundary` death path
+(`game/simulation/simulation_world.gd:471-477`) — cheapest to build and
+consistent with the invisible line it replaces.
+
+**The fork:** a non-lethal first contact (a stagger, a slowdown, a stolen fly)
+softens the death spiral that earned speed plus an accelerating pursuer creates,
+at the cost of making the bird less frightening. Worth deciding before the
+visual work, because it changes what the bird has to communicate.
+
+### OQ-15 · How fast does the bird start, and how fast does it accelerate?
+
+**This one cannot be answered from the lab, and that is measured, not a
+guess.** The bot cannot pump — its reel policy is height-based, not
+swing-phase-based — so it reaches 48.4 m/s in the no-drive world while the
+physics allow ~92 m/s from a 380 px web. Every bot number here is a **floor**,
+not a target, and a bird tuned against it would be tuned against a player who
+cannot play the game this design is about.
+
+**Default:** ship a placeholder explicitly marked `assumed`, and expose bird
+speed, acceleration and start offset as **debug tunables on the Test Run
+screen** so the number is found by playing.
+
+**The fork:** the values themselves, after one device playtest of a no-drive
+build. No recording is needed — only a verdict.
 
 ### OQ-9 · Should Harsh pay a fly premium?
 
@@ -42,6 +85,24 @@ anything to reach for. Adding sinks is a design decision about what else is
 worth wanting.
 
 ## Answered
+
+### OQ-12 · Which anti-hauling mechanic should ship? — *answered 2026-08-01*
+
+**Both halves of the owner's own proposal, as one package: remove the free
+forward drive, and add the bird.** He confirmed it directly — *"stop the forward
+motion that the game gives you, so only swinging itself makes you go forward"* —
+and extended it: the difficulty ramp moves from the pace curve into player-earned
+speed, through *"upgrades, swing control, reel and burst timing"*.
+
+The measurement supports it precisely: ablating the drive costs the intended
+style a third and destroys hauling outright (−98%), and in a world searched
+inside the no-drive rules **wide swinging wins outright**. The intended style
+becomes optimal by physics rather than by prohibition.
+
+Specified in
+[`game-design/earned-speed-and-the-bird.md`](game-design/earned-speed-and-the-bird.md).
+It opened OQ-13, OQ-14 and OQ-15, which are the parts the measurement could not
+settle.
 
 ### OQ-8 / OQ-11 · Are the upgrade tracks weak, inert, or harmful? — *answered 2026-08-01*
 

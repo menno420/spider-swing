@@ -2,6 +2,24 @@
 
 > **Status:** `owner-guidance`
 >
+> ## ⚠️ Superseded as a plan — 2026-08-01 evening
+>
+> **Do not take the next slice from this document.** The owner redirected the
+> same evening: the first 10 km of visuals are essentially done, so the work is
+> now **mechanics** — forward speed becomes earned, and a bird supplies the
+> pressure. The current entry point is
+> [`next-session-brief-2026-08-01-mechanics.md`](next-session-brief-2026-08-01-mechanics.md)
+> and the spec it points at,
+> [`../game-design/earned-speed-and-the-bird.md`](../game-design/earned-speed-and-the-bird.md).
+>
+> Two of this document's premises no longer hold: it is built around choosing a
+> **recording-led** slice, and the owner has stated **no new recordings will be
+> supplied**; and its "Paste-ready first prompt" asks for a recording upload.
+>
+> **This file remains accurate as a record** — what merged, what Menno accepted
+> versus what is only technically verified, the corrected 181/181 test count,
+> and the device-verification queue. Read it for repository state.
+>
 > Dated handoff for the next Spider Swing session. Source, executable tests,
 > merged commits, and Android artifacts outrank this document if the repository
 > advances. Read `.claude/CLAUDE.md` and `docs/current-state.md` first, then use
