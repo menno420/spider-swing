@@ -1333,8 +1333,7 @@ class RunDriver:
 	var death_attached := false
 	var web_length_sum := 0.0
 	var swing_arc_sum := 0.0
-	var attach_angle_min := 0.0
-	var attach_angle_max := 0.0
+	var current_swing_arc := 0.0
 	var attach_arc_open := false
 	var attach_searches := 0
 	var class_choices := 0
@@ -1469,16 +1468,13 @@ class RunDriver:
 				web_length_sum += offset.length()
 				if angle <= VERTICAL_HANG_DEGREES:
 					vertical_ticks += 1
-				var signed := rad_to_deg(atan2(offset.x, maxf(0.001, offset.y)))
-				if not attach_arc_open:
-					attach_arc_open = true
-					attach_angle_min = signed
-					attach_angle_max = signed
-				else:
-					attach_angle_min = minf(attach_angle_min, signed)
-					attach_angle_max = maxf(attach_angle_max, signed)
+				attach_arc_open = true
+				# One definition: gameplay and exploit instrumentation both read the
+				# wrap-safe attachment arc owned by WebConstraint.
+				current_swing_arc = rad_to_deg(world.web.swing_arc_radians())
 			elif attach_arc_open:
-				swing_arc_sum += attach_angle_max - attach_angle_min
+				swing_arc_sum += current_swing_arc
+				current_swing_arc = 0.0
 				attach_arc_open = false
 			var drive_target := config.target_speed_at(world.distance_pixels)
 			overspeed_sum += world.velocity.x - drive_target
@@ -1613,7 +1609,8 @@ class RunDriver:
 				float(vertical_ticks) / attached_ticks
 				if attached_ticks > 0 else 0.0),
 			"mean_swing_arc_deg": (
-				swing_arc_sum / attaches if attaches > 0 else 0.0),
+				(swing_arc_sum + (current_swing_arc if attach_arc_open else 0.0))
+				/ attaches if attaches > 0 else 0.0),
 			"died_with_burst": 1.0 if death_burst_charges > 0 else 0.0,
 			"died_with_dive": 1.0 if death_dive_ready else 0.0,
 			"died_with_any_escape": (

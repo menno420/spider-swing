@@ -165,7 +165,7 @@ Burst and Dive Pull, collectible fly routes, and one temporary Burst boost.
   catch, aim forgiveness, range, RELEASE/RETARGET behavior,
   deterministic input recording/replay, visual-theme comparison, independent
   opt-in overlays, and diagnostic export.
-- A 181-contract Godot suite covering bootstrap/build identity, deterministic
+- A 184-contract Godot suite covering bootstrap/build identity, deterministic
   physics, all eight zones, spider biology, Campaign, difficulty, upgrades,
   economy, generated audio, mobile layout, settings, and progression. It includes
   interruptible recovery webs, double-tap fallback, explicit
@@ -305,7 +305,7 @@ Full criteria in the GDD § 23.
 
 | Phase | Scope | Exit gate |
 | --- | --- | --- |
-| **0 — Swing Laboratory** | Spider body and forward drive, solid-object targets, attach/swing/manual release, Reel-In energy, percentage Anchor Burst and Dive Pull, camera and world boundaries, streamed prototype course, runtime tuning and diagnostics | Attach/release predictable across frame rates; release preserves momentum; Reel-In useful but not mandatory; test players can attribute their deaths; one named physics preset approved as baseline |
+| **0 — Swing Laboratory** | Spider body and forward drive, solid-object targets, attach/swing/manual release, Reel-In energy, percentage Anchor Burst and Dive Pull, camera and world boundaries, streamed prototype course, runtime tuning and diagnostics | Attach/release predictable across frame rates; manual release carries current momentum and rewards a wide rising arc with a bounded forward award; Reel-In useful but not mandatory; test players can attribute their deaths; one named physics preset approved as baseline |
 | **1 — Fair Endless Slice** | Seeded chunk selection, three static chunks + one moving-hazard family, small flies, Shield and Tension flies, distance score, death/results/sub-2s restart, local best, basic audio and haptics | No unavoidable deaths in fixed-seed testing; special-fly hits readable; performance target met on the lowest supported device |
 | **2 — MVP Progression** | Run settlement and Silk, atomic versioned save, Magnet Fly, Classic customization, small capped upgrades, three mission templates, settings and accessibility, analytics adapter, release-quality first biome | Economy grants cannot duplicate; progress survives suspension and migration; upgrades do not affect standard records |
 | **3 — Content Expansion** | Alternate spiders with trade-offs, more biomes and chunk packs, cosmetics, daily fixed-seed challenge, platform services, tested rewarded ads, Rush Fly | — |

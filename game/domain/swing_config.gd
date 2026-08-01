@@ -23,7 +23,7 @@ class_name SwingConfig
 ## UI and recommended hiding them behind a debug flag; the disclosure already
 ## exists, which is why they stay visible.
 
-const SCHEMA_VERSION := 10
+const SCHEMA_VERSION := 11
 const PRESET_BALANCED := &"balanced_baseline"
 const PRESET_WEIGHTY := &"weighty_candidate"
 const PRESET_AGILE := &"agile_candidate"
@@ -40,6 +40,11 @@ const BASE_REEL_ENERGY_CAPACITY := 60.0
 const BASE_REEL_DRAIN_RATE := 30.0
 const BASE_REEL_REGENERATION_RATE := 18.0
 const BASE_REEL_EMPTY_LOCKOUT := 0.75
+## `assumed`: device feel must settle the award strength. The bot cannot pump,
+## so it is not a tuning instrument for this value.
+const DEFAULT_RELEASE_MOMENTUM_BONUS_SPEED := 100.0
+## `assumed`: bounded debug/schema guardrail, not a recommended tuning target.
+const MAX_RELEASE_MOMENTUM_BONUS_SPEED := 300.0
 
 @export var schema_version: int = SCHEMA_VERSION
 @export var preset_name: StringName = PRESET_BALANCED
@@ -50,6 +55,12 @@ const BASE_REEL_EMPTY_LOCKOUT := 0.75
 @export var maximum_target_speed: float = 760.0
 @export var speed_curve_distance: float = 50000.0
 @export var maximum_horizontal_overspeed: float = 360.0
+## `assumed`: maximum horizontal award from one fully qualified release.
+## Zero disables the slice completely. Device feel, not the bot, decides whether
+## 100 px/s is the right strength; the deterministic contracts only prove the
+## formula, bounds, and eligibility rules.
+@export var release_momentum_bonus_speed: float = \
+	DEFAULT_RELEASE_MOMENTUM_BONUS_SPEED
 @export var air_drag: float = 0.055
 @export var web_minimum_length: float = 90.0
 @export var web_maximum_length: float = 1000.0
@@ -145,6 +156,7 @@ func apply_preset(name: StringName) -> void:
 	reel_empty_lockout = BASE_REEL_EMPTY_LOCKOUT
 	automatic_take_up_enabled = true
 	automatic_take_up_retention = 0.85
+	release_momentum_bonus_speed = DEFAULT_RELEASE_MOMENTUM_BONUS_SPEED
 	burst_distance_fraction = 0.40
 	burst_minimum_distance = 80.0
 	burst_pull_duration = 0.20
@@ -445,6 +457,9 @@ func validate() -> PackedStringArray:
 			maximum_target_speed < starting_target_speed or \
 			speed_curve_distance <= 0.0:
 		failures.append("speed progression values are invalid")
+	if release_momentum_bonus_speed < 0.0 or \
+			release_momentum_bonus_speed > MAX_RELEASE_MOMENTUM_BONUS_SPEED:
+		failures.append("release momentum bonus is invalid")
 	if web_minimum_length <= 0.0 or web_maximum_length <= web_minimum_length:
 		failures.append("web length range is invalid")
 	if reel_energy_capacity <= 0.0 or reel_drain_rate <= 0.0 or \

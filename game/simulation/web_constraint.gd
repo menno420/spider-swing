@@ -2,6 +2,10 @@ extends RefCounted
 class_name WebConstraint
 ## Maximum-length rope constraint with capped correction and Reel-In energy.
 
+## `assumed`: a 90° covered arc earns full arc quality. Device feel may move
+## this threshold; deterministic contracts prove the formula, not its tuning.
+const FULL_RELEASE_ARC_RADIANS := PI * 0.5
+
 enum AttachResult {
 	ATTACHED,
 	OUT_OF_RANGE,
@@ -17,6 +21,11 @@ var reel_active: bool = false
 var reel_lockout_remaining: float = 0.0
 var _empty_event_armed: bool = true
 var _last_distance_to_anchor: float = 0.0
+var _arc_tracking: bool = false
+var _arc_previous_angle: float = 0.0
+var _arc_unwrapped_angle: float = 0.0
+var _arc_minimum_angle: float = 0.0
+var _arc_maximum_angle: float = 0.0
 
 
 func reset(config: SwingConfig) -> void:
@@ -29,6 +38,7 @@ func reset(config: SwingConfig) -> void:
 	reel_lockout_remaining = 0.0
 	_empty_event_armed = true
 	_last_distance_to_anchor = 0.0
+	_reset_swing_arc()
 
 
 func try_attach(
@@ -55,6 +65,7 @@ func try_attach(
 	)
 	tension = 0.0
 	_last_distance_to_anchor = distance
+	_begin_swing_arc(position - target)
 	return AttachResult.ATTACHED
 
 
@@ -63,6 +74,82 @@ func release() -> void:
 	reel_active = false
 	tension = 0.0
 	_last_distance_to_anchor = 0.0
+	_reset_swing_arc()
+
+
+## Authoritative release-quality inputs for this attachment. The rope owns the
+## arc because it owns attachment history; SimulationWorld owns the actual speed
+## award and its reference-speed cap.
+func release_quality(position: Vector2, velocity: Vector2) -> Dictionary:
+	if not attached:
+		return {
+			"arc_radians": 0.0,
+			"arc_quality": 0.0,
+			"rise_quality": 0.0,
+			"quality": 0.0,
+		}
+	_track_swing_arc(position - anchor)
+	var arc_radians := swing_arc_radians()
+	var arc_quality := clampf(
+		arc_radians / FULL_RELEASE_ARC_RADIANS,
+		0.0,
+		1.0,
+	)
+	var speed := velocity.length()
+	var rise_quality := clampf(
+		-velocity.y / maxf(speed, 0.0001),
+		0.0,
+		1.0,
+	)
+	var quality := arc_quality * rise_quality
+	if velocity.x <= 0.0 or position.x <= anchor.x:
+		quality = 0.0
+	return {
+		"arc_radians": arc_radians,
+		"arc_quality": arc_quality,
+		"rise_quality": rise_quality,
+		"quality": quality,
+	}
+
+
+func swing_arc_radians() -> float:
+	if not attached or not _arc_tracking:
+		return 0.0
+	return maxf(0.0, _arc_maximum_angle - _arc_minimum_angle)
+
+
+func _begin_swing_arc(offset: Vector2) -> void:
+	if offset.length_squared() <= 0.000001:
+		_reset_swing_arc()
+		return
+	var angle := offset.angle()
+	_arc_tracking = true
+	_arc_previous_angle = angle
+	_arc_unwrapped_angle = angle
+	_arc_minimum_angle = angle
+	_arc_maximum_angle = angle
+
+
+func _track_swing_arc(offset: Vector2) -> void:
+	if offset.length_squared() <= 0.000001:
+		return
+	if not _arc_tracking:
+		_begin_swing_arc(offset)
+		return
+	var angle := offset.angle()
+	var delta_angle := wrapf(angle - _arc_previous_angle, -PI, PI)
+	_arc_unwrapped_angle += delta_angle
+	_arc_previous_angle = angle
+	_arc_minimum_angle = minf(_arc_minimum_angle, _arc_unwrapped_angle)
+	_arc_maximum_angle = maxf(_arc_maximum_angle, _arc_unwrapped_angle)
+
+
+func _reset_swing_arc() -> void:
+	_arc_tracking = false
+	_arc_previous_angle = 0.0
+	_arc_unwrapped_angle = 0.0
+	_arc_minimum_angle = 0.0
+	_arc_maximum_angle = 0.0
 
 
 func set_reel_active(active: bool) -> void:
@@ -151,12 +238,14 @@ func solve_moving_anchor(
 		)
 
 	if distance <= 0.0001:
+		_track_swing_arc(predicted - next_anchor)
 		_last_distance_to_anchor = distance
 		anchor = next_anchor
 		return {"position": predicted, "velocity": velocity}
 
 	var allowed_length := rope_length + config.rope_elasticity_allowance
 	if distance <= allowed_length:
+		_track_swing_arc(predicted - next_anchor)
 		_last_distance_to_anchor = distance
 		anchor = next_anchor
 		return {"position": predicted, "velocity": velocity}
@@ -179,6 +268,7 @@ func solve_moving_anchor(
 		(outward_speed * config.spider_mass / maxf(delta, 0.0001))
 		+ (excess * config.spider_mass / maxf(delta * delta, 0.0001))
 	)
+	_track_swing_arc(predicted - next_anchor)
 	anchor = next_anchor
 	_last_distance_to_anchor = predicted.distance_to(anchor)
 

@@ -66,7 +66,7 @@ drift.
 
 ```jsonc
 {
-  "format": "spider-swing-input-trace@1",
+  "format": "spider-swing-input-trace@2",
   "setup": {            // everything needed to rebuild the identical world
     "preset": "balanced_baseline", "spider": "classic", "skill": "expert",
     "upgrades": 20, "difficulty": "standard", "start_m": 5000,
@@ -185,14 +185,14 @@ are easy to get wrong:
   the feature works on a desktop checkout and silently offers nothing on the
   device where runs are actually watched.
 - A trace from a superseded format must be **skipped by the catalog**, not
-  listed and then refused. `zz-superseded-format-fixture.json` is committed
-  precisely so that rule has something real to be tested against; after a
-  format bump, every old trace looks like it.
+  listed and then refused. The former current trace
+  `lab-best-warp5000-l20.json` is retained as a complete `@1` fixture for that
+  rule; after the physics-driven `@2` bump, every old `@1` trace looks like it.
 
 ## Bumping the format
 
 `TraceCatalog.INPUT_TRACE_FORMAT` is the single definition, in `domain`;
 the producer (`tools/simulate.gd`) and the consumer (`SwingLabSession`) both
-reference it and neither carries its own copy. Change the record shape → bump
-that one constant → old traces are refused rather than replayed into a world
-they were never recorded in.
+reference it and neither carries its own copy. Change the record shape **or the
+authoritative physics semantics** → bump that one constant → old traces are
+refused rather than replayed into a world they were never recorded in.

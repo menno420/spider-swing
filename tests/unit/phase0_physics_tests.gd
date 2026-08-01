@@ -15,7 +15,10 @@ static func run() -> Dictionary:
 	passed += _test_reel_resource_baseline_and_resolution(failures)
 	passed += _test_gradual_speed_curve_reaches_full_pace_at_five_kilometres(
 		failures)
-	passed += _test_release_preserves_velocity(failures)
+	passed += _test_release_quality_rewards_wide_rising_arc(failures)
+	passed += _test_release_quality_rejects_poor_timing(failures)
+	passed += _test_release_quality_is_capped_and_resets(failures)
+	passed += _test_release_arc_is_wrap_safe_and_jitter_bounded(failures)
 	passed += _test_reel_shortens_without_teleport(failures)
 	passed += _test_reel_does_not_add_speed(failures)
 	passed += _test_automatic_take_up_ratchets_slack_without_speed(failures)
@@ -90,6 +93,7 @@ static func _test_presets(failures: PackedStringArray) -> int:
 			not is_equal_approx(balanced.reel_energy_capacity, 60.0) or \
 			not is_equal_approx(balanced.burst_distance_fraction, 0.40) or \
 			not is_equal_approx(balanced.burst_minimum_distance, 80.0) or \
+			not is_equal_approx(balanced.release_momentum_bonus_speed, 100.0) or \
 			not is_equal_approx(balanced.speed_curve_distance, 50000.0) or \
 			not is_equal_approx(
 				balanced.tight_corridor_start_distance, 20000.0) or \
@@ -233,25 +237,263 @@ static func _test_gradual_speed_curve_reaches_full_pace_at_five_kilometres(
 	return 1
 
 
-static func _test_release_preserves_velocity(failures: PackedStringArray) -> int:
+static func _test_release_quality_rewards_wide_rising_arc(
+	failures: PackedStringArray,
+) -> int:
 	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 	config.gravity = 0.0001
 	config.horizontal_drive_acceleration = 0.0001
 	config.air_drag = 0.0
-	var geometry := _test_geometry()
-	var released := SimulationWorld.new()
-	var control := SimulationWorld.new()
-	released.reset(config, geometry)
-	control.reset(config, geometry)
-	released.velocity = Vector2(512.0, -147.0)
-	control.velocity = released.velocity
-	released.web.try_attach(released.position, Vector2(480.0, 150.0), config)
-	released.queue_command(InputCommand.release(1, 0))
-	released.step(FIXED_DELTA)
-	control.step(FIXED_DELTA)
-	if released.velocity.distance_to(control.velocity) > 0.001:
-		failures.append("release changed velocity: released=%s control=%s" % [
-			released.velocity, control.velocity])
+	var explicit := SimulationWorld.new()
+	if not _prime_release_world(
+			explicit, config, Vector2(700.0, 390.0), Vector2(400.0, -300.0)):
+		failures.append("release-quality fixture could not attach its opening web")
+		return 0
+	explicit.queue_command(InputCommand.release(1, 0))
+	var events := explicit.step(FIXED_DELTA)
+	var release_event := _first_event(events, SimulationEvent.Kind.RELEASED)
+	if release_event == null:
+		failures.append("explicit release emitted no authoritative RELEASED event")
+		return 0
+	# `measured` by the pinned 60 Hz fixture at 0.001 px/s resolution: a 90°
+	# arc and (400, -300) velocity produce rise quality 0.6, hence 60 px/s
+	# from the `assumed` 100 px/s maximum award.
+	if absf(float(release_event.data.get("release_arc_degrees", 0.0)) - 90.0) \
+			> 0.001 or \
+			absf(float(release_event.data.get("release_quality", 0.0)) - 0.6) \
+			> 0.001 or \
+			absf(float(release_event.data.get("forward_bonus", 0.0)) - 60.0) \
+			> 0.001 or \
+			absf(float(release_event.data.get("velocity_after_x", 0.0)) - 460.0) \
+			> 0.001 or \
+			absf(float(release_event.data.get("velocity_after_y", 0.0)) + 300.0) \
+			> 0.001:
+		failures.append(
+			"wide rising release did not convert its measured quality into 60 px/s")
+		return 0
+
+	# Device taps arrive as ATTACH commands even when the web is already held.
+	# That live route and the replay/bot RELEASE route must resolve identically.
+	var tapped := SimulationWorld.new()
+	if not _prime_release_world(
+			tapped, config, Vector2(700.0, 390.0), Vector2(400.0, -300.0)):
+		failures.append("attached-tap release fixture could not attach its opening web")
+		return 0
+	tapped.queue_command(InputCommand.attach(Vector2(900.0, 150.0), 1, 0))
+	var tap_event := _first_event(
+		tapped.step(FIXED_DELTA), SimulationEvent.Kind.RELEASED)
+	if tap_event == null or \
+			absf(float(tap_event.data.get("forward_bonus", 0.0)) - 60.0) > 0.001 or \
+			tapped.velocity.distance_to(explicit.velocity) > 0.001:
+		failures.append(
+			"attached tap and explicit release produced different momentum")
+		return 0
+	return 1
+
+
+static func _test_release_quality_rejects_poor_timing(
+	failures: PackedStringArray,
+) -> int:
+	var base := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	base.gravity = 0.0001
+	base.horizontal_drive_acceleration = 0.0001
+	base.air_drag = 0.0
+	var cases := [
+		{
+			"name": "falling",
+			"position": Vector2(700.0, 390.0),
+			"velocity": Vector2(400.0, 300.0),
+			"bonus": 100.0,
+		},
+		{
+			"name": "immediate",
+			"position": Vector2(220.0, 390.0),
+			"velocity": Vector2(400.0, -300.0),
+			"bonus": 100.0,
+		},
+		{
+			"name": "backward",
+			"position": Vector2(700.0, 390.0),
+			"velocity": Vector2(-400.0, -300.0),
+			"bonus": 100.0,
+		},
+		{
+			"name": "disabled",
+			"position": Vector2(700.0, 390.0),
+			"velocity": Vector2(400.0, -300.0),
+			"bonus": 0.0,
+		},
+	]
+	for item: Dictionary in cases:
+		var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+		config.gravity = base.gravity
+		config.horizontal_drive_acceleration = base.horizontal_drive_acceleration
+		config.air_drag = base.air_drag
+		config.release_momentum_bonus_speed = float(item["bonus"])
+		var world := SimulationWorld.new()
+		if not _prime_release_world(
+				world, config, item["position"], item["velocity"]):
+			failures.append("%s release fixture could not attach" % item["name"])
+			return 0
+		world.queue_command(InputCommand.release(1, 0))
+		var event := _first_event(world.step(FIXED_DELTA), SimulationEvent.Kind.RELEASED)
+		if event == null or \
+				absf(float(event.data.get("forward_bonus", -1.0))) > 0.001 or \
+				absf(float(event.data.get("velocity_after_x", 0.0)) - \
+					float(event.data.get("velocity_before_x", 1.0))) > 0.001:
+			failures.append("%s release manufactured forward momentum" % item["name"])
+			return 0
+
+	# Stay on the eligible side of the anchor so this fixture isolates arc
+	# quality. `Inferred` from the constructed ±1 px horizontal crossing at a
+	# 240 px vertical offset: the covered arc is below 1° and therefore earns
+	# below 1 px/s at the `assumed` 100 px/s maximum. Assertions resolve 0.001.
+	# Without this case, the side gate could hide a broken arc multiplier.
+	var narrow_config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	narrow_config.gravity = base.gravity
+	narrow_config.horizontal_drive_acceleration = base.horizontal_drive_acceleration
+	narrow_config.air_drag = base.air_drag
+	var narrow := SimulationWorld.new()
+	var narrow_attach_position := Vector2(459.0, 390.0)
+	var narrow_release_position := Vector2(461.0, 390.0)
+	if not _prime_release_world(
+			narrow,
+			narrow_config,
+			narrow_release_position,
+			Vector2(400.0, -300.0),
+			narrow_attach_position,
+	):
+		failures.append("narrow release fixture could not attach")
+		return 0
+	narrow.queue_command(InputCommand.release(1, 0))
+	var narrow_event := _first_event(
+		narrow.step(FIXED_DELTA), SimulationEvent.Kind.RELEASED)
+	if narrow_event == null or \
+			float(narrow_event.data.get("release_arc_degrees", 90.0)) >= 1.0 or \
+			float(narrow_event.data.get("forward_bonus", 100.0)) >= 1.0:
+		failures.append("sub-degree rising release received a wide-arc award")
+		return 0
+
+	# Burst and Dive own separate exit-speed laws. Their forced rope detach must
+	# not also collect a manual-release award on the way into the pull.
+	var burst := SimulationWorld.new()
+	if not _prime_release_world(
+			burst,
+			base,
+			Vector2(700.0, 390.0),
+			Vector2(400.0, -300.0),
+	):
+		failures.append("forced-detach release fixture could not attach")
+		return 0
+	burst.queue_command(InputCommand.burst(1, 0))
+	var burst_events := burst.step(FIXED_DELTA)
+	if not _contains_event(burst_events, SimulationEvent.Kind.BURST_STARTED) or \
+			_contains_event(burst_events, SimulationEvent.Kind.RELEASED) or \
+			absf(burst.velocity.x - 400.0) > 0.001:
+		failures.append("forced Burst detach collected a manual-release award")
+		return 0
+	return 1
+
+
+static func _test_release_quality_is_capped_and_resets(
+	failures: PackedStringArray,
+) -> int:
+	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	config.gravity = 0.0001
+	config.horizontal_drive_acceleration = 0.0001
+	config.air_drag = 0.0
+	config.maximum_horizontal_overspeed = 50.0
+	var capped := SimulationWorld.new()
+	if not _prime_release_world(
+			capped, config, Vector2(700.0, 390.0), Vector2(400.0, -300.0)):
+		failures.append("capped release fixture could not attach")
+		return 0
+	capped.queue_command(InputCommand.release(1, 0))
+	capped.queue_command(InputCommand.release(2, 0))
+	var events := capped.step(FIXED_DELTA)
+	var release_count := 0
+	var release_event: SimulationEvent = null
+	for event: SimulationEvent in events:
+		if event.kind == SimulationEvent.Kind.RELEASED:
+			release_count += 1
+			release_event = event
+	if release_event == null or release_count != 1 or \
+			absf(float(release_event.data.get("forward_bonus", 0.0)) - 10.0) \
+			> 0.001 or \
+			absf(float(release_event.data.get("velocity_after_x", 0.0)) - 410.0) \
+			> 0.001:
+		failures.append("release award ignored its reference-speed cap or duplicated")
+		return 0
+
+	# Reset and reuse the same world, then compare it with a fresh world. Old arc
+	# history must not leak into the next attachment or replay.
+	var reused := capped
+	var fresh := SimulationWorld.new()
+	for world: SimulationWorld in [reused, fresh]:
+		if not _prime_release_world(
+				world, config, Vector2(220.0, 390.0), Vector2(400.0, -300.0)):
+			failures.append("reset release fixture could not attach")
+			return 0
+		world.queue_command(InputCommand.release(1, 0))
+	var reused_event := _first_event(
+		reused.step(FIXED_DELTA), SimulationEvent.Kind.RELEASED)
+	var fresh_event := _first_event(
+		fresh.step(FIXED_DELTA), SimulationEvent.Kind.RELEASED)
+	if reused_event == null or fresh_event == null or \
+			reused.velocity.distance_to(fresh.velocity) > 0.001 or \
+			float(reused_event.data.get("release_arc_degrees", -1.0)) != \
+			float(fresh_event.data.get("release_arc_degrees", -2.0)) or \
+			absf(float(reused_event.data.get("forward_bonus", -1.0))) > 0.001:
+		failures.append("reset world inherited release arc or momentum")
+		return 0
+	return 1
+
+
+static func _test_release_arc_is_wrap_safe_and_jitter_bounded(
+	failures: PackedStringArray,
+) -> int:
+	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	config.automatic_take_up_enabled = false
+	var web := WebConstraint.new()
+	web.reset(config)
+	var start := Vector2(220.0, 390.0)
+	var anchor := Vector2(460.0, 150.0)
+	if web.try_attach(start, anchor, config) != WebConstraint.AttachResult.ATTACHED:
+		failures.append("wrap-safe arc fixture could not attach")
+		return 0
+	var radius := start.distance_to(anchor)
+	for degrees: float in [179.0, -179.0]:
+		web.solve(
+			anchor + Vector2.from_angle(deg_to_rad(degrees)) * radius,
+			Vector2.ZERO,
+			FIXED_DELTA,
+			config,
+		)
+	# `inferred` from the constructed 135° → 179° → -179° geometry: the
+	# wrap-safe covered range is 46°, not an almost-complete turn.
+	var wrap_arc := rad_to_deg(web.swing_arc_radians())
+	if wrap_arc < 45.0 or wrap_arc > 47.0:
+		failures.append(
+			"arc wrap read %.3f°, expected the small 46° unwrapped range" % wrap_arc)
+		return 0
+
+	web.release()
+	web.reset(config)
+	web.try_attach(start, anchor, config)
+	for _cycle in range(40):
+		for degrees: float in [130.0, 135.0]:
+			web.solve(
+				anchor + Vector2.from_angle(deg_to_rad(degrees)) * radius,
+				Vector2.ZERO,
+				FIXED_DELTA,
+				config,
+			)
+	var jitter_arc := rad_to_deg(web.swing_arc_radians())
+	# `Inferred` from the constructed 130°↔135° band: repeating it 40 times
+	# remains a 5° range. The extra 0.001° is a comparison tolerance, not tuning.
+	if jitter_arc > 5.001:
+		failures.append(
+			"small-band jitter accumulated into a fake %.3f° wide swing" % jitter_arc)
 		return 0
 	return 1
 
@@ -2923,6 +3165,36 @@ static func _load_trace(failures: PackedStringArray) -> Dictionary:
 		failures.append("recorded trace is not a JSON object")
 		return {}
 	return parsed as Dictionary
+
+
+static func _prime_release_world(
+	world: SimulationWorld,
+	config: SwingConfig,
+	release_position: Vector2,
+	release_velocity: Vector2,
+	attach_position: Vector2 = Vector2(220.0, 390.0),
+) -> bool:
+	world.reset(config, _test_geometry())
+	world.position = attach_position
+	if world.web.try_attach(
+			world.position,
+			Vector2(460.0, 150.0),
+			config,
+	) != WebConstraint.AttachResult.ATTACHED:
+		return false
+	world.position = release_position
+	world.velocity = release_velocity
+	return true
+
+
+static func _first_event(
+	events: Array[SimulationEvent],
+	kind: int,
+) -> SimulationEvent:
+	for event: SimulationEvent in events:
+		if event.kind == kind:
+			return event
+	return null
 
 
 static func _contains_event(events: Array[SimulationEvent], kind: int) -> bool:

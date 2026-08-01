@@ -6,17 +6,19 @@
 > work always win over this file. Read it second (right after the working
 > agreement) and keep it current as the project moves.
 
-**The next session builds mechanics, not visuals.** Read
+**The earned-speed mechanics work is proceeding one ordered slice at a time.** Read
 [`next-session-brief-2026-08-01-mechanics.md`](planning/next-session-brief-2026-08-01-mechanics.md)
 and the spec it points at,
 [`earned-speed-and-the-bird.md`](game-design/earned-speed-and-the-bird.md).
-The owner redirected on 2026-08-01 evening: the first 10 km of visuals are
-essentially done, so the remaining visual job is **the bird**, and the mechanical
-job is that **forward speed becomes earned** — the free drive goes away and the
-difficulty ramp moves out of the pace curve into player-controlled speed
-(upgrades, swing control, reel and burst timing). OQ-12 is answered; OQ-13 to
-OQ-15 are what measurement could not settle. **No new recordings will be
-supplied**, so nothing may be planned around getting one.
+The first slice now makes a deliberate wide, rising release an authoritative
+source of bounded forward momentum. The free drive and bird are deliberately
+unchanged; the next ordered slice is drive → 0 as a config value. The owner
+redirected on 2026-08-01 evening: the first 10 km of visuals are essentially
+done, so the remaining visual job is **the bird**, and the wider mechanical job
+is that **forward speed becomes earned** through upgrades, swing control, reel,
+burst timing, and release timing. OQ-12 is answered; OQ-13 to OQ-16 are the
+device/product questions measurement could not settle. **No new recordings will
+be supplied**, so nothing may be planned around getting one.
 
 The earlier [`fresh-session handoff`](planning/fresh-session-handoff-2026-08-01.md)
 is **superseded as a plan and still accurate as a record** — read it for what
@@ -52,7 +54,7 @@ without a reported regression.
   pattern, reached checkpoints, and bounded idempotent-settlement history.
   Older settings default audio/haptics on; every progression migration remains
   one-way and explicit.
-- Build `0.24.0-environment-finish-playtest` (Android version code 43, package
+- Build `0.25.0-earned-release-playtest` (Android version code 44, package
   `com.menno420.spiderswing.dev`) retains the stable conventional public debug
   identity introduced by `0.19.0-depth-testing` in
   `.github/android/debug.keystore`. The workflow pins its file and certificate
@@ -73,6 +75,13 @@ without a reported regression.
   inward slack take-up, a 40% Anchor Burst with 80 px minimum travel, and a
   separate one-shot 40% Dive Pull. Accepted actions publish authoritative
   feedback events; unavailable actions never fake success.
+- Intentional release quality is authoritative simulation state. A wrap-safe
+  attachment arc and the upward share of velocity scale an `assumed` 100 px/s
+  maximum forward award; an `assumed` 90° arc reaches full arc quality. The
+  award is forward/right-of-anchor only, excluded from forced Burst/Dive detach,
+  and bounded by an `inferred` reuse of the named target-plus-overspeed ceiling.
+  Zero disables the mechanic. Device feel, not the non-pumping bot, decides the
+  two assumed tuning values.
 - Input is buffered into commands and simulation never polls it. Native 228×228
   Reel/Burst buttons and all laboratory controls consume GUI input before world
   taps. Touchscreen presses and Godot's emulated mouse copy resolve to one
@@ -173,9 +182,9 @@ without a reported regression.
 
 **Verification**
 
-- Local source passes the 181-contract engine runner with the exact
+- Local source passes the 184-contract engine runner with the exact
   `4.7.1.stable.official.a13da4feb` Standard binary. The declared suite contains
-  11 bootstrap/build, 57 deterministic physics, 15 zone, 11 spider-biology,
+  11 bootstrap/build, 60 deterministic physics, 15 zone, 11 spider-biology,
   10 Campaign, 9 difficulty, 4 upgrade-wiring, 9 simulation-lab/replay,
   2 economy, 6 generated-SFX, 25 mobile GUI/layout, and 22 front-end/settings/
   progression checks. The full
@@ -348,6 +357,10 @@ without a reported regression.
   reel-as-accelerator (already worth 6.2% speed / 52% distance). They are
   mutually enabling, which is why evaluating them one at a time produced two
   wrong verdicts.
+- Ordered slice 1 now implements that arc-scaled release momentum, but does not
+  claim the old drive has stopped refunding missed timing. Its effectiveness as
+  a propulsion source is completed by the next ordered drive → 0 slice; this
+  PR establishes the missing mechanic and its deterministic safety bounds.
 - **Wide swinging wins outright in the no-drive world.** Re-measured there on
   held-out seeds: hauling 65 m (dangling), searched no-drive optimum 2 424 m
   at 27.6° arc, **endorsed wide-swinging 2 717 m at 48.4 m/s holding a 61.2°
@@ -382,16 +395,20 @@ without a reported regression.
 
 **Replay review — first verdict, 2026-08-01**
 
-- The owner watched both bundled warp-L20 lab traces in game and judged them
+- The owner watched both then-current `@1` warp-L20 lab traces in game and judged them
   fair: *"genuinely good and match my own playstyle, a little excessive on the
   burst and dives."* First fair-play verdict on lab output.
 - It **calibrated the anomaly detector**: those runs measure 2.45× Burst
   against a 2.5× threshold that had been guessed, so the alarm sits just above
   endorsed play.
-- **Awaiting judgement:** `lab-flagged-webspam-standing-l20.json`, a verified
-  10 773 m run at 1.34 web attaches per second (endorsed: 0.63). It does not
-  abandon Dive — 36 dives per run against the endorsed 13 — the per-web ratio
-  falls only because web volume doubled. No published conclusion rests on it.
+- Release-quality physics changes authoritative outcomes, so trace identity is
+  now `@2`; every former `@1` trace is intentionally skipped rather than shown
+  as the same run under different physics. Their old verdict remains historical
+  evidence, not current-build replay evidence. The bundled
+  `release-quality-technical.json` is a deterministic `@2` cross-path fixture,
+  not a fair-play or tuning claim. The formerly flagged web-spam trace therefore
+  has no pending current-build judgement, and no published conclusion rests on
+  it.
 
 **Difficulty — owner verdict, 2026-08-01**
 

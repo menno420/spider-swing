@@ -28,7 +28,7 @@ const FIXED_DELTA := 1.0 / 60.0
 ## the replay path has something to prove itself against without anyone having
 ## to re-run a search first.
 const COMMITTED_TRACE := \
-	"res://assets/runtime/traces/lab-best-warp5000-l20.json"
+	"res://assets/runtime/traces/release-quality-technical.json"
 
 ## `SwingLabSession.TRACE_PIXELS_PER_METRE`, restated so this contract does not
 ## silently follow a change to it.
@@ -37,7 +37,7 @@ const TRACE_PIXELS_PER_METRE := 10.0
 ## A committed trace from a superseded format. It exists so the "skip what we
 ## cannot replay" rule has something real to be tested against.
 const SUPERSEDED_FIXTURE := \
-	"res://assets/runtime/traces/zz-superseded-format-fixture.json"
+	"res://assets/runtime/traces/lab-best-warp5000-l20.json"
 
 
 static func run() -> Dictionary:
