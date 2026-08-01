@@ -1,0 +1,1 @@
+- `claude/fresh-session-handoff-audit` · **reconcile live repository state and prepare the next recording-led device-verification session** · docs/current-state.md + docs/owner-questions.md + control/status.md + focused handoff doc · 2026-08-01
