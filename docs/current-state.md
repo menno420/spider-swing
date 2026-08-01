@@ -245,6 +245,23 @@ without a reported regression.
   meter never empties" premise is true — it simply was not established by the
   circular evidence originally offered for it.
 
+**Replay review loop — 2026-08-01**
+
+- `tools/simulate.gd --trace-top` writes a batch's best runs as **input
+  traces** in the game's own replay format: which button, where, on which tick,
+  and nothing else. `--replay=<path>` re-runs one and fails unless it lands on
+  its recorded outcome.
+- `TraceCatalog` lists bundled traces and the debug **Test Run** screen replays
+  them in the real game, so a search result can be *watched* rather than only
+  read. This exists because no statistic separates "played well" from "found a
+  loophole" — every automatic check is a rule written in advance, and an
+  exploit is the thing nobody wrote a rule for.
+- A contract replays the committed trace through `SwingLabSession` and requires
+  it within **one metre** of the lab's recorded distance. The guarded failure
+  is quiet: a replay fed into a slightly different world still plays, it is
+  simply not the run in the report.
+- Mechanics: `docs/technical/replay-review-loop.md`.
+
 **Difficulty — owner verdict, 2026-08-01**
 
 - **The difficulty curve is balanced.** Owner from device play: ~2 km

@@ -34,6 +34,7 @@
 | [`technical/repository-layout.md`](technical/repository-layout.md) | What lives where, and what is committed vs generated. |
 | [`technical/testing.md`](technical/testing.md) | The two gates, how to run them locally, what CI enforces. |
 | [`technical/substrate-kit-provenance.md`](technical/substrate-kit-provenance.md) | How the vendored Substrate Kit got here; how to re-verify the pin. |
+| [`technical/replay-review-loop.md`](technical/replay-review-loop.md) | How a run the lab found gets in front of a person to be judged — the trace format, the two independent replays that prove it reproduces, and what to look for while watching. |
 | [`technical/simulation-lab.md`](technical/simulation-lab.md) | The headless batch-run lab — what it can and cannot answer, and how to measure a difficulty curve with it. |
 
 ## Measurements

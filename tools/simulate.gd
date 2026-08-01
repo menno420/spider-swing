@@ -77,6 +77,9 @@ extends SceneTree
 ## playing the same game, whatever its distance says.
 
 const BOT_MODEL_VERSION := 3
+## Trace document identity. Bump when the record shape changes so an old trace
+## fails loudly instead of replaying into a different world.
+const TRACE_FORMAT := "spider-swing-input-trace@1"
 const FIXED_DELTA := 1.0 / 60.0
 const PIXELS_PER_METRE := 10.0
 const DISTANCE_BANDS_M := [500.0, 1000.0, 2000.0, 3500.0]
@@ -88,6 +91,11 @@ static var _difficulty_mode: StringName = DifficultyCatalog.MODE_STANDARD
 
 ## Set from --track; empty means "every track", the historic behaviour.
 static var _isolated_track: String = ""
+
+## Per-run input traces, collected only when --trace-top asks for them. Kept
+## on the script rather than threaded through _run_batch's return, because the
+## rows are summarized by several callers and none of them want this.
+var _traced: Array[Dictionary] = []
 
 ## Imperfection model per skill tier. Ticks are 60 Hz simulation ticks.
 ## `care` is the probability of checking the pull-safety preview (the same
@@ -263,6 +271,9 @@ func _initialize() -> void:
 		options["reel_style"], "on" if bool(options["save_bursts"]) else "off",
 	])
 	_difficulty_mode = StringName(options["difficulty"])
+	if not str(options["replay"]).is_empty():
+		quit(0 if _verify_trace(str(options["replay"])) else 1)
+		return
 	if not _parse_bot_overrides(str(options["bot"])):
 		quit(2)
 		return
@@ -313,6 +324,13 @@ func _initialize() -> void:
 	var json_path := str(options["json"])
 	if not json_path.is_empty():
 		_write_json(json_path, options, all_rows, summaries)
+	var trace_dir := str(options["trace_dir"])
+	if int(options["trace_top"]) > 0:
+		if trace_dir.is_empty():
+			printerr("[simulate] --trace-top needs --trace-dir")
+		else:
+			_write_traces(
+				trace_dir, int(options["trace_top"]), options, _traced)
 	quit(0)
 
 
@@ -397,6 +415,8 @@ func _run_batch(
 		if not point.is_empty():
 			row["sweep"] = point.duplicate(true)
 		rows.append(row)
+		if int(options["trace_top"]) > 0:
+			_traced.append({"row": row, "trace": driver.trace})
 	return rows
 
 
@@ -767,6 +787,9 @@ func _parse_options(arguments: PackedStringArray) -> Dictionary:
 		"moving_anchor_proof": false,
 		"sweep": "",
 		"bot": "",
+		"trace_top": 0,
+		"trace_dir": "",
+		"replay": "",
 		"json": "",
 	}
 	for argument: String in arguments:
@@ -805,6 +828,12 @@ func _parse_options(arguments: PackedStringArray) -> Dictionary:
 				options["track"] = value
 			"bot":
 				options["bot"] = value
+			"trace-top":
+				options["trace_top"] = maxi(0, int(value))
+			"trace-dir":
+				options["trace_dir"] = value
+			"replay":
+				options["replay"] = value
 			"difficulty":
 				if DifficultyCatalog.has_mode(StringName(value)):
 					options["difficulty"] = value
@@ -995,6 +1024,156 @@ func _periodic_pivot_probe(config: SwingConfig) -> Dictionary:
 	}
 
 
+## Write the N furthest-travelling runs of a batch as replayable traces.
+##
+## The record shape is the game's own (`InputCommand.to_record()` plus the
+## `playback_tick` SwingLabSession stamps), so a bot trace and a recording of a
+## human are the same kind of object and the same replay path consumes both.
+## The header carries everything needed to rebuild the world, and `expected`
+## carries what the run did — a trace that cannot be checked against its own
+## outcome is a story, not evidence.
+func _write_traces(
+	directory: String,
+	keep: int,
+	options: Dictionary,
+	traced: Array[Dictionary],
+) -> void:
+	if keep <= 0 or traced.is_empty():
+		return
+	var sorted_runs := traced.duplicate()
+	sorted_runs.sort_custom(func(a, b):
+		return float(a["row"]["travelled_m"]) > float(b["row"]["travelled_m"]))
+	if not DirAccess.dir_exists_absolute(directory):
+		var error := DirAccess.make_dir_recursive_absolute(directory)
+		if error != OK:
+			printerr("[simulate] cannot create trace directory %s" % directory)
+			return
+	var written := 0
+	for index in range(mini(keep, sorted_runs.size())):
+		var entry: Dictionary = sorted_runs[index]
+		var row: Dictionary = entry["row"]
+		var payload := {
+			"format": TRACE_FORMAT,
+			"bot_model": BOT_MODEL_VERSION,
+			# Everything needed to rebuild the identical world.
+			"setup": {
+				"preset": options["preset"],
+				"spider": options["spider"],
+				"skill": options["skill"],
+				"upgrades": options["upgrades"],
+				"track": options["track"],
+				"difficulty": options["difficulty"],
+				"reel_style": options["reel_style"],
+				"save_bursts": options["save_bursts"],
+				"start_m": options["start_m"],
+				"course_seed": row["course_seed"],
+				"bot_seed": row["seed"],
+				"bot": options["bot"],
+			},
+			# What the run actually did. `--replay` re-runs the commands and
+			# fails unless it lands here again.
+			"expected": {
+				"distance_m": row["distance_m"],
+				"travelled_m": row["travelled_m"],
+				"seconds": row["seconds"],
+				"cause": row["cause"],
+				"deaths": row["deaths"],
+				"flies": row["flies"],
+			},
+			"commands": entry["trace"],
+		}
+		var path := "%s/run-%02d-%dm.json" % [
+			directory.rstrip("/"), index + 1, int(row["travelled_m"])]
+		var file := FileAccess.open(path, FileAccess.WRITE)
+		if file == null:
+			printerr("[simulate] cannot write %s" % path)
+			continue
+		file.store_string(JSON.stringify(payload, "\t"))
+		file.close()
+		written += 1
+		print("[simulate] trace %s — %.1f m, %d command(s)" % [
+			path, float(row["travelled_m"]), entry["trace"].size()])
+	if written > 0:
+		print("[simulate] verify any of them with --replay=<path>")
+
+
+## Replay a trace and check it lands where it says it does.
+##
+## This is the load-bearing check for the whole review loop. A trace that is
+## watched but never verified could be showing a different run from the one the
+## search reported, and nobody would know. Determinism is claimed all over this
+## repository; here it is tested.
+func _verify_trace(path: String) -> bool:
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		printerr("[simulate] cannot read trace %s" % path)
+		return false
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	file.close()
+	if typeof(parsed) != TYPE_DICTIONARY:
+		printerr("[simulate] %s is not a trace document" % path)
+		return false
+	var trace: Dictionary = parsed
+	if str(trace.get("format", "")) != TRACE_FORMAT:
+		printerr("[simulate] %s has format '%s', expected '%s'" % [
+			path, trace.get("format", ""), TRACE_FORMAT])
+		return false
+	var setup: Dictionary = trace.get("setup", {})
+	var expected: Dictionary = trace.get("expected", {})
+
+	_difficulty_mode = StringName(setup.get("difficulty", "standard"))
+	_isolated_track = str(setup.get("track", ""))
+	if not _parse_bot_overrides(str(setup.get("bot", ""))):
+		return false
+	var config := _resolve_config(
+		StringName(setup.get("preset", str(SwingConfig.PRESET_BALANCED))),
+		StringName(setup.get("spider", "classic")),
+		int(setup.get("upgrades", 0)),
+		{})
+	if config == null:
+		return false
+
+	var driver := RunDriver.new()
+	driver.setup(
+		config,
+		_profile_for(StringName(setup.get("skill", "intermediate"))),
+		int(setup.get("bot_seed", 1)),
+		StringName(setup.get("reel_style", "adaptive")),
+		bool(setup.get("save_bursts", true)),
+		float(int(setup.get("start_m", 0))) * PIXELS_PER_METRE,
+		int(setup.get("course_seed", 1337)),
+		[],
+	)
+	driver.replay_records = trace.get("commands", [])
+	# Generous cap: the trace ends when its commands run out or the run dies,
+	# and a cap that truncated it would read as a mismatch.
+	var row := driver.run(int(600.0 / FIXED_DELTA))
+
+	var checks := [
+		["travelled_m", 0.05], ["distance_m", 0.05], ["seconds", 0.02],
+	]
+	var ok := true
+	print("[simulate] replaying %s — %d command(s)" % [
+		path, driver.replay_records.size()])
+	for check: Array in checks:
+		var key: String = check[0]
+		var tolerance: float = check[1]
+		var want := float(expected.get(key, 0.0))
+		var got := float(row[key])
+		var matched := absf(want - got) <= tolerance
+		ok = ok and matched
+		print("  %-12s expected %10.3f  got %10.3f  %s" % [
+			key, want, got, "ok" if matched else "MISMATCH"])
+	var want_cause := str(expected.get("cause", ""))
+	var got_cause := str(row["cause"])
+	if want_cause != got_cause:
+		ok = false
+		print("  %-12s expected %10s  got %10s  MISMATCH" % [
+			"cause", want_cause, got_cause])
+	print("[simulate] trace %s" % ("REPRODUCES" if ok else "DIVERGES"))
+	return ok
+
+
 func _write_json(
 	path: String,
 	options: Dictionary,
@@ -1066,6 +1245,15 @@ class RunDriver:
 	var course_seed := 1337
 	var start_m := 0.0
 	var ablated: Array[StringName] = []
+	## Every command actually delivered to the world, in the game's own replay
+	## record shape. `playback_tick` is the tick the command was queued on,
+	## which is exactly what SwingLabSession stores when it records a human —
+	## so a bot trace and a human trace are the same kind of object.
+	var trace: Array = []
+	## When non-empty the policy is switched off entirely and these records
+	## drive the run instead. This is how a trace is proved to reproduce.
+	var replay_records: Array = []
+	var replay_cursor := 0
 
 	func setup(
 		active_config: SwingConfig,
@@ -1161,9 +1349,12 @@ class RunDriver:
 			world.set_burst_cooldown_suppressed(
 				effects.is_active(EffectState.BURST_FRENZY))
 			effects.advance(FIXED_DELTA)
-			_deliver_due_commands()
-			if world.tick % int(profile["decision_period_ticks"]) == 0:
-				_decide()
+			if replay_records.is_empty():
+				_deliver_due_commands()
+				if world.tick % int(profile["decision_period_ticks"]) == 0:
+					_decide()
+			else:
+				_feed_replay()
 			var next_chunk := maxi(
 				0, floori(world.position.x / CourseStream.CHUNK_WIDTH))
 			if next_chunk != chunk_index:
@@ -1283,6 +1474,7 @@ class RunDriver:
 			"death_during_pull": died_during_pull,
 			"region": str(region["id"]),
 			"pattern": str(stream.pattern_id_for_chunk(chunk_index)),
+			"commands": trace.size(),
 		}
 
 	## The whole player model. It reads only what a player could see: its own
@@ -1620,10 +1812,28 @@ class RunDriver:
 			if int(entry["deliver_tick"]) <= world.tick:
 				var command: InputCommand = entry["command"]
 				command.captured_tick = world.tick
+				_record(command)
 				world.queue_command(command)
 			else:
 				kept.append(entry)
 		pending = kept
+
+	## Feed a recorded trace instead of deciding. Mirrors
+	## `SwingLabSession._feed_replay_commands` exactly, including the
+	## `playback_tick <= tick` test, so a trace that reproduces here is a trace
+	## the game should reproduce too.
+	func _feed_replay() -> void:
+		while replay_cursor < replay_records.size():
+			var record: Dictionary = replay_records[replay_cursor]
+			if int(record.get("playback_tick", 0)) > world.tick:
+				break
+			world.queue_command(InputCommand.from_record(record))
+			replay_cursor += 1
+
+	func _record(command: InputCommand) -> void:
+		var record := command.to_record()
+		record["playback_tick"] = world.tick
+		trace.append(record)
 
 	## Verb ablation: refuse to emit one verb's input entirely, so a course
 	## segment can be asked "is this passable WITHOUT reeling?" rather than

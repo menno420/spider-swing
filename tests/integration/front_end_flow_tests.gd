@@ -28,6 +28,7 @@ static func run() -> Dictionary:
 	passed += _test_debug_run_setup_stages_and_starts_before_play(failures)
 	passed += _test_upgrades_and_creator_edits_use_progression_service(failures)
 	passed += _test_composition_root_mounts_front_end_first(failures)
+	passed += _test_trace_watch_is_reachable_and_debug_only(failures)
 	return {"passed": passed, "failures": failures}
 
 
@@ -1130,3 +1131,76 @@ static func _test_legacy_upgrade_levels_migrate_proportionally(
 static func _remove_test_file(path: String) -> void:
 	if FileAccess.file_exists(path):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
+## The Test Run screen must offer the bundled lab runs, and only when Debug
+## Tools are on.
+##
+## The review loop is the whole point of recording traces: a search rewarded
+## for distance will use whatever the physics allows, and no statistic
+## separates "played well" from "found a loophole" — a person watching it does.
+## If this route is unreachable, every trace in the build is inert.
+##
+## The request must also carry the trace's OWN path rather than the staged
+## distance and upgrade level on the same screen: the trace names the world it
+## was recorded in, and letting the screen's controls override that would
+## replay a different run under the reported run's name.
+static func _test_trace_watch_is_reachable_and_debug_only(
+	failures: PackedStringArray,
+) -> int:
+	var settings := PlayerSettings.defaults()
+	settings.show_debug_tools = true
+	var state := FrontEndState.new()
+	state.configure(settings, PlayerProgress.defaults(), ProgressionService.new())
+	var requested: Array[String] = []
+	state.trace_watch_requested.connect(
+		func(_settings: PlayerSettings, path: String) -> void:
+			requested.append(path))
+
+	var traces := state.available_traces()
+	if traces.is_empty():
+		failures.append("no bundled traces are offered on the Test Run screen")
+		return 0
+	state.show_debug_run_setup()
+	var view := FrontEndView.new()
+	view.bind_state(state)
+	var watch := view.find_child("DebugTraceWatch", true, false)
+	var picker := view.find_child("DebugTracePicker", true, false)
+	if watch == null or picker == null:
+		failures.append("the Test Run screen has no trace picker or watch button")
+		view.free()
+		return 0
+	var label := view.find_child("DebugTraceLabel", true, false) as Label
+	if label == null or label.text.is_empty():
+		failures.append("the trace picker shows no trace")
+		view.free()
+		return 0
+	view.free()
+
+	# Stepping wraps, so one tap from either end always lands somewhere real.
+	var first := str(state.selected_trace()["path"])
+	state.select_debug_trace(1)
+	state.select_debug_trace(-1)
+	if str(state.selected_trace()["path"]) != first:
+		failures.append("stepping the trace picker forward and back moved it")
+		return 0
+
+	state.request_watch_trace()
+	if requested.size() != 1 or requested[0] != first:
+		failures.append("watching the selected trace did not request its path")
+		return 0
+
+	# Debug-only, like every other route on this screen.
+	var plain := PlayerSettings.defaults()
+	plain.show_debug_tools = false
+	var locked := FrontEndState.new()
+	locked.configure(plain, PlayerProgress.defaults(), ProgressionService.new())
+	var blocked: Array[String] = []
+	locked.trace_watch_requested.connect(
+		func(_settings: PlayerSettings, path: String) -> void:
+			blocked.append(path))
+	locked.request_watch_trace()
+	if not blocked.is_empty():
+		failures.append("trace watching fired with Debug Tools disabled")
+		return 0
+	return 1

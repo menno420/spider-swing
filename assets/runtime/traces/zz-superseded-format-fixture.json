@@ -1,0 +1,17 @@
+{
+	"format": "spider-swing-input-trace@0",
+	"_why": "A deliberately superseded trace, committed as a fixture. After a format bump this is what old traces look like: complete, plausible, and unreplayable in this build. The catalog must skip it rather than list it and refuse at the last moment, and tests/unit/simulation_lab_tests.gd asserts exactly that.",
+	"setup": {
+		"preset": "balanced_baseline",
+		"spider": "classic",
+		"skill": "expert",
+		"upgrades": 20,
+		"difficulty": "standard",
+		"start_m": 5000,
+		"course_seed": 1342
+	},
+	"expected": {"travelled_m": 99999.0, "seconds": 1.0, "cause": "obstacle"},
+	"commands": [
+		{"kind": 0, "target_x": 100.0, "target_y": 100.0, "has_world_target": true, "sequence": 1, "captured_tick": 0, "playback_tick": 0}
+	]
+}

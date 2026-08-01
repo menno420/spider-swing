@@ -22,6 +22,9 @@ signal debug_play_requested(
 	start_distance_pixels: float,
 	upgrade_level: int,
 )
+## A bundled lab trace the owner chose to watch. Carries the path rather than
+## the document so the state layer never holds a whole run in memory.
+signal trace_watch_requested(settings: PlayerSettings, trace_path: String)
 signal creator_play_requested(settings: PlayerSettings, pattern: Array[StringName])
 signal settings_changed(settings: PlayerSettings)
 signal spider_profile_requested(spider_id: StringName)
@@ -192,6 +195,46 @@ func show_practice() -> void:
 func show_campaign() -> void:
 	screen = Screen.CAMPAIGN
 	changed.emit()
+
+
+## Which bundled trace the Test Run screen currently offers to watch.
+var debug_trace_index: int = 0
+
+
+func available_traces() -> Array[Dictionary]:
+	return TraceCatalog.entries()
+
+
+## Step through the bundled traces, wrapping. Wrapping rather than clamping
+## because the list is short and a wrap is one tap from either end.
+func select_debug_trace(step: int) -> void:
+	if not settings.show_debug_tools:
+		return
+	var traces := available_traces()
+	if traces.is_empty():
+		debug_trace_index = 0
+		return
+	debug_trace_index = posmod(debug_trace_index + step, traces.size())
+	changed.emit()
+
+
+func selected_trace() -> Dictionary:
+	var traces := available_traces()
+	if traces.is_empty():
+		return {}
+	return traces[posmod(debug_trace_index, traces.size())]
+
+
+## Watch the selected trace. The upgrade overlay is deliberately NOT set here:
+## the trace names its own upgrade level and `SwingLabSession.load_input_trace`
+## applies it, so setting it twice from two places would let them disagree.
+func request_watch_trace() -> void:
+	if not settings.show_debug_tools:
+		return
+	var trace := selected_trace()
+	if trace.is_empty():
+		return
+	trace_watch_requested.emit(settings.copy(), str(trace["path"]))
 
 
 func show_debug_run_setup() -> void:
