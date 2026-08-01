@@ -166,8 +166,9 @@ skill sensitivity (2.38× against Standard's 2.30×) — harder, and still fair.
 rather than hiding. Non-lethal rails remove the failure mode that punishes
 novices most, so the gap between a novice and an expert narrows. By the brief's
 acceptance test that reads as "easier without being fairer" — and it is exactly
-why D-0033 excludes Relaxed from records and why this implementation also
-excludes it from region checkpoints. Relaxed is a way to enjoy the course, not
+why Relaxed is excluded from records and from region checkpoints. (The decision
+ledger is the home for that rule; see `docs/current-state.md`.) Relaxed is a
+way to enjoy the course, not
 a way to prove anything, and its per-mode best is kept precisely so it has
 somewhere to show a good run that is not the record.
 
