@@ -40,6 +40,7 @@ func _ready() -> void:
 	_front_end_state.campaign_play_requested.connect(_start_campaign_game)
 	_front_end_state.difficulty_requested.connect(_select_difficulty)
 	_front_end_state.debug_play_requested.connect(_start_debug_game)
+	_front_end_state.trace_watch_requested.connect(_start_trace_watch)
 	_front_end_state.creator_play_requested.connect(_start_creator_game)
 	_front_end_state.settings_changed.connect(_save_settings)
 	_front_end_state.spider_profile_requested.connect(_select_spider_profile)
@@ -175,6 +176,47 @@ func _start_campaign_game(
 		printerr("[spider-swing] campaign start failed — %s" % failure)
 	_unmount_swing_lab()
 	_mount_front_end()
+
+
+## Mount a run and immediately hand it a recorded trace to replay.
+##
+## The run is an ordinary debug practice run in every other respect, so it
+## inherits the whole no-awards/no-records policy. The session reconstructs the
+## world from the trace's own header — seed, start distance, upgrades,
+## difficulty, preset — because a replay fed into a different world is not a
+## replay, and the point of watching is to judge the run that was reported.
+func _start_trace_watch(
+	settings: PlayerSettings,
+	trace_path: String,
+) -> void:
+	if not settings.show_debug_tools:
+		return
+	var trace := SwingLabSession.read_input_trace(trace_path)
+	if trace.is_empty():
+		printerr("[spider-swing] trace %s is missing or unreadable" % trace_path)
+		return
+	_active_run_is_debug_test = true
+	_unmount_front_end()
+	var failures := _mount_swing_lab(
+		settings,
+		[],
+		SwingLabSession.RUN_PRACTICE,
+		0.0,
+		true,
+	)
+	if not failures.is_empty():
+		for failure: String in failures:
+			printerr("[spider-swing] trace watch failed — %s" % failure)
+		_active_run_is_debug_test = false
+		_unmount_swing_lab()
+		_mount_front_end()
+		return
+	var loaded := _session.load_input_trace(trace)
+	if not bool(loaded["ok"]):
+		printerr("[spider-swing] trace watch refused — %s" % loaded["reason"])
+		_active_run_is_debug_test = false
+		_unmount_swing_lab()
+		_mount_front_end()
 
 
 func _start_debug_game(

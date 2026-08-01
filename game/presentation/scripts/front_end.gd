@@ -68,6 +68,8 @@ var _difficulty_buttons: Dictionary = {}
 var _debug_run_route: Button
 var _debug_run_distance_entry: LineEdit
 var _debug_run_distance_value: Label
+var _debug_trace_label: Label
+var _debug_trace_watch: Button
 var _debug_run_upgrade_value: Label
 var _buttons: Dictionary = {}
 var _interface_ready: bool = false
@@ -831,6 +833,8 @@ func _build_debug_run_setup() -> void:
 	columns.add_child(_build_debug_distance_card())
 	columns.add_child(_build_debug_upgrade_card())
 
+	content.add_child(_build_trace_watch_row())
+
 	var warning := _label(
 		"DEBUG PRACTICE · NO FLIES · NO RECORD · NO CHECKPOINTS · NO LEADERBOARD",
 		16,
@@ -848,6 +852,51 @@ func _build_debug_run_setup() -> void:
 	)
 	start.pressed.connect(_on_debug_run_start)
 	content.add_child(start)
+
+
+## One row for watching a recorded lab run, under the two setup cards.
+##
+## It is a row rather than a third column because the trace carries its own
+## distance and upgrade level — choosing them here would only invite them to
+## disagree with what is actually replayed.
+func _build_trace_watch_row() -> VBoxContainer:
+	var row := VBoxContainer.new()
+	row.name = "DebugTraceWatchRow"
+	row.add_theme_constant_override("separation", 6)
+	row.add_child(_section_label("OR WATCH A RECORDED LAB RUN"))
+
+	var picker := HBoxContainer.new()
+	picker.name = "DebugTracePicker"
+	picker.add_theme_constant_override("separation", 8)
+	row.add_child(picker)
+	var previous := _button(&"DebugTracePrevious", "‹", CYAN, 48.0)
+	previous.custom_minimum_size.x = 60.0
+	previous.pressed.connect(_on_debug_trace_step.bind(-1))
+	picker.add_child(previous)
+	_debug_trace_label = _label("", 16, CYAN)
+	_debug_trace_label.name = "DebugTraceLabel"
+	_debug_trace_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_debug_trace_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_debug_trace_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	picker.add_child(_debug_trace_label)
+	var next := _button(&"DebugTraceNext", "›", CYAN, 48.0)
+	next.custom_minimum_size.x = 60.0
+	next.pressed.connect(_on_debug_trace_step.bind(1))
+	picker.add_child(next)
+
+	_debug_trace_watch = _button(
+		&"DebugTraceWatch", "WATCH THIS RUN  ·  AWARDS NOTHING", CYAN, 52.0)
+	_debug_trace_watch.pressed.connect(_on_debug_trace_watch)
+	row.add_child(_debug_trace_watch)
+	return row
+
+
+func _on_debug_trace_step(step: int) -> void:
+	_state.select_debug_trace(step)
+
+
+func _on_debug_trace_watch() -> void:
+	_state.request_watch_trace()
 
 
 func _build_debug_distance_card() -> PanelContainer:
@@ -1335,6 +1384,14 @@ func _render_debug_run_setup() -> void:
 			SpiderCatalog.MAX_UPGRADE_LEVEL,
 		]
 	)
+	# No bundled traces is an ordinary state, not an error: the screen simply
+	# has nothing to offer and says so rather than presenting a dead button.
+	var trace := _state.selected_trace()
+	var has_trace := not trace.is_empty()
+	_debug_trace_label.text = (
+		str(trace["label"]) if has_trace else "no recorded runs in this build"
+	)
+	_debug_trace_watch.disabled = not has_trace
 
 
 func _on_play() -> void:

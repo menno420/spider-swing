@@ -13,6 +13,11 @@ signal checkpoint_reached(region_id: StringName, distance_pixels: float)
 signal campaign_level_completed(level_id: StringName)
 
 const FIXED_DELTA := 1.0 / 60.0
+## Trace identity and scale live in `TraceCatalog`, in domain, because the
+## producer and the consumer must agree and neither may own the definition.
+const INPUT_TRACE_FORMAT := TraceCatalog.INPUT_TRACE_FORMAT
+const TRACE_PIXELS_PER_METRE := TraceCatalog.PIXELS_PER_METRE
+
 const RUN_STANDARD := &"standard"
 const RUN_PRACTICE := &"practice"
 const RUN_CAMPAIGN := &"campaign"
@@ -373,6 +378,94 @@ func replay_recording() -> void:
 		_world.position,
 		"Replaying %d commands" % _replay_commands.size(),
 	))
+
+
+## Load a trace produced outside this session and replay it here.
+##
+## `tools/simulate.gd --trace-top` writes the simulation lab's best runs in
+## exactly the record shape `toggle_recording` produces, so a bot's run and a
+## human's are the same kind of object and this is the same replay path. The
+## point is that a search result can be *watched* rather than only read: no
+## statistic decides whether a run was played fairly, a person watching it
+## does.
+##
+## Everything that shapes the world is taken from the trace — course seed,
+## start distance, difficulty, preset and upgrade level — because a replay
+## fed into a different world is not a replay, it is a new run with borrowed
+## input. Runs loaded this way go through `RUN_PRACTICE`, so they inherit the
+## complete no-awards/no-records policy and cannot touch progression.
+##
+## Returns `{"ok": bool, "reason": String, "commands": int}`.
+func load_input_trace(trace: Dictionary) -> Dictionary:
+	if str(trace.get("format", "")) != INPUT_TRACE_FORMAT:
+		return {
+			"ok": false,
+			"reason": "not a %s document" % INPUT_TRACE_FORMAT,
+			"commands": 0,
+		}
+	var commands: Array = trace.get("commands", [])
+	if commands.is_empty():
+		return {"ok": false, "reason": "trace carries no input", "commands": 0}
+	var setup: Dictionary = trace.get("setup", {})
+
+	_recording = false
+	_difficulty_mode = DifficultyCatalog.resolve(
+		StringName(setup.get("difficulty", "standard")))
+	var upgrades := int(setup.get("upgrades", 0))
+	if upgrades > 0:
+		_progression_service.set_debug_upgrade_overlay_level(upgrades)
+	else:
+		_progression_service.clear_debug_upgrade_overlay()
+	_config = _resolved_config(StringName(
+		setup.get("preset", str(SwingConfig.PRESET_BALANCED))))
+	if is_inside_tree():
+		_world.config = _config
+
+	_run_mode = RUN_PRACTICE
+	_debug_start_active = int(setup.get("start_m", 0)) > 0
+	_campaign_level_id = &""
+	_verbs_performed.clear()
+	_start_distance_pixels = maxf(
+		0.0, float(int(setup.get("start_m", 0))) * TRACE_PIXELS_PER_METRE)
+	_course_seed_override = int(setup.get("course_seed", -1))
+	_course_seed = _course_seed_override
+
+	# JSON hands back an untyped Array; `_replay_commands` is typed, and an
+	# untyped assignment fails at runtime rather than at parse time — which
+	# silently aborted the whole load before this was caught by a contract.
+	var typed: Array[Dictionary] = []
+	for record: Variant in commands:
+		if typeof(record) != TYPE_DICTIONARY:
+			return {
+				"ok": false,
+				"reason": "trace holds a non-record entry",
+				"commands": 0,
+			}
+		typed.append(record)
+	_replay_commands = typed
+	_replay_cursor = 0
+	_replaying = true
+	# Do not rotate the seed: the trace names the course it was played on.
+	_reset_run(false, false)
+	event_published.emit(SimulationEvent.make(
+		SimulationEvent.Kind.REPLAY_STARTED,
+		_world.position,
+		"Replaying %d command(s) from a lab trace" % commands.size(),
+	))
+	return {"ok": true, "reason": "", "commands": commands.size()}
+
+
+## Read a trace document off disk. `res://` paths work on device, which is
+## where a bundled trace lives.
+static func read_input_trace(path: String) -> Dictionary:
+	if not FileAccess.file_exists(path):
+		return {}
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		return {}
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	file.close()
+	return parsed if typeof(parsed) == TYPE_DICTIONARY else {}
 
 
 func export_diagnostic() -> void:

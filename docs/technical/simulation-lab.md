@@ -126,6 +126,16 @@ Standard's 2.04 while killing the player twice as fast. Summaries now report
 `deaths_per_run` beside the rate so the cause is visible. **Compare modes on
 distance survived.**
 
+## Watching a run instead of reading it
+
+A search rewarded for distance uses whatever the physics allows, and **no
+statistic separates "played well" from "found a loophole"** — every automatic
+check is a rule written in advance, and an exploit is the thing nobody wrote a
+rule for. So `--trace-top` writes the best runs of a batch as input traces in
+the game's own replay format, `--replay` proves each one reproduces, and the
+debug Test Run screen replays them in the real game for a person to judge.
+Full mechanics: [`replay-review-loop.md`](replay-review-loop.md).
+
 ## The publication rule
 
 **No output from this lab may be used to draw conclusions about difficulty,
