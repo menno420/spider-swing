@@ -341,14 +341,11 @@ session, so tell me plainly what to look for in each and which debug values
 to change to isolate them. Anything that genuinely needs my decision goes to
 docs/owner-questions.md — OQ-13 through OQ-16 are already open.
 
-This one is time-boxed: I want to install an APK and take a few runs
-tonight. An installable build beats a perfect PR. Prioritise in this order —
-drive to 0, bird simulation, a bird visual that is correct rather than
-polished, and last the exploit-regression search. If you are running long,
-DROP the exploit regression and say so; it is measurement, not gameplay,
-and it can follow tomorrow. Do not drop the debug tunables — without them I
-cannot isolate the two changes and the session's whole value to me depends
-on that.
+Do not rush this, and do not cut the bird short to finish sooner — I would
+rather test it tomorrow than test a hurried version tonight. The one thing
+that must not be dropped is the debug tunables: without them I cannot
+isolate the two changes, and that isolation is the whole reason they are
+allowed to ship together.
 
 Land one green PR and tell me plainly what you did, what you verified, and
 what you are unsure about. End with the one line I actually need: which
