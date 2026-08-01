@@ -35,6 +35,7 @@ func _ready() -> void:
 	_front_end_state.play_requested.connect(_start_game)
 	_front_end_state.practice_play_requested.connect(_start_practice_game)
 	_front_end_state.campaign_play_requested.connect(_start_campaign_game)
+	_front_end_state.difficulty_requested.connect(_select_difficulty)
 	_front_end_state.debug_play_requested.connect(_start_debug_game)
 	_front_end_state.creator_play_requested.connect(_start_creator_game)
 	_front_end_state.settings_changed.connect(_save_settings)
@@ -140,6 +141,13 @@ func _start_practice_game(
 		printerr("[spider-swing] practice start failed — %s" % failure)
 	_unmount_swing_lab()
 	_mount_front_end()
+
+
+func _select_difficulty(mode_id: StringName) -> void:
+	if not _progression_service.select_difficulty(_progress, mode_id):
+		return
+	_save_repository.save_progress(_progress)
+	_front_end_state.configure_progress(_progress)
 
 
 func _start_campaign_game(

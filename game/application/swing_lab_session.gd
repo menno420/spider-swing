@@ -30,6 +30,8 @@ var _creator_pattern: Array[StringName] = []
 var _run_mode: StringName = RUN_STANDARD
 var _start_distance_pixels: float = 0.0
 var _campaign_level_id: StringName = &""
+## Which difficulty the run is played on. Standard until a run is configured.
+var _difficulty_mode: StringName = DifficultyCatalog.MODE_STANDARD
 ## Verbs the player actually performed this run. A campaign level is only
 ## complete when its taught verb is in here, which is what stops a level
 ## from being cleared by swinging past the goal.
@@ -102,15 +104,28 @@ func configure_run(
 		# A campaign level is one fixed course for every player and attempt,
 		# so its seed is the level's, not the session's.
 		_run_mode = RUN_CAMPAIGN
+		# Teaching levels are the same course for everyone, so they ignore the
+		# selected difficulty rather than teaching a verb on easier geometry.
+		_difficulty_mode = DifficultyCatalog.MODE_STANDARD
+		_config = _resolved_config(_config.preset_name)
+		if is_inside_tree():
+			_world.config = _config
 		_start_distance_pixels = 0.0
 		_course_seed_override = CampaignCatalog.course_seed(campaign_level_id)
 		return
+	# A normal run's settlement identity is the difficulty it was played on,
+	# which is what gives each mode its own best distance. Practice and
+	# campaign keep their own identities and record no per-mode best.
+	_difficulty_mode = DifficultyCatalog.resolve(_progress.selected_difficulty)
 	_run_mode = (
 		RUN_PRACTICE
 		if requested_practice or \
 			_progression_service.debug_upgrade_overlay_enabled()
-		else RUN_STANDARD
+		else _difficulty_mode
 	)
+	_config = _resolved_config(_config.preset_name)
+	if is_inside_tree():
+		_world.config = _config
 	_start_distance_pixels = (
 		maxf(0.0, start_distance_pixels)
 		if requested_practice
@@ -762,7 +777,7 @@ func _emit_settlement(cause: StringName) -> void:
 	if _settlement_emitted:
 		return
 	_settlement_emitted = true
-	settlement_created.emit(RunSettlement.create(
+	var settlement := RunSettlement.create(
 		"%s-run-%d" % [_session_id, _run_sequence],
 		_world.distance_pixels,
 		_world.run_flies,
@@ -771,7 +786,11 @@ func _emit_settlement(cause: StringName) -> void:
 		_start_distance_pixels,
 		_records_eligible(),
 		_course_seed,
-	))
+	)
+	# `create` sets all three eligibility flags together; Harsh needs records
+	# without a leaderboard slot, so the competitive one is set on its own.
+	settlement.leaderboards_eligible = _leaderboards_eligible()
+	settlement_created.emit(settlement)
 
 
 func _publish_snapshot() -> void:
@@ -828,10 +847,14 @@ func _update_region_progress() -> void:
 
 
 func _resolved_config(preset_name: StringName) -> SwingConfig:
-	return SpiderCatalog.resolved_config(
+	var config := SpiderCatalog.resolved_config(
 		preset_name,
 		_progression_service.resolved_progress(_progress),
 	)
+	# Applied last and in one place, so every path that rebuilds the config
+	# (preset change, progress change, upgrade overlay) carries the mode.
+	DifficultyCatalog.apply_to_config(config, _difficulty_mode)
+	return config
 
 
 func _tuning_value(parameter: StringName) -> float:
@@ -843,8 +866,17 @@ func _tuning_value(parameter: StringName) -> float:
 
 
 func _records_eligible() -> bool:
-	return _run_mode == RUN_STANDARD and not _debug_start_active and \
+	return DifficultyCatalog.has_mode(_run_mode) and \
+		DifficultyCatalog.records_eligible(_run_mode) and \
+		not _debug_start_active and \
 		not _progression_service.debug_upgrade_overlay_enabled()
+
+
+## Only Standard is competitive (D-0033). Kept separate from records so Harsh
+## can set a best and unlock checkpoints without claiming a leaderboard slot.
+func _leaderboards_eligible() -> bool:
+	return _records_eligible() and \
+		DifficultyCatalog.leaderboards_eligible(_run_mode)
 
 
 func _run_start_message(region: Dictionary, guided: bool) -> String:

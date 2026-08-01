@@ -29,6 +29,7 @@ godot --headless --path . --script res://tools/simulate.gd -- \
 | `--course-seeds=N` | 1 | Consecutive course seeds rotated independently across runs |
 | `--max-seconds=S` | 240 | Simulated-time cap; a capped run reports `timeout` (alive), never a death |
 | `--start-m=N` | 0 | Warp the start N metres into the course at that distance's pace — tests late-game regimes without surviving to them. Every per-km rate normalizes on distance *travelled*, so a warped band stays comparable with an unwarped one |
+| `--difficulty=` | `standard` | `relaxed` · `standard` · `harsh` — the mode's content and recovery overrides. Never physics; `DifficultyTests` asserts that |
 | `--ablate=` | — | Comma-separated verbs the bot may not use: `reel` · `burst` · `dive`. A bot restriction only — the simulation is untouched — so a segment can be asked "is this passable *without* reeling?" rather than merely "is this hard?" |
 | `--reel-style=` | `adaptive` | `adaptive` · `tap` · `hold` — how the bot spends Reel |
 | `--save-bursts=` | `on` | `on` · `off` — emergency Burst when no web can save it |
@@ -107,6 +108,13 @@ committed baseline is
 re-measure and diff against it rather than treating those numbers as permanent. The delayed command queue also permits only one pending
 web or Burst intent at a time, preventing repeated pre-delivery decisions from
 turning an accepted attachment into a stale release.
+
+**Deaths/km is not comparable across difficulty modes.** Modes differ in how
+many lives a run holds — Harsh disables the rescue life — and the rate silently
+rewards the mode with fewer lives: Harsh reads 1.64 deaths/km against
+Standard's 2.04 while killing the player twice as fast. Summaries now report
+`deaths_per_run` beside the rate so the cause is visible. **Compare modes on
+distance survived.**
 
 ## Verb ablation, and what it cannot prove
 
