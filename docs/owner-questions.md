@@ -90,8 +90,9 @@ rewarding and whether repeated shallow releases read as an exploit.
 >   first kilometre the award may be near zero.
 >
 > A weak verdict gathered now would send someone tuning the 100 px/s value when
-> neither the value nor the formula is at fault. **Test slice 1 and slice 2
-> together in one session** once the drive is removed.
+> neither the value nor the formula is at fault. **Test this together with the
+> no-drive world and the bird in one session** — they ship as one build, and the
+> bird's debug tunables let one sitting isolate all three.
 
 ### OQ-9 · Should Harsh pay a fly premium?
 
