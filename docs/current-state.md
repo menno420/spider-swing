@@ -6,6 +6,11 @@
 > work always win over this file. Read it second (right after the working
 > agreement) and keep it current as the project moves.
 
+For the next recording-led continuation, read the dated
+[`fresh-session handoff`](planning/fresh-session-handoff-2026-08-01.md). It
+separates repository proof from owner acceptance and limits the next task to one
+zone or system before another device verdict.
+
 ## Stability baseline
 
 As of 2026-08-01, verified against the live source. Known-good; do not re-audit
@@ -157,11 +162,11 @@ without a reported regression.
 
 **Verification**
 
-- Local source passes the 175-contract engine runner with the exact
+- Local source passes the 181-contract engine runner with the exact
   `4.7.1.stable.official.a13da4feb` Standard binary. The declared suite contains
   11 bootstrap/build, 57 deterministic physics, 15 zone, 11 spider-biology,
-  10 Campaign, 9 difficulty, 4 upgrade-wiring, 4 simulation-lab input,
-  2 economy, 6 generated-SFX, 25 mobile GUI/layout, and 21 front-end/settings/
+  10 Campaign, 9 difficulty, 4 upgrade-wiring, 9 simulation-lab/replay,
+  2 economy, 6 generated-SFX, 25 mobile GUI/layout, and 22 front-end/settings/
   progression checks. The full
   required `python3 tools/verify.py --require-godot` result is recorded at
   session close.
@@ -204,6 +209,15 @@ without a reported regression.
   `c3d8eb30…` digest, its intact 64,968,926-byte APK matches `e7d783bb…`, embeds
   all six Bramble textures plus source/build provenance, and independently
   reports the pinned `83ff0bc2…` certificate.
+- Final source `main` `2787314…` differs from PR #92 head `005660a4…` only by
+  the temporary PR #91 coordination claim; their gameplay/content is identical.
+  Android run 30703610645 produced artifact 8819609662;
+  its downloaded 76,605,277-byte ZIP matches GitHub's `2a8b3774…` digest, the
+  intact APK matches `4efb36dc…`, `build-info.txt` identifies build
+  `0.24.0-environment-finish-playtest` and the dev package, and `keytool`
+  reports the pinned `83ff0bc2…` certificate. This is the build that includes
+  the flagged web-spam review trace; PR #92 changes no physics, zones, or
+  balance.
 
 **The economy now has a written model**
 
@@ -441,7 +455,10 @@ compared without wiping or granting progression.
 Owner evidence still to gather: exact far starts, `OWNED` versus `MAX`, upgrade
 A/B feel, save survival across two stable-key builds, long-distance region
 identity, and the existing traversal checklist in the Swing Laboratory
-reference. The 5000 m recordings establish a healthy late-game distinction:
+reference. The prioritized queue and one-slice-at-a-time protocol live in the
+[`fresh-session handoff`](planning/fresh-session-handoff-2026-08-01.md); do not
+turn that full checklist into one implementation task. The 5000 m recordings
+establish a healthy late-game distinction:
 Reel shapes an arc when the next route is read early, while Burst performs the
 fast late height correction. PR #62 preserved those values and fixed the
 background/material transition, but its first device review rejected the
@@ -454,12 +471,29 @@ with hook-vine and leaf-shutter geometry without retuning either control; the
 
 ## Recently shipped (newest first)
 
+- **2026-08-01 — Upgrade playstyle sweep and first replay verdict (PR #92).**
+  The owner accepted the two original bundled lab traces as fair, slightly
+  Burst/Dive-heavy representations of his play. Cross-applying the same policy
+  at L0 and L20 shows upgrades buy survival and lower effort rather than a
+  guaranteed bot-distance increase. One separate 10,773 m web-spam trace is
+  reproducible but intentionally awaits owner judgement. No physics, zone, or
+  balance value changed.
+- **2026-08-01 — Replay review loop and final fresh-eye guards (PR #89).** Two
+  input-only lab traces now reproduce through both the headless driver and the
+  real run session, and Debug Test Run can play them without awards. Timeout
+  caps, actual spider/skill identities, trace-format ownership, picker movement,
+  export inclusion, and near-threshold anomaly reporting were corrected before
+  merge. The final merged runner is **181 contracts**; the PR's 176-contract
+  prose was an intermediate count and is superseded by the executable runner.
 - **2026-08-01 — Recorded Zones 3–6 environment finish.** The six owner
   recordings establish Ancient Forest and Bramble as the benchmark. Four later
   recorded zones now match their depth/material hierarchy with two scroll
   planes, continuous walls, explicit safe-surface/obstacle art, no normal-play
   polygon ghosts, and collision-honest ceiling joins. Thirty-three runtime
-  assets pass source/runtime/25% alpha checks; the full suite passes. (The live total is `EXPECTED_CHECK_COUNT` in `tests/test_runner.gd` — quoting it in prose goes stale on the next merge, and has twice.)
+  assets pass source/runtime/25% alpha checks; the full suite passes. The live
+  total is `EXPECTED_CHECK_COUNT` in `tests/test_runner.gd`; the dated
+  fresh-session handoff records the exact verified snapshot instead of letting
+  this living summary go stale on the next merge.
 - **2026-08-01 — Zones 3–4 obstacle-art correction (PR #87).** Seven original
   single-object assets replace the flat collision-fill fallbacks visible in the
   owner's Silk Hollow and Ruined Arboretum recordings. Stable visual/content
