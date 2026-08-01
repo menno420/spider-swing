@@ -154,6 +154,30 @@ raising drain. Those are `balanced_baseline` physics values and owner-approved.
   180 s cap; no run timed out, so every run ended in a death.
 - Level 20 is the maximum; `effective_steps` maps level to tuning steps.
 
+### Claim provenance (PL-013)
+
+This document is the cautionary case in this directory, and the marking is the
+point rather than a formality.
+
+**Every number below is `measured` and exact** — bot model v2, in-run counters,
+50–60 runs per configuration. Nothing was mis-sampled and nothing was
+mis-arithmetic. **The conclusions are still retracted**, because an exact
+measurement of an instrument that cannot perceive the variable is not a
+measurement of that variable at all:
+
+- **`measured`:** the v2 bot's behaviour is unchanged across Reel upgrade
+  levels. True, and reproducible.
+- **`inferred`, and wrong:** that the Reel tracks are therefore inert. The bot
+  reads the meter in *fractions*, so scaling capacity scales both sides of
+  every comparison and the level cannot reach its behaviour. **The null was a
+  property of the instrument, not of the game.**
+- Owner device evidence then falsified it directly: at L0 the meter empties in
+  every recorded run, up to 24% of one run's duration.
+
+The lesson PL-013 encodes: a *null result* needs its instrument stated at least
+as loudly as a positive one. "We measured no effect" and "our instrument cannot
+register this effect" produce identical tables.
+
 Reproduce:
 
 ```bash

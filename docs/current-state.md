@@ -279,6 +279,81 @@ without a reported regression.
   simply not the run in the report.
 - Mechanics: `docs/technical/replay-review-loop.md`.
 
+**The model's real gap is recovery, not route choice — 2026-08-01**
+
+- **88–100% of the model's deaths happen with an unused escape in hand**
+  (Burst, Dive or both), and 58–75% happen while detached — in flight toward
+  the thing that kills it, holding a tool that could have changed the outcome.
+  Its explicit panic path (`save_bursts`) fires **0.00 times per run** in every
+  policy at every configuration.
+- This **supersedes the "route choice" diagnosis** carried since the v3
+  rebuild. A route-choice failure arrives with no options; this arrives with
+  options and does not take them. The dive clearance screen only runs on pulls
+  the model was already choosing to make — its awareness is attached to
+  intention, never to danger.
+- Prompted by the owner's account of why Dive and Burst matter: a person ends
+  up somewhere unplanned and uses them to get out. The model gets surprised
+  just as often (95% obstacle deaths) and has no repertoire for the moment
+  after.
+- **Do not hand-write a recovery loop.** The tap stream already holds the
+  owner's own dives and bursts, timestamped, in the moments after things went
+  wrong — fitting it from those is the honest route.
+  See `docs/measurements/2026-08-01-recovery-gap.md`.
+
+**First confirmed exploit — hauling, 2026-08-01**
+
+- The owner watched the lab's 10 773 m run and named it a loophole: it keeps
+  the web nearly overhead and hauls along the ceiling instead of swinging.
+  Confirmed and measured — **arc per web 21.4° against the endorsed 58.9°**,
+  attaching 1.34×/s against 0.63. Web angle and length barely differ, so the
+  giveaway is that the web never *goes* anywhere.
+- **A speed-based chaser cannot fix it, in principle.** `SpiderMotor` drives
+  horizontal velocity toward `target_speed_at(distance)`, so ground speed is
+  pinned near the pace curve for every style. The exploit runs at 59.0 m/s
+  where its range's mean target is 57.2 — it is travelling at the speed the
+  game sets, not dawdling. The curve has already equalised the thing a chaser
+  would measure.
+- **Height does not discriminate either** — both styles occupy the same band
+  (mean y 405 vs 385, span 423 vs 432), so a ceiling-patrolling predator
+  cannot tell them apart. Only arc per web (2.8×) and attach rate (2.1×) do.
+- **Any penalty denominated in speed washes out**, because `SpiderMotor`
+  refunds it within about a second. That disqualifies a speed chaser, an
+  angle-dependent attach catch, and arc-scaled release momentum as *enforcers*.
+- **The owner's proposal is measured and works: remove the free forward
+  drive.** Swinging generates its own speed (+3.6 to +7.6 m/s above the drive
+  floor, above it 53–60% of the run); hauling is *carried* by it (−5.0 m/s,
+  above it 21%). Ablating the drive costs the swinging style 33% and destroys
+  hauling by **98%** — the drive was not helping hauling, it was its engine.
+- **Dive and Burst already are escape tools** — for obstacles a swing cannot
+  avoid or a reel cannot manage. The bird gives them a second thing to escape
+  (dynamic and behind, rather than static and ahead), extending a verb players
+  know rather than adding one. Note the fidelity gap: the bot's explicit
+  emergency path (`save_bursts`) reads **0.00 in every policy** — it screens
+  dives for clearance rather than escaping with them. The owner escapes; the
+  model avoids.
+- That change also **rescues three mechanics that fail on their own**: a
+  speed-based chaser (the curve currently pins everyone, so speed says
+  nothing), arc-scaled release momentum (the drive currently refunds it), and
+  reel-as-accelerator (already worth 6.2% speed / 52% distance). They are
+  mutually enabling, which is why evaluating them one at a time produced two
+  wrong verdicts.
+- **Wide swinging wins outright in the no-drive world.** Re-measured there on
+  held-out seeds: hauling 65 m (dangling), searched no-drive optimum 2 424 m
+  at 27.6° arc, **endorsed wide-swinging 2 717 m at 48.4 m/s holding a 61.2°
+  arc**. The intended style becomes optimal *by physics*, with no rule saying
+  "you must swing".
+- **Open risk:** 48.4 m/s against today's 55–76, so the pace curve needs
+  re-tuning around it — and the bird's speed still cannot come from bot
+  numbers, because the model **cannot pump** (height-based reel policy, not
+  swing-phase-based) and pumping is the skill the design makes central.
+  Physics allows far more (92 m/s at the bottom of a 380 px swing). Needs a
+  device playtest of a no-drive build.
+- Fallback candidates if the drive stays: **silk as a per-web cost**, or
+  **generalised spent anchors** (reuses `_spent_anchor_sources`).
+- The lab now reports swing shape every batch, so any fix can be tested by
+  re-running the search and checking whether hauling still wins.
+  See `docs/measurements/2026-08-01-hauling-loophole.md`.
+
 **Upgrades — what they buy, 2026-08-01**
 
 - Measured with one policy held constant across levels on held-out seeds:

@@ -239,6 +239,12 @@ const ANCHOR_CLASS_SCORE := {
 	CourseGeometry.ANCHOR_COLLAPSING: -150.0,
 }
 
+## A web within this many degrees of straight-down counts as "hanging", not
+## swinging. Chosen so an ordinary swing's bottom-of-arc passage does not read
+## as hanging: a real swing crosses this band briefly every pass, while a
+## hauling style sits inside it.
+const VERTICAL_HANG_DEGREES := 20.0
+
 ## Anchor classes that expire while you hang on them.
 const TIMED_ANCHOR_CLASSES := [
 	CourseGeometry.ANCHOR_ROTTEN,
@@ -447,6 +453,12 @@ func _summarize(
 		"timed_anchor_attaches": 0.0, "sticky_attaches": 0.0,
 		"highway_attaches": 0.0, "anchor_failures": 0.0,
 		"attach_searches": 0.0, "class_choices": 0.0,
+		"mean_web_angle_deg": 0.0, "vertical_share": 0.0,
+		"mean_swing_arc_deg": 0.0, "mean_web_length_px": 0.0,
+		"mean_height_px": 0.0, "height_span_px": 0.0,
+		"mean_overspeed_ms": 0.0, "above_target_share": 0.0,
+		"died_with_burst": 0.0, "died_with_dive": 0.0,
+		"died_with_any_escape": 0.0, "died_attached": 0.0,
 	}
 	var rescues := 0
 	var pull_deaths := 0
@@ -542,6 +554,22 @@ func _summarize(
 		"mean_sticky_attaches": float(totals["sticky_attaches"]) / count,
 		"mean_highway_attaches": float(totals["highway_attaches"]) / count,
 		"mean_anchor_failures": float(totals["anchor_failures"]) / count,
+		# Swing shape. `vertical_share` is the fraction of attached time spent
+		# within VERTICAL_HANG_DEGREES of straight down — a hauling style sits
+		# high here, a swinging style does not.
+		"mean_web_angle_deg": float(totals["mean_web_angle_deg"]) / count,
+		"vertical_share": float(totals["vertical_share"]) / count,
+		"mean_swing_arc_deg": float(totals["mean_swing_arc_deg"]) / count,
+		"mean_web_length_px": float(totals["mean_web_length_px"]) / count,
+		"mean_height_px": float(totals["mean_height_px"]) / count,
+		"mean_overspeed_ms": float(totals["mean_overspeed_ms"]) / count,
+		"died_with_burst_share": float(totals["died_with_burst"]) / count,
+		"died_with_dive_share": float(totals["died_with_dive"]) / count,
+		"died_with_any_escape_share":
+			float(totals["died_with_any_escape"]) / count,
+		"died_attached_share": float(totals["died_attached"]) / count,
+		"above_target_share": float(totals["above_target_share"]) / count,
+		"height_span_px": float(totals["height_span_px"]) / count,
 		# Share of web searches that offered more than one anchor class, i.e.
 		# the share in which the class preference could change anything at all.
 		"class_choice_rate": 0.0 if totals["attach_searches"] <= 0.0
@@ -591,6 +619,18 @@ func _print_summary(summary: Dictionary) -> void:
 		summary["mean_anchor_failures"]])
 	print("  anchor pick %.1f%% of web searches offered a class choice" % [
 		summary["class_choice_rate"] * 100.0])
+	print("  at death    %.0f%% held a Burst · %.0f%% held a Dive · %.0f%% held EITHER · %.0f%% were on a web" % [
+		summary["died_with_burst_share"] * 100.0,
+		summary["died_with_dive_share"] * 100.0,
+		summary["died_with_any_escape_share"] * 100.0,
+		summary["died_attached_share"] * 100.0])
+	print("  own speed   %+.1f m/s vs the drive's floor · above it %.0f%% of the run" % [
+		summary["mean_overspeed_ms"], summary["above_target_share"] * 100.0])
+	print("  height      mean y %.0f px · vertical span %.0f px (lower y = higher up)" % [
+		summary["mean_height_px"], summary["height_span_px"]])
+	print("  swing shape %.1f° mean web angle · %.0f px web · %.1f° arc per web · %.0f%% of hang time near-vertical" % [
+		summary["mean_web_angle_deg"], summary["mean_web_length_px"],
+		summary["mean_swing_arc_deg"], summary["vertical_share"] * 100.0])
 	print("  reel        %.2fs held · %.1f energy spent · %.2f empties · %.2fs at empty" % [
 		summary["mean_reel_time_s"], summary["mean_reel_energy_spent"],
 		summary["mean_reel_empties"], summary["mean_time_empty_s"]])
@@ -1260,6 +1300,42 @@ class RunDriver:
 	var sticky_attaches := 0
 	var highway_attaches := 0
 	var anchor_failures := 0
+	## Swing shape. A web held near-vertical is a player hanging under an
+	## anchor and hauling themselves along it; a web that sweeps through a
+	## wide arc is a player swinging. The owner identified the first as a
+	## loophole on 2026-08-01 after watching a replay — "instead of swinging
+	## it basically keeps the web exactly above itself the whole time" — so
+	## the distinction is measured here rather than left to the eye.
+	var attached_ticks := 0
+	var vertical_ticks := 0
+	var web_angle_sum := 0.0
+	## Vertical band occupied. A style that hugs the ceiling can be pressured
+	## by something that threatens the ceiling; a style that uses the whole
+	## height cannot. Measured because the design decision rides on it.
+	var height_sum := 0.0
+	var height_min := 1.0e9
+	var height_max := -1.0e9
+	var height_ticks := 0
+	## How far the run travels ABOVE the speed the drive hands it for free.
+	## The owner's 2026-08-01 observation: "I am mostly going faster than the
+	## forced speed, so the forced speed is basically useless." A style that
+	## lives ON the floor is being carried by it; a style that lives above it
+	## is generating its own speed and would survive the floor's removal.
+	var overspeed_sum := 0.0
+	var above_target_ticks := 0
+	## What the run still had available at the moment it died. The owner's
+	## 2026-08-01 point: a person ends up somewhere they did not plan — high
+	## under a hanging obstacle, or low when one appears — and Dive/Burst are
+	## how they get out. A model that dies holding an unused escape is not
+	## making a route error, it is failing to RECOVER from one.
+	var death_burst_charges := -1
+	var death_dive_ready := false
+	var death_attached := false
+	var web_length_sum := 0.0
+	var swing_arc_sum := 0.0
+	var attach_angle_min := 0.0
+	var attach_angle_max := 0.0
+	var attach_arc_open := false
 	var attach_searches := 0
 	var class_choices := 0
 	var course_seed := 1337
@@ -1383,6 +1459,35 @@ class RunDriver:
 					world.position.x,
 					config.middle_hazard_start_distance,
 				))
+			if world.web.attached:
+				var offset := world.position - world.web.anchor
+				# Angle from straight down, in degrees. 0 = hanging directly
+				# under the anchor; 90 = level with it.
+				var angle := absf(rad_to_deg(atan2(offset.x, maxf(0.001, offset.y))))
+				attached_ticks += 1
+				web_angle_sum += angle
+				web_length_sum += offset.length()
+				if angle <= VERTICAL_HANG_DEGREES:
+					vertical_ticks += 1
+				var signed := rad_to_deg(atan2(offset.x, maxf(0.001, offset.y)))
+				if not attach_arc_open:
+					attach_arc_open = true
+					attach_angle_min = signed
+					attach_angle_max = signed
+				else:
+					attach_angle_min = minf(attach_angle_min, signed)
+					attach_angle_max = maxf(attach_angle_max, signed)
+			elif attach_arc_open:
+				swing_arc_sum += attach_angle_max - attach_angle_min
+				attach_arc_open = false
+			var drive_target := config.target_speed_at(world.distance_pixels)
+			overspeed_sum += world.velocity.x - drive_target
+			if world.velocity.x > drive_target:
+				above_target_ticks += 1
+			height_sum += world.position.y
+			height_min = minf(height_min, world.position.y)
+			height_max = maxf(height_max, world.position.y)
+			height_ticks += 1
 			var was_pulling := world.pull_active
 			var was_reeling := world.web.reel_active
 			var energy_before := world.web.reel_energy
@@ -1407,6 +1512,9 @@ class RunDriver:
 							continue
 						cause = StringName(
 							event.data.get("cause", &"unknown"))
+						death_burst_charges = world.burst_charges
+						death_dive_ready = world.dive_ready
+						death_attached = world.web.attached
 						finished = true
 					SimulationEvent.Kind.BOOST_COLLECTED:
 						effects.activate(
@@ -1495,6 +1603,34 @@ class RunDriver:
 			"region": str(region["id"]),
 			"pattern": str(stream.pattern_id_for_chunk(chunk_index)),
 			"commands": trace.size(),
+			# Swing shape, the loophole axis. `vertical_share` near 1.0 means
+			# the run was spent hanging under its anchor rather than swinging.
+			"mean_web_angle_deg": (
+				web_angle_sum / attached_ticks if attached_ticks > 0 else 0.0),
+			"mean_web_length_px": (
+				web_length_sum / attached_ticks if attached_ticks > 0 else 0.0),
+			"vertical_share": (
+				float(vertical_ticks) / attached_ticks
+				if attached_ticks > 0 else 0.0),
+			"mean_swing_arc_deg": (
+				swing_arc_sum / attaches if attaches > 0 else 0.0),
+			"died_with_burst": 1.0 if death_burst_charges > 0 else 0.0,
+			"died_with_dive": 1.0 if death_dive_ready else 0.0,
+			"died_with_any_escape": (
+				1.0 if (death_burst_charges > 0 or death_dive_ready) else 0.0),
+			"died_attached": 1.0 if death_attached else 0.0,
+			"mean_overspeed_ms": (
+				(overspeed_sum / height_ticks) / PIXELS_PER_METRE
+				if height_ticks > 0 else 0.0),
+			"above_target_share": (
+				float(above_target_ticks) / height_ticks
+				if height_ticks > 0 else 0.0),
+			"mean_height_px": (
+				height_sum / height_ticks if height_ticks > 0 else 0.0),
+			"height_span_px": (
+				height_max - height_min if height_ticks > 0 else 0.0),
+			"attached_share": (
+				float(attached_ticks) / maxi(1, world.tick)),
 		}
 
 	## The whole player model. It reads only what a player could see: its own

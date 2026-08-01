@@ -117,6 +117,25 @@ CONFIGS = {
         "runs": 12,
         "note": "a full run from zero, fully upgraded",
     },
+    # --- design experiments -------------------------------------------------
+    # The owner's 2026-08-01 proposal: remove the free forward drive so that
+    # only swinging propels the player, and let a chaser set the pace instead
+    # of an invisible curve. These search for the ceiling under that rule.
+    # A null result is NOT a verdict on the design: the bot's reel policy is
+    # height-based, not swing-phase-based, so it cannot learn to PUMP a
+    # pendulum -- the very skill the proposal makes central.
+    "standing-l20-nodrive": {
+        "args": ["--skill=intermediate", "--upgrades=20",
+                 "--sweep=horizontal_drive_acceleration:0:0:1"],
+        "runs": 10,
+        "note": "owner proposal: no free forward motion, swinging only",
+    },
+    "standing-l20-halfdrive": {
+        "args": ["--skill=intermediate", "--upgrades=20",
+                 "--sweep=horizontal_drive_acceleration:235:235:1"],
+        "runs": 10,
+        "note": "owner proposal, softened: half the free forward motion",
+    },
 }
 
 # Summary fields that describe *how* it played. Distance says what happened;
