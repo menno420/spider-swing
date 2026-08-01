@@ -1,6 +1,6 @@
 # Fresh-session handoff audit
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 
@@ -118,6 +118,13 @@ verdict.
 
 ⚑ **decide-and-flag:** the verification queue is an operational priority, not a
 design freeze. Menno's most noticeable recorded defect outranks its row number.
+
+## Final lifecycle
+
+This `complete` badge and deletion of only
+`control/claims/claude-fresh-session-handoff-audit.md` are the deliberate
+final content changes. Exact Godot 4.7.1 and the strict repository gate are
+green locally; PR #91 may merge only after its fresh final-head checks are green.
 
 ## 💡 Idea
 
