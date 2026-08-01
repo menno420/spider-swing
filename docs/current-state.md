@@ -236,7 +236,7 @@ without a reported regression.
   **three of eight** targets, so the rule above is unchanged. It Dives, reads
   its Reel meter in absolute seconds, and reads anchor classes; the upgrade
   penalty fell from −25.1% to −6.3% and input rate now matches the owner
-  (4.89 taps/s against 4.71). What still fails is survival — 8.17 deaths/km
+  (4.89 taps/s against his 6.60 run average; his peak is 18/s). What still fails is survival — 8.17 deaths/km
   against 0.47 — and the remaining gap is route choice, not verbs or pace.
   Details, including three plausible fixes that measured *worse* and were
   deleted, in `docs/measurements/2026-08-01-bot-model-v3.md`.

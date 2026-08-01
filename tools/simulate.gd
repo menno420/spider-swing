@@ -71,9 +71,10 @@ extends SceneTree
 ## targets by roughly an order of magnitude, so **its output remains
 ## unpublishable as a claim about difficulty, upgrades or the economy.**
 ##
-## Read `taps_per_second` in the summary against the owner's measured
-## 4.71 taps/s before trusting any run: an input rate far from that means the
-## model is not playing the same game, whatever its distance says.
+## Read `taps_per_second` in the summary against the owner's measured input
+## envelope — 6.60/s averaged over a run, 18/s sustained at peak — before
+## trusting any run. An input rate far outside that means the model is not
+## playing the same game, whatever its distance says.
 
 const BOT_MODEL_VERSION := 3
 const FIXED_DELTA := 1.0 / 60.0
@@ -107,6 +108,15 @@ const SKILL_PROFILES := {
 		"dive_chance": 0.10,
 		"care": 0.40,
 		"class_read": 0.20,
+		"attach_fan_top_deg": -70.0,
+		"attach_fan_bottom_deg": -20.0,
+		"attach_reach_frac": 0.62,
+		"dive_fan_top_deg": 20.0,
+		"dive_fan_bottom_deg": 56.0,
+		"dive_reach_frac": 0.55,
+		"dive_floor_y": 520.0,
+		"reel_reserve_scale": 1.0,
+		"reel_floor_scale": 1.0,
 	},
 	&"intermediate": {
 		"decision_period_ticks": 7,
@@ -120,6 +130,15 @@ const SKILL_PROFILES := {
 		"dive_chance": 0.35,
 		"care": 0.75,
 		"class_read": 0.65,
+		"attach_fan_top_deg": -70.0,
+		"attach_fan_bottom_deg": -20.0,
+		"attach_reach_frac": 0.62,
+		"dive_fan_top_deg": 20.0,
+		"dive_fan_bottom_deg": 56.0,
+		"dive_reach_frac": 0.55,
+		"dive_floor_y": 520.0,
+		"reel_reserve_scale": 1.0,
+		"reel_floor_scale": 1.0,
 	},
 	&"expert": {
 		"decision_period_ticks": 4,
@@ -133,8 +152,64 @@ const SKILL_PROFILES := {
 		"dive_chance": 0.65,
 		"care": 0.95,
 		"class_read": 0.95,
+		"attach_fan_top_deg": -70.0,
+		"attach_fan_bottom_deg": -20.0,
+		"attach_reach_frac": 0.62,
+		"dive_fan_top_deg": 20.0,
+		"dive_fan_bottom_deg": 56.0,
+		"dive_reach_frac": 0.55,
+		"dive_floor_y": 520.0,
+		"reel_reserve_scale": 1.0,
+		"reel_floor_scale": 1.0,
 	},
 }
+
+## Knobs `--bot` may move, the ones it may not, and the human ceiling.
+##
+## An earlier version of this split froze decision cadence and reaction delay
+## alongside aim error, on the theory that all three are perception limits a
+## search would otherwise drive to zero. The freeze was set from the owner's
+## *average* input rate, and that was the error: **average rate is not
+## capability.** Re-measured at the recordings' native 60 fps (the first pass
+## sampled at 30 and undercounted by 40%), he averages 6.60 taps/s across a
+## run but sustains **18 taps/s for a full second** and 14/s across two, with
+## 27.5% of gaps at or under 50 ms and some at zero — both thumbs in the same
+## frame. The expert tier was frozen at 4 ticks per decision, 15/s, which is
+## *below* what he demonstrably produces. A model capped under the player
+## cannot perform the recoveries that make his long runs possible.
+##
+## So the rate knobs are searchable, bounded by what a human has been observed
+## to do rather than by what one averages. Aim error stays frozen: it is
+## precision, not speed, and nothing in the tap stream speaks to it.
+const FITTABLE_PROFILE_KEYS := [
+	"band_px", "reel_band_px", "panic_fall_speed", "release_rise_speed",
+	"burst_chance", "dive_chance", "care", "class_read",
+	"attach_fan_top_deg", "attach_fan_bottom_deg", "attach_reach_frac",
+	"dive_fan_top_deg", "dive_fan_bottom_deg", "dive_reach_frac",
+	"dive_floor_y", "reel_reserve_scale", "reel_floor_scale",
+	"decision_period_ticks", "reaction_delay_ticks",
+]
+
+## Precision, not speed. Nothing measured licenses moving it.
+const FROZEN_PROFILE_KEYS := ["aim_error_px"]
+
+## Floors on the rate knobs, in 60 Hz ticks. 2 ticks is 33 ms — a decision
+## cadence of 30/s against the 18/s the owner has been recorded sustaining,
+## so the search has headroom over him but not an unbounded amount. Anything
+## faster is not a player, and a ceiling reached there proves nothing about
+## whether the run is possible.
+const PROFILE_FLOORS := {
+	"decision_period_ticks": 2.0,
+	"reaction_delay_ticks": 2.0,
+}
+
+## The owner's measured input envelope, for reporting. Peak sustained rates
+## come from run 726dcc65 decoded at 60 fps.
+const OWNER_TAPS_PER_SECOND_MEAN := 6.60
+const OWNER_TAPS_PER_SECOND_PEAK_1S := 18.0
+
+## Set from --bot; applied over the selected tier's profile.
+static var _bot_overrides: Dictionary = {}
 
 ## How each anchor class is worth choosing, before skill scales the reading.
 ## Positive prefers, negative avoids. Silk highway carries the anchor forward
@@ -188,6 +263,9 @@ func _initialize() -> void:
 		options["reel_style"], "on" if bool(options["save_bursts"]) else "off",
 	])
 	_difficulty_mode = StringName(options["difficulty"])
+	if not _parse_bot_overrides(str(options["bot"])):
+		quit(2)
+		return
 	_isolated_track = str(options["track"]).strip_edges()
 	if not _isolated_track.is_empty():
 		print("[simulate] isolated upgrade track: %s @ level %d" % [
@@ -302,7 +380,7 @@ func _run_batch(
 		var driver := RunDriver.new()
 		driver.setup(
 			config,
-			SKILL_PROFILES[skill],
+			_profile_for(skill),
 			int(options["seed"]) + run_index,
 			StringName(options["reel_style"]),
 			bool(options["save_bursts"]),
@@ -391,6 +469,10 @@ func _summarize(
 		"travelled_median_m": _percentile(travelled, 0.5),
 		"travelled_p10_m": _percentile(travelled, 0.10),
 		"travelled_p90_m": _percentile(travelled, 0.90),
+		# The furthest any single run actually covered. Distance is the search
+		# signal; THIS is the number that answers "is the run possible at all",
+		# and it is an observation rather than anything optimised toward.
+		"travelled_max_m": 0.0 if travelled.is_empty() else travelled[-1],
 		"travelled_total_km": total_km,
 		"deaths": int(totals["deaths"]),
 		# Deaths per RUN, not per km. Modes differ in how many lives a run
@@ -473,8 +555,9 @@ func _print_summary(summary: Dictionary) -> void:
 		summary["flies_per_km"], summary["mean_attaches"],
 		summary["mean_bursts"], summary["mean_save_bursts"],
 		summary["mean_dives"]])
-	print("  input       %.2f taps/s · %.2f dives per web (owner: 4.71 taps/s)" % [
-		summary["taps_per_second"], summary["dives_per_attach"]])
+	print("  input       %.2f taps/s · %.2f dives per web (owner: %.2f mean, %.0f peak)" % [
+		summary["taps_per_second"], summary["dives_per_attach"],
+		OWNER_TAPS_PER_SECOND_MEAN, OWNER_TAPS_PER_SECOND_PEAK_1S])
 	print("  anchors     %.1f highway · %.1f sticky · %.1f timed (%.1f failed under load)" % [
 		summary["mean_highway_attaches"], summary["mean_sticky_attaches"],
 		summary["mean_timed_anchor_attaches"],
@@ -543,6 +626,63 @@ func _percentile(sorted_values: Array[float], fraction: float) -> float:
 ## `reel`, `burst`, `dive`, comma-separated — verbs the bot may not use.
 ## Unknown names are reported and ignored rather than silently dropped, so a
 ## typo cannot quietly turn an ablation proof into an ordinary run.
+## `--bot=key:value,key:value` — override the selected tier's POLICY knobs.
+##
+## Refuses the perception limits by name rather than silently accepting them.
+## A fit that is allowed to sharpen reflexes will always spend its budget
+## there first, and the resulting model passes the acceptance table while
+## being less like a player than the one it replaced.
+func _parse_bot_overrides(spec: String) -> bool:
+	_bot_overrides = {}
+	var trimmed := spec.strip_edges()
+	if trimmed.is_empty():
+		return true
+	for entry: String in trimmed.split(",", false):
+		var pair := entry.split(":", false)
+		if pair.size() != 2:
+			printerr("[simulate] --bot entry '%s' is not key:value" % entry)
+			return false
+		var key := pair[0].strip_edges()
+		if key in FROZEN_PROFILE_KEYS:
+			printerr(
+				("[simulate] --bot may not move '%s'. Aim error is precision "
+					+ "rather than speed, and nothing measured licenses "
+					+ "moving it; a search allowed to sharpen aim buys "
+					+ "distance by removing the human, not by playing "
+					+ "better.") % key)
+			return false
+		if not (key in FITTABLE_PROFILE_KEYS):
+			printerr("[simulate] --bot knows no knob '%s' (fittable: %s)" % [
+				key, ", ".join(FITTABLE_PROFILE_KEYS)])
+			return false
+		var numeric := float(pair[1])
+		if PROFILE_FLOORS.has(key) and numeric < float(PROFILE_FLOORS[key]):
+			printerr(
+				("[simulate] --bot '%s'=%s is below the human floor of %s "
+					+ "ticks. The owner sustains %.0f taps/s at peak; faster "
+					+ "than the floor is not a player, and a ceiling reached "
+					+ "there says nothing about whether the run is possible.")
+					% [key, numeric, PROFILE_FLOORS[key],
+						OWNER_TAPS_PER_SECOND_PEAK_1S])
+			return false
+		_bot_overrides[key] = numeric
+	print("[simulate] bot overrides: %s" % JSON.stringify(_bot_overrides))
+	return true
+
+
+func _profile_for(skill: StringName) -> Dictionary:
+	var profile: Dictionary = (SKILL_PROFILES[skill] as Dictionary).duplicate()
+	for key: String in _bot_overrides:
+		var value: float = _bot_overrides[key]
+		# Cadence and delay index whole ticks; everything else is continuous.
+		profile[key] = (
+			maxi(1, int(round(value)))
+			if key in ["decision_period_ticks", "reaction_delay_ticks"]
+			else value
+		)
+	return profile
+
+
 func _parse_ablation(spec: String) -> Array[StringName]:
 	var result: Array[StringName] = []
 	if spec.strip_edges().is_empty():
@@ -626,6 +766,7 @@ func _parse_options(arguments: PackedStringArray) -> Dictionary:
 		"save_bursts": true,
 		"moving_anchor_proof": false,
 		"sweep": "",
+		"bot": "",
 		"json": "",
 	}
 	for argument: String in arguments:
@@ -662,6 +803,8 @@ func _parse_options(arguments: PackedStringArray) -> Dictionary:
 				options["ablate"] = value
 			"track":
 				options["track"] = value
+			"bot":
+				options["bot"] = value
 			"difficulty":
 				if DifficultyCatalog.has_mode(StringName(value)):
 					options["difficulty"] = value
@@ -997,6 +1140,8 @@ class RunDriver:
 					maxf(0.001, config.reel_drain_rate)
 				reel_reserve_s = clampf(0.9 * (1.0 - sustain), 0.15, 0.80)
 				reel_stop_floor_s = 0.10
+		reel_reserve_s *= float(profile.get("reel_reserve_scale", 1.0))
+		reel_stop_floor_s *= float(profile.get("reel_floor_scale", 1.0))
 		reel_band_scale = clampf(
 			config.reel_retraction_rate /
 				SwingConfig.BASE_REEL_RETRACTION_RATE,
@@ -1218,7 +1363,8 @@ class RunDriver:
 			return false
 		# Diving from below the route only digs deeper, and near the floor it
 		# is simply a way to die faster.
-		if world.position.y > target_y or world.position.y > 520.0:
+		if world.position.y > target_y or \
+				world.position.y > float(profile["dive_floor_y"]):
 			return false
 		var tap := _find_dive_tap()
 		if tap == Vector2.INF:
@@ -1288,10 +1434,15 @@ class RunDriver:
 		var best_score := -INF
 		var index := 0
 		var offered: Dictionary = {}
-		for angle_degrees: float in [-70.0, -52.0, -36.0, -20.0]:
+		for angle_degrees: float in _fan_angles(
+				float(profile["attach_fan_top_deg"]),
+				float(profile["attach_fan_bottom_deg"]), 4):
 			var direction := Vector2.RIGHT.rotated(deg_to_rad(angle_degrees))
 			var probe := _probe_tap(
-				direction, 0.62 * config.web_maximum_length, false)
+				direction,
+				float(profile["attach_reach_frac"]) *
+					config.web_maximum_length,
+				false)
 			index += 1
 			if not bool(probe["found"]):
 				continue
@@ -1319,10 +1470,14 @@ class RunDriver:
 	func _find_dive_tap() -> Vector2:
 		var best_tap := Vector2.INF
 		var best_score := -INF
-		for angle_degrees: float in [20.0, 38.0, 56.0]:
+		for angle_degrees: float in _fan_angles(
+				float(profile["dive_fan_top_deg"]),
+				float(profile["dive_fan_bottom_deg"]), 3):
 			var direction := Vector2.RIGHT.rotated(deg_to_rad(angle_degrees))
 			var probe := _probe_tap(
-				direction, 0.55 * config.web_maximum_length, true)
+				direction,
+				float(profile["dive_reach_frac"]) * config.web_maximum_length,
+				true)
 			if not bool(probe["found"]):
 				continue
 			if not _pull_looks_safe(probe["tap"]):
@@ -1332,6 +1487,19 @@ class RunDriver:
 				best_score = score
 				best_tap = probe["tap"]
 		return best_tap
+
+	## Evenly spaced search angles between two bounds. The fan used to be a
+	## literal list; it is generated so a fit can widen, narrow or rotate it
+	## without the count changing underneath the rest of the policy.
+	func _fan_angles(top: float, bottom: float, count: int) -> Array[float]:
+		var angles: Array[float] = []
+		if count <= 1:
+			angles.append(top)
+			return angles
+		var step := (bottom - top) / float(count - 1)
+		for index in range(count):
+			angles.append(top + step * float(index))
+		return angles
 
 	## Class preference, faded towards indifference by how well the tier reads
 	## the game's own anchor cues.
@@ -1435,7 +1603,8 @@ class RunDriver:
 					return false
 		# Every command the model commits to is one finger contact, so the
 		# count is directly comparable to the tap stream recovered from owner
-		# recordings (4.71 taps/s, median gap 0.133 s) — see
+		# recordings: 6.60/s averaged over a run, 18/s sustained for a full
+		# second at peak — see
 		# docs/measurements/2026-08-01-owner-play-calibration.md.
 		taps += 1
 		pending.append({
