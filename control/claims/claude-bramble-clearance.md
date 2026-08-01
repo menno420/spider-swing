@@ -1,0 +1,1 @@
+- `claude/bramble-clearance` · **Bramble Canopy opening clearance correction from owner device recordings** · game/application/course_stream.gd, passability contracts, build/session/current-state records · 2026-08-01
