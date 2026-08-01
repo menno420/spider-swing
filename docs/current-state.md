@@ -342,7 +342,10 @@ vertical-displacement identity, isolates hard chunks with open recovery,
 spreads pair commitments across the authored route, and reduces collision
 occupancy without changing any movement value. A non-gating v3 bot smoke moved
 from its documented 217 m median to 652 m, but still fails owner calibration and
-is not balance evidence. The new APK remains the decisive device proof.
+is not balance evidence. Exact-engine CI and Android run `30694253389` pass on
+source `965df9c6`; inspected artifact `8816709938` reports the matching build,
+package, embedded Bramble code/assets, and stable certificate. The new APK
+remains the decisive owner-device proof.
 
 **Web anchors are now surface-typed (2026-07-31, owner).** Rails, walls and
 ceiling-grown hazards answer web taps; floor-grown hazards are lethal but not

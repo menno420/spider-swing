@@ -105,12 +105,44 @@ evidence.
 - `python3 bootstrap.py check --strict --require-session-log` reports only this
   card's deliberate `in-progress` lifecycle hold. `git diff --check` is clean.
 
+## Remote implementation proof
+
+- PR #86 head `965df9c6e388cf3a17b83dcecf2eb2de42365ac8` has Git tree
+  `15149aa7cf3d8a5c01debb49823c208323ffe7a1`, exactly matching the locally
+  verified tree. `game-quality` run `30694253404` passed; the only substantive
+  red check is the designed open-session hold.
+- Android run `30694253389` passed stable-key verification, export, package and
+  build checks, signer validation, and artifact upload. Artifact `8816709938`
+  has ZIP SHA-256 `59d3f7be58673c6a2b310e63bf9995b6923aa910762d70bddc45ddb9a62cf91c`;
+  its archive test is clean.
+- The intact APK has SHA-256
+  `7926363e76f3edf0523dfa5f4e10cda3a9ad813b22912862e880c00512439ac7`.
+  Embedded provenance reports source `965df9c6`, build
+  `0.22.1-bramble-clearance`, package `com.menno420.spiderswing.dev`, and the
+  Bramble clearance display name. The APK contains both region obstacle
+  textures and the compiled corrected catalog/stream.
+- The embedded certificate SHA-256 is
+  `83ff0bc27903351779ffd1439f115e8c7e4c228fddd683e2a801c9700b30a741`,
+  exactly the pinned stable public debug signer.
+
 ## Remaining verification
 
-Publish the exact locally verified tree, require GitHub's exact-engine and
-Android export/signing jobs, independently inspect the source-identified APK,
-record the device artifact, then perform the deliberate final lifecycle flip
-and rerun every gate before merge.
+Publish this evidence separately, make the deliberate final lifecycle flip,
+remove only this work's claim, and rerun the exact engine and strict repository
+gates on that final tree. Merge only after fresh final-head checks are green.
+
+## Capability delta
+
+No new capability or blocker was discovered. Publication reused the already
+documented authenticated GitHub-app exact-tree route; the local `gh`/Git push
+wall and stable Android signing/export route are unchanged, so
+`docs/CAPABILITIES.md` needs no update.
+
+## Owner questions
+
+None. The next owner decision is the explicit device verdict recorded in
+`control/status.md`: whether the corrected first Bramble sequence is now
+physically traversable without losing the region's vertical identity.
 
 ## 💡 Idea
 
