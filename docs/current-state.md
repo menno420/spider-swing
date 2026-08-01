@@ -298,11 +298,25 @@ without a reported regression.
 - **Any penalty denominated in speed washes out**, because `SpiderMotor`
   refunds it within about a second. That disqualifies a speed chaser, an
   angle-dependent attach catch, and arc-scaled release momentum as *enforcers*.
-- Candidate fixes act on a currency the drive cannot refund, and are
-  unimplemented owner calls: **silk as a per-web cost** (caps attach rate,
-  thematically native, gives the reel upgrade tracks a second job), or
-  **generalised spent anchors** (reuses `_spent_anchor_sources`, forces
-  reaching forward to a fresh anchor, which requires a swing).
+- **The owner's proposal is measured and works: remove the free forward
+  drive.** Swinging generates its own speed (+3.6 to +7.6 m/s above the drive
+  floor, above it 53–60% of the run); hauling is *carried* by it (−5.0 m/s,
+  above it 21%). Ablating the drive costs the swinging style 33% and destroys
+  hauling by **98%** — the drive was not helping hauling, it was its engine.
+- That change also **rescues three mechanics that fail on their own**: a
+  speed-based chaser (the curve currently pins everyone, so speed says
+  nothing), arc-scaled release momentum (the drive currently refunds it), and
+  reel-as-accelerator (already worth 6.2% speed / 52% distance). They are
+  mutually enabling, which is why evaluating them one at a time produced two
+  wrong verdicts.
+- **Open risk:** the lab cannot tune the bird. Without the drive the bot
+  manages ~13 m/s against today's 55–76, but the model **cannot pump** — its
+  reel policy is height-based, not swing-phase-based — and pumping is the
+  skill the design makes central. Physics allows the pace (a 380 px web swung
+  from horizontal reaches 92 m/s). The bird's speed needs a device playtest of
+  a no-drive build, not a bot number.
+- Fallback candidates if the drive stays: **silk as a per-web cost**, or
+  **generalised spent anchors** (reuses `_spent_anchor_sources`).
 - The lab now reports swing shape every batch, so any fix can be tested by
   re-running the search and checking whether hauling still wins.
   See `docs/measurements/2026-08-01-hauling-loophole.md`.

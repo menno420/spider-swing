@@ -168,6 +168,83 @@ fast recoveries the owner values — he sustains 18 taps/s when recovering.
 Listed for completeness; I would not start here. Note that option 2 achieves
 the same end without punishing a recovery aimed at a *different* anchor.
 
+## The owner's proposal, tested — it works, and it is a package
+
+On seeing the above the owner proposed two changes together: **remove the free
+forward drive so only swinging propels you**, and **add the bird at a rate
+slightly below the pace the game currently forces**, accelerating slowly, so
+reel becomes a speed tool and Burst/Dive become escapes. Then: *"I am mostly
+going faster than the forced speed, so the forced speed is basically useless."*
+
+Both halves check out, and the second explains the first.
+
+### The drive is the exploit's engine, and nothing to a swinger
+
+Measured at one matched configuration (standing, L20, intermediate). "Own
+speed" is mean `velocity.x − target_speed_at(distance)` — how far the run
+travels above the speed the drive hands it for free.
+
+| policy | distance | own speed | above the floor | arc per web |
+| --- | ---: | ---: | ---: | ---: |
+| endorsed — swinging | 3 157 m | **+3.6 m/s** | **53%** | 59.8° |
+| default — swinging | 1 786 m | **+7.6 m/s** | **60%** | 42.8° |
+| **flagged — hauling** | 5 051 m | **−5.0 m/s** | **21%** | 21.3° |
+
+**Swinging generates its own speed; hauling is carried.** The owner's read of
+his own play is correct and is a property of the *style*, not of him.
+
+Ablating the drive confirms it end to end:
+
+| policy | full drive | **no drive** | change |
+| --- | ---: | ---: | ---: |
+| hauling (the exploit) | 4 179 m | **78 m** | **−98%** |
+| default (swings) | 1 720 m | 1 147 m | −33% |
+
+**A near-perfect targeted fix.** It costs the intended style a third and
+destroys the unintended one outright — because the drive was not helping
+hauling, it *was* hauling's engine.
+
+### Why this makes the other proposals work
+
+Three mechanics that are individually weak become sound once the drive is
+gone, and this document previously dismissed two of them for a reason that
+stops applying:
+
+- **A speed-based chaser** cannot discriminate today because the pace curve
+  pins everyone. Remove the curve and speed becomes a real signal of skill,
+  so the bird can pace the game honestly.
+- **Arc-scaled release momentum** was dismissed above as something the drive
+  refunds within a second. With no drive there is nothing to refund it, so a
+  bonus for a well-swung release becomes the game's actual propulsion reward
+  rather than decoration. **That earlier dismissal was correct in isolation
+  and wrong about the package.**
+- **Reel as a speed tool** is already real and already measured: ablating reel
+  costs 6.2% speed and 52% distance. Making it the deliberate accelerator
+  formalises something the physics already does.
+
+Burst and Dive gain a defensive job — escaping a closing bird — which they
+currently lack entirely; they are used opportunistically for traversal only.
+
+The proposals are **mutually enabling**, which is why evaluating them one at a
+time produced two wrong verdicts here.
+
+### The open risk, stated plainly
+
+Without the drive the bot manages roughly **13 m/s** against the current
+55–76 m/s pace. That is a floor, not a ceiling, for two reasons: the policy
+was optimised for a world with a drive, and more importantly **the model
+cannot pump.** Its reel policy is height-based, not swing-phase-based, so it
+cannot add energy at the bottom of an arc — the single skill the proposal
+makes central.
+
+The physics do allow the pace: a 380 px web swung from horizontal reaches
+`sqrt(2gL)` = **92 m/s** at the bottom. Sustaining that requires putting
+energy back in every arc, which is exactly what pumping is.
+
+**So the bird cannot be tuned from bot numbers.** Its speed has to come from a
+device playtest of the no-drive build, because the only evidence that matters
+is what a pumping human can sustain, and no measurement here can produce it.
+
 ## How the bird earns its place
 
 Not as the anti-hauling mechanic — measurement rules that out on both speed

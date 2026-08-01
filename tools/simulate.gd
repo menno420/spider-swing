@@ -456,6 +456,7 @@ func _summarize(
 		"mean_web_angle_deg": 0.0, "vertical_share": 0.0,
 		"mean_swing_arc_deg": 0.0, "mean_web_length_px": 0.0,
 		"mean_height_px": 0.0, "height_span_px": 0.0,
+		"mean_overspeed_ms": 0.0, "above_target_share": 0.0,
 	}
 	var rescues := 0
 	var pull_deaths := 0
@@ -559,6 +560,8 @@ func _summarize(
 		"mean_swing_arc_deg": float(totals["mean_swing_arc_deg"]) / count,
 		"mean_web_length_px": float(totals["mean_web_length_px"]) / count,
 		"mean_height_px": float(totals["mean_height_px"]) / count,
+		"mean_overspeed_ms": float(totals["mean_overspeed_ms"]) / count,
+		"above_target_share": float(totals["above_target_share"]) / count,
 		"height_span_px": float(totals["height_span_px"]) / count,
 		# Share of web searches that offered more than one anchor class, i.e.
 		# the share in which the class preference could change anything at all.
@@ -609,6 +612,8 @@ func _print_summary(summary: Dictionary) -> void:
 		summary["mean_anchor_failures"]])
 	print("  anchor pick %.1f%% of web searches offered a class choice" % [
 		summary["class_choice_rate"] * 100.0])
+	print("  own speed   %+.1f m/s vs the drive's floor · above it %.0f%% of the run" % [
+		summary["mean_overspeed_ms"], summary["above_target_share"] * 100.0])
 	print("  height      mean y %.0f px · vertical span %.0f px (lower y = higher up)" % [
 		summary["mean_height_px"], summary["height_span_px"]])
 	print("  swing shape %.1f° mean web angle · %.0f px web · %.1f° arc per web · %.0f%% of hang time near-vertical" % [
@@ -1299,6 +1304,13 @@ class RunDriver:
 	var height_min := 1.0e9
 	var height_max := -1.0e9
 	var height_ticks := 0
+	## How far the run travels ABOVE the speed the drive hands it for free.
+	## The owner's 2026-08-01 observation: "I am mostly going faster than the
+	## forced speed, so the forced speed is basically useless." A style that
+	## lives ON the floor is being carried by it; a style that lives above it
+	## is generating its own speed and would survive the floor's removal.
+	var overspeed_sum := 0.0
+	var above_target_ticks := 0
 	var web_length_sum := 0.0
 	var swing_arc_sum := 0.0
 	var attach_angle_min := 0.0
@@ -1448,6 +1460,10 @@ class RunDriver:
 			elif attach_arc_open:
 				swing_arc_sum += attach_angle_max - attach_angle_min
 				attach_arc_open = false
+			var drive_target := config.target_speed_at(world.distance_pixels)
+			overspeed_sum += world.velocity.x - drive_target
+			if world.velocity.x > drive_target:
+				above_target_ticks += 1
 			height_sum += world.position.y
 			height_min = minf(height_min, world.position.y)
 			height_max = maxf(height_max, world.position.y)
@@ -1575,6 +1591,12 @@ class RunDriver:
 				if attached_ticks > 0 else 0.0),
 			"mean_swing_arc_deg": (
 				swing_arc_sum / attaches if attaches > 0 else 0.0),
+			"mean_overspeed_ms": (
+				(overspeed_sum / height_ticks) / PIXELS_PER_METRE
+				if height_ticks > 0 else 0.0),
+			"above_target_share": (
+				float(above_target_ticks) / height_ticks
+				if height_ticks > 0 else 0.0),
 			"mean_height_px": (
 				height_sum / height_ticks if height_ticks > 0 else 0.0),
 			"height_span_px": (
