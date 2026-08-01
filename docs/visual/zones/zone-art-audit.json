@@ -952,7 +952,7 @@
     {
       "first": "ancient_forest",
       "second": "bramble_canopy",
-      "intersection_over_union": 0.496882
+      "intersection_over_union": 0.50377
     },
     {
       "first": "ancient_forest",
@@ -960,14 +960,14 @@
       "intersection_over_union": 0.4877
     },
     {
-      "first": "bramble_canopy",
-      "second": "silk_hollow",
-      "intersection_over_union": 0.473327
-    },
-    {
       "first": "ancient_forest",
       "second": "ruined_arboretum",
       "intersection_over_union": 0.464299
+    },
+    {
+      "first": "bramble_canopy",
+      "second": "silk_hollow",
+      "intersection_over_union": 0.461241
     },
     {
       "first": "silk_hollow",
@@ -982,12 +982,7 @@
     {
       "first": "bramble_canopy",
       "second": "ashen_hollow",
-      "intersection_over_union": 0.40492
-    },
-    {
-      "first": "bramble_canopy",
-      "second": "ruined_arboretum",
-      "intersection_over_union": 0.402437
+      "intersection_over_union": 0.408085
     },
     {
       "first": "storm_ridge",
@@ -1000,6 +995,11 @@
       "intersection_over_union": 0.394755
     },
     {
+      "first": "bramble_canopy",
+      "second": "ruined_arboretum",
+      "intersection_over_union": 0.393399
+    },
+    {
       "first": "ancient_forest",
       "second": "storm_ridge",
       "intersection_over_union": 0.367562
@@ -1007,7 +1007,7 @@
     {
       "first": "bramble_canopy",
       "second": "storm_ridge",
-      "intersection_over_union": 0.335051
+      "intersection_over_union": 0.340433
     },
     {
       "first": "ruined_arboretum",
@@ -1018,11 +1018,6 @@
       "first": "ruined_arboretum",
       "second": "storm_ridge",
       "intersection_over_union": 0.318915
-    },
-    {
-      "first": "bramble_canopy",
-      "second": "web_city",
-      "intersection_over_union": 0.31449
     },
     {
       "first": "silk_hollow",
@@ -1043,6 +1038,11 @@
       "first": "ancient_forest",
       "second": "web_city",
       "intersection_over_union": 0.286755
+    },
+    {
+      "first": "bramble_canopy",
+      "second": "web_city",
+      "intersection_over_union": 0.26998
     },
     {
       "first": "silk_hollow",
@@ -1067,7 +1067,7 @@
     {
       "first": "bramble_canopy",
       "second": "deep_mist",
-      "intersection_over_union": 0.125445
+      "intersection_over_union": 0.130577
     },
     {
       "first": "web_city",
@@ -1093,7 +1093,7 @@
   "highest_pair_iou": {
     "first": "ancient_forest",
     "second": "bramble_canopy",
-    "intersection_over_union": 0.496882
+    "intersection_over_union": 0.50377
   },
   "contact_sheet": "docs/visual/zones/zone-silhouette-contact-sheet-25.png",
   "screenshot_contact_sheet": "docs/visual/zones/zone-screenshot-contact-sheet.png",

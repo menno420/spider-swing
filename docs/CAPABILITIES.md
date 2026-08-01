@@ -697,7 +697,8 @@ never edit.
   keyed and despilled green/magenta sources. `tools/zone_art_audit.py` reports
   zero targeted chroma fringe at source, runtime, and 25% gameplay scale across
   all 20 assets, while exact Godot `4.7.1.stable.official.a13da4feb` imports the
-  new PNGs and passes all 170 contracts. This re-verifies the seeded media-read
+  new PNGs and passes all 171 contracts after reconciliation with Bramble's
+  merged clearance regression. This re-verifies the seeded media-read
   capability in an owner-live venue and supplies a repeatable path for future
   recording-led visual corrections; Android/device acceptance remains a
   separate owner judgement after CI export.

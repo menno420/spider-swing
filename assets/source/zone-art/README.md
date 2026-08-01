@@ -111,7 +111,7 @@ all pairwise zone-silhouette overlaps are in
 
 The contact sheet is generated from the actual seeded CourseStream geometry at
 tick 137 plus each foreground backdrop, then reduced to pure black at 320×180
-(25% of 1280×720). The highest pair overlap is 0.497, between the two pre-existing
+(25% of 1280×720). The highest pair overlap is 0.504, between the two pre-existing
 forest zones. Every owned zone is below 0.488 against every other zone.
 
 | Zone | Result | Closest possible confusion |

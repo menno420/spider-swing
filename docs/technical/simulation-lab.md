@@ -61,7 +61,7 @@ on 2026-08-01 after owner recordings showed v2 measuring a different game
 taken 0.5–0.7 times per web attach, the Reel policy is written in absolute
 seconds instead of fractions of the meter, and the attach fan is scored by
 anchor class. Two summary lines exist to catch the model being wrong without
-another set of recordings — `taps/s`, against the owner's measured 4.71, and
+another set of recordings — `taps/s`, against the owner's measured envelope of 6.60/s average and 18/s peak, and
 the share of web searches that offered a genuine anchor-class choice.
 
 **v3 adapts to the configuration it is handed**, the way a player learns a

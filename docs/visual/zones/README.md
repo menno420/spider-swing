@@ -40,7 +40,7 @@ and active hazards from the same captured tick.
 
 ## Result
 
-The highest pair overlap is 0.497, between the two pre-existing forest zones.
+The highest pair overlap is 0.504, between the two pre-existing forest zones.
 Every owned zone remains below 0.488 against every other zone. Per-zone nearest
 confusion, every asset's exact source/runtime dimensions and rationale, its
 **ANCHORABLE**/**NOT** state, hashes, and source/runtime/25% fringe counts are

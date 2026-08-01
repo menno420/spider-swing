@@ -112,7 +112,7 @@ jobs:
           set -euo pipefail
           grep -F "config/version=\"${BUILD_VERSION}\"" project.godot
           grep -F "version/name=\"${BUILD_VERSION}\"" export_presets.cfg
-          grep -F 'version/code=41' export_presets.cfg
+          grep -F 'version/code=42' export_presets.cfg
           grep -F "package/name=\"${APP_NAME}\"" export_presets.cfg
           echo "build identity: ${BUILD_VERSION} @ ${SOURCE_SHA}"
 

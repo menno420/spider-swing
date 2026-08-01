@@ -76,18 +76,39 @@ The recordings have Android **show-taps** enabled, so every touch is drawn as a
 pale disc at its exact screen position. That makes the input stream directly
 recoverable — position and frame-accurate timing, not inference.
 
-Detected by scanning for bright near-neutral discs (`value > 0.55`,
-`saturation < 0.16`, ≥140 px solid) at 30 fps and de-duplicating across the
-~3-frame fade. Run `726dcc65`, 48.6 s:
+> **Corrected 2026-08-01, same day.** The first pass sampled at **30 fps**
+> against a recording that is natively **60 fps**, and de-duplicated by
+> position — so it merged fast repeats at the same spot and undercounted by
+> 40%. The owner said his input is faster than reported; he was right. The
+> table below is the 60 fps re-measurement, with re-taps detected by the
+> marker's area re-peaking rather than by position alone. Any figure of
+> "4.71 taps/s" elsewhere predates this correction.
 
-| Measure | Value |
-| --- | ---: |
-| Taps detected | 229 |
-| **Tap rate** | **4.71 / second** |
-| Median gap between taps | 0.133 s |
-| Left button — Reel | 52 (22.7%) |
-| Right button — Attach/Burst | 70 (30.6%) |
-| Play area — aiming | 107 (46.7%) |
+Detected by scanning for bright near-neutral discs (`value > 0.55`,
+`saturation < 0.16`, ≥140 px solid) at the native 60 fps, tracking each marker
+across frames and counting a fresh contact whenever its area re-peaks — a
+fading marker only ever shrinks. Run `726dcc65`, 48.65 s:
+
+| Measure | 30 fps (wrong) | **60 fps** |
+| --- | ---: | ---: |
+| Taps detected | 229 | **321** |
+| **Tap rate, run average** | 4.71 /s | **6.60 /s** |
+| Median gap between taps | 0.133 s | **0.067 s** |
+| Gaps ≤ 50 ms | not resolvable | **27.5% of taps** |
+| Fastest 1 s window | — | **18 taps/s** |
+| Fastest 2 s window | — | **14 taps/s** |
+| Fastest 3 s window | — | **11.7 taps/s** |
+
+Some gaps are **0 ms** — two markers in the same frame, i.e. both thumbs at
+once.
+
+**Average rate is not capability, and the difference is the whole point.**
+6.60/s is what a whole run averages, including hangs and setups. 18/s is what
+he produces when a recovery demands it. A model held to the average is capped
+*below* the player and cannot perform the recoveries that make the long runs
+possible — which is very likely part of why the bot dies in 3.6 seconds. The
+expert tier was frozen at 4 ticks per decision, 15/s, which is below what he
+demonstrably does.
 
 **Of the aiming taps, 48% are in the lower half of the screen** — Dive targets,
 since the HUD's own instruction is "tap solid above to web · tap solid below to
@@ -97,10 +118,11 @@ That is the single most important number here: **roughly half of all aimed
 input is a verb the current bot has never once performed.** Not a tuning gap —
 half the game is missing from the model.
 
-For comparison, the bot's decision cadence is 0.117 s at intermediate, close to
-the owner's 0.133 s median gap. So the model's *rate* is roughly right and its
-*repertoire* is not. That is a much more specific diagnosis than "the bot is
-unrealistic", and it points at what to build.
+For comparison, the bot's decision cadence is 0.117 s at intermediate and
+0.067 s at expert. Against the corrected median gap of 0.067 s the expert tier
+is at parity on average — but it has no burst capability at all, while the
+owner more than doubles his rate for seconds at a time. So the model's
+*average* rate is about right, its *peak* is not, and its repertoire is not.
 
 ## The reel meter, read off the button
 
@@ -140,6 +162,7 @@ magnitude is.
 | Standing start, no upgrades | ~2 000 m | owner statement |
 | Standing start, max upgrades | >5 000 m | owner statement |
 | Any configuration | upgrades must **improve** the result | owner statement |
+| Any configuration | run-average input ≤18 taps/s | 60 fps tap stream |
 
 That last row is the cheapest and most important: the current bot reports
 upgrades as a 25% *loss*, so it fails on sign alone before any magnitude is

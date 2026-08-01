@@ -29,7 +29,7 @@ failure never hides the rest.
 
 ## What exists now
 
-170 runtime contracts: eleven bootstrap/build checks plus fifty-six
+171 runtime contracts: eleven bootstrap/build checks plus fifty-seven
 deterministic physics, eleven zone-progression, eleven spider-biology, ten
 Campaign, nine difficulty, four upgrade-wiring, four simulation-lab input, two
 economy, six generated-SFX, twenty-five mobile HUD, and twenty-one front-end
