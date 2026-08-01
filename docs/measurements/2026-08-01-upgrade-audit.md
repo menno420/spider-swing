@@ -2,9 +2,31 @@
 
 > **Status:** `reference`
 >
-> Diagnostic instrumentation, not a gate and not a feel oracle. It reports what
-> a scripted bot does, not what the owner feels. Measured against `main` at
-> PR #76. Re-measure and diff rather than trusting these numbers forever.
+> **SUPERSEDED 2026-08-01 by owner device evidence. Do not act on the
+> conclusions below.** The owner reports that max upgrades play *far better*
+> than none, and that a previous session had already established the simulator
+> does not adjust correctly for upgrades. He is right, and the mechanism is now
+> identified:
+>
+> **The bot cannot perceive Reel upgrades at all.** Its reel policy is written
+> entirely in *fractions* of the meter — it starts reeling above
+> `energy_fraction > reel_reserve` and stops at `energy_fraction <= 0.06`.
+> Scaling capacity scales both sides, so the bot behaves identically. Silk
+> Reserve at level 20 is a real **2.00 s → 2.48 s** increase in continuous reel
+> time (+24%), and the bot returned bit-identical output because it is
+> structurally blind to it, not because the upgrade is inert.
+>
+> Worse, the "the Reel meter never empties" premise this document leans on is
+> **circular**: the bot stops reeling at 6% remaining, so it can never empty the
+> meter. That was a measurement of the bot's own stopping rule reported as a
+> fact about the game.
+>
+> The negative findings (Silk Winder −10.4%, Anchor Drive −6.2%, the bundle
+> −25%) are bot-preference artifacts of the same kind and are contradicted by
+> device play. The shop suspension this document motivated has been reverted.
+>
+> Kept, not deleted, because the method and its failure are worth reading. The
+> lab's blind spot is now recorded in `docs/technical/simulation-lab.md`.
 
 ## Headline
 

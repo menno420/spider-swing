@@ -1230,8 +1230,7 @@ func _render_shop() -> void:
 			SpiderCatalog.is_breakthrough_level(next_level)
 		var scope := StringName(upgrade_item["scope"])
 		row.visible = true
-		var suspended := not SpiderCatalog.is_purchasable(upgrade_id)
-		button.disabled = overlay_enabled or maximum or suspended or \
+		button.disabled = overlay_enabled or maximum or \
 			_state.progress.spendable_flies < cost
 		button.text = (
 			"%s · %s\nDEBUG OVERLAY LEVEL %d/%d · NOT OWNED"
@@ -1249,14 +1248,10 @@ func _render_shop() -> void:
 				str(upgrade_item["name"]).to_upper(),
 				level,
 				SpiderCatalog.MAX_UPGRADE_LEVEL,
-				(
-					"WITHDRAWN — NO MEASURED EFFECT"
-					if suspended
-					else ("MAXIMUM" if maximum else "%d FLIES" % cost)
-				),
+				"MAXIMUM" if maximum else "%d FLIES" % cost,
 				(
 					"  ·  BREAKTHROUGH ×2"
-					if next_is_breakthrough and not maximum and not suspended
+					if next_is_breakthrough and not maximum
 					else ""
 				),
 			]

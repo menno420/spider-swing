@@ -193,11 +193,8 @@ without a reported regression.
   stars are minted once per campaign level and are designed to sink into
   cosmetics; difficulty modes, region checkpoints, the rescue life and
   leaderboard standing cannot be bought at any price.
-- **Landed with it:** the two inert upgrade tracks are **withdrawn from sale**.
-  Silk Reserve and Rapid Recovery stay in the catalog, keep their ids, and keep
-  any levels a save already bought — they still apply to a player who paid —
-  but the shop no longer offers them and says why. They were 29% of the total
-  upgrade spend (282 of 987 flies) for zero measured effect.
+- The inert-track withdrawal that shipped alongside it has been **reverted**:
+  the finding behind it was a lab artifact, not a property of the game.
 - **Designed but deliberately not implemented:** the star sink, a Harsh fly
   premium, and cosmetic pricing. Each waits on an owner decision recorded in
   the model, and half-building an economy is worse than describing one.
@@ -207,22 +204,21 @@ without a reported regression.
   intermediate play. Harsh currently pays no premium for roughly double the
   death rate.
 
-**Measured and unresolved — present, but not doing what the shop implies**
+**Upgrade measurement — a lab finding the owner corrected**
 
-- **Two upgrade tracks are inert.** Silk Reserve (Reel capacity) and Rapid
-  Recovery (Reel regeneration and empty-lockout) change the resolved config and
-  produce bit-identical play at every skill tier, because the Reel meter never
-  empties in any band, mode or reel style — they sell headroom on a limit the
-  player never reaches. Measured per track in isolation; the config change was
-  verified directly so the null is not a broken harness.
-- **The upgrade bundle is a net negative for the lab bot.** Every track at
-  level 20 survives 25% less far than level 0, monotone from level 10. Silk
-  Winder (−10.4%) and Anchor Drive (−6.2%) are negative at every tier; nothing
-  is positive by more than 2%. Direction is trustworthy, magnitude is not:
-  these are bot-preference results, and the lab has already disagreed with an
-  owner device finding on the Reel-rate axis. **Nothing was retuned on this** —
-  it is recorded for a device playtest and an owner call. See
-  `docs/measurements/2026-08-01-upgrade-audit.md`.
+- A 2026-08-01 lab audit concluded the upgrade bundle made the player 25% worse
+  and that two Reel tracks were inert. **Owner device evidence says otherwise:
+  max upgrades play far better than none.** He is right and the cause is
+  identified — the bot's Reel policy is written in *fractions* of the meter, so
+  scaling capacity scales both sides and it behaves identically. Silk Reserve
+  at level 20 is a genuine 2.00 s → 2.48 s increase in continuous reel time.
+  The audit's "the meter never empties" premise was circular: the bot stops
+  reeling at 6% remaining and can never empty it.
+- **The shop suspension that finding motivated has been reverted.** All seven
+  tracks sell normally again; no save was affected. The lab's blind spot is
+  recorded in `docs/technical/simulation-lab.md` — **do not use the simulator
+  to evaluate upgrades.**
+
 
 **Deliberately absent — scope boundaries, not gaps**
 

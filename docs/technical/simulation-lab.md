@@ -116,6 +116,32 @@ Standard's 2.04 while killing the player twice as fast. Summaries now report
 `deaths_per_run` beside the rate so the cause is visible. **Compare modes on
 distance survived.**
 
+## The bot cannot measure upgrades — especially Reel ones
+
+**Do not use this lab to evaluate upgrade tracks.** Established by owner device
+evidence on 2026-08-01, after a lab audit concluded the opposite and was wrong.
+
+The bot's Reel policy is expressed in **fractions of the meter**: it engages
+above `energy_fraction > reel_reserve` and disengages at
+`energy_fraction <= 0.06`. Every one of those terms is a ratio, so scaling
+`reel_energy_capacity` scales numerator and denominator together and the bot
+behaves *identically*. Silk Reserve at level 20 raises continuous reel time
+from 2.00 s to 2.48 s — a change a player feels immediately and the bot cannot
+represent.
+
+Two consequences worth holding onto:
+
+- **A bit-identical result is not evidence of no effect.** It can equally mean
+  the model is blind to the axis being varied. Check whether the bot's policy
+  is scale-invariant in that parameter before concluding anything.
+- **"The Reel meter never empties" is circular.** The bot stops reeling at 6%
+  remaining, so it cannot empty the meter by construction. Any conclusion
+  resting on that premise is measuring the stopping rule, not the game.
+
+Upgrade *feel* is a device question. The lab can still compare course content,
+difficulty modes and geometry, where the bot's policy is not the thing under
+test.
+
 ## Verb ablation, and what it cannot prove
 
 `--ablate` was added to test whether a course segment *requires* a verb. It
