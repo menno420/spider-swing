@@ -296,20 +296,28 @@ The owner has stated he cannot supply new recordings for this work. Therefore:
    hauling exploit stays dead. `arc per web` is reported for every batch, so
    re-running the search is a genuine regression test on the exploit.
 
-## Suggested build order
+## Build order
 
-Each step is independently shippable and independently revertible:
+**Corrected 2026-08-01.** The original five-slice split shipped release quality
+first and spaced the rest behind device verdicts. That was wrong: it imported a
+cadence from the superseded recording-led handoff, and it delivered a mechanic
+that cannot be judged while the drive is on, instead of the two things actually
+requested.
 
-1. **Release quality** — the missing mechanic, and the one that makes swing
-   control a speed source. Pure simulation, testable headless, no visuals.
-2. **Drive → 0 as a config value**, with the five coupling sites decided. One
-   value, instantly revertible, and `tools/simulate.gd` can measure it.
-3. **The bird as simulation state** — position, movement law, kill condition
-   reusing the `camera_boundary` path; snapshot fields; contract tests.
-4. **The bird as a visual** — flap, bank, bob, and the closing/gliding tell.
-5. **Re-run the exploit regression** — `arc per web` on a fresh search.
+1. **Release quality — implemented** (PR #97). Not judgeable until the drive is
+   gone; see OQ-16's timing banner.
+2. **Drive → 0 and the bird — together.** Removing the drive without the bird
+   produces a game that is only harder: the drive is what makes stalling
+   impossible today, and `left_kill_boundary()` becomes a live failure mode with
+   nothing on screen explaining it (`measured`: 4 of 10 bot runs time out at
+   drive zero). The bird is what makes that world legible rather than punishing.
+   Ship them in one PR, built in the order drive → bird simulation → bird visual
+   → exploit regression, and keep them separable with **debug tunables** rather
+   than separate PRs.
 
-Steps 1–3 are headless-verifiable. Step 4 is the one that needs the owner's eye.
+The rule that replaces "one slice, one PR": **ship a testable whole.** A slice
+boundary that hands someone a build they cannot form an opinion about is not a
+slice boundary, it is a delay.
 
 ## Open forks for the owner
 

@@ -101,22 +101,24 @@ number by playing. This is OQ-15.
   resolution), `inferred`, or `assumed` — PL-013, and `docs/README.md`
   § Measurements says why.
 - **Never record a wall.** A refused call is transient venue state.
-- **One slice, one green PR.** Do not combine the mechanic and the visual.
+- **~~One slice, one green PR. Do not combine the mechanic and the visual.~~**
+  **Withdrawn 2026-08-01** — it imported the superseded handoff's
+  device-verdict-between-slices rhythm into headless work where that premise no
+  longer held, and it cost the owner a day. Combine whatever ships a testable
+  whole; keep them separable by **debug tunables**, not by separate PRs.
 
 ## Slice order
 
-Each is independently shippable and independently revertible:
+1. **Release quality — implemented** (PR #97). Deterministic speed reward on a
+   deliberate wide, rising release. **Not yet judgeable** — see below.
+2. **Drive → 0 and the bird — the current work, shipping together.** Detailed
+   under "The current work"; the paste-ready prompt is there.
 
-1. **Release quality — implemented.** Pure simulation, headless-testable, no
-   new gameplay visual. Swing control now has a deterministic speed reward.
-2. **Drive → 0** — **the current slice**, with the six coupling sites decided.
-3. **The bird as simulation state** — position, advance law, kill reusing the
-   `camera_boundary` path, snapshot fields, contract tests.
-4. **The bird as a visual** — flap, bank, bob, and the closing/gliding tell.
-5. **Exploit regression** — re-run the search, check `arc per web` climbed.
-
-Slices 1–3 are fully verifiable headless. Slice 4 is the one that needs the
-owner's eye.
+**The original five-slice split was wrong and is withdrawn.** It sequenced the
+work for building and spaced it for a device verdict that headless work does not
+need, and it delivered the owner a mechanic he could not test instead of the two
+things he actually asked for. What replaces it: ship a **testable whole**, and
+keep the parts separable with debug tunables so one build still isolates them.
 
 ### Correction — the build order was right, the verification order was not
 
@@ -147,23 +149,48 @@ fault. **Do slice 2, then gather slice 1 and slice 2 in one device session.**
 
 ---
 
-## Slice 2 — the current work: remove the free drive
+## The current work: remove the drive AND build the bird, in one session
 
-### Why this slice, and why now
+### Why these ship together — corrected 2026-08-01
 
-Three reasons, in order of force:
+The original brief said *"one slice, one green PR — do not combine."* **That was
+wrong here, and it cost the owner a day.** It imported the rhythm of the
+superseded recording-led handoff, which spaced slices out because each visual
+change needed a device verdict between them. That premise died the moment the
+owner said no more recordings would be supplied and the work went headless.
 
-1. **It is the change the owner asked for.** *"Stop the forward motion that the
-   game gives you, so only swinging itself makes you go forward."* Everything
-   else in this programme exists to make that survivable.
-2. **It unblocks OQ-16.** Slice 1 shipped a mechanic whose feel cannot be
-   judged while the drive is on — see the correction above. Until this lands,
-   the owner cannot answer the one question slice 1 left open, and the device
-   session it would cost him would produce a misleading answer.
-3. **It is the whole anti-hauling fix.** `measured`: ablating the drive costs
-   the intended style a third and destroys hauling outright (−98%), and in a
-   world searched inside the no-drive rules wide swinging **wins outright**.
-   The intended style becomes optimal by physics, with no rule written.
+There is also a **design** reason, and it is the stronger one:
+
+**Removing the drive without the bird produces a game that is only harder.**
+The drive is what currently makes stalling impossible. Take it away and
+`left_kill_boundary()` — `furthest_x − 520 px`, ratcheting — becomes a live
+failure mode with nothing on screen explaining it. `measured`: 4 of 10 bot runs
+time out with the drive at zero, and `camera_boundary` appears as a death cause.
+
+The bird is not decoration on top of that. **The bird is the thing that makes
+the no-drive world legible**: it turns an invisible ratcheting line into a
+visible pursuer whose distance tells you how much slack you have. Handing the
+owner a no-drive build without it would produce a misleading feel verdict for
+exactly the same reason slice 1's verdict is unavailable today — testing a
+mechanic in a configuration built to make it feel bad.
+
+**Attribution is still available without separate PRs.** The bird's speed,
+acceleration and start offset are debug tunables (OQ-15). Setting its speed to
+zero isolates the drive change; the drive is a single config value. Two knobs,
+four combinations, one build.
+
+### Internal order within the session
+
+Ship it as one PR, but build it in this order so each step is verifiable before
+the next:
+
+1. **Drive → 0**, with the six coupling sites decided (table below).
+2. **The bird as simulation state** — position, advance law, kill reusing the
+   existing `camera_boundary` path, snapshot fields, contract tests.
+3. **The bird as a visual** — flap, bank, bob, and the closing/gliding tell.
+4. **Exploit regression** — re-run the search, check `arc per web` climbed.
+
+Steps 1–2 and 4 are fully headless-verifiable. Step 3 is the one needing an eye.
 
 ### The six coupling sites — each needs an explicit decision
 
@@ -177,39 +204,50 @@ things read it, and every one needs a stated decision in the PR body:
 | 3 | Guided opening `:1379` | opening tutorial web | same question as 1 |
 | 4 | Camera look-ahead `swing_lab.gd:222` | `max(0, velocity.x − target_speed)` | still meaningful as a reference, or does the camera need a new one? |
 | 5 | Profile scaling `spider_catalog.gd:347-349` | `speed_scale` on start/max target | spider identity partly lives in the curve |
-| 6 | **Release award cap** `simulation_world.gd` (slice 1) | `target_speed_at + maximum_horizontal_overspeed` | **new, and the sharpest.** `inferred` and reasonable as a bonus-limiter *on top of a drive*. With no drive it throttles the **primary** speed source |
+| 6 | **Release award cap** `simulation_world.gd` `_release_web` | `target_speed_at + maximum_horizontal_overspeed` | **the sharpest.** `inferred`, sound as a limiter *on top of a drive*; with no drive it throttles the **primary** speed source |
 
-Site 6 is the one to think hardest about. Today the ceiling is 72 m/s at the
-start; the owner already plays at 73–78 there. A cap that was a safety rail
-becomes the thing standing between the player and the speed the design is
-supposed to let them earn.
+Site 6 matters most. The ceiling is **72.0 m/s at 0 m** and **76.2 m/s at 1 km**;
+the owner's standing-start L0 runs sustain **~73–78 m/s**. A cap meant to stop
+repeated releases manufacturing speed would instead stand between a good player
+and the speed this design exists to let them earn.
 
-### The failure mode this creates, which does not exist today
+### The bird — what the code already gives you
 
-**Stalling becomes reachable.** `left_kill_boundary()` is
-`furthest_x − 520 px` and `furthest_x` only ratchets forward, so falling 52 m
-behind your own best point kills you. Today the drive makes that nearly
-impossible. Without it, it is live.
+**`left_kill_boundary()` (`simulation_world.gd:554`) is already a
+player-following kill line** with a working death path (`:471-477`, cause
+`camera_boundary`) and a snapshot field presentation already receives
+(`swing_lab_session.gd:684`). The bird is that line made visible and given its
+own advance law. Do not invent a hazard type.
 
-`measured` — `tools/simulate.gd`, 10 runs, intermediate, L20, 5 course seeds,
-100 s cap, in-run counters at 1 tick:
+**Do NOT use `CourseMotion`.** It is stateless and pure over
+`(base_polygon, motion_spec, tick, fixed_delta)` by design, and cannot read
+player position — that purity is what makes courses replayable. A pursuer needs
+per-tick state on `SimulationWorld`: initialised in `reset()` (`:89`), advanced
+in `step()` (`:384`), published through new `SimulationSnapshot` fields.
 
-| | drive 470 | **drive 0** |
-| --- | ---: | ---: |
-| mean distance | 2 031 m | **1 206 m** |
-| timeout runs | **0 / 10** | **4 / 10** |
-| death causes | boundary ×2, obstacle ×8 | **camera_boundary ×2**, obstacle ×4, **timeout ×4** |
+**Movement law — two axes, deliberately different rules:**
 
-**Forty per cent of runs stall out.** Read that correctly: the bot **cannot
-pump** — its reel policy is height-based, not swing-phase-based — so it cannot
-add energy at the bottom of an arc, which is the single skill this design makes
-central. These numbers are a **floor, not a prediction about a human**. What
-they prove is that stalling is now mechanically reachable, and slice 2 must
-decide what happens when it does. The rescue (site 2) is the existing valve.
+- **X is the bird's own law.** Position-based, not speed-matching, advancing at
+  a world rate that increases slowly with distance. Banked distance is the
+  player's buffer. A speed-matched chaser was ruled out on measurement.
+- **Y follows the spider, with lag.** A damped follow of player height, not a
+  hard track. This is what "follows the spiders position" means without turning
+  it into a speed-matcher.
+
+**Bird-like motion** (the owner's explicit requirement): a wing-flap cycle
+driven off `tick` so it stays deterministic; vertical bob **coupled to the flap
+phase**, not an independent sine; **banking** into vertical velocity, which is
+the single cue that most reads as "bird"; and flap rate rising when closing,
+easing to a glide when not — which makes the bird a readable difficulty gauge.
+
+Determinism: bird state must be a pure function of `(tick, course seed, player
+history)` and must be captured in the trace format so replays reproduce. The
+cross-path replay contract in `tests/unit/simulation_lab_tests.gd` catches
+mistakes here.
 
 ### What to measure, and the trap in reading it
 
-Reproduce with `--sweep=horizontal_drive_acceleration:0:0:1`.
+Reproduce the ablation with `--sweep=horizontal_drive_acceleration:0:0:1`.
 
 **Do not read arc-per-web from an unadapted policy.** The default policy is
 tuned for a world with a drive; stripped of its engine it dangles rather than
@@ -218,54 +256,71 @@ result comes from a policy searched or endorsed *inside* the no-drive world.
 Reading the naive table as evidence against the design would reproduce this
 project's most repeated error.
 
-### Not in this slice
+### Do not tune the bird from a bot run
 
-The bird. Slice 2 removes the drive; slice 3 adds the pursuer. Shipping them
-together would make it impossible to tell which one caused a change in feel,
-and the owner has exactly one device session to spend.
+`measured`: the bot **cannot pump** — its reel policy is height-based, not
+swing-phase-based — so it reaches 48.4 m/s in the no-drive world while the
+physics allow ~92 m/s from a 380 px web. Every bot number is a **floor**. Ship
+placeholders marked `assumed` and expose bird speed, acceleration and start
+offset as debug tunables on the Test Run screen. That is OQ-15, and it is also
+what makes attribution possible in a combined PR.
 
 ---
 
-## Paste-ready prompt for slice 2
+## Paste-ready prompt — the current work
 
 ```
 Continue Spider Swing in menno420/spider-swing from live `main`. Read, in
 order: .claude/CLAUDE.md, docs/current-state.md, then
-docs/planning/next-session-brief-2026-08-01-mechanics.md — especially the
-"Slice 2" section — and the spec it points at,
+docs/planning/next-session-brief-2026-08-01-mechanics.md — especially "The
+current work" — and the spec it points at,
 docs/game-design/earned-speed-and-the-bird.md. Read both fully before
 writing code.
 
-The work is ordered slice 2: remove the free forward drive, so that only
-swinging propels the spider. This is the change the whole programme is
-built around, and it is now also blocking me: slice 1 shipped a
-release-momentum reward whose feel I cannot judge while the drive is on,
-because the drive erases the penalty for a bad release and the award's own
-ceiling sits inside the speed band I already play in. Until this lands I
-cannot answer OQ-16, and a playtest now would give us a misleading answer.
+Build BOTH of these in one PR: remove the free forward drive so that only
+swinging propels the spider, and add the bird. They ship together on
+purpose. Removing the drive without the bird produces a game that is only
+harder: the drive is what currently makes stalling impossible, and without
+it the invisible left kill line becomes a live failure mode with nothing on
+screen explaining it. Measured, 4 of 10 bot runs time out at drive zero. The
+bird is what makes that world legible rather than just punishing. I have one
+device session to spend and I want to feel the finished shape, not half of
+it.
+
+Build it in this internal order, verifying each before the next: drive to 0
+with the six coupling sites decided; the bird as simulation state; the bird
+as a visual; then re-run the exploit regression.
 
 Do NOT delete target_speed_at. Keep it as a named reference speed and set
-horizontal_drive_acceleration to 0 as a config value, so the whole
-experiment reverts in one number. Six things read that reference and each
-needs an explicit decision, stated in your PR body — the brief tables all
-six. Site 6 is the sharpest: slice 1's release award is capped at
-target_speed_at + maximum_horizontal_overspeed, which was a sensible
-limiter on a bonus sitting on top of a drive, and with no drive becomes a
-throttle on the primary speed source. At the standing start that ceiling is
-72 m/s and I already play at 73-78, so think hard about it.
+horizontal_drive_acceleration to 0 as a config value. Six things read that
+reference and each needs an explicit decision stated in your PR body — the
+brief tables all six. Site 6 is the sharpest: slice 1's release award is
+capped at target_speed_at + maximum_horizontal_overspeed, a sensible limiter
+on a bonus sitting on top of a drive, which becomes a throttle on the primary
+speed source once the drive is gone. That ceiling is 72 m/s at the start and
+I already play at 73-78, so think hard about it.
 
-Expect a failure mode that does not exist today: stalling. left_kill_boundary
-is furthest_x - 520px and furthest_x only ratchets forward, so falling 52 m
-behind your own best point kills you. Measured with the drive at zero, 4 of
-10 bot runs time out and camera_boundary appears as a death cause. Read that
-as a floor, not a prediction — the bot cannot pump, so it cannot generate
-speed the way a person does. But it proves stalling is now reachable, and you
-must decide what happens when it does. The rescue grant is the existing valve
-and its numbers become load-bearing.
+Do NOT build the bird with CourseMotion — it is stateless by design and
+cannot read player position, which is what makes courses replayable. The
+correct seam is state on SimulationWorld, and left_kill_boundary() is
+already an invisible player-following kill line with a working death path
+and a published snapshot field. The bird is that line, made visible and
+given its own advance law.
 
-Do NOT add the bird in this slice. Slice 3 does that. If both land together
-I cannot tell which one changed the feel, and I have one device session to
-spend.
+The bird's two axes obey different rules. X is its own law: position-based,
+not speed-matching, advancing at a world rate that rises slowly with
+distance, so banked distance is my buffer. Y follows my height with lag, a
+damped follow rather than a hard track. It must actually move like a bird —
+a flap cycle driven off tick so it stays deterministic, vertical bob coupled
+to the flap phase rather than an independent sine, banking into vertical
+velocity, and a flap rate that rises when it is closing and eases to a glide
+when it is not, so I can read my danger from how it moves.
+
+Do NOT tune the bird's speed from a bot run. The bot cannot pump, so every
+simulated no-drive number is a floor, not a target. Ship placeholders marked
+`assumed` and expose bird speed, acceleration and start offset as debug
+tunables on the Test Run screen. That also lets me isolate the two changes
+while testing: bird speed zero gives me the drive change alone.
 
 When you measure the ablation, do not read arc-per-web from the default
 policy — it is adapted to a world with a drive and dangles without one. The
@@ -280,10 +335,10 @@ fails, restore, confirm it passes. Mark every number you publish `measured`
 (with method AND the instrument's resolution), `inferred`, or `assumed` —
 PL-013.
 
-I cannot supply new recordings, so do not plan around getting one. I can
-playtest a build and give you a verdict. When this lands I will test slice 1
-and slice 2 together in one session, so tell me plainly what to look for in
-both. Anything that genuinely needs my decision goes to
+I cannot supply new recordings, so do not plan around getting one. When this
+lands I will test the release award, the no-drive world and the bird in one
+session, so tell me plainly what to look for in each and which debug values
+to change to isolate them. Anything that genuinely needs my decision goes to
 docs/owner-questions.md — OQ-13 through OQ-16 are already open.
 
 Land one green PR and tell me plainly what you did, what you verified, and
