@@ -27,10 +27,12 @@ const WEAVE_ROUTE_END_OFFSET_X := 900.0
 const WEAVE_GROWTH_HEIGHT := 235.0
 const WEAVE_FLOOR_WIDTH := 156.0
 const WEAVE_CEILING_WIDTH := 142.0
-const CANOPY_HOOK_WIDTH := 360.0
-const CANOPY_HOOK_HEIGHT := 330.0
-const CANOPY_LEAF_WIDTH := 410.0
-const CANOPY_LEAF_HEIGHT := 300.0
+const CANOPY_PAIR_FIRST_OFFSET_X := 230.0
+const CANOPY_PAIR_SECOND_OFFSET_X := 900.0
+const CANOPY_HOOK_WIDTH := 300.0
+const CANOPY_HOOK_HEIGHT := 300.0
+const CANOPY_LEAF_WIDTH := 320.0
+const CANOPY_LEAF_HEIGHT := 305.0
 
 var _geometry := CourseGeometry.new()
 var _middle_hazard_start_distance: float = 10000.0
@@ -544,7 +546,7 @@ func _append_middle_challenge(
 				hanging,
 				CANOPY_HOOK_WIDTH,
 				CANOPY_HOOK_HEIGHT,
-				_floating_obstacle_scale * growth,
+				_floating_obstacle_scale,
 			)
 		&"canopy_leaf_high", &"canopy_leaf_low":
 			var high_route := pattern_id == &"canopy_leaf_high"
@@ -563,7 +565,7 @@ func _append_middle_challenge(
 				hanging,
 				CANOPY_LEAF_WIDTH,
 				CANOPY_LEAF_HEIGHT,
-				_floating_obstacle_scale * growth,
+				_floating_obstacle_scale,
 			)
 		&"canopy_hook_high_low", &"canopy_hook_low_high":
 			var high_to_low := pattern_id == &"canopy_hook_high_low"
@@ -574,7 +576,7 @@ func _append_middle_challenge(
 				floor_y,
 				route_lane,
 				high_to_low,
-				_floating_obstacle_scale * growth,
+				_floating_obstacle_scale,
 			)
 		&"canopy_shutter_high_low", &"canopy_shutter_low_high":
 			var high_to_low := pattern_id == &"canopy_shutter_high_low"
@@ -585,7 +587,7 @@ func _append_middle_challenge(
 				floor_y,
 				route_lane,
 				high_to_low,
-				_floating_obstacle_scale * growth,
+				_floating_obstacle_scale,
 			)
 		&"silk_burr_high", &"silk_burr_low":
 			_append_floating_seed_burr(
@@ -970,8 +972,8 @@ func _append_canopy_hook_pair(
 	high_to_low: bool,
 	scale: float,
 ) -> void:
-	var first_x := start_x + WEAVE_FIRST_OFFSET_X
-	var second_x := start_x + WEAVE_SECOND_OFFSET_X
+	var first_x := start_x + CANOPY_PAIR_FIRST_OFFSET_X
+	var second_x := start_x + CANOPY_PAIR_SECOND_OFFSET_X
 	var first_hanging := not high_to_low
 	var second_hanging := high_to_low
 	_append_canopy_hook_vine(
@@ -1017,8 +1019,8 @@ func _append_canopy_shutter_pair(
 	high_to_low: bool,
 	scale: float,
 ) -> void:
-	var first_x := start_x + WEAVE_FIRST_OFFSET_X
-	var second_x := start_x + WEAVE_SECOND_OFFSET_X
+	var first_x := start_x + CANOPY_PAIR_FIRST_OFFSET_X
+	var second_x := start_x + CANOPY_PAIR_SECOND_OFFSET_X
 	var first_hanging := not high_to_low
 	var second_hanging := high_to_low
 	_append_canopy_leaf_shutter(

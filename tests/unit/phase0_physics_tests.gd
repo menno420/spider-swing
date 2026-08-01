@@ -56,6 +56,7 @@ static func run() -> Dictionary:
 	passed += _test_course_regions_are_seeded_distinct_and_recoverable(
 		failures)
 	passed += _test_bramble_owns_distinct_obstacle_vocabulary(failures)
+	passed += _test_bramble_clearance_has_reaction_and_recovery_time(failures)
 	passed += _test_checkpoint_practice_starts_safe_and_is_non_record(
 		failures)
 	passed += _test_debug_start_awards_nothing_and_sets_no_record(failures)
@@ -1650,12 +1651,17 @@ static func _test_course_regions_are_seeded_distinct_and_recoverable(
 		failures.append(
 			"checkpoint entry or later-region recovery cadence is unsafe")
 		return 0
-	if not bramble_ids.has(&"canopy_hook_high") or \
-			not bramble_ids.has(&"canopy_leaf_low") or \
-			not (
-				bramble_ids.has(&"canopy_shutter_high_low")
-					or bramble_ids.has(&"canopy_shutter_low_high")
-			) or \
+	var has_bramble_hook := bramble_ids.has(&"canopy_hook_high") or \
+		bramble_ids.has(&"canopy_hook_low")
+	var has_bramble_leaf := bramble_ids.has(&"canopy_leaf_high") or \
+		bramble_ids.has(&"canopy_leaf_low")
+	var has_bramble_pair := \
+		bramble_ids.has(&"canopy_hook_high_low") or \
+		bramble_ids.has(&"canopy_hook_low_high") or \
+		bramble_ids.has(&"canopy_shutter_high_low") or \
+		bramble_ids.has(&"canopy_shutter_low_high")
+	if not has_bramble_hook or not has_bramble_leaf or \
+			not has_bramble_pair or \
 			bramble_ids.has(&"rooted_gate"):
 		failures.append(
 			"Bramble Canopy lost its high↔low identity")
@@ -1800,12 +1806,7 @@ static func _test_bramble_owns_distinct_obstacle_vocabulary(
 					failures.append("%s lost its explicit visual kind" % pattern_id)
 					return 0
 				var obstacle := obstacles[obstacle_index]
-				var bounds := SolidGeometry.bounds(obstacle)
-				if not SolidGeometry.circle_intersects_polygon(
-					Vector2(bounds.get_center().x, 398.0),
-					18.0,
-					obstacle,
-				):
+				if not _obstacle_blocks_neutral_lane(obstacle, route_radius):
 					failures.append(
 						"%s still permits a neutral-centre coast" % pattern_id)
 					return 0
@@ -1833,6 +1834,91 @@ static func _test_bramble_owns_distinct_obstacle_vocabulary(
 		failures.append(
 			"representative seeds do not expose every Bramble family: %s" %
 				[found.keys()])
+		return 0
+	return 1
+
+
+static func _test_bramble_clearance_has_reaction_and_recovery_time(
+	failures: PackedStringArray,
+) -> int:
+	# Owner-device evidence supersedes the old point-guide proof: the shipped
+	# hook/shutter course could place several hard chunks back-to-back, grow a
+	# shape over half the usable corridor, and allow only 0.55 s between the two
+	# opposite commitments in a pair. Validate the timed route envelope the
+	# player actually receives at full pace, while leaving the physics untouched.
+	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	var corridor_height := CourseStream.FLOOR_Y - CourseStream.CEILING_Y
+	var maximum_width := 340.0
+	var maximum_height := corridor_height * 0.48
+	var minimum_pair_spacing := config.maximum_target_speed * 0.85
+	var observed_maximum_width := 0.0
+	var observed_maximum_height := 0.0
+	var observed_minimum_pair_spacing := 1.0e20
+	var adjacent_hard_chunks := 0
+	var pair_count := 0
+	for seed in [0, 7, 77, 707]:
+		var stream := CourseStream.new()
+		stream.reset(
+			10000.0, 0.94, 0.90, 1.12, [], true, 1.0, 1.0,
+			20000.0, seed,
+		)
+		var patterns := {}
+		for chunk_index in range(52, 105):
+			var distance := maxf(
+				0.0,
+				float(chunk_index) * CourseStream.CHUNK_WIDTH
+					- CourseStream.START_X,
+			)
+			if StringName(CourseRegionCatalog.region_for_distance(
+				distance + CourseStream.CHUNK_WIDTH * 0.5,
+			)["id"]) != CourseRegionCatalog.BRAMBLE_CANOPY:
+				continue
+			patterns[chunk_index] = stream.pattern_id_for_chunk(chunk_index)
+		for chunk_index: int in patterns:
+			var pattern_id := StringName(patterns[chunk_index])
+			if pattern_id == &"open_recovery":
+				continue
+			if patterns.has(chunk_index + 1) and \
+					StringName(patterns[chunk_index + 1]) != &"open_recovery":
+				adjacent_hard_chunks += 1
+			var chunk_start := float(chunk_index) * CourseStream.CHUNK_WIDTH
+			var chunk_end := chunk_start + CourseStream.CHUNK_WIDTH
+			var geometry := stream.update_for_position(chunk_start + 1.0)
+			var obstacle_centres: Array[float] = []
+			for obstacle: PackedVector2Array in geometry.obstacles:
+				var bounds := SolidGeometry.bounds(obstacle)
+				if bounds.get_center().x < chunk_start or \
+						bounds.get_center().x >= chunk_end:
+					continue
+				obstacle_centres.append(bounds.get_center().x)
+				observed_maximum_width = maxf(
+					observed_maximum_width, bounds.size.x)
+				observed_maximum_height = maxf(
+					observed_maximum_height, bounds.size.y)
+			if obstacle_centres.size() == 2:
+				pair_count += 1
+				obstacle_centres.sort()
+				observed_minimum_pair_spacing = minf(
+					observed_minimum_pair_spacing,
+					obstacle_centres[1] - obstacle_centres[0],
+				)
+	if pair_count == 0 or adjacent_hard_chunks > 0 or \
+			observed_minimum_pair_spacing + 0.01 < minimum_pair_spacing or \
+			observed_maximum_width > maximum_width + 0.01 or \
+			observed_maximum_height > maximum_height + 0.01:
+		failures.append(
+			("Bramble device envelope is still overcrowded: adjacent=%d, "
+				+ "pair gap %.0f/%.0f px, max %.0f×%.0f px "
+				+ "(limits %.0f×%.0f)") % [
+				adjacent_hard_chunks,
+				observed_minimum_pair_spacing,
+				minimum_pair_spacing,
+				observed_maximum_width,
+				observed_maximum_height,
+				maximum_width,
+				maximum_height,
+			],
+		)
 		return 0
 	return 1
 
@@ -2131,13 +2217,7 @@ static func _test_authored_weaves_and_small_silk_burrs_are_fair(
 			]
 				if canopy_weave:
 					for obstacle: PackedVector2Array in obstacles:
-						var obstacle_x := \
-							SolidGeometry.bounds(obstacle).get_center().x
-						if not SolidGeometry.circle_intersects_polygon(
-						Vector2(obstacle_x, 398.0),
-						18.0,
-						obstacle,
-					):
+						if not _obstacle_blocks_neutral_lane(obstacle, 18.0):
 							failures.append(
 								"%s still leaves a neutral middle line" % pattern_id)
 							return 0
@@ -2191,6 +2271,28 @@ static func _test_authored_weaves_and_small_silk_burrs_are_fair(
 				[found.keys()])
 		return 0
 	return 1
+
+
+static func _obstacle_blocks_neutral_lane(
+	obstacle: PackedVector2Array,
+	radius: float,
+) -> bool:
+	# A concave hook is intentionally open at its own bounds centre. A player
+	# coasting horizontally must cross the whole x-span, so sample that path
+	# instead of requiring the polygon to fill its visual pocket at one x.
+	var bounds := SolidGeometry.bounds(obstacle)
+	for sample_index in range(25):
+		var centre := Vector2(
+			lerpf(
+				bounds.position.x,
+				bounds.end.x,
+				float(sample_index) / 24.0,
+			),
+			398.0,
+		)
+		if SolidGeometry.circle_intersects_polygon(centre, radius, obstacle):
+			return true
+	return false
 
 
 static func _test_obstacle_scales_change_authoritative_polygons(
