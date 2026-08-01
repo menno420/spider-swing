@@ -21,6 +21,15 @@
 > meter. That was a measurement of the bot's own stopping rule reported as a
 > fact about the game.
 >
+> **Correction, same day.** That last paragraph is right about the method and
+> wrong to imply the conclusion was false. The owner's recordings carry a
+> readable reel meter: across a whole 48-second run at L20 it never falls below
+> **73%**, median 100%. And bot v3, whose reel thresholds are absolute seconds
+> rather than ratios and which therefore *could* show a binding reservoir,
+> still reports both reel tracks bit-identical to level 0. So the premise
+> holds — it simply was not established by the evidence originally offered for
+> it. See `2026-08-01-bot-model-v3.md`.
+>
 > The negative findings (Silk Winder −10.4%, Anchor Drive −6.2%, the bundle
 > −25%) are bot-preference artifacts of the same kind and are contradicted by
 > device play. The shop suspension this document motivated has been reverted.
