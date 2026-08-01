@@ -12,7 +12,65 @@
 
 ## Open
 
-_None. Every recorded fork has an answer below._
+Four forks opened by the 2026-08-01 overnight systems run. Each is measured,
+each has a stated default, and none blocks further work.
+
+### OQ-8 · What should the two inert upgrade tracks become?
+
+**Measured:** Silk Reserve (Reel capacity) and Rapid Recovery (Reel
+regeneration and empty-lockout) change the resolved config and produce
+**bit-identical** play at every skill tier, because the Reel meter never
+empties in any band, mode or reel style. They were 29% of the total upgrade
+spend — 282 of 987 flies — for zero measured effect.
+See `docs/measurements/2026-08-01-upgrade-audit.md`.
+
+**Default the work proceeds under:** both tracks are **withdrawn from sale**.
+Levels already bought stay bought and still apply; ids stay valid; the shop
+says why. This is a holding position, not an answer.
+
+**The fork:** repoint them at an effect that binds, retire them, or make the
+Reel meter bind (which means moving owner-approved physics — capacity or drain
+— and is why no session has done it). Different answers mean materially
+different work.
+
+### OQ-9 · Should Harsh pay a fly premium?
+
+**Measured:** Harsh pays the same flies per minute as Standard (~46/min at
+intermediate) while killing the player roughly twice as fast. Income is
+~13 flies/km and near-invariant across every skill tier and both banking
+modes, so difficulty is currently **economically invisible**.
+
+**Default:** no premium. Harsh is chosen for preference, never for reward.
+
+**The fork:** whether a harder course should pay for the shorter runs it
+causes, and by how much. A multiplier is the obvious shape; the size is a feel
+decision, not a measurable one.
+
+### OQ-10 · Is a ~21-minute upgrade economy the intended length?
+
+**Measured:** maxing Classic's seven tracks costs 987 flies — 45 runs, about
+**21.5 minutes** of intermediate play. That is the game's only long-term sink.
+
+**Default:** prices are left exactly as they are.
+
+**The fork:** if that is too short, the fix is **more sinks**, not higher
+prices — raising costs makes the same twenty minutes feel slower without adding
+anything to reach for. Adding sinks is a design decision about what else is
+worth wanting.
+
+### OQ-11 · Do Silk Winder and Anchor Drive feel good on a device?
+
+**Measured:** both are negative at every skill tier and positive at none — Silk
+Winder −4.3 / −10.4 / −3.2%, Anchor Drive −0.7 / −6.2 / −11.8% by tier. But
+magnitudes swing with tier, these are bot-preference results, and the lab has
+already disagreed with a device finding on exactly the Reel-rate axis.
+
+**Default:** **nothing was retuned.** Both tracks ship unchanged.
+
+**The fork:** this one only you can settle, because it is a feel question. If
+they feel good in the hand, the bot is wrong and the tracks stay as they are.
+If they feel as bad as they measure, the numbers are worth revisiting — but on
+device evidence, not lab evidence alone.
 
 ## Answered
 
