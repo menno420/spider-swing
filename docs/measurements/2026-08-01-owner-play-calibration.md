@@ -7,6 +7,13 @@
 > before its output is published.** The overnight lab runs failed every target
 > below and their conclusions were published anyway; that is the mistake this
 > document exists to prevent.
+>
+> **Claim provenance** (PL-013): every number below is marked `measured` — with
+> its method **and the instrument's resolution** — or `inferred` (naming what
+> from) or `assumed`. This document is why the rule exists: the retracted
+> "4.71 taps/s" named its method and omitted its sampling rate, and the missing
+> resolution is the entire defect. Where the instrument is the owner's own
+> recall rather than a log, that is stated, because recall is a resolution too.
 
 ## The recordings
 
@@ -24,6 +31,11 @@ direct, not an analogy.
 | `17dd734b` | 44.2 s | 5 100.9 m | 6 887.4 m | 1 787 m | 1 | 44.7 m/s |
 | `6b272cfb` | 33.5 s | 5 198.9 m | 5 077.3 m | **−122 m** | 1 | — |
 | **total** | **245.3 s** | — | — | **12 849 m** | **6** | **52.4 m/s** |
+
+**Measured** — HUD distance text read from frames decoded at 1–10 fps. That
+sampling rate is the resolution limit here: distances are exact (the HUD prints
+them), but *when* a transition happened is only located to ±0.1–1 s, so the
+per-run mean speeds carry that error and the durations are the weaker column.
 
 Every run was still alive when its recording ended, so these are lower bounds.
 "Deaths" counts the rescue life being spent, which the HUD states directly
@@ -99,6 +111,13 @@ fading marker only ever shrinks. Run `726dcc65`, 48.65 s:
 | Fastest 2 s window | — | **14 taps/s** |
 | Fastest 3 s window | — | **11.7 taps/s** |
 
+**Measured — native 60 fps decode, re-tap detected by marker area re-peaking**
+(a fading marker only ever shrinks). Resolution 16.7 ms, which is the floor on
+every gap figure: the "0 ms" gaps below mean *same frame*, not literally
+simultaneous, and a genuine 10 ms gap would read as 0. The 30 fps column is
+kept deliberately — it is the wrong number, and it is here so the size of a
+resolution error stays visible rather than being quietly deleted.
+
 Some gaps are **0 ms** — two markers in the same frame, i.e. both thumbs at
 once.
 
@@ -137,6 +156,15 @@ read frame by frame rather than argued about. Run `726dcc65`, 1 459 frames at
 | **Minimum across the whole run** | **73%** |
 | Episodes below 90% | 17, longest 1.13 s |
 
+**Measured — cyan ring arc, 360 angles at three radii per frame, sampled at
+30 fps.** The resolution caveat is real and cuts one way: at 30 fps against a
+60 fps source, *half the frames are unread*, so a brief dip between samples is
+invisible. **73% is therefore an upper bound on the true minimum, not the
+minimum.** The conclusion below survives it — a deeper unseen dip only
+strengthens "never came close to empty" if it did not, and no episode below 90%
+lasted under 0.2 s, so a fully-missed excursion is unlikely — but the number
+itself should not be quoted as exact.
+
 **A skilled player at L20 never brings the meter below three-quarters.** The
 deepest dip spends roughly 20 energy — 27% of the L20 reservoir.
 
@@ -165,6 +193,10 @@ completed runs, not lower bounds.
 | `c089936c` | 0 → 1 358.5 m | **1 358.5 m** | 2 | ~73 m/s |
 | `4bb8e6b2` | 748.7 → 3 416.5 m | **3 416.5 m** | 2 | ~74 m/s |
 | `aa8c06e9` | 1 406.4 → 4 746.9 m | **4 746.9 m** | 2 | ~78 m/s |
+
+**End-of-run distances: measured** — final HUD text, exact. **Sustained speeds:
+inferred** from HUD distance deltas across the visible span, so they exclude the
+trimmed portions and are approximate; the `~` is doing real work in that column.
 
 Median of the four completed runs: **~2.4 km**. The owner's earlier "~2 km
 unupgraded" statement was made before the #86 clearance fix and reads as
@@ -199,8 +231,11 @@ Same ring-reading as the L20 measurement, pull-state frames excluded:
 | `4bb8e6b2` | 82% | **0%** | 3 | 2.48 s |
 | `aa8c06e9` | 68% | **0%** | 2 | 3.24 s |
 
-One frame of `aa8c06e9` catches the feedback line **"Reel energy empty"** on
-screen. So the corrected, two-ended truth is:
+**Measured** — same ring-reading instrument as the L20 table, pull-state frames
+excluded. The `0%` minima are the robust part of this table: unlike a *brief
+dip*, an empty episode lasting seconds cannot hide between samples, and one
+frame of `aa8c06e9` independently catches the feedback line **"Reel energy
+empty"** on screen — a second instrument agreeing with the first. So the corrected, two-ended truth is:
 
 - **At L20 the meter never fell below 73%** across a full run. It does not
   bind there.
@@ -261,15 +296,22 @@ upgrades or the economy until it meets these. They are deliberately loose —
 matching the owner exactly is not the goal; not being wrong by an order of
 magnitude is.
 
-| Configuration | Target | Source |
+| Configuration | Target | Provenance |
 | --- | --- | --- |
-| Warp 5 000 m, upgrades L20 | median ≥1 500 m per life, ≤0.8 deaths/km | recordings above |
-| Warp 5 000 m, upgrades L20 | sustained 45–80 m/s | recordings above |
-| Warp 5 000 m, upgrades L20 | run-to-run spread of **kilometres**, not metres | recordings above |
-| Standing start, no upgrades | inside 0.8–4.7 km, median ~2.4 km | measured, four completed runs |
-| Standing start, max upgrades | >5 000 m | owner statement |
-| Any configuration | upgrades must **improve** the result | owner statement |
-| Any configuration | run-average input ≤18 taps/s | 60 fps tap stream |
+| Warp 5 000 m, upgrades L20 | median ≥1 500 m per life, ≤0.8 deaths/km | **measured** — HUD read, 1–10 fps decode, 6 runs |
+| Warp 5 000 m, upgrades L20 | sustained 45–80 m/s | **inferred** from those HUD distance deltas |
+| Warp 5 000 m, upgrades L20 | run-to-run spread of **kilometres**, not metres | **measured** — same 6 runs |
+| Standing start, no upgrades | inside 0.8–4.7 km, median ~2.4 km | **measured** — final HUD text, 4 completed runs |
+| Standing start, max upgrades | >5 000 m | **measured by the owner** — recall, not a log; no recording of this configuration exists |
+| Any configuration | upgrades must **improve** the result | **assumed** — a design intent, not an observation |
+| Any configuration | run-average input ≤18 taps/s | **measured** — 60 fps tap stream, 16.7 ms resolution |
+
+Two rows are deliberately not measurements, and the table is more useful for
+saying so. "Upgrades must improve the result" is an **assumption** — a design
+intent this project would act on even if a measurement disagreed, which is
+exactly what makes it not evidence. And ">5 000 m at max upgrades" rests on the
+owner's recall with no recording behind it; it is the one target here that a
+single afternoon of capture could upgrade from testimony to measurement.
 
 That last row is the cheapest and most important: the current bot reports
 upgrades as a 25% *loss*, so it fails on sign alone before any magnitude is
@@ -298,11 +340,23 @@ above, so the publication rule below is unchanged.
 
 ## Method
 
-Frames decoded with ffmpeg at 1–10 fps and read directly; distance, fly count,
-rescue state and the action-button label are all legible in the HUD. The
-action button is separable by colour alone at 10 fps. Tap markers are separable
-by saturation at 30 fps, giving exact position and timing for every input — so
-aim distribution, tap cadence and verb mix can all be fitted from recordings
+Frames decoded with ffmpeg and read directly; distance, fly count, rescue state
+and the action-button label are all legible in the HUD. Each instrument has its
+own rate, and **the rate is the part worth carrying forward** (PL-013):
+
+| Quantity | Instrument | Rate | What the rate limits |
+| --- | --- | ---: | --- |
+| Distance, flies, rescue state | HUD text | 1–10 fps | *when*, never *what* — the values are printed |
+| Action-button verb | colour separation | 10 fps | verb changes shorter than 0.1 s |
+| Tap position + timing | saturation-separated marker, area re-peak | **60 fps** | gaps below 16.7 ms read as 0 |
+| Reel meter | cyan ring arc, 360 angles × 3 radii | 30 fps | dips shorter than ~33 ms are invisible |
+
+**The tap row is the correction.** It was 30 fps and de-duplicated by position,
+which merged fast repeats at one spot and undercounted by 40%. Nothing about
+the method was wrong — the rate was, and the rate was not written down. That is
+why this table exists in this shape.
+
+So aim distribution, tap cadence and verb mix can all be fitted from recordings
 without OCR and without inference.
 
 Recordings are the owner's and are not committed to the repository.

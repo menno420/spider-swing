@@ -43,6 +43,18 @@
 Dated, reproducible instrumentation output. Diagnostic, never a gate; re-measure
 and diff rather than trusting a number forever.
 
+**Every number in here carries its provenance** — `measured` (with the method
+*and the instrument's resolution*), `inferred` (naming what from), or `assumed`.
+A number with no stated instrument has no source to lose to, so nothing can ever
+show it wrong, and it compounds silently into whatever gets decided on top of
+it. That is not hypothetical: `4.71 taps/s` was sampled at 30 fps from a
+natively 60 fps recording, a design constraint was built on it, and the
+constraint was then cited as the reason the design was trustworthy. The method
+was stated; the sampling rate was not; the number was 40% low. Substrate-kit
+carries the rule as **PL-013** and an advisory checker
+(`check_claim_provenance`) that arrives with the next kit release — the
+convention does not wait for it.
+
 | Document | What it is |
 | --- | --- |
 | [`measurements/2026-08-01-owner-play-calibration.md`](measurements/2026-08-01-owner-play-calibration.md) | **Ground truth for how the game is actually played**, from owner device recordings — and the acceptance test any simulation model must pass before its output is published. |

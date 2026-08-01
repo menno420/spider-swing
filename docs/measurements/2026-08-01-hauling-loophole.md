@@ -34,6 +34,23 @@ the web never *goes* anywhere.
 Plainly: it is not swinging, it is **hauling** — attach nearly overhead, get
 dragged a short way, release, repeat, better than once a second.
 
+**Provenance (PL-013): measured** — `tools/simulate.gd` accumulates each
+quantity inside the run at 60 Hz, so the resolution is one tick and there is no
+observer between the state and the number. Two limits on reading them:
+
+- These are **exact measurements of the bot's play**, not of anyone's. The
+  endorsed row is the only one anchored to a human judgement, and only because
+  the owner watched those two traces and said they matched his playstyle. The
+  58.9° is measured; *"this is what human play looks like"* is **inferred**
+  from a sample of two endorsed runs.
+- **The default-control row has no attaches/s figure** because that batch
+  predates the counter. It is not zero and not unknown-because-unmeasurable —
+  it was simply never run with the instrument attached.
+
+The one claim here that is neither is the owner's *"the game really isn't meant
+to be played like this"*: that is design intent, **assumed** by everything
+downstream, and correctly so — it is his call to make, not a measurement's.
+
 ## Why the bird will not catch it
 
 The proposal is sound as a genre mechanic and the owner's read that it "felt

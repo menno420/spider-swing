@@ -116,3 +116,29 @@ is the one piece of the model that the recordings can supply directly.
 tick a run's terminal death is requested, and reports them as shares of runs.
 24 runs per policy, held-out seeds (bot 4242, courses 9000–9007), never seen
 by any search.
+
+### Claim provenance (PL-013)
+
+**Measured — instrumented simulation, exact at 1-tick resolution.** These are
+not read off a screen; the counters are sampled inside the run at the death
+tick, so there is no sampling error and no observer between the state and the
+number. That is the strongest instrument in this directory.
+
+**Its resolution limit is not numerical — it is scope.** Every figure here is
+an exact measurement *of the bot model*, and the bot model is known to miss the
+game by an order of magnitude on distance. So:
+
+- **`measured`:** the model dies holding an escape 88–100% of the time;
+  `save_bursts` fires 0.00 times per run. Those are facts about the code.
+- **`inferred`:** that recovery is therefore the model's largest remaining gap.
+  Sound, because it follows from the model's own death statistics.
+- **`assumed`:** that a human's escape use is the *same* capability the model
+  lacks. This rests on the owner's account, not on measurement — and the
+  document's own "What it does not license" section is the reason it stays an
+  assumption: fitting the recovery loop needs the recorded tap stream, which
+  has not been done.
+
+With 24 runs per policy, a share of 88% carries roughly ±13 points at 95%
+confidence. **The 88% and 100% rows are not distinguishable from each other**;
+only the shared conclusion — that it is nearly always, not sometimes — is
+supported.

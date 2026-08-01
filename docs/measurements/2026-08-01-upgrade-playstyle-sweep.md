@@ -210,6 +210,30 @@ Recovery has to come from device play until the model reels like a person.
 - Cross-application (each policy at the other configuration) is what separates
   a game fact from a search artifact, and is now the standard final step.
 
+### Claim provenance (PL-013)
+
+**Measured — instrumented simulation, 1-tick resolution, held-out seeds.** The
+counters are exact. The resolution that matters in this document is not
+numerical, it is **statistical**, and it already caused one published error:
+
+- **`measured`:** what each policy does at each configuration. Exact.
+- **`inferred`:** that a difference between configurations is an *upgrade
+  effect*. This is the load-bearing inference and it is only sound because of
+  the cross-application step. Without it, a search that under-converged at one
+  configuration reads as an upgrade doing something — which is exactly what
+  happened: the L20 search under-converged by 12%, and the L0 policy beat
+  L20's own answer at L20. **Comparing best-per-configuration searches lets
+  search luck wear the costume of an upgrade effect.**
+- **`assumed`:** that an effect on this bot transfers to a human. It very
+  often does not — the reel tracks are invisible to the model entirely, which
+  is measured, not speculated.
+
+A ratio reported without its denominator is the same failure in miniature and
+it also happened here: `dives_per_attach` fell 0.96 → 0.28 and was published as
+"it abandoned Dive", when the absolute dive count had *tripled* and the
+denominator had doubled. **State both terms of a ratio, or state the absolute
+count.**
+
 Reproduce:
 
 ```bash

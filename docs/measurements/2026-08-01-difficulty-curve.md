@@ -280,3 +280,22 @@ godot --headless --path . --script res://tools/simulate.gd -- \
 ```
 
 Both are deterministic: the same flags reproduce these numbers exactly.
+
+### Claim provenance (PL-013)
+
+**Measured — instrumented simulation, 1-tick resolution, `±` is the Poisson
+standard error.** Determinism is worth naming as a property of the instrument:
+re-running does not re-sample, so a repeat run is not independent evidence and
+must never be quoted as confirmation.
+
+The limit is the model, and it is severe here. This document uses **bot model
+v2**, whose measured gap against owner play is roughly an order of magnitude on
+deaths per kilometre (0.47 measured on device, 10.23 for the bot at the same
+warp). So:
+
+- **`measured`:** the *shape* of the curve — how the bot's death rate moves
+  across distance bands and skill tiers, holding everything else constant.
+- **`inferred`:** that the shape resembles a human's. Comparisons holding one
+  policy constant are the trustworthy kind, because the confounds cancel.
+- **Neither, and not to be quoted:** the **absolute** difficulty numbers. They
+  describe a player that dies 27× more often per kilometre than the owner.
