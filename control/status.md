@@ -1,7 +1,7 @@
 # Spider Swing · status
-updated: 2026-08-01T09:45:03Z
-phase: Bramble Canopy clearance correction — PR #86 closing
-health: exact engine and Android green · deliberate session hold remains
+updated: 2026-08-01T09:48:50Z
+phase: Bramble Canopy clearance correction — PR #86 final checks
+health: exact engine and Android green · final-head checks pending
 kit: v1.20.2 · check: green · engaged: yes
 last-shipped: PR #85 rebuilds the player model from owner recordings
 blockers: no code blocker; corrected Bramble passability needs owner-device evidence

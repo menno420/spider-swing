@@ -1,6 +1,6 @@
 # Bramble Canopy clearance correction
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 
@@ -125,11 +125,19 @@ evidence.
   `83ff0bc27903351779ffd1439f115e8c7e4c228fddd683e2a801c9700b30a741`,
   exactly the pinned stable public debug signer.
 
-## Remaining verification
+## Moving-main reconciliation
 
-Publish this evidence separately, make the deliberate final lifecycle flip,
-remove only this work's claim, and rerun the exact engine and strict repository
-gates on that final tree. Merge only after fresh final-head checks are green.
+Before the lifecycle flip, `main` advanced to `633e7db1` with another agent's
+non-overlapping Zones 3–4 art claim. True merge commit `583fecc2` preserves that
+claim and this evidence history as two parents. The combined tree passed exact
+Godot 4.7.1 and all 170 contracts before this card closed.
+
+## Final verification gate
+
+This `complete` badge and deletion of only
+`control/claims/claude-bramble-clearance.md` are the deliberate final lifecycle
+change. The exact engine suite and strict repository gate must pass again on
+this final tree, which may merge only after fresh final-head checks are green.
 
 ## Capability delta
 
