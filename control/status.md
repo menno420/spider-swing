@@ -10,8 +10,8 @@ orders: acked= done=
 
 ⚑ OWNER-ACTION
 WHAT: Install build `0.22.0-audio-playtest`, judge the generated core SFX on the phone speaker, and continue the frozen Silk Hollow/Zones 4–8 success-sentence pass.
-WHERE: https://github.com/menno420/spider-swing/actions/runs/30691794032
-HOW: When the run finishes, download `spider-swing-android-debug`; install over any stable-key `0.19.0` or later build without uninstalling; confirm the build label; compare Effects on/off and Haptics on/off independently; listen for attach/release variants, the continuous Reel loop, Burst versus Dive, fly/invalid/rescue/death feedback, then start at 15000/20000/30000/35000 m for glass, storm, rot, and mist warning cues.
+WHERE: https://github.com/menno420/spider-swing/pull/83/checks
+HOW: From PR #83's successful Android check, download `spider-swing-android-debug`; install over any stable-key `0.19.0` or later build without uninstalling; confirm the build label; compare Effects on/off and Haptics on/off independently; listen for attach/release variants, the continuous Reel loop, Burst versus Dive, fly/invalid/rescue/death feedback, then start at 15000/20000/30000/35000 m for glass, storm, rot, and mist warning cues.
 RISK: ↩️ reversible — install any later stable-key debug APK over this one; do not uninstall, so saved data remains.
 WHY-IT-MATTERS: Contracts prove exact source, safe levels, event mapping, and deterministic warning lead, but only a phone-speaker run can prove readability, fatigue, and emotional fit at 76 m/s.
 UNBLOCKS: Retain/revise decisions for the SFX set and owner acceptance of the later-zone warning budget.
