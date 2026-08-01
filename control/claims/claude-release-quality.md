@@ -1,0 +1,1 @@
+- `claude/release-quality` · **release quality simulation** · game/simulation, game/domain/swing_config.gd, tests/unit · 2026-08-01
