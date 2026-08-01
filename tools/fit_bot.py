@@ -255,6 +255,13 @@ def anomalies(best: dict, baseline: dict) -> list[str]:
     # Near-misses are reported too. The first search's burst ratio was 2.45
     # against the 2.5 threshold, and "no anomaly flags" was quietly two
     # percent away from being false — a silence that fragile must be visible.
+    # CALIBRATED, not guessed. On 2026-08-01 the owner watched the two
+    # bundled warp-L20 traces in game and judged them fair: "genuinely good
+    # and match my own playstyle, a little excessive on the burst and dives,
+    # but that's not bad." Those runs measure 2.45x Burst and 1.16x web use
+    # with 0.96 dives per web. So 2.45x Burst reads to a human as "slightly
+    # excessive, still fair" -- the 2.5 threshold sits just above endorsed
+    # play, which is where a near-miss warning belongs.
     for key, label, threshold in (
             ("mean_bursts", "Burst", 2.5), ("mean_attaches", "web", 2.5)):
         value = ratio(key)
@@ -288,6 +295,14 @@ def main() -> int:
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--seed", type=int, default=7)
     parser.add_argument("--evaluate-only", action="store_true")
+    parser.add_argument("--start-from", default="",
+                        help=("seed the search from another config's best "
+                              "knobs, e.g. tools/search/standing-l0.json. A "
+                              "cold search can converge worse than a policy "
+                              "already known to work in a neighbouring "
+                              "configuration -- measured: the standing-l20 "
+                              "search returned a policy 12%% worse at L20 "
+                              "than the standing-l0 optimum was."))
     parser.add_argument("--out", default="")
     args = parser.parse_args()
 
@@ -310,6 +325,12 @@ def main() -> int:
 
     names = list(KNOBS)
     mean = {n: KNOBS[n][2] for n in names}
+    if args.start_from:
+        prior = json.loads((REPO / args.start_from).read_text())
+        for n, v in prior.get("best_knobs", {}).items():
+            if n in mean:
+                mean[n] = clamp(n, float(v))
+        print(f"[fit] warm start from {args.start_from}")
     # Start wide. The hand-written defaults are a guess and a narrow prior
     # around them would only rediscover them.
     sigma = {n: (KNOBS[n][1] - KNOBS[n][0]) * 0.30 for n in names}

@@ -4,7 +4,7 @@
 
 ## Goal
 
-Reconcile the live repository after PRs #86–#90, distinguish what source and
+Reconcile the live repository after PRs #86–#92, distinguish what source and
 automation prove from what Menno has accepted on a real device, and leave one
 focused recording-led handoff for a fresh session.
 
@@ -19,7 +19,9 @@ progression, the frozen GDD, or any build/export setting.
 
 **previous-session review:** PR #90 merged a broad four-zone environment pass
 with exact engine, asset, and Android evidence, then PR #89 advanced `main`
-with a replay review loop. The implementation sessions eventually landed, but
+with a replay review loop. PR #92 landed during this audit with the first owner
+verdict on those traces, a fairer upgrade comparison, and one flagged replay
+still awaiting judgement. The implementation sessions eventually landed, but
 their closeout state lagged and the scope became too large for timely owner
 feedback. This audit will preserve their technical evidence without treating
 unseen device results as visual or gameplay approval.
@@ -36,9 +38,11 @@ unseen device results as visual or gameplay approval.
 
 ## Findings
 
-- Gameplay `main` was `dfd797d067e0dea667148195a8326eb666ac343e`.
-  PR #90 merged the four-zone environment finish first; PR #89 then merged the
-  replay review loop without changing build `0.24.0`.
+- The audit began from gameplay `main`
+  `dfd797d067e0dea667148195a8326eb666ac343e`. PR #92 advanced the final
+  reconciliation point to `2787314b4d46ccbcc03c0e50e38a8c96629d8056`
+  with measurement/replay tooling and documentation, without changing build
+  `0.24.0`, physics, zones, or balance.
 - The live executable runner expects **181 contracts**, not the 175 in several
   living docs or the 176 in PR #89's body/first handoff. Exact Godot 4.7.1
   executes 181. The delta is five replay contracts plus one front-end watch-route
@@ -46,21 +50,23 @@ unseen device results as visual or gameplay approval.
 - `control/status.md` still claimed PR #86 was awaiting final checks and named
   PR #85 as the last shipment, despite #86–#90 all having merged.
 - Source and tests prove the new zone planes/materials, audio wiring, migrations,
-  and replay determinism. They do not prove phone-scale composition, readability,
-  touch comfort, sound quality, passability feel, or performance.
+  replay determinism, and the held-policy upgrade measurements. They do not
+  prove phone-scale composition, readability, touch comfort, sound quality,
+  passability feel, performance, or the flagged web-spam trace's fairness.
 - Phase 0 issue #2 remains open correctly. OQ-9 and OQ-10 remain parked,
   non-blocking product forks. Before this audit there were no open implementation
   PRs or live claims; merged branch refs may remain but are not active work.
 
 ## Shipped
 
-- Commit `5fef5b52d295636def4c3f1212385642820af9f4` publishes the reviewed
-  documentation tree:
+- PR #91 publishes the reviewed documentation tree, reconciled once more after
+  PR #92 advanced `main` during closeout:
   - `docs/planning/fresh-session-handoff-2026-08-01.md` is the focused
     continuation ledger and paste-ready next-session prompt;
   - `docs/current-state.md`, `README.md`,
     `docs/product/zone-progression.md`, and `docs/technical/testing.md`
-    carry the true 181-contract state;
+    carry or point to the executable contract state without preserving stale
+    175/176 claims;
   - `control/status.md` routes one focused owner recording instead of a stale
     PR #86 verdict;
   - `.session-journal.md` preserves the one-zone-per-PR/APK process correction;
@@ -71,25 +77,27 @@ unseen device results as visual or gameplay approval.
 
 ## Verification
 
-- `GODOT_BIN=/tmp/spider-swing-godot-emUIVd/Godot_v4.7.1-stable_linux.x86_64
+- After merging PR #92 into the handoff branch,
+  `GODOT_BIN=/tmp/spider-swing-godot-emUIVd/Godot_v4.7.1-stable_linux.x86_64
   python3 tools/verify.py --require-godot`:
   `[test_runner] PASS — 181 check(s) passed`;
   `[verify] all checks passed`.
-- `python3 bootstrap.py check --strict`: exit 1 only on
-  `HOLD (by design): session card
-  .sessions/2026-08-01-fresh-session-handoff-audit.md declares an in-progress
-  Status`. Link, badge, owner-action, and documentation checks otherwise pass.
-- Local tree `b56c34889cdb4507e343f5f457a9499f40b7e2fd` exactly equals the
-  published PR tree.
+- `python3 bootstrap.py check --strict`: passes on the reconciled completed
+  session. It retains only the documented nonblocking capability-ledger age
+  advisories below.
 - PR #91 `game-quality` run 30703528601 passes. `substrate-gate` run
   30703528592 logs the same designed born-red hold; auto-merge-enabler is green
-  but cannot land the PR until the card closes.
-- Android artifact 8818796707 was downloaded again. Its ZIP SHA-256 is
-  `7a3adb132b2c7f1812e101d5e3496e2fd1a7140e3e449cecd29cc1dcaac1f220`;
+  but cannot land that initial head until the card closes. Those runs are
+  historical pre-PR92 evidence; the reconciled final head must report fresh
+  green checks before merge.
+- Android artifact 8819609662 from PR #92 was downloaded and inspected. Its ZIP
+  SHA-256 is
+  `2a8b377408e6771157fdf268587c6d23e5328631a9965249c985783505550d84`;
   its APK SHA-256 is
-  `5448655856fbe32a9f4a8567afee7354786c5f4dbcec62d0faa12daefd1d9669`.
-  PR head and merged gameplay trees both equal `02b2e210…`, and `keytool`
-  reports the pinned `83ff0bc2…` certificate.
+  `4efb36dc346c789de974667a3c77fc3310f69f15362e492260de7841ff40ce42`.
+  PR #92 head and merged `main` differ only by this session's temporary claim;
+  their gameplay/content is identical, and `keytool` reports the pinned
+  `83ff0bc2…` certificate.
 
 ## Repository-health remainder
 
@@ -121,7 +129,7 @@ design freeze. Menno's most noticeable recorded defect outranks its row number.
 
 ## Final lifecycle
 
-This `complete` badge and deletion of only
+This `complete` badge, reconciliation with PR #92, and deletion of only
 `control/claims/claude-fresh-session-handoff-audit.md` are the deliberate
 final content changes. Exact Godot 4.7.1 and the strict repository gate are
 green locally; PR #91 may merge only after its fresh final-head checks are green.

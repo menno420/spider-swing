@@ -9,22 +9,26 @@
 
 ## Authoritative starting point
 
-- **Gameplay tree:** `dfd797d067e0dea667148195a8326eb666ac343e`, merged
-  through PR #89 after PR #90. The handoff-only PR that adds this document does
-  not change gameplay or the Android build.
+- **Live source:** `2787314b4d46ccbcc03c0e50e38a8c96629d8056`, merged
+  through PR #92 after PRs #90 and #89. PR #92 adds measurement/replay tooling,
+  one review trace, and documentation; it does not tune physics, zones, or
+  balance. The handoff-only PR #91 changes no gameplay or Android setting.
 - **Build:** `0.24.0-environment-finish-playtest`, Android version code 43,
   development package `com.menno420.spiderswing.dev`.
 - **Verification:** exact Godot `4.7.1.stable.official.a13da4feb` import, boot,
   architecture scan, deterministic audio regeneration, and **181/181** contracts
   pass. `python3 bootstrap.py check --strict` passes.
-- **Repository state before this handoff:** no open implementation PRs; Phase 0
-  issue #2 remains open deliberately for owner-judged feel and device gates.
+- **Repository state at final reconciliation:** no open implementation PRs;
+  Phase 0 issue #2 remains open deliberately for owner-judged feel and device
+  gates. PR #91 is this documentation-only handoff.
 - **Coordination:** open PRs plus `control/claims/` determine active work.
   Historical merged branch refs may remain visible and are not work in flight.
-- **Android artifact:** [download the verified gameplay build](https://github.com/menno420/spider-swing/actions/runs/30700926892/artifacts/8818796707)
+- **Android artifact:** [download the verified current playtest build](https://github.com/menno420/spider-swing/actions/runs/30703610645/artifacts/8819609662)
   (GitHub retains the download until 2026-08-15; an already-downloaded APK does
-  not expire). Its PR-head tree is byte-identical to the merged gameplay tree.
-  The ZIP digest is `7a3adb13…`, the APK digest is `54486558…`, and the
+  not expire). Its PR #92 head contains the same gameplay/content as merged
+  `main` and includes the flagged review trace; the only tree difference is the
+  temporary PR #91 coordination claim, which this handoff removes. The ZIP digest is `2a8b3774…`,
+  the APK digest is `4efb36dc…`, and the
   certificate fingerprint remains the pinned `83ff0bc2…`. Install over any
   stable-key `0.19.0` or later build without uninstalling.
 
@@ -35,7 +39,9 @@ intermediate count. The final merged runner sets `EXPECTED_CHECK_COUNT` to 181:
 the replay work added five simulation-lab contracts and one front-end contract
 to the prior 175-contract environment tree. A clean exact-engine rerun on this
 handoff confirmed all 181. Historical session evidence remains intact; this is
-the corrected current figure.
+the corrected current snapshot. PR #92 also moved evergreen prose to
+`EXPECTED_CHECK_COUNT` so future contract additions do not silently stale the
+living summaries again.
 
 ## What actually happened
 
@@ -61,8 +67,15 @@ the corrected current figure.
    surfaces, and narrow collision-honest ceiling supports across 10–30 km.
 6. **Lab runs became watchable.** PRs #88/#89 added policy search, held-out
    verification, two bundled input-only traces, headless replay, and a debug Test
-   Run route. The traces reproduce technically; a person still has to watch them
-   to decide whether they exploit something no human would do.
+   Run route.
+7. **The first replay judgement and fair upgrade comparison arrived.** Menno
+   watched both original traces and judged them genuine, close to his playstyle,
+   and only a little excessive on Burst and Dive. PR #92 then cross-applied the
+   same policies at L0 and L20: upgrades measurably reduce deaths and effort,
+   while the route-limited bot does not reliably convert that relief into more
+   distance. It also bundled a separate 10,773 m web-spam trace that abandons
+   Dive for roughly 130 attaches per run. That trace is technically reproducible
+   but deliberately has no fairness verdict yet.
 
 ## Evidence boundary
 
@@ -79,6 +92,8 @@ the corrected current figure.
 - Device play establishes that max upgrades are substantially better than level
   zero and that the overall difficulty curve is much healthier than the old bot
   measurements claimed.
+- Menno accepted the two original bundled replay traces as fair representations
+  of his style, with slightly excessive but still acceptable Burst and Dive use.
 - At high speed, Reel is predictive arc shaping and Burst is the fast late
   height correction. The recent visual work did not retune either role.
 
@@ -93,8 +108,12 @@ the corrected current figure.
   versus Haptics persistence are correct in source.
 - Save migrations, noncompetitive debug/practice settlement, upgrade overlays,
   and stable debug signing are contract-covered.
-- Both bundled lab traces reproduce through the headless driver and the real run
-  state machine.
+- The held-policy upgrade sweep proves lower deaths, longer survival, lower input
+  rate, and less Reel pressure at L20. It does not prove that every player gains
+  the same distance.
+- All three bundled lab traces reproduce through the headless driver and the real
+  run state machine. The first two are owner-accepted; the flagged web-spam trace
+  is not.
 
 None of those proofs can approve phone-scale composition, touch comfort,
 readability at 76–77 m/s, sound quality, perceived fairness, or fun.
@@ -113,7 +132,7 @@ one focused recording, and finish one correction before selecting the next row.
 | 5 | Audio and haptics | Phone-speaker clarity, Reel-loop fatigue, Burst versus Dive distinction, later-zone warning timing, and independent Effects/Haptics switches. |
 | 6 | Save continuity | After installing the *next* stable-key APK over this one, confirm settings, flies, owned upgrades, bests, Campaign clears, and checkpoints survive. Do not uninstall. |
 | 7 | Profiles, upgrades, and modes | Garden `OWNED` versus L0/MAX at distance; then one non-Garden profile at a time; then Relaxed/Standard/Harsh. No simulator-derived retuning. |
-| 8 | Replay fairness | Watch both bundled Test Run traces and flag impossible input timing, unreadable edge anchors, verb abuse, geometry exploits, or collision outcomes a human would not expect. |
+| 8 | Flagged replay fairness | Watch `lab-flagged-webspam-standing-l20.json` in Debug Test Run. Decide whether abandoning Dive for roughly 130 attaches per run is legitimate high-frequency play or an exploit. Do not reopen the two already accepted traces without new evidence. |
 | 9 | Android performance | Frame pacing, heat, memory pressure, audio stutter, and touch latency after the new parallax/art layers, especially at 20–35 km. Automated headless rendering does not cover this. |
 
 The two parked product forks in `docs/owner-questions.md`—a Harsh fly premium

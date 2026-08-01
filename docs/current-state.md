@@ -209,12 +209,15 @@ without a reported regression.
   `c3d8eb30…` digest, its intact 64,968,926-byte APK matches `e7d783bb…`, embeds
   all six Bramble textures plus source/build provenance, and independently
   reports the pinned `83ff0bc2…` certificate.
-- Final gameplay `main` `dfd797d…` has the exact same tree
-  (`02b2e210…`) as PR #89 head `9fd9f5e4…`. Android run 30700926892 produced
-  artifact 8818796707; its downloaded 76,587,431-byte ZIP matches GitHub's
-  `7a3adb13…` digest, the intact APK matches `54486558…`, `build-info.txt`
-  identifies build `0.24.0-environment-finish-playtest` and the dev package,
-  and `keytool` reports the pinned `83ff0bc2…` certificate.
+- Final source `main` `2787314…` differs from PR #92 head `005660a4…` only by
+  the temporary PR #91 coordination claim; their gameplay/content is identical.
+  Android run 30703610645 produced artifact 8819609662;
+  its downloaded 76,605,277-byte ZIP matches GitHub's `2a8b3774…` digest, the
+  intact APK matches `4efb36dc…`, `build-info.txt` identifies build
+  `0.24.0-environment-finish-playtest` and the dev package, and `keytool`
+  reports the pinned `83ff0bc2…` certificate. This is the build that includes
+  the flagged web-spam review trace; PR #92 changes no physics, zones, or
+  balance.
 
 **The economy now has a written model**
 
@@ -275,6 +278,33 @@ without a reported regression.
   is quiet: a replay fed into a slightly different world still plays, it is
   simply not the run in the report.
 - Mechanics: `docs/technical/replay-review-loop.md`.
+
+**Upgrades — what they buy, 2026-08-01**
+
+- Measured with one policy held constant across levels on held-out seeds:
+  deaths/km 0.55 → 0.51, runs surviving to the cap 1 → 3, duration +21%,
+  input −20%, reel time −45% — at **flat distance**. Upgrades buy **survival
+  and economy of effort**, not distance. Whether that converts into distance
+  depends on what was limiting the player; the bot is limited by route choice
+  and cannot convert it, a survival-limited human converts it directly.
+- The gradient −12.0% (weak policy) → −1.6% (searched) → strongly positive
+  (owner) says **the better the play, the better upgrades pay**.
+- **Never compare best-per-configuration searches directly** — cross-apply
+  each policy to the other configuration first. A 12% under-converged search
+  reads exactly like a 12% upgrade penalty.
+  See `docs/measurements/2026-08-01-upgrade-playstyle-sweep.md`.
+
+**Replay review — first verdict, 2026-08-01**
+
+- The owner watched both bundled warp-L20 lab traces in game and judged them
+  fair: *"genuinely good and match my own playstyle, a little excessive on the
+  burst and dives."* First fair-play verdict on lab output.
+- It **calibrated the anomaly detector**: those runs measure 2.45× Burst
+  against a 2.5× threshold that had been guessed, so the alarm sits just above
+  endorsed play.
+- **Awaiting judgement:** `lab-flagged-webspam-standing-l20.json`, a verified
+  10 773 m run that abandons Dive (0.28 per web vs the endorsed 0.96) for 130
+  web attaches per run. No published conclusion rests on it.
 
 **Difficulty — owner verdict, 2026-08-01**
 
@@ -441,6 +471,13 @@ with hook-vine and leaf-shutter geometry without retuning either control; the
 
 ## Recently shipped (newest first)
 
+- **2026-08-01 — Upgrade playstyle sweep and first replay verdict (PR #92).**
+  The owner accepted the two original bundled lab traces as fair, slightly
+  Burst/Dive-heavy representations of his play. Cross-applying the same policy
+  at L0 and L20 shows upgrades buy survival and lower effort rather than a
+  guaranteed bot-distance increase. One separate 10,773 m web-spam trace is
+  reproducible but intentionally awaits owner judgement. No physics, zone, or
+  balance value changed.
 - **2026-08-01 — Replay review loop and final fresh-eye guards (PR #89).** Two
   input-only lab traces now reproduce through both the headless driver and the
   real run session, and Debug Test Run can play them without awards. Timeout
@@ -453,8 +490,10 @@ with hook-vine and leaf-shutter geometry without retuning either control; the
   recorded zones now match their depth/material hierarchy with two scroll
   planes, continuous walls, explicit safe-surface/obstacle art, no normal-play
   polygon ghosts, and collision-honest ceiling joins. Thirty-three runtime
-  assets pass source/runtime/25% alpha checks; the PR #90 head passed all 175
-  then-current contracts before PR #89 raised the merged total to 181.
+  assets pass source/runtime/25% alpha checks; the full suite passes. The live
+  total is `EXPECTED_CHECK_COUNT` in `tests/test_runner.gd`; the dated
+  fresh-session handoff records the exact verified snapshot instead of letting
+  this living summary go stale on the next merge.
 - **2026-08-01 — Zones 3–4 obstacle-art correction (PR #87).** Seven original
   single-object assets replace the flat collision-fill fallbacks visible in the
   owner's Silk Hollow and Ruined Arboretum recordings. Stable visual/content

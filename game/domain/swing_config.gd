@@ -15,6 +15,13 @@ class_name SwingConfig
 ## alternatives, and do not treat a difference between them and the baseline as
 ## a tuning signal; it is mostly just the tuning balanced received and they did
 ## not. Re-forking them from the baseline is a real piece of future work.
+##
+## They are NOT presented as vetted options: Settings labels them
+## "WEIGHTY UNTUNED" and "AGILE UNTUNED" and says in copy that they were
+## "forked early and never tuned — kept for future work, not offered as tested
+## alternatives". An external review (2026-08-01) read this comment without the
+## UI and recommended hiding them behind a debug flag; the disclosure already
+## exists, which is why they stay visible.
 
 const SCHEMA_VERSION := 10
 const PRESET_BALANCED := &"balanced_baseline"
