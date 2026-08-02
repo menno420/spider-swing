@@ -1,6 +1,6 @@
 # Spider-web menu presentation
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 
@@ -57,7 +57,7 @@ density and appeal remain a device-eye gate.
 
 - Exact Godot `4.7.1.stable.official.a13da4feb`: 198/198 contracts pass after
   restoring every mutation.
-- `git diff --check` passes. Strict is rerun after the final lifecycle flip.
+- `git diff --check` and strict pass after the final lifecycle flip.
 
 ## 💡 Session idea
 
