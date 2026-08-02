@@ -18,6 +18,8 @@ static func run() -> Dictionary:
 	passed += _test_verb_alone_does_not_complete(failures)
 	passed += _test_goal_and_verb_complete(failures)
 	passed += _test_wrong_verb_does_not_complete(failures)
+	passed += _test_partial_verbs_do_not_complete_a_combination(failures)
+	passed += _test_tiers_cover_every_level_in_order(failures)
 	passed += _test_campaign_settlement_pays_no_flies_and_no_record(failures)
 	passed += _test_campaign_clear_grants_exactly_one_star(failures)
 	passed += _test_repeat_clear_grants_nothing(failures)
@@ -35,7 +37,7 @@ static func _test_levels_are_well_formed(
 		return 0
 	var seen_ids: Array[StringName] = []
 	var seen_seeds: Array[int] = []
-	var seen_verbs: Array[StringName] = []
+	var taught_alone: Array[StringName] = []
 	var known_verbs := [
 		CampaignCatalog.VERB_REEL,
 		CampaignCatalog.VERB_BURST,
@@ -47,12 +49,23 @@ static func _test_levels_are_well_formed(
 			failures.append("duplicate campaign level id %s" % level_id)
 			return 0
 		seen_ids.append(level_id)
-		var verb := StringName(level["verb"])
-		if not verb in known_verbs:
-			failures.append("level %s teaches unknown verb %s" % [
-				level_id, verb])
+		var verbs := CampaignCatalog.verbs_for_level(level_id)
+		if verbs.is_empty():
+			failures.append("level %s requires no verb at all" % level_id)
 			return 0
-		seen_verbs.append(verb)
+		var seen_here: Array[StringName] = []
+		for verb: StringName in verbs:
+			if not verb in known_verbs:
+				failures.append("level %s requires unknown verb %s" % [
+					level_id, verb])
+				return 0
+			if verb in seen_here:
+				failures.append("level %s lists verb %s twice" % [
+					level_id, verb])
+				return 0
+			seen_here.append(verb)
+		if verbs.size() == 1:
+			taught_alone.append(verbs[0])
 		var seed := int(level["course_seed"])
 		if seed in seen_seeds:
 			failures.append("level %s reuses course seed %d" % [level_id, seed])
@@ -64,10 +77,11 @@ static func _test_levels_are_well_formed(
 		if str(level["objective"]).strip_edges().is_empty():
 			failures.append("level %s states no objective" % level_id)
 			return 0
-	# The tier's whole purpose is one level per taught verb.
+	# The teaching tier's whole purpose is one level per verb, in isolation.
+	# A verb that only ever appears inside a combination has never been taught.
 	for verb: StringName in known_verbs:
-		if not verb in seen_verbs:
-			failures.append("no campaign level teaches %s" % verb)
+		if not verb in taught_alone:
+			failures.append("no campaign level teaches %s on its own" % verb)
 			return 0
 	return 1
 
@@ -93,9 +107,9 @@ static func _test_verb_alone_does_not_complete(
 ) -> int:
 	for level: Dictionary in CampaignCatalog.all_levels():
 		var level_id := StringName(level["id"])
-		var verb := StringName(level["verb"])
+		var verbs := CampaignCatalog.verbs_for_level(level_id)
 		var short_of_goal := float(level["goal_distance_pixels"]) - 1.0
-		if CampaignCatalog.is_complete(level_id, short_of_goal, [verb]):
+		if CampaignCatalog.is_complete(level_id, short_of_goal, verbs):
 			failures.append(
 				"level %s completed short of its goal" % level_id)
 			return 0
@@ -107,11 +121,11 @@ static func _test_goal_and_verb_complete(
 ) -> int:
 	for level: Dictionary in CampaignCatalog.all_levels():
 		var level_id := StringName(level["id"])
-		var verb := StringName(level["verb"])
+		var verbs := CampaignCatalog.verbs_for_level(level_id)
 		var goal := float(level["goal_distance_pixels"])
-		if not CampaignCatalog.is_complete(level_id, goal, [verb]):
+		if not CampaignCatalog.is_complete(level_id, goal, verbs):
 			failures.append(
-				"level %s did not complete on goal plus verb" % level_id)
+				"level %s did not complete on goal plus every verb" % level_id)
 			return 0
 	return 1
 
@@ -128,11 +142,16 @@ static func _test_wrong_verb_does_not_complete(
 	]
 	for level: Dictionary in CampaignCatalog.all_levels():
 		var level_id := StringName(level["id"])
-		var verb := StringName(level["verb"])
+		var verbs := CampaignCatalog.verbs_for_level(level_id)
 		var others: Array[StringName] = []
 		for candidate: StringName in all_verbs:
-			if candidate != verb:
+			if not candidate in verbs:
 				others.append(candidate)
+		# A level requiring every verb has no "wrong" set to offer it; the
+		# goal-alone contract already covers that case, and asserting here
+		# would pass vacuously.
+		if others.is_empty():
+			continue
 		if CampaignCatalog.is_complete(
 				level_id,
 				float(level["goal_distance_pixels"]),
@@ -140,6 +159,83 @@ static func _test_wrong_verb_does_not_complete(
 			failures.append(
 				"level %s completed on the wrong verbs" % level_id)
 			return 0
+	return 1
+
+
+## **The guarantee the combination tier exists for.** A level asking for two
+## verbs must not clear on one of them. Without this it is a teaching level
+## wearing a longer objective, and the tier adds nothing.
+static func _test_partial_verbs_do_not_complete_a_combination(
+	failures: PackedStringArray,
+) -> int:
+	var checked := 0
+	for level: Dictionary in CampaignCatalog.all_levels():
+		var level_id := StringName(level["id"])
+		var verbs := CampaignCatalog.verbs_for_level(level_id)
+		if verbs.size() < 2:
+			continue
+		var goal := float(level["goal_distance_pixels"])
+		# Every strict subset that drops exactly one required verb.
+		for omitted: StringName in verbs:
+			var partial: Array[StringName] = []
+			for verb: StringName in verbs:
+				if verb != omitted:
+					partial.append(verb)
+			if CampaignCatalog.is_complete(level_id, goal, partial):
+				failures.append(
+					("level %s cleared without %s, so it requires ANY of its "
+						+ "verbs rather than ALL of them")
+					% [level_id, omitted])
+				return 0
+		checked += 1
+	if checked == 0:
+		failures.append(
+			"no campaign level requires more than one verb — the combination "
+			+ "tier this contract guards is gone")
+		return 0
+	return 1
+
+
+## Tiers are presentation grouping, so they may not silently lose a level or
+## invent an ordering that the screen then renders out of sequence.
+static func _test_tiers_cover_every_level_in_order(
+	failures: PackedStringArray,
+) -> int:
+	var tiers := CampaignCatalog.tiers()
+	if tiers.size() < 2:
+		failures.append("campaign declares fewer than two tiers")
+		return 0
+	var covered: Array[StringName] = []
+	for tier: Dictionary in tiers:
+		var tier_id := StringName(tier["id"])
+		var levels := CampaignCatalog.levels_for_tier(tier_id)
+		if levels.is_empty():
+			failures.append("tier %s contains no levels" % tier_id)
+			return 0
+		if str(tier["name"]).strip_edges().is_empty():
+			failures.append("tier %s has no display name" % tier_id)
+			return 0
+		for level: Dictionary in levels:
+			covered.append(StringName(level["id"]))
+	var all_ids := CampaignCatalog.level_ids()
+	if covered.size() != all_ids.size():
+		failures.append(
+			"tiers cover %d levels but the catalog has %d — a level would "
+			% [covered.size(), all_ids.size()] + "never be reachable")
+		return 0
+	for level_id: StringName in all_ids:
+		if not level_id in covered:
+			failures.append("level %s belongs to no tier" % level_id)
+			return 0
+	var previous := -1
+	for level: Dictionary in CampaignCatalog.all_levels():
+		var order := int(level["order"])
+		if order <= previous:
+			failures.append(
+				"campaign level %s has order %d, not after %d"
+				% [StringName(level["id"]), order, previous])
+			return 0
+		previous = order
 	return 1
 
 

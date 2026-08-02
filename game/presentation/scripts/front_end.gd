@@ -1215,18 +1215,37 @@ func _build_campaign() -> void:
 	var content := VBoxContainer.new()
 	content.add_theme_constant_override("separation", 12)
 	_fill_with_margin(content, card, 22.0)
-	content.add_child(_section_label("TEACHING TIER"))
-	for level: Dictionary in CampaignCatalog.all_levels():
-		var level_id := StringName(level["id"])
-		var button := _button(
-			_campaign_button_name(level_id),
-			"",
-			ORANGE,
-			84.0,
-		)
-		button.pressed.connect(_on_campaign_level.bind(level_id))
-		content.add_child(button)
-		_campaign_buttons[level_id] = button
+	# Six levels across two tiers no longer fit the card, so the list scrolls
+	# natively like Settings and Shop rather than the card growing off-screen.
+	var scroll := ScrollContainer.new()
+	scroll.name = "CampaignLevelScroll"
+	SpiderUiTheme.configure_touch_scroll(scroll)
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content.add_child(scroll)
+	var levels := VBoxContainer.new()
+	levels.add_theme_constant_override("separation", 12)
+	levels.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(levels)
+
+	for tier: Dictionary in CampaignCatalog.tiers():
+		levels.add_child(_section_label(str(tier["name"])))
+		var blurb := _label(str(tier["blurb"]), 15, MUTED)
+		blurb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		levels.add_child(blurb)
+		for level: Dictionary in CampaignCatalog.levels_for_tier(
+				StringName(tier["id"])):
+			var level_id := StringName(level["id"])
+			var button := _button(
+				_campaign_button_name(level_id),
+				"",
+				ORANGE,
+				84.0,
+			)
+			button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			button.pressed.connect(_on_campaign_level.bind(level_id))
+			levels.add_child(button)
+			_campaign_buttons[level_id] = button
 
 
 func _campaign_button_name(level_id: StringName) -> StringName:

@@ -15,7 +15,7 @@ live in [`player-preference research`](product/player-preference-research-2026-0
 External benchmarks and the verified zone audit live in
 [`upgrade-and-difficulty research`](product/upgrade-and-difficulty-research-2026-08-02.md).
 
-Build `0.37.0-loadout-home-playtest` is current. Continuous drive is
+Build `0.38.0-campaign-combination-playtest` is current. Continuous drive is
 zero; release, swing control, Reel, and pull timing earn speed; the former left
 kill line is a visible pursuing bird. `target_speed_at` remains a named
 reference. The bot still cannot tune the bird — model v4 pumps, but it sustains
@@ -60,7 +60,7 @@ without a reported regression.
 - A separately versioned `DebugTestProfile` auto-saves the Test Lab working set
   and A/B/C comparison slots. Its resolved display values and sparse explicit
   overrides never enter `PlayerSettings` or `PlayerProgress`.
-- Build `0.37.0-loadout-home-playtest` (Android version code 57, package
+- Build `0.38.0-campaign-combination-playtest` (Android version code 58, package
   `com.menno420.spiderswing.dev`) retains the stable conventional public debug
   identity introduced by `0.19.0-depth-testing` in
   `.github/android/debug.keystore`. The workflow pins its file and certificate
@@ -314,8 +314,13 @@ without a reported regression.
   course seeds on existing Ancient Forest geometry, add no obstacle kinds and
   no art, and settle non-competitively: one star each, never a fly, no record,
   no leaderboard. Campaign stars entered in schema 6 and remain compatible in
-  schema 7; a schema-5 save loads with an empty star ledger. Later Campaign
-  tiers that combine verbs into challenges remain unimplemented.
+  schema 7; a schema-5 save loads with an empty star ledger.
+  **A combination tier now exists**: three further levels requiring two or three
+  verbs in one run — Reel+Burst, Dive+Burst, and all three at 800 m. A level
+  requires **every** verb it names, never any of them, and the campaign screen
+  groups the two tiers behind one native scroller. Adding levels is additive:
+  the star ledger is keyed by level id and filtered through `has_level`, so an
+  older save simply has no stars for them and **no schema bump is needed**.
 - **Difficulty modes now exist** — this boundary also moved on purpose.
   Relaxed, Standard and Harsh are chosen on Home and change only what the
   stream serves and how much recovery there is: obstacle size, gate width, when
@@ -451,6 +456,13 @@ so the Dive stays always available, which is its whole purpose.
 
 ## Recently shipped (newest first)
 
+- **2026-08-02 — Campaign combination tier (0.38.0).** Three levels requiring
+  two or three verbs in one run. Each pairing is a distinction the repository
+  already measured: Reel+Burst is the owner's own *shape early, correct late*
+  finding, and Dive+Burst is the escape pair that 88–100% of measured deaths
+  leave unspent. A level requires **every** verb it names — a contract holds
+  that, because clearing on one of two would silently make it a fourth teaching
+  level. No schema bump: the star ledger is additive.
 - **2026-08-02 — Phase 0 course instrumentation.** `tools/course_audit.gd` walks
   the deterministic generator and reports the axis vector per chunk — corridor
   width, sequential opposite-commitment spacing, simultaneous gates, density,
