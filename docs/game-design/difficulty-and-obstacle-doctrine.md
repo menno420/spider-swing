@@ -7,6 +7,14 @@
 > sessions before any generator code moves. Every section is written to be
 > argued with.
 >
+> **Scope — the first 15 km only.** Owner decision, 2026-08-02: *"let's focus on
+> the first 15K because that's actually something that's proven to be reachable;
+> once we have determined that the next sections are truly reachable we can start
+> thinking about those more."* Rules stated generally still apply generally, but
+> **no target, bound or schedule beyond 15 km is settled here**, and R5's plateau
+> is deferred rather than placed. Three regions are in scope: Ancient Forest,
+> Bramble Canopy, Silk Hollow.
+>
 > **Provenance (PL-013):** `measured` = read off source or off a headless
 > generator run · `inferred` = arithmetic on measured values · `assumed` =
 > design hypothesis awaiting a device verdict.
@@ -106,7 +114,7 @@ discipline about *amount*.
 
 ---
 
-## 3 · Seven structural findings
+## 3 · Eight structural findings
 
 ### F1 · The `difficulty` label is dead metadata
 
@@ -244,6 +252,31 @@ is not solving 26 puzzles, he is running one loop 13 times.
 The corollary is a warning. Bramble's loop runs unchanged for all 52 of its
 chunks, so **predictability has an optimum, not a maximum** — past some point
 the same loop stops being reassuring and becomes repetitive.
+
+### F8 · Density with room is fun; narrowness is a wall
+
+The owner's two verdicts, side by side with what each section measures:
+
+| | Ancient Forest 2.5–5 km | Silk Hollow 10–15 km |
+| --- | --- | --- |
+| encounter density | **highest in the game** (100% hard, 0% recovery) | high (80% hard, 20% recovery) |
+| corridor | **full 572 px, tightest 498** | **median ~320 px, tightest 93** |
+| owner's verdict | *"very hard … but very fun to play through"* | *"at least 2× more difficult with no gradual increase"* |
+
+His stated reason for the first is explicitly about room:
+
+> *"the fact that there is always still enough room to move through it with some
+> error margin makes it the right kind of difficult"*
+
+**The denser section is the one he enjoys, and the difference is that it never
+takes the room away.** `inferred` from `measured` §2.1 + §2.2 plus the owner's
+2026-08-02 verdicts.
+
+This is a direct steer on how the axes of §4 should be spent: **density is a
+cheap and well-liked way to add difficulty; width is expensive and should be
+used sparingly.** Narrowing removes the error margin that makes a mistake
+survivable, and a mistake you cannot survive reads as unfair rather than hard.
+Silk Hollow currently spends both at once.
 
 ---
 
@@ -692,9 +725,20 @@ it unless the other three prove insufficient on device.
 
 ### 10.2 Genuinely open — and why measurement cannot settle them
 
-**O1 · Where does the plateau start?**
-The owner's figure is ~15 km. This is a product decision about what the game
-*is*, and no measurement decides it — but it can be sharpened considerably.
+**O1 · Where does the plateau start? — DEFERRED by the owner, 2026-08-02.**
+
+> *"This is still something we would need to test more. For now let's focus on
+> the first 15K because that's actually something that's proven to be reachable;
+> once we have determined that the next sections are truly reachable we can
+> start thinking about those more."*
+
+Correct call, and it removes the question rather than answering it: **you cannot
+place a plateau on ground nobody has stood on.** The longest verified run is
+10 605 m. Sections beyond Silk Hollow have never been reached in a recorded run,
+so any pressure target for them would be fitted to nothing.
+
+The analysis below is kept for whenever 15–40 km becomes reachable, and is
+`assumed` until then.
 
 > **A plateau at 15 km means pressure stops rising while five of the eight
 > sections have not yet been seen.** Regions are 5 km each: 15 km is inside
@@ -710,17 +754,28 @@ plateau belongs nearer 40 km and R5 needs rewriting. *Evidence: one long run
 through a section at constant pressure whose mechanics are new — Storm Ridge is
 the cleanest test, since wind is unlike anything before it.*
 
-**O2 · Is Ancient Forest's density its identity, or its accident?**
-Unmeasurable because both halves of the owner's report are simultaneously true:
-it is where he dies most **and** he calls it the most fun section. Measurement
-confirms both and cannot rank them.
+**O2 · Ancient Forest's density — ANSWERED by the owner, 2026-08-02: both, and
+bounded.**
 
-What can be sharpened is what the experiment would actually change. The
-recovery cadence and the density are **separable**: adding an open chunk every
-fifth removes 20% of the encounters and makes no individual encounter easier.
-So the question is precise — *is the fun in the unbroken run of encounters, or
-in the encounters themselves?* One build with the cadence enabled answers it,
-and it is one line of code.
+> *"I think it's a bit of both. The encounters are fun and the fact that some of
+> them are genuinely uninterrupted make it very challenging, and the fact that
+> there is always still enough room to move through it with some error margin
+> makes it the right kind of difficult. Some more open space in between them
+> wouldn't hurt, but it should not become 50/50 as in Brambles right now."*
+
+Three things fall out, and the third is the most useful.
+
+1. **The unbroken run is part of the fun**, so recovery must be added
+   sparingly rather than to a schedule borrowed from elsewhere.
+2. **The bound is explicit**: recovery share strictly above 0% and well below
+   Bramble's 50%. The every-fifth-chunk cadence Ancient Forest's own catalogue
+   already claims (F3) is **20%** — inside the bound, and it is the natural
+   first value to try precisely because the region already declares it.
+3. **The reason he tolerates the density is room**, not spacing — which is F8,
+   and it says far more about how to use the *width* axis than about recovery.
+
+*Remaining unknown, and it is now narrow: whether 20% is already too much.*
+One build answers it and it is one line of code.
 
 **O3 · What is T, the spacing floor in R13?**
 Bounded better than before, but still device-only — and the reason is
