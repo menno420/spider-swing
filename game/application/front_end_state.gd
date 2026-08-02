@@ -651,10 +651,17 @@ func set_reduced_motion(enabled: bool) -> void:
 	_publish_settings()
 
 
-func set_music_enabled(enabled: bool) -> void:
-	if settings.music_enabled == enabled:
+func set_music_volume(volume: float) -> void:
+	var validated := clampf(
+		volume,
+		PlayerSettings.MIN_MUSIC_VOLUME,
+		PlayerSettings.MAX_MUSIC_VOLUME,
+	)
+	if not is_finite(validated):
+		validated = PlayerSettings.DEFAULT_MUSIC_VOLUME
+	if is_equal_approx(settings.music_volume, validated):
 		return
-	settings.music_enabled = enabled
+	settings.music_volume = validated
 	_publish_settings()
 
 

@@ -23,6 +23,55 @@ Player settings value and backward-compatible migration; Settings presentation; 
 
 **previous-session review:** PR #109 completed the menu information architecture and retained independent binary Music, Effects, and Haptics settings. The owner’s immediate device verdict identifies the remaining audio-control gap: the shipped background mix is too quiet and Music needs intensity control rather than another soundtrack or SFX retune.
 
+## Implemented
+
+- `PlayerSettings` schema 4 owns one validated 0–1 Music volume. Former Music-on
+  saves migrate to 0.5 and Music-off saves to 0.0; serialized output retains only
+  a derived boolean for deliberate downgrade compatibility.
+- Settings replaces `MusicToggle` with a themed 0–100% `HSlider`, a live
+  OFF/percentage label, 5% touch steps, and copy explaining that 50% is the
+  original mix.
+- `AudioDirector` applies one gain after adaptive pressure mixing to both bed
+  and chase stems. 50% is 0 dB relative, 0% stops playback, and 100% doubles
+  amplitude (+6.02 dB) without changing SFX or Haptics.
+- Build identity is `0.31.0-music-volume-playtest`, Android code 51. D-0045 and
+  the current settings/audio/testing contracts record the new boundary.
+
+## Layout and interaction evidence
+
+- At 1280×720, the Settings scroller is 866.4×651.2 px and brings the complete
+  858×64 px slider to `(206.8, 128)` inside its viewport.
+- At 1280×600, the scroller is 866.4×542 px and brings the same complete slider
+  to `(206.8, 122)` inside its viewport.
+- Driving the real slider signal through 0/50/100 resolves OFF/50%/100%, stores
+  0.0/0.5/1.0, and yields -60/0/+6.02 dB while Effects and Haptics stay on.
+
+## Adversarial verification
+
+Three temporary production mutations each turned the intended contract red:
+legacy Music-on mapped to 100% instead of 50%; the gain reference moved from
+50% to 100%; and 0% Music incorrectly disabled Effects. Every mutation was
+restored before the final gates.
+
+## Capability delta
+
+No new capability or wall. The requested `app_block` name is still absent from
+the callable registry, matching the dated repository finding recorded by the
+soundtrack session; the direct GitHub connector remains the working publication
+path in this venue.
+
+## Owner questions
+
+No implementation blocker. Device listening should choose a preferred everyday
+level and confirm that 100% remains comfortably below traversal and warning
+cues on the phone speaker.
+
+## Next slice
+
+Install the Android artifact over the existing stable-key build, move Music
+through 0/50/100 in Settings, restart once to confirm restoration, and compare
+Home plus a bird-pressure run at the preferred level.
+
 ## 💡 Session idea
 
 If one music slider proves insufficient after device testing, expose adaptive-tension intensity separately only after preserving a single master Music volume as the stable default control.

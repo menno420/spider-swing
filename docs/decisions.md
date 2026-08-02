@@ -855,3 +855,24 @@
 - provenance: Menno's 2026-08-02 menu playtest recording and request for a
   complete grey textured UI, glance-readable Field Guide, main-menu debug
   access, and saved test-run edits
+
+## [D-0045] Replace binary Music with one bounded persistent volume
+
+- status: decided
+- date: 2026-08-02
+- verdict: Player settings schema 4 replaces the authoritative Music boolean
+  with a 0–1 volume. Settings presents it as a touch-first 0–100% slider in 5%
+  steps. The former shipped mix is exactly 50%; 0% stops both synchronized stems
+  and 100% doubles their amplitude (+6.02 dB). Schema-1–3 Music-on migrates to
+  50% and Music-off to 0%, while a derived compatibility boolean remains only in
+  serialized output for intentional downgrade safety. One `AudioDirector` gain
+  offsets both bed and tension stems after the adaptive pressure law. Effects
+  and Haptics remain separate binary controls.
+- why: Device playback made the soundtrack substantially quieter than the
+  gameplay cues, while the only available choice was on or off. Keeping the
+  current mix at the midpoint prevents a migration loudness surprise and gives
+  equal room in both directions. The +6.02 dB ceiling raises the measured
+  -10.3 dBFS combined stem maximum only to about -4.3 dBFS, still below the
+  loudest SFX, and one shared gain preserves the authored bed/tension balance.
+- provenance: Menno, 2026-08-02 — background audio is very soft compared with
+  other sounds; replace the on/off choice with adjustable intensity

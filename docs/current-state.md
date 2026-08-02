@@ -14,7 +14,7 @@ the core loop is right. Target, corroborating evidence, the hard monetisation
 boundaries (death stays meaningful; lives capped at 3) and the parked list live
 in [`player-preference research`](product/player-preference-research-2026-08-02.md).
 
-Build `0.30.0-menu-system-playtest` is current. Continuous drive is
+Build `0.31.0-music-volume-playtest` is current. Continuous drive is
 zero; release, swing control, Reel, and pull timing earn speed; the former left
 kill line is a visible pursuing bird. `target_speed_at` remains a named
 reference. The non-pumping bot cannot tune the bird, so Test Run owns its three
@@ -45,18 +45,19 @@ without a reported regression.
 
 **Persistence and Android test delivery**
 
-- `SaveRepository` is the only persistent writer. Schema-3 settings include
-  independent music, effects, and haptics alongside control, motion, and
-  diagnostic choices.
+- `SaveRepository` is the only persistent writer. Schema-4 settings include a
+  continuous Music volume plus independent Effects and Haptics toggles alongside
+  control, motion, and diagnostic choices. Schema-1–3 Music-on migrates to the
+  original 50% mix and Music-off migrates to 0%.
   Schema-8 progression includes fly and star balances, per-difficulty bests,
   Campaign clears, selected profile and cosmetics, upgrade ownership, creator
   pattern, reached checkpoints, and bounded idempotent-settlement history.
-  Older settings default music/effects/haptics on; every progression migration
-  remains one-way and explicit.
+  Older settings default Music to its original mix and Effects/Haptics on; every
+  migration remains one-way and explicit.
 - A separately versioned `DebugTestProfile` auto-saves the Test Lab working set
   and A/B/C comparison slots. Its resolved display values and sparse explicit
   overrides never enter `PlayerSettings` or `PlayerProgress`.
-- Build `0.30.0-menu-system-playtest` (Android version code 50, package
+- Build `0.31.0-music-volume-playtest` (Android version code 51, package
   `com.menno420.spiderswing.dev`) retains the stable conventional public debug
   identity introduced by `0.19.0-depth-testing` in
   `.github/android/debug.keystore`. The workflow pins its file and certificate
@@ -207,19 +208,21 @@ without a reported regression.
   snapshots without feeding back into simulation. Twenty-five original mono
   SFX cover traversal, pickups, impacts, and later-zone warnings. A persistent
   32-second haunted bed and chase stem play across menus and runs; bird/pace
-  snapshots only set a bounded mix target. Its -10.3 dBFS maximum retains about
-  7 dB for SFX. Music, effects, and haptics persist independently.
+  snapshots only set a bounded mix target. The saved 0–100% Music slider keeps
+  the original -10.3 dBFS mix at 50%, reaches true silence at 0%, and adds at
+  most 6.02 dB at 100%; its raised maximum remains below the loudest SFX.
+  Effects and Haptics remain independent toggles.
 - Graybox plus four environment looks remain visual-only. Collision outlines and
   target guides load off and can be enabled independently under DEBUG →
   OVERLAYS. Reduced motion freezes decorative movement and restrained poses.
 
 **Verification**
 
-- Local source passes the 203-contract engine runner with the exact
+- Local source passes the 204-contract engine runner with the exact
   `4.7.1.stable.official.a13da4feb` Standard binary. The declared suite contains
   11 bootstrap/build, 68 deterministic physics, 15 zone, 11 spider-biology,
   10 Campaign, 9 difficulty, 4 upgrade-wiring, 10 simulation-lab/replay,
-  2 economy, 8 generated-audio, 27 mobile GUI/layout, and 28 front-end/settings/
+  2 economy, 9 generated-audio, 27 mobile GUI/layout, and 28 front-end/settings/
   progression checks. The full
   required `python3 tools/verify.py --require-godot` result is recorded at
   session close.
@@ -577,6 +580,10 @@ with hook-vine and leaf-shutter geometry without retuning either control; the
 
 ## Recently shipped (newest first)
 
+- **2026-08-02 — Persistent Music volume (PR #111).** Settings replaces the
+  binary Music toggle with a saved 0–100% slider. Existing saves retain their
+  prior audible/silent result, 50% preserves the shipped mix, and 100% adds a
+  bounded 6.02 dB without changing Effects, Haptics, or adaptive tension.
 - **2026-08-02 — Haunted adaptive soundtrack (PR #107).** One original
   32-second bed persists across Home and runs; a synchronized chase stem fades
   with presentation-only pressure. All 27 files regenerate exactly and Music,
@@ -620,29 +627,8 @@ with hook-vine and leaf-shutter geometry without retuning either control; the
   total is `EXPECTED_CHECK_COUNT` in `tests/test_runner.gd`; the dated
   fresh-session handoff records the exact verified snapshot instead of letting
   this living summary go stale on the next merge.
-- **2026-08-01 — Zones 3–4 obstacle-art correction (PR #87).** Seven original
-  single-object assets replace the flat collision-fill fallbacks visible in the
-  owner's Silk Hollow and Ruined Arboretum recordings. Stable visual/content
-  ids select contain or long-axis placement; geometry, motion, anchor rules,
-  backgrounds, physics, and balance remain unchanged.
-- **2026-08-01 — Bramble clearance correction (PR #86).** Device evidence
-  supersedes the point-guide proof: Bramble now alternates open recovery with
-  smaller single/pair commitments, gives each pair a full readable transition,
-  and carries a timed full-speed envelope regression without retuning physics.
-- **2026-08-01 — Campaign and difficulty (PRs #75–#76).** Three verb-gated
-  teaching levels award non-repeatable stars; Relaxed, Standard and Harsh vary
-  content/recovery while leaving the approved physics baseline identical.
-- **2026-08-01 — Silk Hollow and Zones 4–8 (PR #73).** Six later-zone
-  identities, deterministic moving-parts architecture, typed special anchors,
-  original art, and silhouette evidence extend the endless course through Deep
-  Mist without touching the approved physics values.
-- **2026-07-31 — Bramble obstacle identity (PR #69).** Normal Bramble
-  generation now owns eight hook/shutter patterns, matching explicit art kinds,
-  and no Ancient Forest obstacle ids; Garden-sized route sweeps remain clear.
-- **2026-07-31 — Bramble presentation identity (PR #62).** The 5000 m
-  transition receives its own generated art pack and world-anchored foreground,
-  but the first device pass found its obstacle roles still too inherited; PR
-  #69 is the correction rather than overstating this pass as complete.
+Older shipped slices remain in their session cards and git history; this boot
+ledger retains only the most recent cross-cutting changes.
 ## Review rhythm
 
 Agents work through ready born-red PRs, finish the declared scope, run the exact

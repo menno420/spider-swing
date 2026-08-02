@@ -21,6 +21,7 @@ static func run() -> Dictionary:
 	passed += _test_variants_and_cooldowns_bound_audio_fatigue(failures)
 	passed += _test_music_stems_are_loop_safe_and_mobile_bounded(failures)
 	passed += _test_music_mix_is_independent_and_pressure_driven(failures)
+	passed += _test_music_volume_preserves_reference_and_headroom(failures)
 	passed += _test_composition_keeps_audio_and_haptics_optional(failures)
 	return {"passed": passed, "failures": failures}
 
@@ -231,7 +232,7 @@ static func _test_music_mix_is_independent_and_pressure_driven(
 ) -> int:
 	var director := AudioDirector.new()
 	director.configure_effects(false)
-	director.configure_music(true)
+	director.configure_music_volume(PlayerSettings.DEFAULT_MUSIC_VOLUME)
 	var quiet := SimulationSnapshot.new()
 	quiet.velocity = Vector2(200.0, 0.0)
 	var normal := SimulationSnapshot.new()
@@ -252,7 +253,8 @@ static func _test_music_mix_is_independent_and_pressure_driven(
 	var normal_mix := AudioDirector.music_tension_for_snapshot(normal)
 	var danger_mix := AudioDirector.music_tension_for_snapshot(danger)
 	var ended_mix := AudioDirector.music_tension_for_snapshot(ended)
-	if director.effects_enabled() or not director.music_enabled() or \
+	if director.effects_enabled() or not is_equal_approx(
+			director.music_volume(), PlayerSettings.DEFAULT_MUSIC_VOLUME) or \
 			quiet_mix != 0.0 or normal_mix < 0.1 or normal_mix > 0.5 or \
 			danger_mix < 0.85 or ended_mix != 0.0:
 		failures.append(
@@ -263,12 +265,41 @@ static func _test_music_mix_is_independent_and_pressure_driven(
 		director.free()
 		return 0
 	director.configure_effects(true)
-	director.configure_music(false)
-	if director.music_enabled() or not director.effects_enabled():
-		failures.append("music toggle does not stop independently from effects")
+	director.configure_music_volume(0.0)
+	if not is_zero_approx(director.music_volume()) or \
+			not director.effects_enabled():
+		failures.append("Music volume does not reach silence independently from effects")
 		director.free()
 		return 0
 	director.free()
+	return 1
+
+
+static func _test_music_volume_preserves_reference_and_headroom(
+	failures: PackedStringArray,
+) -> int:
+	var reference_gain := AudioDirector.music_gain_db(
+		PlayerSettings.DEFAULT_MUSIC_VOLUME)
+	var maximum_gain := AudioDirector.music_gain_db(
+		PlayerSettings.MAX_MUSIC_VOLUME)
+	var silent_gain := AudioDirector.music_gain_db(
+		PlayerSettings.MIN_MUSIC_VOLUME)
+	var reference_levels := AudioDirector.music_levels_for(
+		PlayerSettings.DEFAULT_MUSIC_VOLUME, 1.0)
+	var maximum_levels := AudioDirector.music_levels_for(
+		PlayerSettings.MAX_MUSIC_VOLUME, 1.0)
+	# The original maximum combined stem mix was measured at -10.3 dBFS. A
+	# doubled-amplitude ceiling therefore stays below -4 dBFS before SFX.
+	if not is_zero_approx(reference_gain) or \
+			not is_equal_approx(maximum_gain, linear_to_db(2.0)) or \
+			silent_gain > AudioDirector.MUSIC_TENSION_SILENT_DB or \
+			not is_equal_approx(
+				maximum_levels.x - reference_levels.x, maximum_gain) or \
+			not is_equal_approx(
+				maximum_levels.y - reference_levels.y, maximum_gain) or \
+			-10.3 + maximum_gain > -4.0:
+		failures.append("Music slider lost its original midpoint or safe +6 dB ceiling")
+		return 0
 	return 1
 
 
@@ -276,7 +307,7 @@ static func _test_composition_keeps_audio_and_haptics_optional(
 	failures: PackedStringArray,
 ) -> int:
 	var settings := PlayerSettings.defaults()
-	settings.music_enabled = false
+	settings.music_volume = 0.0
 	settings.effects_enabled = false
 	settings.haptics_enabled = false
 	var decoded := PlayerSettings.from_dictionary(settings.to_dictionary())
@@ -285,7 +316,8 @@ static func _test_composition_keeps_audio_and_haptics_optional(
 		failures.append("composition root cannot be read for audio wiring")
 		return 0
 	var source := main_file.get_as_text()
-	if decoded.music_enabled or decoded.effects_enabled or decoded.haptics_enabled or \
+	if not is_zero_approx(decoded.music_volume) or decoded.effects_enabled or \
+			decoded.haptics_enabled or \
 			not source.contains(
 				"snapshot_published.connect(_audio_director.present_snapshot)") or \
 			not source.contains(
@@ -293,7 +325,7 @@ static func _test_composition_keeps_audio_and_haptics_optional(
 			not source.contains(
 				"_input_router.configure_haptics(settings.haptics_enabled)") or \
 			not source.contains(
-				"_audio_director.configure_music(settings.music_enabled)") or \
+				"_audio_director.configure_music_volume(settings.music_volume)") or \
 			source.count("add_child(_audio_director)") != 1 or \
 			source.find("add_child(_audio_director)") > \
 				source.find("var failures := _mount_front_end()"):

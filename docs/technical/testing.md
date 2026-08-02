@@ -143,11 +143,11 @@ godot --headless --path . --script res://tests/test_runner.gd
   the real session, incompatible or unrelated JSON is refused, valid traces are
   catalogued, and the plain-JSON traces are included in Android exports;
 - two economy contracts keep flies and Campaign stars in their declared lanes;
-- eight generated-audio contracts prove original/reproducible provenance, exact
+- nine generated-audio contracts prove original/reproducible provenance, exact
   catalog parity, Android-sized PCM/headroom, core-event coverage, variant and
   cooldown policy, five distinct later-zone warnings, two seamless bounded
-  music stems, pressure-driven presentation mixing, and independent music,
-  effects, and haptics wiring;
+  music stems, pressure-driven presentation mixing, the Music slider's original
+  midpoint and bounded +6 dB ceiling, and independent Effects/Haptics wiring;
 - twenty-five mobile HUD contracts proving large separated Reel and Burst controls,
   DEBUG, and Menu are event-consuming
   Buttons, GUI geometry shares one layout source, accepted actions drive visual
@@ -166,8 +166,9 @@ godot --headless --path . --script res://tests/test_runner.gd
   the six tutorial
   steps cover live mechanics, Settings
   is touch-scrollable from every descendant control/card region without focus
-  snapping and remains mobile-readable, options (including independent music,
-  effects, and haptics) validate and emit once, serialization is stable, atomic filesystem persistence
+  snapping and remains mobile-readable, options (including continuous Music
+  volume plus independent Effects and Haptics) validate and emit once,
+  serialization is stable, atomic filesystem persistence
   round-trips, progression settlements remain idempotent, the seven-track Shop
   remains mobile-scrollable, one central forest-web theme skins every screen,
   custom body/Silk rails and the Silk preview replace native dropdowns, former

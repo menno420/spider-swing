@@ -162,7 +162,7 @@ static func _test_settings_are_validated_and_emitted(
 	state.set_swing_preset(SwingConfig.PRESET_AGILE)
 	state.set_control_hints(false)
 	state.set_reduced_motion(true)
-	state.set_music_enabled(false)
+	state.set_music_volume(0.85)
 	state.set_effects_enabled(false)
 	state.set_haptics_enabled(false)
 	state.set_debug_tools(false)
@@ -173,7 +173,7 @@ static func _test_settings_are_validated_and_emitted(
 	if state.settings.swing_preset != SwingConfig.PRESET_AGILE or \
 			state.settings.show_control_hints or \
 			not state.settings.reduced_motion or \
-			state.settings.music_enabled or \
+			not is_equal_approx(state.settings.music_volume, 0.85) or \
 			state.settings.effects_enabled or \
 			state.settings.haptics_enabled or \
 			state.settings.show_debug_tools:
@@ -198,7 +198,9 @@ static func _test_settings_are_scrollable_and_mobile_readable(
 	) as HBoxContainer
 	var reset := view.front_end_button(&"ResetSettings")
 	var play := view.front_end_button(&"SettingsPlay")
-	var music := view.find_child("MusicToggle", true, false) as CheckButton
+	var music := view.find_child("MusicVolumeSlider", true, false) as HSlider
+	var music_value := view.find_child(
+		"MusicVolumeValue", true, false) as Label
 	var effects := view.find_child("EffectsToggle", true, false) as CheckButton
 	var haptics := view.find_child("HapticsToggle", true, false) as CheckButton
 	if scroll == null or content == null:
@@ -238,11 +240,32 @@ static func _test_settings_are_scrollable_and_mobile_readable(
 		failures.append("Settings action buttons remain too small for mobile")
 		view.free()
 		return 0
-	if music == null or effects == null or haptics == null or \
-			music.custom_minimum_size.y < 52.0 or \
+	if music == null or music_value == null or effects == null or haptics == null or \
+			music.custom_minimum_size.y < 60.0 or \
+			not is_equal_approx(music.min_value, 0.0) or \
+			not is_equal_approx(music.max_value, 100.0) or \
+			not is_equal_approx(music.step, 5.0) or \
+			music_value.text != "50%" or \
 			effects.custom_minimum_size.y < 52.0 or \
 			haptics.custom_minimum_size.y < 52.0:
 		failures.append("audio and haptic controls are missing or too small")
+		view.free()
+		return 0
+	music.set_value_no_signal(100.0)
+	music.value_changed.emit(100.0)
+	if not is_equal_approx(
+			state.settings.music_volume, PlayerSettings.MAX_MUSIC_VOLUME) or \
+			music_value.text != "100%" or not state.settings.effects_enabled or \
+			not state.settings.haptics_enabled:
+		failures.append("Music slider changed another feedback setting or missed 100%")
+		view.free()
+		return 0
+	music.set_value_no_signal(0.0)
+	music.value_changed.emit(0.0)
+	if not is_zero_approx(state.settings.music_volume) or \
+			music_value.text != "OFF" or not state.settings.effects_enabled or \
+			not state.settings.haptics_enabled:
+		failures.append("Music slider does not reach independent true silence")
 		view.free()
 		return 0
 	if content.get_theme_constant("separation") < 18:
@@ -260,7 +283,7 @@ static func _test_settings_codec_round_trip(
 	expected.swing_preset = SwingConfig.PRESET_WEIGHTY
 	expected.show_control_hints = false
 	expected.reduced_motion = true
-	expected.music_enabled = false
+	expected.music_volume = 0.85
 	expected.effects_enabled = false
 	expected.haptics_enabled = false
 	expected.show_debug_tools = false
@@ -274,10 +297,23 @@ static func _test_settings_codec_round_trip(
 	if invalid.swing_preset != SwingConfig.PRESET_BALANCED:
 		failures.append("invalid persisted preset did not fall back safely")
 		return 0
-	var legacy := PlayerSettings.from_dictionary({"schema_version": 2})
-	if not legacy.music_enabled or not legacy.effects_enabled or \
-			not legacy.haptics_enabled:
-		failures.append("older settings did not migrate to audible defaults")
+	var legacy_on := PlayerSettings.from_dictionary({"schema_version": 3})
+	var legacy_off := PlayerSettings.from_dictionary({
+		"schema_version": 3,
+		"music_enabled": false,
+	})
+	var clamped := PlayerSettings.from_dictionary({
+		"schema_version": 4,
+		"music_volume": 4.0,
+	})
+	if not is_equal_approx(
+			legacy_on.music_volume, PlayerSettings.DEFAULT_MUSIC_VOLUME) or \
+			not is_equal_approx(
+				legacy_off.music_volume, PlayerSettings.MIN_MUSIC_VOLUME) or \
+			not is_equal_approx(
+				clamped.music_volume, PlayerSettings.MAX_MUSIC_VOLUME) or \
+			not legacy_on.effects_enabled or not legacy_on.haptics_enabled:
+		failures.append("older Music toggles did not migrate to exact slider levels")
 		return 0
 	return 1
 
@@ -294,7 +330,7 @@ static func _test_settings_repository_round_trip(
 	expected.swing_preset = SwingConfig.PRESET_AGILE
 	expected.show_control_hints = false
 	expected.reduced_motion = true
-	expected.music_enabled = false
+	expected.music_volume = 0.8
 	expected.effects_enabled = false
 	expected.haptics_enabled = false
 	if not repository.save_settings(expected):
