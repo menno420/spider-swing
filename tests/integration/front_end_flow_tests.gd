@@ -42,6 +42,7 @@ static func run() -> Dictionary:
 	passed += _test_upgrades_and_creator_edits_use_progression_service(failures)
 	passed += _test_composition_root_mounts_front_end_first(failures)
 	passed += _test_trace_watch_is_reachable_and_debug_only(failures)
+	passed += _test_every_campaign_level_is_reachable_and_scrolls(failures)
 	return {"passed": passed, "failures": failures}
 
 
@@ -246,6 +247,54 @@ const MINIMUM_TARGET_HEIGHTS := {
 	&"SpiderStyleGarden": 56.0,
 	&"WebVariantDewSilk": 56.0,
 }
+
+
+## A level in the catalog that has no button is a level nobody can play, and
+## adding one is exactly the change that causes it. The campaign card is a fixed
+## fraction of the screen, so six 84 px buttons plus two tier headings no longer
+## fit — the list must scroll rather than run off the card's bottom edge, which
+## nothing on screen would show.
+static func _test_every_campaign_level_is_reachable_and_scrolls(
+	failures: PackedStringArray,
+) -> int:
+	var state := FrontEndState.new()
+	state.configure(PlayerSettings.defaults(), PlayerProgress.defaults())
+	var view := FrontEndView.new()
+	view.bind_state(state)
+
+	for level_id: StringName in CampaignCatalog.level_ids():
+		var button := view.front_end_button(
+			StringName("CampaignLevel_%s" % level_id))
+		if button == null:
+			failures.append(
+				"campaign level %s has no button — it is unplayable" % level_id)
+			view.free()
+			return 0
+		if button.custom_minimum_size.y < 80.0:
+			failures.append(
+				"campaign level %s is below the 80 px touch floor" % level_id)
+			view.free()
+			return 0
+
+	var scroll := view.find_child("CampaignLevelScroll", true, false)
+	if scroll == null or not (scroll is ScrollContainer):
+		failures.append(
+			"the campaign level list has no scroller, so levels past the "
+			+ "card's height are unreachable with no visible sign of it")
+		view.free()
+		return 0
+
+	# Grouping is the reason the list outgrew its card, so it has to be real:
+	# every tier the catalog declares must contribute at least one button.
+	for tier: Dictionary in CampaignCatalog.tiers():
+		var tier_levels := CampaignCatalog.levels_for_tier(
+			StringName(tier["id"]))
+		if tier_levels.is_empty():
+			failures.append("campaign tier %s renders no levels" % tier["id"])
+			view.free()
+			return 0
+	view.free()
+	return 1
 
 
 static func _test_menus_are_thumb_sized_and_state_their_progress(
