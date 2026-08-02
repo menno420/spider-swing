@@ -1,6 +1,6 @@
 # Haunted background soundtrack
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 
@@ -37,6 +37,14 @@ second audio service would have duplicated ownership.
   through `SaveRepository`.
 - Build identity is `0.29.0-haunted-soundtrack-playtest`, Android code 49.
 
+## Shipped
+
+- Remote implementation commit `1b483641f49408e2f020759913e96ff9aeaca8af`
+  carries all 32 files on PR #107; GitHub and local tree SHA both resolve to
+  `0510e1017021235e8bce87a6ee7174e2adc1eae6`.
+- This closeout flip withdraws `agent/haunted-soundtrack`; required GitHub checks
+  and Android export decide the PR's terminal merge/build state.
+
 ## Audio proof and boundary
 
 - Bed: 32.000 s, -10.0 dBFS peak, -20.28 dBFS RMS, 0.248 seam ratio.
@@ -68,8 +76,8 @@ generator workaround are appended to `docs/CAPABILITIES.md`.
   manifest pass exact-byte regeneration.
 - Exact Godot `4.7.1.stable.official.a13da4feb`: 200/200 contracts pass on the
   restored implementation tree.
-- `python3 tools/verify.py --require-godot`: all seven stages pass; strict
-  reports only this deliberate `in-progress` hold after the seat digest refresh.
+- `python3 tools/verify.py --require-godot`: all seven stages pass. Strict's
+  pre-close run reported only the deliberate hold after the seat digest refresh.
 
 ## Owner questions
 

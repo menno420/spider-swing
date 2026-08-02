@@ -1,1 +1,0 @@
-- `agent/haunted-soundtrack` · **haunted soundtrack** — create and integrate an original adaptive haunted background score with an independent Music setting · assets/source/audio, assets/runtime/audio, presentation audio/settings, tests, and living docs · 2026-08-02
