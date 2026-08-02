@@ -17,7 +17,7 @@ const YELLOW := SpiderUiTheme.AMBER
 const SHOP_PROGRESSION_COPY := (
 	"Five CORE tracks shape every spider consistently; two IDENTITY tracks "
 	+ "reinforce its trade-off. Every fifth level through 40 applies the listed "
-	+ "increase twice."
+	+ "increase twice. Flies are earned in play — nothing here costs money."
 )
 const TEST_LAB_CATEGORIES: Array[StringName] = [
 	TuningCatalog.CATEGORY_MOVEMENT,
@@ -42,6 +42,9 @@ var _home_play_button: Button
 var _spider_hub_preview: TextureRect
 var _spider_hub_name: Label
 var _spider_hub_summary: Label
+var _spider_hub_status: Label
+var _play_modes_status: Label
+var _guide_hub_status: Label
 var _tutorial: Control
 var _settings: Control
 var _garage: Control
@@ -330,9 +333,9 @@ func _build_home() -> void:
 			StringName("Difficulty_%s" % mode_id),
 			str(mode["name"]),
 			CYAN,
-			48.0,
+			72.0,
 		)
-		button.add_theme_font_size_override("font_size", 16)
+		button.add_theme_font_size_override("font_size", 17)
 		button.pressed.connect(_on_difficulty.bind(mode_id))
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		difficulty_row.add_child(button)
@@ -353,6 +356,10 @@ func _build_home() -> void:
 	routes.columns = 2
 	routes.add_theme_constant_override("h_separation", 8)
 	routes.add_theme_constant_override("v_separation", 8)
+	# Home's dashboard panel measured 231 px of unused height. The route grid
+	# takes it, so the four destinations grow instead of the panel ending in a
+	# band of empty slate.
+	routes.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	menu.add_child(routes)
 	var spider_hub := _home_route_button(
 		&"SpiderHub", "SPIDER\nchoose · style · improve", YELLOW)
@@ -386,20 +393,25 @@ func _build_home() -> void:
 	menu.add_child(note)
 
 
+## Sized against the thumb, not the reference viewport. `canvas_items`/`expand`
+## maps 1280×720 onto a 2340×1080 phone at 1.5×, and an xxhdpi screen is
+## 2.5 device px per dp, so a reference pixel is 0.6 dp: the 48 dp minimum this
+## project targets is 80 reference pixels, and the old 58 px route was 35 dp.
 func _home_route_button(
 	button_name: StringName,
 	text_value: String,
 	accent: Color,
 ) -> Button:
-	var button := _button(button_name, text_value, accent, 58.0)
-	button.add_theme_font_size_override("font_size", 14)
+	var button := _button(button_name, text_value, accent, 88.0)
+	button.add_theme_font_size_override("font_size", 16)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	return button
 
 
 func _build_spider_hub() -> void:
 	_spider_hub = _full_screen(&"SpiderHubScreen")
-	var back := _button(&"SpiderHubBack", "‹  HOME", CYAN, 50.0)
+	var back := _button(&"SpiderHubBack", "‹  HOME", CYAN, 64.0)
 	back.pressed.connect(_on_home)
 	_place(back, _spider_hub, 0.025, 0.035, 0.16, 0.11)
 	var heading := _label("YOUR SPIDER", 38, INK)
@@ -439,6 +451,7 @@ func _build_spider_hub() -> void:
 	route_body.add_theme_constant_override("separation", 12)
 	_fill_with_margin(route_body, actions, 18.0)
 	route_body.add_child(_section_label("CHOOSE WHAT TO CHANGE"))
+	# Measured 247 px unused in this panel; the two routes absorb it.
 	var garage := _hub_route_button(
 		&"Garage", "SPIDER GARAGE\nchoose spider · body · silk", YELLOW)
 	garage.pressed.connect(_on_garage)
@@ -447,11 +460,13 @@ func _build_spider_hub() -> void:
 		&"Shop", "UPGRADES\ninspect tracks · spend flies", GREEN)
 	shop.pressed.connect(_on_shop)
 	route_body.add_child(shop)
+	_spider_hub_status = _hub_status_panel(&"SpiderHubStatus")
+	route_body.add_child(_spider_hub_status)
 
 
 func _build_play_modes_hub() -> void:
 	_play_modes_hub = _full_screen(&"PlayModesHubScreen")
-	var back := _button(&"PlayModesHubBack", "‹  HOME", CYAN, 50.0)
+	var back := _button(&"PlayModesHubBack", "‹  HOME", CYAN, 64.0)
 	back.pressed.connect(_on_home)
 	_place(back, _play_modes_hub, 0.025, 0.035, 0.16, 0.11)
 	var heading := _label("PLAY MODES", 38, INK)
@@ -474,6 +489,7 @@ func _build_play_modes_hub() -> void:
 	routes.name = "PlayModesRouteGrid"
 	routes.columns = 3
 	routes.add_theme_constant_override("h_separation", 16)
+	routes.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	body.add_child(routes)
 	var campaign := _hub_route_button(
 		&"Campaign", "CAMPAIGN\nfocused skill challenges · stars", ORANGE)
@@ -487,13 +503,15 @@ func _build_play_modes_hub() -> void:
 		&"Creator", "COURSE LAB\nbuild a six-piece route", YELLOW)
 	creator.pressed.connect(_on_creator)
 	routes.add_child(creator)
+	_play_modes_status = _hub_status_panel(&"PlayModesHubStatus")
+	body.add_child(_play_modes_status)
 	body.add_child(_setting_description(
 		"Campaign awards stars. Practice and Course Lab are noncompetitive and never change Endless records."))
 
 
 func _build_guide_hub() -> void:
 	_guide_hub = _full_screen(&"GuideHubScreen")
-	var back := _button(&"GuideHubBack", "‹  HOME", CYAN, 50.0)
+	var back := _button(&"GuideHubBack", "‹  HOME", CYAN, 64.0)
 	back.pressed.connect(_on_home)
 	_place(back, _guide_hub, 0.025, 0.035, 0.16, 0.11)
 	var heading := _label("GUIDE", 38, INK)
@@ -516,6 +534,7 @@ func _build_guide_hub() -> void:
 	routes.name = "GuideRouteGrid"
 	routes.columns = 2
 	routes.add_theme_constant_override("h_separation", 18)
+	routes.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	body.add_child(routes)
 	var tutorial := _hub_route_button(
 		&"Tutorial", "HOW TO SWING\nsix visual lessons · practice", CYAN)
@@ -526,6 +545,8 @@ func _build_guide_hub() -> void:
 	field_guide.pressed.connect(
 		_on_field_guide.bind(FrontEndState.Screen.GUIDE_HUB))
 	routes.add_child(field_guide)
+	_guide_hub_status = _hub_status_panel(&"GuideHubStatus")
+	body.add_child(_guide_hub_status)
 	body.add_child(_setting_description(
 		"How to Swing teaches the controls. Field Guide explains identity and biology without mixing them into gameplay rules."))
 
@@ -535,15 +556,29 @@ func _hub_route_button(
 	text_value: String,
 	accent: Color,
 ) -> Button:
-	var button := _button(button_name, text_value, accent, 112.0)
+	var button := _button(button_name, text_value, accent, 132.0)
 	button.add_theme_font_size_override("font_size", 18)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	return button
 
 
+## The hubs measured 48–57% empty. Letting the route cards absorb all of it made
+## 400 px slabs, which is dead space wearing a border. Each hub instead ends in a
+## block of live state, so the space answers "is it worth going in there?" — the
+## context panel the research report asks a route list to carry.
+func _hub_status_panel(status_name: StringName) -> Label:
+	var status := _label("", 16, MUTED)
+	status.name = status_name
+	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	status.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	status.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	status.custom_minimum_size.y = 48.0
+	return status
+
+
 func _build_tutorial() -> void:
 	_tutorial = _full_screen(&"Tutorial")
-	var back := _button(&"TutorialBack", "‹  GUIDE", CYAN, 50.0)
+	var back := _button(&"TutorialBack", "‹  GUIDE", CYAN, 64.0)
 	back.pressed.connect(_on_guide_hub)
 	_place(back, _tutorial, 0.025, 0.035, 0.16, 0.11)
 
@@ -594,7 +629,7 @@ func _build_tutorial() -> void:
 
 func _build_settings() -> void:
 	_settings = _full_screen(&"Settings")
-	var back := _button(&"SettingsBack", "‹  HOME", CYAN, 50.0)
+	var back := _button(&"SettingsBack", "‹  HOME", CYAN, 64.0)
 	back.pressed.connect(_on_home)
 	_place(back, _settings, 0.025, 0.035, 0.16, 0.11)
 
@@ -721,7 +756,7 @@ func _build_settings() -> void:
 
 func _build_garage() -> void:
 	_garage = _full_screen(&"Garage")
-	var back := _button(&"GarageBack", "‹  SPIDER", CYAN, 50.0)
+	var back := _button(&"GarageBack", "‹  SPIDER", CYAN, 64.0)
 	back.pressed.connect(_on_spider_hub)
 	_place(back, _garage, 0.025, 0.035, 0.16, 0.11)
 	var heading := _label("SPIDER GARAGE", 34, INK)
@@ -797,7 +832,7 @@ func _build_garage() -> void:
 	_garage_inspiration.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_garage_inspiration.custom_minimum_size.y = 30.0
 	detail.add_child(_garage_inspiration)
-	var field_guide := _button(&"GarageFieldGuide", "FIELD GUIDE", ORANGE, 42.0)
+	var field_guide := _button(&"GarageFieldGuide", "FIELD GUIDE", ORANGE, 60.0)
 	field_guide.add_theme_font_size_override("font_size", 16)
 	field_guide.pressed.connect(_on_field_guide.bind(FrontEndState.Screen.GARAGE))
 	detail.add_child(field_guide)
@@ -813,9 +848,9 @@ func _build_garage() -> void:
 			StringName("SpiderStyle%s" % str(style).to_pascal_case()),
 			style_labels[style_index],
 			YELLOW,
-			44.0,
+			60.0,
 		)
-		style_button.add_theme_font_size_override("font_size", 15)
+		style_button.add_theme_font_size_override("font_size", 16)
 		style_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		style_button.pressed.connect(_on_style_selected.bind(style_index))
 		style_rail.add_child(style_button)
@@ -832,9 +867,9 @@ func _build_garage() -> void:
 			StringName("WebVariant%s" % str(web_variant).to_pascal_case()),
 			web_labels[web_index],
 			CYAN,
-			44.0,
+			60.0,
 		)
-		web_button.add_theme_font_size_override("font_size", 15)
+		web_button.add_theme_font_size_override("font_size", 16)
 		web_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		web_button.pressed.connect(_on_web_variant_selected.bind(web_index))
 		web_rail.add_child(web_button)
@@ -849,7 +884,7 @@ func _build_garage() -> void:
 
 func _build_shop() -> void:
 	_shop = _full_screen(&"Shop")
-	var back := _button(&"ShopBack", "‹  SPIDER", CYAN, 50.0)
+	var back := _button(&"ShopBack", "‹  SPIDER", CYAN, 64.0)
 	back.pressed.connect(_on_spider_hub)
 	_place(back, _shop, 0.025, 0.035, 0.16, 0.11)
 	_shop_panel = _panel(PANEL)
@@ -879,11 +914,6 @@ func _build_shop() -> void:
 	)
 	flies_badge.add_child(_shop_flies)
 	header.add_child(flies_badge)
-	var shop_note := _paragraph(
-		"Prototype upgrades use flies collected in play. No store purchase or "
-		+ "real-money entitlement is connected in this build.")
-	shop_note.add_theme_font_size_override("font_size", 17)
-	content.add_child(shop_note)
 	_shop_description = _setting_description(SHOP_PROGRESSION_COPY)
 	_shop_description.name = "ShopProgressionRule"
 	_shop_description.add_theme_font_size_override("font_size", 16)
@@ -921,16 +951,21 @@ func _build_shop() -> void:
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.pressed.connect(_on_upgrade.bind(upgrade_id))
 		row_content.add_child(button)
+		var detail_row := HBoxContainer.new()
+		detail_row.add_theme_constant_override("separation", 12)
+		row_content.add_child(detail_row)
 		var description := _setting_description("")
 		description.name = \
 			"UpgradeDescription%s" % str(upgrade_id).to_pascal_case()
 		description.add_theme_font_size_override("font_size", 16)
-		description.custom_minimum_size.y = 38.0
-		row_content.add_child(description)
+		description.custom_minimum_size.y = 34.0
+		description.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		detail_row.add_child(description)
 		var milestones := _label("", 15, CYAN)
 		milestones.name = "UpgradeKnots%s" % str(upgrade_id).to_pascal_case()
-		milestones.custom_minimum_size.y = 24.0
-		row_content.add_child(milestones)
+		milestones.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		milestones.custom_minimum_size.x = 190.0
+		detail_row.add_child(milestones)
 		upgrades.add_child(row)
 		_upgrade_buttons[upgrade_id] = button
 		_upgrade_rows[upgrade_id] = row
@@ -944,7 +979,7 @@ func _build_shop() -> void:
 
 func _build_creator() -> void:
 	_creator = _full_screen(&"Creator")
-	var back := _button(&"CreatorBack", "‹  PLAY MODES", CYAN, 50.0)
+	var back := _button(&"CreatorBack", "‹  PLAY MODES", CYAN, 64.0)
 	back.pressed.connect(_on_play_modes_hub)
 	_place(back, _creator, 0.025, 0.035, 0.16, 0.11)
 	var card := _panel(PANEL)
@@ -990,7 +1025,7 @@ func _build_creator() -> void:
 
 func _build_practice() -> void:
 	_practice = _full_screen(&"Practice")
-	var back := _button(&"PracticeBack", "‹  PLAY MODES", CYAN, 50.0)
+	var back := _button(&"PracticeBack", "‹  PLAY MODES", CYAN, 64.0)
 	back.pressed.connect(_on_play_modes_hub)
 	_place(back, _practice, 0.025, 0.035, 0.16, 0.11)
 
@@ -1035,7 +1070,7 @@ func _build_practice() -> void:
 
 func _build_campaign() -> void:
 	_campaign = _full_screen(&"Campaign")
-	var back := _button(&"CampaignBack", "‹  PLAY MODES", CYAN, 50.0)
+	var back := _button(&"CampaignBack", "‹  PLAY MODES", CYAN, 64.0)
 	back.pressed.connect(_on_play_modes_hub)
 	_place(back, _campaign, 0.025, 0.035, 0.16, 0.11)
 
@@ -1077,7 +1112,7 @@ func _campaign_button_name(level_id: StringName) -> StringName:
 
 func _build_debug_run_setup() -> void:
 	_debug_run_setup = _full_screen(&"DebugRunSetupScreen")
-	var back := _button(&"DebugRunBack", "‹  HOME", CYAN, 50.0)
+	var back := _button(&"DebugRunBack", "‹  HOME", CYAN, 64.0)
 	back.pressed.connect(_on_home)
 	_place(back, _debug_run_setup, 0.025, 0.035, 0.16, 0.11)
 
@@ -1151,7 +1186,7 @@ func _build_debug_run_setup() -> void:
 
 func _build_debug_test_lab() -> void:
 	_debug_test_lab = _full_screen(&"DebugTestLabScreen")
-	var back := _button(&"DebugTestLabBack", "‹  QUICK TEST", CYAN, 50.0)
+	var back := _button(&"DebugTestLabBack", "‹  QUICK TEST", CYAN, 64.0)
 	back.pressed.connect(_on_debug_run_setup)
 	_place(back, _debug_test_lab, 0.025, 0.035, 0.16, 0.11)
 
@@ -1353,7 +1388,7 @@ func _build_debug_parameter_card(parameter: Dictionary) -> PanelContainer:
 	adjustment.add_theme_constant_override("separation", 6)
 	body.add_child(adjustment)
 	var minus := _button(
-		StringName("DebugTuningMinus_%s" % parameter_id), "−", CYAN, 50.0)
+		StringName("DebugTuningMinus_%s" % parameter_id), "−", CYAN, 64.0)
 	minus.custom_minimum_size.x = 58.0
 	minus.add_theme_font_size_override("font_size", 27)
 	minus.pressed.connect(_on_debug_tuning_adjust.bind(parameter_id, -1))
@@ -1376,7 +1411,7 @@ func _build_debug_parameter_card(parameter: Dictionary) -> PanelContainer:
 		if parameter_id == TuningCatalog.DEBUG_UPGRADE_LEVEL:
 			_debug_run_upgrade_value = value
 	var plus := _button(
-		StringName("DebugTuningPlus_%s" % parameter_id), "+", CYAN, 50.0)
+		StringName("DebugTuningPlus_%s" % parameter_id), "+", CYAN, 64.0)
 	plus.custom_minimum_size.x = 58.0
 	plus.add_theme_font_size_override("font_size", 25)
 	plus.pressed.connect(_on_debug_tuning_adjust.bind(parameter_id, 1))
@@ -1643,7 +1678,7 @@ func _build_debug_bird_row(parameter_id: StringName) -> HBoxContainer:
 
 func _build_field_guide() -> void:
 	_field_guide = _full_screen(&"FieldGuide")
-	_field_guide_back = _button(&"FieldGuideBack", "‹  BACK", CYAN, 50.0)
+	_field_guide_back = _button(&"FieldGuideBack", "‹  BACK", CYAN, 64.0)
 	_field_guide_back.pressed.connect(_on_leave_field_guide)
 	_place(_field_guide_back, _field_guide, 0.025, 0.03, 0.16, 0.105)
 	var heading := _label("SPIDER FIELD GUIDE", 36, INK)
@@ -1867,6 +1902,7 @@ func _render() -> void:
 	_syncing_progress = true
 	_render_garage()
 	_render_shop()
+	_render_hub_status()
 	_render_creator()
 	_render_practice()
 	_render_debug_run_setup()
@@ -1893,6 +1929,59 @@ func _render_home() -> void:
 	]
 	_home_run_summary.text = summary
 	_spider_hub_summary.text = summary
+
+
+## What each hub is worth opening, in the hub itself. Every figure is read from
+## PlayerProgress, so a hub cannot claim progress the save does not hold.
+func _render_hub_status() -> void:
+	var progress := _state.progress
+	var spider_id := progress.selected_spider_id
+	var tracks := SpiderCatalog.upgrades_for(spider_id)
+	var owned_steps := 0
+	var maxed_tracks := 0
+	for item: Dictionary in tracks:
+		var level := progress.upgrade_level(StringName(item["id"]))
+		owned_steps += level
+		if level >= SpiderCatalog.MAX_UPGRADE_LEVEL:
+			maxed_tracks += 1
+	var total_steps := tracks.size() * SpiderCatalog.MAX_UPGRADE_LEVEL
+	_spider_hub_status.text = (
+		"%d of %d spiders unlocked  ·  %d body palettes  ·  %d silk treatments\n"
+		+ "UPGRADES  %d / %d levels on this spider  ·  %d of %d tracks maxed"
+		+ "  ·  %d flies to spend"
+	) % [
+		progress.unlocked_spider_ids.size(), SpiderCatalog.ALL_IDS.size(),
+		progress.unlocked_spider_styles.size(),
+		progress.unlocked_web_variants.size(),
+		owned_steps, total_steps, maxed_tracks, tracks.size(),
+		progress.spendable_flies,
+	]
+
+	var levels := CampaignCatalog.all_levels()
+	var stars := 0
+	for level: Dictionary in levels:
+		stars += mini(1, progress.campaign_stars_for(StringName(level["id"])))
+	var regions := CourseRegionCatalog.practice_regions()
+	var reached := 0
+	for region: Dictionary in regions:
+		if progress.has_region_checkpoint(StringName(region["id"])):
+			reached += 1
+	var pieces := 0
+	for piece: StringName in progress.creator_pattern:
+		if piece != &"empty":
+			pieces += 1
+	_play_modes_status.text = (
+		"CAMPAIGN  %d / %d stars   ·   PRACTICE  %d of %d regions reached"
+		+ "   ·   COURSE LAB  %d / %d pieces placed"
+	) % [
+		stars, levels.size(), reached, regions.size(),
+		pieces, progress.creator_pattern.size(),
+	]
+
+	_guide_hub_status.text = (
+		"HOW TO SWING  %d lessons, from the first anchor to recovery"
+		+ "   ·   FIELD GUIDE  %d spiders, each with its real animal and sources"
+	) % [FrontEndState.TUTORIAL_STEPS.size(), SpiderCatalog.ALL_IDS.size()]
 
 
 func _render_field_guide() -> void:
@@ -2271,8 +2360,15 @@ func _refresh_difficulty_buttons() -> void:
 			str(mode["name"]),
 			"best %.0f m" % best_m if best_m > 0.0 else "no run yet",
 		]
-		button.disabled = bool(mode["selected"])
-		if bool(mode["selected"]):
+		# Disabling the current choice made it the dimmest control on Home —
+		# `font_disabled_color` is MUTED at 48% alpha, 2.6:1 against the panel,
+		# so the difficulty you are actually on read as the one you could not
+		# have. Selection is now the strongest state, and re-pressing it is a
+		# harmless no-op in ProgressionService.
+		var is_selected := bool(mode["selected"])
+		button.disabled = false
+		_set_selector_state(button, is_selected, CYAN)
+		if is_selected:
 			selected_name = str(mode["name"]).to_upper()
 	_home_play_button.text = \
 		"PLAY ENDLESS  ·  %s\nCHASE YOUR BEST DISTANCE" % selected_name

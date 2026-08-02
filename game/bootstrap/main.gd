@@ -392,6 +392,9 @@ func _show_front_end() -> void:
 			)
 	_unmount_swing_lab()
 	_active_run_is_debug_test = false
+	# The run is over, so its borrowed upgrade levels are too. Read the snapshot
+	# above first — the launcher still needs the level the finished run used.
+	_front_end_state.end_debug_run_overlay()
 	_front_end_state.show_home()
 	_mount_front_end()
 

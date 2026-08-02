@@ -142,10 +142,10 @@ without a reported regression.
   and `MAX`.
   `ProgressionService` applies this session-only resolution overlay only when
   the test starts; the purchase cost check and real `PlayerProgress` remain
-  unchanged. Ordinary Play, Course Lab, or Region Practice clears the overlay
-  first, and `OWNED` restores the exact saved level dictionary. Garage and Shop
-  label displayed overlay levels `NOT OWNED`, Shop pauses purchases, and an
-  overlay run is noncompetitive.
+  unchanged. The overlay belongs to its run: returning to the menu releases it,
+  and `OWNED` restores the exact saved level dictionary. Garage and Shop label
+  displayed overlay levels `NOT OWNED`, Shop pauses purchases, and an overlay
+  run is noncompetitive.
 - `ADVANCED TEST LAB` is one tap from the compact launcher and retains all eight
   catalogue-backed categories:
   Movement, Pacing, Rope, Pulls, Course, Routes, Run, and Abilities. Each owns a
@@ -202,12 +202,14 @@ without a reported regression.
   low-alpha fibres, corner webs, silk knots, and cocoon forms; buttons use an
   asymmetric cocoon silhouette. Home fills the landscape with one identity
   card, difficulty, a dominant Endless Play action, and four intention-level
-  choices instead of indexing every feature. Spider groups Garage and Upgrades;
-  Play Modes groups Campaign, Region Practice, and Course Lab; Guide groups the
-  Tutorial and Field Guide. Settings stays direct, while debug-only Debug Test
-  Run is a subordinate direct utility and Advanced Test Lab sits behind it. All
-  existing destinations remain within two
-  taps and each destination returns through the hub that opened it.
+  choices: Spider (Garage, Upgrades), Play Modes (Campaign, Region Practice,
+  Course Lab), Guide (Tutorial, Field Guide), and direct Settings. Debug Test
+  Run is a subordinate direct utility with Advanced Test Lab behind it. Every
+  destination is within two taps and returns through its hub, and each
+  hub ends in a live status line drawn from `PlayerProgress`. Controls are sized
+  in dp: one reference pixel is 0.6 dp on a 2340x1080 phone, so contract floors
+  are set per control. The selected difficulty is the strongest state on Home,
+  never Godot's `disabled` styling.
   Garage and Shop inherit the selected spider's accent. Settings and Shop use
   a single native vertical scroller whose descendants pass drag input.
   The finished five-spider roster, flies, Ancient Forest pack, and eight-asset
@@ -238,7 +240,7 @@ without a reported regression.
   `4.7.1.stable.official.a13da4feb` Standard binary. The declared suite contains
   11 bootstrap/build, 68 deterministic physics, 15 zone, 11 spider-biology,
   10 Campaign, 9 difficulty, 4 upgrade-wiring, 10 simulation-lab/replay,
-  2 economy, 9 generated-audio, 27 mobile GUI/layout, and 29 front-end/settings/
+  2 economy, 9 generated-audio, 27 mobile GUI/layout, and 31 front-end/settings/
   progression checks. The full
   required `python3 tools/verify.py --require-godot` result is recorded at
   session close.
