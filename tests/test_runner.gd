@@ -9,9 +9,9 @@ const AudioPresentationSuite = preload(
 const MAIN_SCENE_PATH := "res://game/bootstrap/main.tscn"
 const EXPORT_PRESETS_PATH := "res://export_presets.cfg"
 const ANDROID_WORKFLOW_PATH := "res://.github/workflows/android-debug.yml"
-const BUILD_VERSION := "0.26.0-earned-speed-bird-playtest"
-const ANDROID_VERSION_CODE := 45
-const ANDROID_APP_NAME := "Spider Swing Earned Speed + Bird Playtest (dev)"
+const BUILD_VERSION := "0.26.1-debug-scroll-playtest"
+const ANDROID_VERSION_CODE := 46
+const ANDROID_APP_NAME := "Spider Swing Debug Scroll Playtest (dev)"
 const DEBUG_KEYSTORE_PATH := "res://.github/android/debug.keystore"
 const DEBUG_KEYSTORE_SHA256 := \
 	"e9104672477e0238b6cc2f7d6b994c459e37f130cae06a37aff05001f101bbda"

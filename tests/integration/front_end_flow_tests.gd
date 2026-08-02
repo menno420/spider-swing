@@ -959,6 +959,12 @@ static func _test_debug_run_setup_stages_and_starts_before_play(
 	var screen := view.find_child(
 		"DebugRunSetupScreen", true, false) as Control
 	var card := view.find_child("DebugRunSetupCard", true, false) as Control
+	var shell := view.find_child(
+		"DebugRunSetupShell", true, false) as VBoxContainer
+	var scroll := view.find_child(
+		"DebugRunSetupScroll", true, false) as ScrollContainer
+	var content := view.find_child(
+		"DebugRunSetupContent", true, false) as VBoxContainer
 	var columns := view.find_child(
 		"DebugRunSetupColumns", true, false) as HBoxContainer
 	var entry := view.find_child(
@@ -967,6 +973,7 @@ static func _test_debug_run_setup_stages_and_starts_before_play(
 		"DebugRunAwardsWarning", true, false) as Label
 	if state.screen != FrontEndState.Screen.DEBUG_RUN_SETUP or \
 			screen == null or not screen.visible or card == null or \
+			shell == null or scroll == null or content == null or \
 			columns == null or columns.get_child_count() != 3 or entry == null or \
 			warning == null or not warning.text.contains("NO RECORD"):
 		failures.append("debug route did not open a complete pre-run setup")
@@ -975,6 +982,18 @@ static func _test_debug_run_setup_stages_and_starts_before_play(
 	if card.anchor_left < 0.0 or card.anchor_top < 0.0 or \
 			card.anchor_right > 1.0 or card.anchor_bottom > 1.0:
 		failures.append("debug setup card is not enclosed by the 1280×720 view")
+		viewport.free()
+		return 0
+	var start := view.front_end_button(&"DebugRunStart")
+	if scroll.get_parent() != shell or content.get_parent() != scroll or \
+			start == null or start.get_parent() != shell or \
+			scroll.vertical_scroll_mode != ScrollContainer.SCROLL_MODE_AUTO or \
+			scroll.horizontal_scroll_mode != ScrollContainer.SCROLL_MODE_DISABLED or \
+			scroll.follow_focus or scroll.scroll_deadzone != 12 or \
+			start.get_index() <= scroll.get_index() or \
+			start.mouse_filter != Control.MOUSE_FILTER_STOP:
+		failures.append(
+			"debug setup does not keep a touch scroller above a pinned start action")
 		viewport.free()
 		return 0
 	for button_name: StringName in [
