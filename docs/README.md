@@ -27,6 +27,7 @@
 | [`product/spider-biology-verification-2026-07-31.md`](product/spider-biology-verification-2026-07-31.md) | Dated verification log for the second deep-research report — what was re-checked, against what, and what was deliberately not adopted. |
 | [`product/zone-progression.md`](product/zone-progression.md) | **Zone source of truth.** The axis each 5000 m zone owns, its hazards, mechanics, density curve and the one sentence a playtester must say. Zones 4–8 are shipped; their human success sentences remain device-playtest gates. |
 | [`planning/overnight-brief-2026-08-01.md`](planning/overnight-brief-2026-08-01.md) | Slice backlog and standing constraints for the unattended overnight session that builds zones 4+. |
+| [`product/player-preference-research-2026-08-02.md`](product/player-preference-research-2026-08-02.md) | **The 25 k north star** and the genre-preference research behind it — plus the provenance block separating the three corroborated claims from the unverified ones, the upgrade capability-vs-numbers fork, the hard monetisation boundaries, and what is explicitly parked. |
 | [`product/economy-model.md`](product/economy-model.md) | **Economy source of truth.** What each currency is for, what it buys, what cannot be bought at any price, and what happens to the measurably inert upgrade tracks. |
 | [`owner-questions.md`](owner-questions.md) | Open owner-only forks, each with the default the work proceeds under, plus the answered ones. |
 
