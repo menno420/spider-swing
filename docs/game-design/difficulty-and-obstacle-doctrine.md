@@ -309,7 +309,8 @@ maximum. This is the rule that kills the 1750 → 2000 m cliff.
 **R4 · Regions choose character, never amount.** A region declares an axis
 budget. It may modulate total pressure by at most **±15%** — enough for the
 owner's "slightly more difficult in different ways", not enough to halve the
-game.
+game. The ceiling on that bound is derived in S7: the saw-tooth this doctrine
+exists to prevent is a 41% drop, so any bound at or above ~20% re-permits it.
 
 **R5 · The plateau is real.** Above the plateau distance, pressure is exactly
 constant. Variation comes from rotating axis budgets, bounded so no rotation is
@@ -391,7 +392,10 @@ rule would forbid them. Owner's phrasing: *"not so random that it suddenly goes
 from 0 to 100 difficulty"*.
 
 Separately and unconditionally: **consecutive opposite-lane commitments are
-separated by at least T seconds at the speed cap for that distance.** The
+separated by at least T seconds at the speed cap for that distance** — where T
+is a *function of local predictability*, not a constant. A route the player can
+predict needs less time than one they must read; O3 derives the coupling, and
+it makes R13 and R14 two views of one knob. The
 owner's constraint — *"not so small that someone sees an obstacle at the top and
 then immediately has one at the bottom before having the time to figure out what
 happened"* — is the same quantity as R8's preview time, and it binds at every
@@ -617,53 +621,124 @@ theme. Ancient Forest could sustain one today; Bramble could not.
 
 ---
 
-## 10 · Questions for the analysis sessions
+## 10 · Questions — settled, and genuinely open
 
-The owner said he would spend several sessions on this. These are the forks
-that need his answer, with what evidence would settle each.
+Split by whether an answer follows from evidence already in this document. The
+**settled** ones carry their reasoning so they can be overruled; the **open**
+ones are open because no amount of measurement decides them.
 
-1. **Where does the plateau start?** Owner's figure is ~15 km. It also decides
-   where 25 km stops being a difficulty problem and becomes an endurance one.
-   *Evidence: how a 15–20 km stretch feels at constant pressure.*
-2. **Does the fairness floor override authored content, or fail CI?** Silent
-   substitution hides authoring mistakes; failing CI makes them visible and
-   costs a human fix. *Recommendation: fail CI.*
-3. **Is Ancient Forest's density its identity, or its accident?** F3 says its
-   zero-recovery cadence contradicts its own declared quirk. Giving it the
-   every-fifth-chunk rhythm would keep 4 in 5 chunks as challenge — still far
-   denser than Bramble's 1 in 2. *Evidence: play it with the cadence and see
-   whether it is still the fun hard section.*
-4. **How much may a region deviate from the curve?** R4 proposes ±15%.
-   *Evidence: whether Silk Hollow at +15% still reads as a step or as texture.*
-5. **Does the Verb axis get its own patterns, or a flag on existing ones?**
-   Requirement 4 needs Dive- and Burst-demanding chunks, and there are
-   currently none authored as such.
-6. **Does the swap happen before or after the curve?** §6 argues after, or with
-   — never before, because alone it flattens the opening.
-7. **Which region gets an endless mode first?** §9 argues pool depth decides,
-   not theme — Ancient Forest could sustain one today at 12× repetition over
-   20 km; Bramble Canopy would repeat 52×.
-8. **Do region-endless runs award anything?** §9 recommends nothing, following
-   Region Practice, to avoid both farming and a second leaderboard.
-9. ~~Does R12's ramp restart from zero, or from a rising floor?~~ **Answered
-   2026-08-02: a rising floor.** *"The sections should scale based on their
-   distance in the game / the difficulty of the previous section."* Folded into
-   R12's gate table.
-11. ~~What are the pattern families, and who names them?~~ **Answered
-    2026-08-02 by F7: the family is the `lane`, and it already exists.** Every
-    pattern declares the route it is crossed by, the generator already builds
-    the corridor around it, and each section uses only 3–4. At ~3 chunks per
-    demonstration that is 864–1152 m — the owner's "over the first 1 km" for a
-    third time, from a third direction. **No new tag is needed and R12 is
-    unblocked.** What remains is a judgement call, not a taxonomy: whether
-    `weave` counts as its own family or as a composition of `high` and `low`.
-12. **What is T, the spacing floor in R13?** One chunk is 1.37 s at 70 m/s; a
-    weave's two commitments are 0.60 s apart. The floor lies somewhere between,
-    and it is the single value that decides whether "keep the pace high" past
-    15 km stays fair. *Device-only.*
-10. **Is a 0.45 obstacle-size floor acceptable to the art?** §6.1 lever 2 is the
-    cheapest source of ramp rungs and the only one that changes how the game
-    looks. *Evidence: one build with the size ramp, judged on device.*
+### 10.1 Settled by reasoning
+
+**S1 · The fairness floor fails CI; it never substitutes silently.**
+A silent substitution produces a course different from the one authored, with
+no signal that it happened — and it would shift the seeded selection stream, so
+the damage would not even be local to the offending chunk. The repository
+already refuses to do this elsewhere: the trace format rejects cross-generation
+input rather than reinterpreting it, and the check-count guard names its own
+fix instead of adjusting itself. A CI failure costs one human edit. A silent
+substitution costs an unknown number of quietly degraded chunks that nobody
+ever looks at.
+
+**S2 · The Verb requirement is derived from geometry, never flagged.**
+A flag saying "this chunk needs a Dive" is exactly the shape of `difficulty` in
+F1 — a label with no consumer, unfalsifiable and free to drift. R8 already
+requires the generator to determine whether a passable line exists using only
+the verbs taught so far, which means the geometry must be interrogable for verb
+requirements *anyway*. Once it is, "more Dives and Bursts" becomes a selection
+criterion over patterns that already exist, and the only open part is
+measurable: how many current patterns actually have a Dive- or Burst-only line.
+That is a measurement, not an opinion.
+
+**S3 · `weave` is its own route family.**
+Being taught `high` and `low` separately does not teach the weave, because the
+weave's difficulty is the *transition between them under time pressure*, which
+neither component contains. The generated data agrees: Bramble's loop is
+`low · open · weave · open`, treating weave as a distinct beat rather than a
+compound. So each section demonstrates 3–4 families and `weave` counts as one.
+
+**S4 · The swap lands with the curve or after it, never before.**
+Already derived in §6: Bramble's pool is distance-invariant, so a swapped
+opening with no pressure curve is *flat* across its whole 5 km — which
+contradicts the owner's requirement 2 directly. This is logic, not preference.
+
+**S5 · Ancient Forest gets the first endless mode.**
+Pool depth decides (§9), and it is arithmetic: 20 patterns, 12× repetition over
+20 km, against Bramble's 8 patterns and 52×. Nothing else competes.
+
+**S6 · Region-endless awards nothing, like Region Practice.**
+The binding economy model is *flies buy power, stars buy appearance, nothing
+buys mastery*. A per-region endless mode is a mastery mode by construction, so
+paying it would contradict the model's own sentence — and paying flies would
+make the cheapest region the farm. *Residual risk worth stating: a mode that
+awards nothing may simply not be played. If that happens, the fix is to make it
+the calibration instrument §9 describes rather than to attach currency to it.*
+
+**S7 · The region deviation bound is at most ±20%, and ±15% sits safely inside.**
+Derivable as a ceiling rather than a value: the saw-tooth the owner complained
+about is a **41% drop** (3.44 → 2.00 between Ancient Forest and Bramble). A
+deviation bound at or above that permits precisely the thing the doctrine
+exists to prevent, so it must be well under it — half is a defensible line. It
+must also be non-zero or regions lose their character entirely. **±15%** is a
+value inside a derived bound rather than a guess, but the exact figure inside
+`(0, 20%]` remains `assumed`.
+
+**S8 · The obstacle-size ramp is optional, not required.**
+§6.1 listed it as one of three levers for Bramble's missing rungs, and F7 has
+since supplied a fourth: the lane loop itself. Cadence, singles-before-pairs and
+a legible lane cadence give three rungs without touching obstacle scale, so the
+size ramp is now an *extra* rather than a dependency. **This retires the
+question of whether a 0.45 size floor is acceptable to the art** — nothing needs
+it unless the other three prove insufficient on device.
+
+### 10.2 Genuinely open — and why measurement cannot settle them
+
+**O1 · Where does the plateau start?**
+The owner's figure is ~15 km. This is a product decision about what the game
+*is*, and no measurement decides it — but it can be sharpened considerably.
+
+> **A plateau at 15 km means pressure stops rising while five of the eight
+> sections have not yet been seen.** Regions are 5 km each: 15 km is inside
+> Silk Hollow, with Ruined Arboretum, Storm Ridge, Web City, Ashen Hollow and
+> Deep Mist still ahead — and those five carry the most alien mechanics in the
+> game (moving pivots, wind, sticky strands, rotten anchors, short sightlines).
+
+So the real question is not "where does the number go" but: **is arriving
+novelty enough variation on its own, or does pressure need to keep rising until
+the vocabulary stops growing?** R5 asserts the former. If that is right, 15 km
+is fine and the last five sections are pure axis rotation. If it is wrong, the
+plateau belongs nearer 40 km and R5 needs rewriting. *Evidence: one long run
+through a section at constant pressure whose mechanics are new — Storm Ridge is
+the cleanest test, since wind is unlike anything before it.*
+
+**O2 · Is Ancient Forest's density its identity, or its accident?**
+Unmeasurable because both halves of the owner's report are simultaneously true:
+it is where he dies most **and** he calls it the most fun section. Measurement
+confirms both and cannot rank them.
+
+What can be sharpened is what the experiment would actually change. The
+recovery cadence and the density are **separable**: adding an open chunk every
+fifth removes 20% of the encounters and makes no individual encounter easier.
+So the question is precise — *is the fun in the unbroken run of encounters, or
+in the encounters themselves?* One build with the cadence enabled answers it,
+and it is one line of code.
+
+**O3 · What is T, the spacing floor in R13?**
+Bounded better than before, but still device-only — and the reason is
+interesting.
+
+A *read* commitment needs choice-reaction time plus execution: roughly 400–600
+ms to decide which way to go, then the time to fire a web or commit a Dive. The
+weave's measured 0.60 s between its two commitments sits at the bottom of that
+range with no margin at all. That argues for T ≥ 0.8 s.
+
+But a *predicted* commitment needs far less, which is exactly the owner's own
+account of his 10 605 m run — once the route is known he is executing, not
+reading. **So T is not one number: it is a function of local predictability,
+and R13 and R14 are the same knob seen from two sides.** High predictability
+buys tighter spacing honestly; low predictability must pay for it in time.
+
+That coupling is derivable. The constants in it are not, because they are the
+owner's reaction time on his own device.
 
 ---
 
