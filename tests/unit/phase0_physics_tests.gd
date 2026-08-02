@@ -108,6 +108,7 @@ static func _test_presets(failures: PackedStringArray) -> int:
 			not is_equal_approx(
 				balanced.overspeed_correction_acceleration, 117.5) or \
 			not is_equal_approx(balanced.bird_ceiling_share, 0.62) or \
+			not is_equal_approx(balanced.maximum_speed_cap, 900.0) or \
 			not is_equal_approx(
 				balanced.tight_corridor_start_distance, 20000.0) or \
 			not balanced.course_boundaries_lethal:
@@ -310,6 +311,35 @@ static func _test_bird_can_never_outrun_the_spider_ceiling(
 			failures.append(
 				"an extreme pursuer configuration escaped the spider ceiling")
 			return 0
+	# The cap is its own curve now, not an offset from the reference. Its
+	# opening value must stay where it was (the reference no longer describes
+	# how fast the spider actually travels, so a fixed offset was tight at the
+	# start and inert past 3 km), and it must rise monotonically to its top.
+	var shaped := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	var opening := shaped.starting_target_speed + \
+		shaped.maximum_horizontal_overspeed
+	if not is_equal_approx(shaped.spider_speed_cap_at(0.0), opening):
+		failures.append("the opening speed cap moved off starting + overspeed")
+		return 0
+	if not is_equal_approx(
+			shaped.spider_speed_cap_at(shaped.speed_curve_distance),
+			shaped.maximum_speed_cap):
+		failures.append("the speed cap does not reach its top at full distance")
+		return 0
+	var previous := 0.0
+	for step in range(0, 21):
+		var here := shaped.spider_speed_cap_at(
+			float(step) * shaped.speed_curve_distance / 10.0)
+		if here < previous - 0.0001:
+			failures.append("the speed cap curve is not monotonic")
+			return 0
+		previous = here
+	# A cap top below the opening cap is incoherent and must be rejected.
+	var inverted := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	inverted.maximum_speed_cap = 100.0
+	if inverted.validate().is_empty():
+		failures.append("a speed cap below the opening cap was accepted")
+		return 0
 	# And a share at or above 1.0 must be rejected outright rather than clamped.
 	var invalid := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 	invalid.bird_ceiling_share = 1.0
@@ -705,12 +735,17 @@ static func _test_release_quality_is_capped_and_resets(
 	config.gravity = 0.0001
 	config.horizontal_drive_acceleration = 0.0001
 	config.air_drag = 0.0
-	config.maximum_horizontal_overspeed = 50.0
+	# 2026-08-02: the award is bounded by `spider_speed_cap_at`, the same curve
+	# the motor corrects toward, so the game has one ceiling instead of two that
+	# could disagree. Asserted against the function rather than a literal, so a
+	# retune of the cap cannot silently make this contract vacuous.
+	config.maximum_horizontal_overspeed = 450.0
 	var capped := SimulationWorld.new()
 	if not _prime_release_world(
 			capped, config, Vector2(700.0, 390.0), Vector2(800.0, -600.0)):
 		failures.append("capped release fixture could not attach")
 		return 0
+	var cap_here := config.spider_speed_cap_at(capped.distance_pixels)
 	capped.queue_command(InputCommand.release(1, 0))
 	capped.queue_command(InputCommand.release(2, 0))
 	var events := capped.step(FIXED_DELTA)
@@ -720,12 +755,16 @@ static func _test_release_quality_is_capped_and_resets(
 		if event.kind == SimulationEvent.Kind.RELEASED:
 			release_count += 1
 			release_event = event
-	if release_event == null or release_count != 1 or \
-			absf(float(release_event.data.get("forward_bonus", 0.0)) - 10.0) \
-			> 0.001 or \
-			absf(float(release_event.data.get("velocity_after_x", 0.0)) - 810.0) \
-			> 0.001:
-		failures.append("release award ignored its absolute max-reference cap or duplicated")
+	if release_event == null or release_count != 1:
+		failures.append("release award duplicated or did not fire")
+		return 0
+	var before_x := float(release_event.data.get("velocity_before_x", 0.0))
+	var after_x := float(release_event.data.get("velocity_after_x", 0.0))
+	var bonus := float(release_event.data.get("forward_bonus", 0.0))
+	if after_x > cap_here + 0.05 or \
+			absf(after_x - cap_here) > 0.05 or \
+			absf(bonus - (cap_here - before_x)) > 0.05:
+		failures.append("release award ignored the shared speed cap or duplicated")
 		return 0
 
 	# Reset and reuse the same world, then compare it with a fresh world. Old arc
