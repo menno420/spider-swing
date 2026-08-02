@@ -1,0 +1,1 @@
+- `claude/menu-navigation-simplification` · **simplify Home navigation into focused hubs** · front-end state/view, tests, docs, build identity · 2026-08-02
