@@ -1,0 +1,479 @@
+# Difficulty and obstacle placement — measured baseline and a proposed doctrine
+
+> **Status:** `plan`
+>
+> **This is a proposal, not a decision.** Nothing here is implemented and no
+> ledger entry records it. The owner asked for a plan to analyse across several
+> sessions before any generator code moves. Every section is written to be
+> argued with.
+>
+> **Provenance (PL-013):** `measured` = read off source or off a headless
+> generator run · `inferred` = arithmetic on measured values · `assumed` =
+> design hypothesis awaiting a device verdict.
+>
+> **Measurement method.** Course generation is a pure function of
+> `(chunk_index, distance_at_chunk, course_seed)`, so it can be walked exactly.
+> Two independent instruments were used on the pinned
+> `4.7.1.stable.official.a13da4feb`: one reads each chunk's authored
+> `difficulty` label across five seeds; the other builds the real
+> `CourseGeometry` and measures, at 24 px steps, the widest free vertical span
+> between the ceiling, the floor and every lethal contact polygon. The second
+> instrument is **label-free** — it reports what the generator actually built.
+
+---
+
+## 1 · What the owner asked for
+
+Verbatim requirements from the 2026-08-02 device session, after a recorded
+10 605 m run:
+
+1. The first **500 m** stays as it is — a warm-up.
+2. Then difficulty rises **gradually**, "not too slow and not too fast".
+3. The **5–10 km band as it is today is roughly the right difficulty for the
+   first 5 km**.
+4. After that, keep introducing **higher-skill plays that need more Dives and
+   Bursts**.
+5. Past roughly **15 km it should stop getting harder** and instead demand
+   *different playstyles*, "somewhat equally difficult or slightly more
+   difficult in different ways".
+6. **Ancient Forest's density is fun and must not be diluted** — "even though
+   it's a very hard section it is very fun to play through".
+7. The owner is separately considering **swapping the first two regions**, so
+   Bramble Canopy opens the game and Ancient Forest follows.
+8. Stage transitions read as unclean. **Explicitly parked**, not in scope.
+
+---
+
+## 2 · Measured baseline
+
+### 2.1 Authored difficulty per kilometre
+
+Mean of the `difficulty` label over five seeds (`1, 4242, 90210, 7777, 31337`).
+
+| band | mean | recovery chunks | hard (≥3) | region |
+| --- | ---: | ---: | ---: | --- |
+| 0–1 km | **0.00** | 0% | 0% | Ancient Forest |
+| 1–2 km | 1.46 | 0% | 0% | Ancient Forest |
+| 2–3 km | 2.89 | 0% | 71% | Ancient Forest |
+| 3–4 km | 3.36 | 0% | 94% | Ancient Forest |
+| 4–5 km | 3.44 | 9% | 91% | Ancient Forest |
+| 5–10 km | **2.00** | **50%** | 48% | Bramble Canopy |
+| 10–15 km | **3.20** | 20% | 80% | Silk Hollow |
+
+At 250 m resolution the sharpest edge in the game is exact: **1750 m sits at
+1.30 mean with 0% hard patterns; 2000 m jumps to 3.27 with 93%.** That is
+`MASTERY_START_DISTANCE`. The control pool tops out at difficulty 2 and the
+mastery pool starts at 3 — the vocabulary has no rung between them.
+
+### 2.2 Real corridor width per kilometre
+
+Widest free vertical span, label-free, seed 4242. Player collision radius is
+**18 px** at base upgrades.
+
+| band | tightest gate | median gate | region |
+| --- | ---: | ---: | --- |
+| 0–9 km | 498 px | **572 px** (full corridor) | Ancient Forest · Bramble |
+| 9–10 km | 389 px | 572 px | Bramble Canopy |
+| **10–15 km** | **93 px** | **~320 px** | **Silk Hollow** |
+| 15–16 km | 294 px | 350 px | Ruined Arboretum |
+
+`measured`. For the first ten kilometres the **median** chunk does not narrow
+the corridor at all. At 10 km the median halves and the tightest gate tightens
+**5.4×**, to about 2.6 body widths, crossed in roughly 0.28 s at the owner's
+measured 70 m/s.
+
+> **The owner's "Silk Hollow gets a lot smaller" is literal and measurable.**
+
+### 2.3 The eight regions already declare eight different axes
+
+Straight from `CourseRegionCatalog.REGIONS` — this is authored, not invented
+here:
+
+| region | declared focus | declared quirk |
+| --- | --- | --- |
+| Ancient Forest | Mixed fundamentals | Wide recovery rhythm |
+| Bramble Canopy | Height control | Alternating weave cues |
+| Silk Hollow | Precision, narrow lines | Silk-marked recovery pockets |
+| Ruined Arboretum | Timing, read the phase | Moving gaps and pivots |
+| Storm Ridge | External force | Deterministic lateral wind |
+| Web City | Route choice | Ridable and sticky strands |
+| Ashen Hollow | Trust, weak anchors | Timed rotten anchors |
+| Deep Mist | Information, sightline | Short sightline |
+
+**The design the owner is asking for in requirement 5 — equally difficult in
+different ways — is already authored as prose.** What is missing is any
+discipline about *amount*.
+
+---
+
+## 3 · Four structural findings
+
+### F1 · The `difficulty` label is dead metadata
+
+`difficulty` appears in `course_pattern_catalog.gd` and **nowhere else in the
+codebase**. Nothing reads it. §2.1 measures what the authors *intended*, which
+happens to track the owner's felt experience closely — a good sign the labels
+are honest — but nothing enforces that a difficulty-4 pattern is harder than a
+difficulty-1 one. `measured`.
+
+### F2 · The distance ladder is scoped to one region
+
+`_patterns_for_distance` returns a region-specific pool for **seven of eight
+regions**. Only Ancient Forest falls through to the distance-tiered pools
+(opening → control at 1 km → mastery at 2 km → deep forest at 3.5 km).
+`_obstacle_growth_scale` likewise caps at 3.5 km. `measured`.
+
+> **The game's entire distance-driven progression belongs to Ancient Forest,
+> and Ancient Forest happens to sit at 0–5 km.** Everywhere else, distance is
+> irrelevant and only region identity matters.
+
+This is the root cause of the saw-tooth. Nobody chose 3.4 → 2.0 → 3.2; it fell
+out of eight regions authored independently for character.
+
+### F3 · Ancient Forest is the only region with no recovery cadence — and its own catalogue says it should have the widest
+
+```gdscript
+if region_id != CourseRegionCatalog.ANCIENT_FOREST and \
+        posmod(local_chunk, recovery_interval) == recovery_interval - 1:
+    return RECOVERY_PATTERN
+```
+
+Every region except Ancient Forest gets an open chunk every fifth. Ancient
+Forest gets **none** — while its catalogue entry declares its quirk to be
+*"Wide recovery rhythm"*. `measured`.
+
+> This is a documented-versus-actual contradiction sitting exactly where the
+> owner reports most of his deaths, and it is the cheapest lead in this
+> document.
+
+### F4 · Difficulty has two axes today and they are uncoordinated
+
+Density (Ancient Forest, 2.5–5 km) and corridor width (Silk Hollow, 10 km+).
+Silk Hollow stacks a narrow corridor *on top of* a high hard-pattern share, and
+it is the only region that uses the width axis at all. That is why 10 km reads
+as a wall rather than a step. `inferred` from §2.1 + §2.2.
+
+---
+
+## 4 · The proposed model
+
+**Separate *how much* from *what kind*.**
+
+### Pressure — how much
+
+One monotone curve, `pressure(d) ∈ [0, 1]`:
+
+- `0` below 500 m
+- rises to `1.0` at the plateau distance (owner's figure: ~15 km)
+- constant above it, forever
+
+Every difficulty term derives from pressure. No region, pool or pattern reads
+distance directly.
+
+### Axes — what kind
+
+Pressure is *spent* across named axes. Each is separately measurable:
+
+| axis | metric | who uses it today |
+| --- | --- | --- |
+| **Density** | share of chunks carrying a challenge | Ancient Forest |
+| **Width** | tightest free span ÷ player radius | Silk Hollow |
+| **Displacement** | required vertical travel between commitments | Bramble Canopy |
+| **Phase** | share of hazards that move on a timer | Ruined Arboretum |
+| **Force** | external acceleration applied off-silk | Storm Ridge |
+| **Anchor quality** | share of anchors that are sticky, rotten or once-only | Web City · Ashen Hollow |
+| **Information** | preview distance before a hazard is legible | Deep Mist |
+| **Verb** | share of chunks whose best line needs a Dive or Burst | — |
+
+A region declares an **axis budget** — how it spends the pressure it is given.
+At the plateau every region spends the *same total* on *different axes*. That
+is requirement 5, expressed as a number rather than a hope.
+
+It also answers requirement 4 directly: "more Dives and Bursts" is the **Verb**
+axis rising with pressure, and it is the one axis currently at zero everywhere.
+
+---
+
+## 5 · The rules
+
+Numbered so they can be argued with individually. Each is written to be
+machine-checkable or explicitly marked device-only.
+
+**R1 · One curve.** `pressure(d)` is the single source of difficulty amount.
+Nothing else may read `distance_at_chunk` to decide how hard a chunk is.
+
+**R2 · Monotone envelope.** For `b > a`, `pressure(b) ≥ pressure(a)`. This is
+the rule that kills the saw-tooth, and it is a contract.
+
+**R3 · Bounded slope.** No kilometre may raise pressure by more than a set
+maximum. This is the rule that kills the 1750 → 2000 m cliff.
+
+**R4 · Regions choose character, never amount.** A region declares an axis
+budget. It may modulate total pressure by at most **±15%** — enough for the
+owner's "slightly more difficult in different ways", not enough to halve the
+game.
+
+**R5 · The plateau is real.** Above the plateau distance, pressure is exactly
+constant. Variation comes from rotating axis budgets, bounded so no rotation is
+more than ~10% harder than another on the measured terms.
+
+**R6 · Warm-up is sacred.** 0–500 m carries no lethal obstacle. A contract, so
+it cannot erode.
+
+**R7 · Recovery cadence is a curve, not a per-region constant.** Maximum
+consecutive challenge chunks rises with pressure. Every region obeys it,
+including Ancient Forest.
+
+**R8 · The fairness floor is independent of pressure.** Every generated chunk,
+at every distance, must satisfy:
+
+- tightest gate ≥ K × player collision radius at **base** upgrades;
+- preview time ≥ T seconds, computed as free horizontal distance before the
+  next constriction ÷ the **speed cap at that distance** (D-0050's curve);
+- a passable line exists using only verbs the player has been taught by then.
+
+This is what lets difficulty rise without becoming unfair, and all three terms
+are computable headlessly.
+
+**R9 · The curve is a schedule, not a filter.** Content that works is
+*relocated*, never deleted, to satisfy the curve. Written in response to
+requirement 6 — Ancient Forest's density is an asset to place correctly, not a
+problem to dilute.
+
+**R10 · No label without a consumer.** `difficulty` becomes derived from
+measured geometry, or it is deleted. A number nothing reads is a lie waiting to
+happen (F1).
+
+**R11 · Declared identity must match generated behaviour.** A region's `focus`
+and `quirk` are assertions about its output, and a contract checks them. F3 is
+what happens without this rule.
+
+---
+
+## 6 · The region swap, and what it needs alongside
+
+The owner's idea — Bramble Canopy first, Ancient Forest second — is **better
+than the retune this document originally proposed**, because it achieves
+requirement 3 without touching requirement 6. Bramble already *is* the
+difficulty wanted for the first 5 km.
+
+Measured consequence on the label curve:
+
+| | 0–5 km | 5–10 km | 10–15 km |
+| --- | ---: | ---: | ---: |
+| today | 0.0 → 3.4 | 2.0 | 3.2 |
+| swapped | **2.0** | **3.4** | 3.2 |
+
+Up, up, then flat-with-a-width-spike — instead of up, down, up. **The swap
+alone removes most of the saw-tooth at near-zero content cost.**
+
+Three consequences it must be paired with, all from F2:
+
+1. **The swap moves the only ramp the game has from the first 5 km to the
+   second.** Bramble's pool is region-keyed and distance-invariant, so a
+   swapped opening would be *flat* across its whole 5 km — which contradicts
+   requirement 2. The pressure curve (R1) is what puts the ramp back, and it
+   must land before or with the swap.
+2. **Ancient Forest at 5–10 km would draw only the deep-forest pool** (≥3.5 km
+   in the current law), making it harder than today's 2.5–5 km, which mixes
+   mastery and deep. Under R1 this stops being automatic and becomes a choice.
+3. **Region checkpoint ids are persisted** in `unlocked_region_checkpoints`.
+   Swapping start distances changes which distance a saved checkpoint unlocks,
+   so it needs a save migration, and Region Practice entries change meaning.
+
+---
+
+## 7 · How reliable is this? An honest split
+
+**Near-certain — the shape.** Generation is a pure function of distance. The
+curve can be made any shape and pinned by contracts that fail on regression.
+Both instruments used for §2 were written in minutes.
+
+**Near-certain — fairness.** Every term in R8 is computable headlessly, as is
+R2, R3, R6 and R7. These become CI, not judgement.
+
+**Low — the feel.** The bot cannot pump, has never performed a Dive, and reels
+far too lightly; `docs/technical/simulation-lab.md` explicitly forbids using it
+to evaluate difficulty. Whether 2 km is the right place for the second rung is
+device-only, permanently.
+
+**The consequence for the plan:** put every knob on one curve, exposed in the
+Test Lab, so device time is spent judging **one slope** rather than
+re-authoring content chunk by chunk. If the plan ever requires the owner to
+evaluate individual patterns on device, it has failed.
+
+---
+
+## 8 · Staged plan
+
+**Phase 0 — instrumentation only.** Land both measuring instruments as a
+`tools/` command plus a contract that records today's profile as a baseline.
+**No gameplay change**, so it can land while the design is still being argued,
+and everything after becomes comparable rather than remembered.
+
+**Phase 1 — doctrine.** These rules, argued and cut down, become a decision
+ledger entry. Owner signs off before generator code moves.
+
+**Phase 2 — compute the curve without using it.** `pressure(d)` exists,
+contracts measure and report the profile, behaviour is byte-identical. Proves
+the numbers before they are load-bearing.
+
+**Phase 3 — switch selection onto the curve, one region at a time**, with the
+slope exposed in the Test Lab.
+
+**Phase 4 — the swap and the retune**, once the curve can express the result.
+
+**Phase 5 — per-region endless (§9)**, deepest pool first, as a non-records
+mode. Deliberately last: it is nearly free once Phase 2 lands and impossible
+before it, and it is the instrument that validates the plateau claim in R5.
+
+---
+
+## 9 · Per-region endless modes
+
+An owner idea from the same session: **make each region playable as an endless
+version of itself** — endless Forest, endless Brambles — so a region can scale
+past the 5 km slot it gets in the main run.
+
+### Why it fits the doctrine unusually well
+
+It separates the two things that are fused today. In the main run a region gets
+one 5 km slot and therefore exactly **one** pressure level. In a region-endless
+mode it gets the whole curve, expressed entirely on its own axes.
+
+Three consequences worth having:
+
+1. **It is the missing calibration instrument.** Every target in §2 comes from
+   the owner's play of one mixed course, and each region is only ever observed
+   at its single slot pressure. Region-endless yields a *per-axis* skill curve
+   — "I reach 20 km on height control and 8 km on precision" — which is
+   evidence no mixed run can produce, and which directly settles questions 1
+   and 4 below.
+2. **It validates R5's plateau before the main run depends on it.** The claim
+   that eight axis budgets can be made roughly equal in difficulty is testable
+   in isolation, one region at a time.
+3. **It is a content multiplier with no new content** — eight ways to play the
+   patterns that already ship.
+
+### Why it must come after the curve, not before
+
+A region today has exactly one difficulty setting: its authored pool plus its
+cadence, invariant across its span. There is nothing to scale. **Region-endless
+is impossible to do well before `pressure(d)` exists and nearly free
+afterwards** — once a region takes pressure as an input, running it from 0 to
+plateau is the same code path as running it in its slot.
+
+It also needs one capability the game does not have: **holding a region while
+distance keeps rising.** Region Practice starts you at a checkpoint but the
+course continues normally and crosses into the next region ~5 km later. Under
+R1 that decoupling is natural, because region and pressure stop being the same
+variable.
+
+### The binding constraint is pool depth, and it is very uneven
+
+Distinct patterns per pool, with how often a pattern must repeat to fill a
+5 km slot (≈52 chunks):
+
+| pool | patterns | repeats per 5 km | per 20 km |
+| --- | ---: | ---: | ---: |
+| **Bramble Canopy** (single + pair) | **8** | **13×** | **52×** |
+| Silk Hollow | 9 | 5.8× | 23× |
+| Deep Mist | 9 | 5.8× | 23× |
+| Ruined Arboretum · Storm Ridge · Web City · Ashen Hollow | 11 | 4.7× | 19× |
+| Ancient Forest (control + mastery + deep) | 40 across three tiers | 3.1× | 12× |
+
+`measured`.
+
+> **Bramble Canopy is the thinnest pool in the game at eight patterns**, and it
+> is both the region the owner wants to move to the front and an obvious
+> candidate for endless. It currently reads as pleasant partly *because* half
+> its chunks are empty, which hides how little vocabulary it has.
+
+So region-endless is gated on authoring depth, region by region, and the order
+in which regions get an endless mode should follow pool depth rather than
+theme. Ancient Forest could sustain one today; Bramble could not.
+
+### Unresolved conflicts
+
+- **The leaderboard is decided as one general board** (see the decision ledger;
+  it is stamped in `docs/product/upgrade-and-difficulty-research-2026-08-02.md`
+  § 4.4). Eight endless modes are either
+  eight boards — which is exactly the population-splitting that decision
+  rejected — or they are non-records modes. *Recommendation: non-records, like
+  Region Practice, unless and until the main board is healthy.*
+- **Economy.** If region-endless pays flies, players farm the cheapest region;
+  if it pays nothing, it competes with the main run for attention and loses.
+  Region Practice's existing answer is "awards nothing", and it is the safest
+  precedent.
+- **It multiplies the balance surface by eight** — the risk §11 warns about.
+  The mitigation is that it multiplies it along a dimension the doctrine wants
+  measured anyway, and each mode is independently shippable.
+
+---
+
+## 10 · Questions for the analysis sessions
+
+The owner said he would spend several sessions on this. These are the forks
+that need his answer, with what evidence would settle each.
+
+1. **Where does the plateau start?** Owner's figure is ~15 km. It also decides
+   where 25 km stops being a difficulty problem and becomes an endurance one.
+   *Evidence: how a 15–20 km stretch feels at constant pressure.*
+2. **Does the fairness floor override authored content, or fail CI?** Silent
+   substitution hides authoring mistakes; failing CI makes them visible and
+   costs a human fix. *Recommendation: fail CI.*
+3. **Is Ancient Forest's density its identity, or its accident?** F3 says its
+   zero-recovery cadence contradicts its own declared quirk. Giving it the
+   every-fifth-chunk rhythm would keep 4 in 5 chunks as challenge — still far
+   denser than Bramble's 1 in 2. *Evidence: play it with the cadence and see
+   whether it is still the fun hard section.*
+4. **How much may a region deviate from the curve?** R4 proposes ±15%.
+   *Evidence: whether Silk Hollow at +15% still reads as a step or as texture.*
+5. **Does the Verb axis get its own patterns, or a flag on existing ones?**
+   Requirement 4 needs Dive- and Burst-demanding chunks, and there are
+   currently none authored as such.
+6. **Does the swap happen before or after the curve?** §6 argues after, or with
+   — never before, because alone it flattens the opening.
+7. **Which region gets an endless mode first?** §9 argues pool depth decides,
+   not theme — Ancient Forest could sustain one today at 12× repetition over
+   20 km; Bramble Canopy would repeat 52×.
+8. **Do region-endless runs award anything?** §9 recommends nothing, following
+   Region Practice, to avoid both farming and a second leaderboard.
+
+---
+
+## 11 · Risks
+
+- **Calibrated on one player.** Every target in §2 is the owner's play. A
+  second competent player would sharpen this a lot.
+- **Eight regions × new rules is a large authored surface.** Phase 3's
+  region-at-a-time staging exists to stop that landing as one unreviewable
+  change. Per-region endless modes (§9) multiply it again.
+- **Pattern vocabulary is thin and uneven** — 8 patterns in Bramble against 40
+  across Ancient Forest's tiers. Any plan that gives a region more distance
+  than its slot is really a request for more authored patterns.
+- **Save migration** for region checkpoints if the swap lands (§6.3).
+- **Course seeds change.** Any change to pool selection changes every generated
+  course, so old traces and any recorded run become non-reproducible. The trace
+  format already refuses cross-generation input, so this fails loudly rather
+  than silently — but the leaderboard's reproducibility promise is scoped to one
+  physics generation, and this is a generation change.
+
+---
+
+## Appendix · Reproducing the measurements
+
+Both instruments were temporary scripts under `tools/`, removed after use;
+Phase 0 exists to make them permanent. Sketch, so the numbers can be checked
+before then:
+
+- **Label curve** — call `CoursePatternCatalog.pattern_for_chunk(chunk, chunk *
+  960.0, seed)` for chunks 0…160 across several seeds; bucket
+  `pattern["difficulty"]` by kilometre.
+- **Gate curve** — `CourseStream.reset(...)` then `update_for_position(x)` per
+  chunk; from `geometry()`, take `boundary_surfaces` and
+  `obstacle_contact_polygons`, compute each polygon's y-span at a sampled `x`,
+  merge overlapping spans, and take the largest **interior** gap. Measuring
+  from `y = 0` instead of from the ceiling's underside reports the space above
+  the ceiling as passable and yields nonsense — that error was made and caught
+  during this session.
