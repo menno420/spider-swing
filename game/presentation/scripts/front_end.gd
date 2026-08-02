@@ -2,6 +2,9 @@ extends Control
 class_name FrontEndView
 ## Read-only front-end presentation bound to FrontEndState.
 
+const SpiderWebPanelScript = preload(
+	"res://game/presentation/scripts/spider_web_panel.gd")
+
 const DEEP := SpiderUiTheme.BACKGROUND
 const PANEL := SpiderUiTheme.PANEL
 const PANEL_SOFT := SpiderUiTheme.PANEL_SOFT
@@ -52,10 +55,13 @@ var _garage_inspiration: Label
 var _garage_style_buttons: Dictionary = {}
 var _garage_web_buttons: Dictionary = {}
 var _garage_silk_preview: SilkPreview
+var _garage_roster_panel: PanelContainer
+var _garage_detail_panel: PanelContainer
 var _profile_buttons: Dictionary = {}
 var _shop_flies: Label
 var _shop_title: Label
 var _shop_spider_preview: TextureRect
+var _shop_panel: PanelContainer
 var _shop_description: Label
 var _upgrade_buttons: Dictionary = {}
 var _upgrade_rows: Dictionary = {}
@@ -214,6 +220,7 @@ func _build_home() -> void:
 	_place(version, _home, 0.06, 0.83, 0.46, 0.88)
 
 	var card := _panel(PANEL)
+	card.name = "HomeWebPanel"
 	_place(card, _home, 0.62, 0.14, 0.94, 0.86)
 	var menu := VBoxContainer.new()
 	menu.add_theme_constant_override("separation", 10)
@@ -357,6 +364,7 @@ func _build_settings() -> void:
 	_place(back, _settings, 0.025, 0.035, 0.16, 0.11)
 
 	var card := _panel(PANEL)
+	card.name = "SettingsWebPanel"
 	_place(card, _settings, 0.16, 0.05, 0.84, 0.96)
 	var scroll := ScrollContainer.new()
 	scroll.name = "SettingsScroll"
@@ -458,7 +466,9 @@ func _build_garage() -> void:
 	var heading := _label("SPIDER GARAGE", 34, INK)
 	_place(heading, _garage, 0.20, 0.035, 0.58, 0.12)
 
-	var roster_card := _panel(PANEL)
+	_garage_roster_panel = _panel(PANEL)
+	_garage_roster_panel.name = "GarageRosterWebPanel"
+	var roster_card := _garage_roster_panel
 	_place(roster_card, _garage, 0.04, 0.13, 0.49, 0.96)
 	var roster := VBoxContainer.new()
 	roster.add_theme_constant_override("separation", 11)
@@ -489,7 +499,9 @@ func _build_garage() -> void:
 		"All five candidates are open in this comparison build. Each changes the "
 		+ "same tested motor through explicit trade-offs."))
 
-	var detail_card := _panel(PANEL)
+	_garage_detail_panel = _panel(PANEL)
+	_garage_detail_panel.name = "GarageDetailWebPanel"
+	var detail_card := _garage_detail_panel
 	_place(detail_card, _garage, 0.51, 0.13, 0.96, 0.96)
 	var detail := VBoxContainer.new()
 	detail.add_theme_constant_override("separation", 6)
@@ -579,7 +591,9 @@ func _build_shop() -> void:
 	var back := _button(&"ShopBack", "‹  HOME", CYAN, 50.0)
 	back.pressed.connect(_on_home)
 	_place(back, _shop, 0.025, 0.035, 0.16, 0.11)
-	var card := _panel(PANEL)
+	_shop_panel = _panel(PANEL)
+	_shop_panel.name = "ShopWebPanel"
+	var card := _shop_panel
 	_place(card, _shop, 0.14, 0.08, 0.86, 0.94)
 	var content := VBoxContainer.new()
 	content.add_theme_constant_override("separation", 11)
@@ -1285,6 +1299,10 @@ func _render() -> void:
 func _render_garage() -> void:
 	var selected := _state.progress.selected_spider_id
 	var item := SpiderCatalog.profile(selected)
+	var profile_accent := SpiderUiTheme.profile_accent(selected)
+	_garage_roster_panel.call("set_accent", profile_accent)
+	_garage_detail_panel.call("set_accent", profile_accent)
+	_garage_name.add_theme_color_override("font_color", profile_accent)
 	var overlay_level := _state.debug_upgrade_overlay_level()
 	for spider_id: StringName in _profile_buttons:
 		var button: Button = _profile_buttons[spider_id]
@@ -1353,6 +1371,9 @@ func _render_garage() -> void:
 func _render_shop() -> void:
 	var selected := _state.progress.selected_spider_id
 	var profile_item := SpiderCatalog.profile(selected)
+	var profile_accent := SpiderUiTheme.profile_accent(selected)
+	_shop_panel.call("set_accent", profile_accent)
+	_shop_title.add_theme_color_override("font_color", profile_accent)
 	var overlay_enabled := _state.debug_upgrade_overlay_enabled()
 	var overlay_level := _state.debug_upgrade_overlay_level()
 	_sync_spider_preview(_shop_spider_preview, selected)
@@ -1916,11 +1937,8 @@ func _panel(
 	radius: int = 22,
 	border: Color = Color(GREEN, 0.42),
 ) -> PanelContainer:
-	var panel := PanelContainer.new()
-	panel.add_theme_stylebox_override(
-		"panel",
-		SpiderUiTheme.panel_style(color, radius, border),
-	)
+	var panel := SpiderWebPanelScript.new()
+	panel.configure(color, radius, border)
 	return panel
 
 

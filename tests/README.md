@@ -29,7 +29,7 @@ failure never hides the rest.
 
 ## What exists now
 
-197 runtime contracts across bootstrap/build, deterministic physics, zone,
+198 runtime contracts across bootstrap/build, deterministic physics, zone,
 biology, Campaign, difficulty, upgrade-wiring, simulation/replay, economy,
 audio, mobile HUD, and front-end groups. The executable source of truth is
 `EXPECTED_CHECK_COUNT` in `tests/test_runner.gd`. The bootstrap group pins the public stable debug signer and

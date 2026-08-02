@@ -786,3 +786,23 @@
 - provenance: Menno, 2026-08-02 — add about forty levels for every track,
   slightly reduce each level's buff, lengthen progression, and retain a larger
   total reward; increase Reel speed without adding much spider speed
+
+## [D-0042] Make menu surfaces feel spider-built through one passive card renderer
+
+- status: decided
+- date: 2026-08-02
+- verdict: Every front-end card is a `SpiderWebPanel` that draws deterministic
+  low-alpha fibres, two tensioned corner webs, six silk knots, and two small
+  cocoon forms behind its children. Button corners use a restrained asymmetric
+  cocoon silhouette. Garage and Shop border/title accents follow the selected
+  spider; all other routes reuse their existing semantic accent. The renderer
+  is static, passes GUI input, and owns neither navigation nor layout.
+- why: The previous forest palette and two full-screen corner webs made the UI
+  cohesive but did not make the actual menu surfaces feel constructed by a
+  spider. A reusable procedural material layer improves every present and future
+  screen without adding raster maintenance or one-off layout branches. Low
+  opacity protects text contrast, static geometry honors Reduced Motion, and
+  keeping controls as ordinary children preserves the proven mobile interaction
+  contract.
+- provenance: Menno, 2026-08-02 — menus should have a more spider-like theme,
+  with more webs and texture
