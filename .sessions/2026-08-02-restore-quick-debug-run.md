@@ -1,6 +1,6 @@
 # Restore the compact Debug Test Run launcher
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 
@@ -60,6 +60,16 @@ present while the fast comparison path was functionally gone.
   records the quick-versus-advanced boundary; no menu material or visual layout
   direction changed.
 
+## Shipped
+
+- PR #114 implementation commit
+  `ef6e88e97a53e0ac1f94dcd0b453fee4608da3c4` carries the complete 16-file
+  batch. Its remote Git tree and the locally verified commit both resolve to
+  `86c4c607a7d0a3eb45b60da01c1af07625cb96c1`.
+- This final closeout withdraws only `claude/restore-quick-debug-run`'s claim.
+  Required GitHub checks and Android export decide the terminal merge/build
+  state.
+
 ## Layout evidence
 
 - Exact Godot `SubViewport` measurements enclose card, Advanced route, and pinned
@@ -92,10 +102,12 @@ and was not duplicated in the ledger.
 ## Verification evidence
 
 - `python3 tools/verify.py --require-godot`: exact Godot
-  `4.7.1.stable.official.a13da4feb`; all seven stages pass; 205/205 contracts.
-- `python3 bootstrap.py check --strict`: the implementation tree reaches only
-  the designed `in-progress` session-card hold; advisory stale-wall and
-  orientation-headroom notes remain non-exit-affecting.
+  `4.7.1.stable.official.a13da4feb`; tail: `[test_runner] PASS — 205 check(s)
+  passed` and `[verify] all checks passed`.
+- `python3 bootstrap.py check --strict`: tail: `session log
+  .sessions/2026-08-02-restore-quick-debug-run.md complete` and `check: all
+  checks passed.` Advisory stale-wall and orientation-headroom notes remain
+  non-exit-affecting.
 
 ## Owner questions
 
@@ -115,4 +127,4 @@ Install the Android artifact and compare a 0 m/L0 run with a 25 km/MAX run from
 the compact launcher, then open Advanced Test Lab and confirm the prior A/B/C
 profiles still load unchanged.
 
-- **📊 Model:** gpt-5.6-sol · high · focused feature restoration
+- **📊 Model:** gpt-5.6-sol · high · feature build
