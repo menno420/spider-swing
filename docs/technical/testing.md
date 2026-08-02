@@ -189,6 +189,35 @@ The physics group lives in `tests/unit/phase0_physics_tests.gd`, zone content in
 `tests/integration/front_end_flow_tests.gd`. The trajectory fixture is
 `tests/fixtures/phase0_trace.json`.
 
+### Measuring GUI geometry headlessly — the trap that has already fired
+
+A `SubViewport` will hand you control rectangles for a screen that was **never
+displayed**, and they look entirely plausible. Nothing errors; the numbers just
+describe an unresolved layout. That produced a published figure of *"the Field
+Guide detail panel is 69 % empty, the worst in the build"*, which was ranked
+second on a backlog and is wrong — rendered, that panel is 110 % used and its
+copy scrolls (`docs/product/menu-ux-review-2026-08-02.md` § 2.5).
+
+Two rules, both cheap:
+
+1. **Show the screen and settle the frames before reading anything.** Put the
+   `SubViewport` in the tree, drive the state to the screen under test, and
+   `await process_frame` several times. A container's children do not size to
+   their content until a layout pass runs, and autowrapping labels cannot know
+   their height until they know their width.
+2. **Sanity-check the root against the viewport.** The unshown panel reported
+   **1 723 px of height inside a 720 px viewport** — a child taller than its
+   viewport is a contradiction no real layout produces, and it was visible in
+   the raw number the whole time. Assert it before trusting any measurement
+   derived from it.
+
+Note the consequence for contracts: a suite's `run()` is synchronous, so it
+**cannot** await frames. Rendered measurements belong in a `tools/` probe or a
+dated measurement document; what a contract can pin is the *wiring* that makes
+layout correct — autowrap on, horizontal expand set, a minimum height rather
+than a maximum, a real scroller for overflow. `front_end_flow_tests.gd` does
+exactly that for the Field Guide sections.
+
 ## `tools/check_architecture.py`
 
 Enforces the inward dependency direction from
