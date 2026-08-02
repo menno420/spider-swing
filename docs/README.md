@@ -14,7 +14,8 @@
 | 2 | [`current-state.md`](current-state.md) | What is true right now — the stability baseline, what is in flight, what shipped. |
 | 3 | [`planning/next-session-brief-2026-08-01-mechanics.md`](planning/next-session-brief-2026-08-01-mechanics.md) | **The current next-session entry point.** Earned speed and the bird — what to build, the three mistakes that look correct from the outside, and the paste-ready prompt. Supersedes the recording-led handoff below. |
 | 4 | [`game-design/earned-speed-and-the-bird.md`](game-design/earned-speed-and-the-bird.md) | The spec that brief points at: the measured argument, every seam with a file:line, and what cannot be tuned from the lab. |
-| 5 | [`CAPABILITIES.md`](CAPABILITIES.md) | What sessions in this environment can and cannot do, with verified evidence. |
+| 5 | [`game-design/difficulty-and-obstacle-doctrine.md`](game-design/difficulty-and-obstacle-doctrine.md) | **Open proposal, owner is analysing it.** The measured difficulty baseline — authored curve, real corridor width, the eight authored axes — four structural findings, and proposed rules for how difficulty and obstacle placement are decided. Nothing here is implemented. |
+| 6 | [`CAPABILITIES.md`](CAPABILITIES.md) | What sessions in this environment can and cannot do, with verified evidence. |
 | — | [`planning/fresh-session-handoff-2026-08-01.md`](planning/fresh-session-handoff-2026-08-01.md) | **Superseded as a plan, accurate as a record.** The recording-led, visuals-led continuation. Read it for what merged and what Menno accepted; not for what to do next. |
 
 ## Product
