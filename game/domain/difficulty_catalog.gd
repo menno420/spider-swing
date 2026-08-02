@@ -42,6 +42,7 @@ const PHYSICS_FIELDS := [
 	"dive_distance_fraction", "dive_pull_duration", "dive_exit_speed",
 	"dive_tangential_retention", "downward_target_threshold",
 	"camera_follow_strength", "camera_look_ahead", "player_collision_radius",
+	"obstacle_contact_inset",
 	"input_buffer_duration", "lower_world_boundary",
 	"camera_left_kill_distance", "death_confirmation_seconds",
 	"surface_snap_distance", "pickup_collision_radius",

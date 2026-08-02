@@ -33,6 +33,36 @@ const CANOPY_HOOK_WIDTH := 300.0
 const CANOPY_HOOK_HEIGHT := 300.0
 const CANOPY_LEAF_WIDTH := 320.0
 const CANOPY_LEAF_HEIGHT := 305.0
+## Contact profiles traced four runtime pixels inside the actual alpha artwork
+## at the shipped 0.90 scale. They deliberately keep the broader authored
+## polygons for texture fitting, web attachment, and conservative route proof.
+## Coordinates are `(horizontal width share, outward height share)` and are
+## mirrored from the same source for ceiling/floor and left/right variants.
+const CANOPY_HOOK_CONTACT_PROFILE := [
+	Vector2(0.1778, 0.9870), Vector2(0.3556, 0.8870),
+	Vector2(0.3556, 0.8130), Vector2(0.4833, 0.7630),
+	Vector2(0.5463, 0.5741), Vector2(0.4444, 0.5167),
+	Vector2(0.5056, 0.5741), Vector2(0.4685, 0.6815),
+	Vector2(0.3889, 0.7352), Vector2(0.3556, 0.7056),
+	Vector2(0.2556, 0.8130), Vector2(0.1481, 0.8167),
+	Vector2(-0.0833, 0.6037), Vector2(-0.0537, 0.4000),
+	Vector2(0.0111, 0.3907), Vector2(0.1185, 0.2352),
+	Vector2(0.1815, 0.2537), Vector2(0.2889, 0.0759),
+	Vector2(0.5700, 0.0000), Vector2(-0.4900, 0.0000),
+	Vector2(-0.2796, 0.2185), Vector2(-0.3463, 0.3778),
+	Vector2(-0.2870, 0.4000), Vector2(-0.2648, 0.6519),
+	Vector2(-0.1907, 0.6963), Vector2(-0.2204, 0.7704),
+]
+const CANOPY_LEAF_CONTACT_PROFILE := [
+	Vector2(0.5700, 0.9107), Vector2(0.5700, 0.6831),
+	Vector2(0.5365, 0.5811), Vector2(0.5700, 0.5264),
+	Vector2(0.3906, 0.2860), Vector2(0.4913, 0.2350),
+	Vector2(0.1233, 0.0000), Vector2(-0.4900, 0.0000),
+	Vector2(-0.4900, 0.1548), Vector2(-0.2535, 0.4882),
+	Vector2(-0.2188, 0.4153), Vector2(-0.0451, 0.6339),
+	Vector2(-0.0278, 0.5683), Vector2(0.2674, 0.7905),
+	Vector2(0.2431, 0.6448),
+]
 
 var _geometry := CourseGeometry.new()
 var _middle_hazard_start_distance: float = 10000.0
@@ -1085,12 +1115,16 @@ func _append_canopy_hook_vine(
 		Vector2(center_x + horizontal * width * 0.40, edge_y + direction * height * 0.10),
 		Vector2(center_x + horizontal * width * 0.50, edge_y),
 	])
+	var contact_polygon := _canopy_contact_polygon(
+		center_x, edge_y, hanging, width, height, scale, curl_left,
+		CANOPY_HOOK_CONTACT_PROFILE)
 	result.append_obstacle(
 		_scaled_polygon(polygon, Vector2(center_x, edge_y), scale),
 		hanging,
 		CourseObstacleCatalog.CANOPY_HOOK_VINE_LEFT \
 			if curl_left \
 			else CourseObstacleCatalog.CANOPY_HOOK_VINE_RIGHT,
+		&"", &"", {}, CourseGeometry.ANCHOR_FIXED, contact_polygon,
 	)
 
 
@@ -1135,13 +1169,38 @@ func _append_canopy_leaf_shutter(
 			edge_y + direction * height * 0.48,
 		),
 	])
+	var contact_polygon := _canopy_contact_polygon(
+		center_x, edge_y, hanging, width, height, scale, lean_left,
+		CANOPY_LEAF_CONTACT_PROFILE)
 	result.append_obstacle(
 		_scaled_polygon(polygon, Vector2(center_x, edge_y), scale),
 		hanging,
 		CourseObstacleCatalog.CANOPY_LEAF_SHUTTER_LEFT \
 			if lean_left \
 			else CourseObstacleCatalog.CANOPY_LEAF_SHUTTER_RIGHT,
+		&"", &"", {}, CourseGeometry.ANCHOR_FIXED, contact_polygon,
 	)
+
+
+func _canopy_contact_polygon(
+	center_x: float,
+	edge_y: float,
+	hanging: bool,
+	width: float,
+	height: float,
+	scale: float,
+	mirrored: bool,
+	profile: Array,
+) -> PackedVector2Array:
+	var direction := 1.0 if hanging else -1.0
+	var horizontal := -1.0 if mirrored else 1.0
+	var polygon := PackedVector2Array()
+	for point: Vector2 in profile:
+		polygon.append(Vector2(
+			center_x + horizontal * width * point.x,
+			edge_y + direction * height * point.y,
+		))
+	return _scaled_polygon(polygon, Vector2(center_x, edge_y), scale)
 
 
 func _append_floating_seed_burr(

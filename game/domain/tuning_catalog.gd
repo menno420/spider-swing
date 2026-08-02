@@ -422,6 +422,17 @@ const PARAMETERS := [
 		"quick": [1.0, 1.12, 1.24, 1.36],
 	},
 	{
+		"id": &"obstacle_contact_inset",
+		"category": CATEGORY_ROUTES,
+		"label": "Obstacle contact inset",
+		"help": "Keeps lethal obstacle contact slightly inside the painted silhouette.",
+		"format": &"pixels",
+		"minimum": 0.0,
+		"maximum": 10.0,
+		"step": 1.0,
+		"quick": [0.0, 2.0, 4.0, 6.0],
+	},
+	{
 		"id": &"corridor_contours",
 		"category": CATEGORY_ROUTES,
 		"label": "Shaped ceiling and floor",

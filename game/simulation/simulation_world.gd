@@ -39,6 +39,7 @@ var decoration_ids: Array[StringName] = []
 var decoration_visual_ids: Array[StringName] = []
 var boundary_surfaces: Array[PackedVector2Array] = []
 var obstacles: Array[PackedVector2Array] = []
+var obstacle_contact_polygons: Array[PackedVector2Array] = []
 ## Parallel to `obstacles`: 1 when the hazard answers web taps, 0 when it is
 ## lethal-but-untappable. Absent entries read as tappable so geometry built
 ## without the flag keeps its original behaviour.
@@ -83,9 +84,11 @@ var _next_decorations: Array[PackedVector2Array] = []
 var _decoration_active: PackedByteArray = PackedByteArray()
 var _next_decoration_active: PackedByteArray = PackedByteArray()
 var _base_obstacles: Array[PackedVector2Array] = []
+var _base_obstacle_contact_polygons: Array[PackedVector2Array] = []
 var _obstacle_motion_specs: Array[Dictionary] = []
 var _obstacle_source_keys: Array[String] = []
 var _next_obstacles: Array[PackedVector2Array] = []
+var _next_obstacle_contact_polygons: Array[PackedVector2Array] = []
 var _obstacle_active: PackedByteArray = PackedByteArray()
 var _next_obstacle_active: PackedByteArray = PackedByteArray()
 var _web_anchor_source_key: String = ""
@@ -165,6 +168,7 @@ func set_course_geometry(geometry: CourseGeometry) -> void:
 	for surface: PackedVector2Array in geometry.boundary_surfaces:
 		boundary_surfaces.append(surface.duplicate())
 	_base_obstacles.clear()
+	_base_obstacle_contact_polygons.clear()
 	obstacle_anchorable.clear()
 	obstacle_kinds.clear()
 	obstacle_ids.clear()
@@ -175,6 +179,8 @@ func set_course_geometry(geometry: CourseGeometry) -> void:
 	for index in range(geometry.obstacles.size()):
 		var obstacle := geometry.obstacles[index].duplicate()
 		_base_obstacles.append(obstacle)
+		_base_obstacle_contact_polygons.append(
+			geometry.obstacle_contact_polygon(index).duplicate())
 		obstacle_anchorable.append(
 			1 if geometry.is_obstacle_anchorable(index) else 0)
 		obstacle_kinds.append(geometry.obstacle_kind(index))
@@ -218,13 +224,22 @@ func _sample_course_motion() -> void:
 		_next_decoration_active.append(1 if bool(sample["next_active"]) else 0)
 	obstacles.clear()
 	_next_obstacles.clear()
+	obstacle_contact_polygons.clear()
+	_next_obstacle_contact_polygons.clear()
 	_obstacle_active.clear()
 	_next_obstacle_active.clear()
 	for index in range(_base_obstacles.size()):
 		var sample := CourseMotion.sample_polygon(
 			_base_obstacles[index], _obstacle_motion_specs[index], tick, FIXED_DELTA)
+		var contact_sample := CourseMotion.sample_polygon(
+			_base_obstacle_contact_polygons[index],
+			_obstacle_motion_specs[index], tick, FIXED_DELTA)
 		obstacles.append(PackedVector2Array(sample["current"]))
 		_next_obstacles.append(PackedVector2Array(sample["next"]))
+		obstacle_contact_polygons.append(
+			PackedVector2Array(contact_sample["current"]))
+		_next_obstacle_contact_polygons.append(
+			PackedVector2Array(contact_sample["next"]))
 		_obstacle_active.append(1 if bool(sample["active"]) else 0)
 		_next_obstacle_active.append(1 if bool(sample["next_active"]) else 0)
 
@@ -240,6 +255,9 @@ func _commit_next_course_motion() -> void:
 	obstacles.clear()
 	for polygon: PackedVector2Array in _next_obstacles:
 		obstacles.append(polygon.duplicate())
+	obstacle_contact_polygons.clear()
+	for polygon: PackedVector2Array in _next_obstacle_contact_polygons:
+		obstacle_contact_polygons.append(polygon.duplicate())
 	_obstacle_active = _next_obstacle_active.duplicate()
 
 
@@ -725,12 +743,12 @@ func _collides_with_obstacle(center: Vector2) -> bool:
 
 func _collision_at(center: Vector2, motion_fraction: float = 0.0) -> Dictionary:
 	for index in range(obstacles.size()):
-		var obstacle := _obstacle_polygon_at(index, motion_fraction)
+		var obstacle := _obstacle_contact_polygon_at(index, motion_fraction)
 		if obstacle.is_empty():
 			continue
 		if not SolidGeometry.circle_intersects_polygon(
 			center,
-			config.player_collision_radius,
+			obstacle_contact_radius(),
 			obstacle,
 		):
 			continue
@@ -778,6 +796,37 @@ func _obstacle_polygon_at(
 	return polygon
 
 
+func _obstacle_contact_polygon_at(
+	index: int,
+	motion_fraction: float,
+) -> PackedVector2Array:
+	var current_active := index >= _obstacle_active.size() or \
+		_obstacle_active[index] != 0
+	var next_active := index >= _next_obstacle_active.size() or \
+		_next_obstacle_active[index] != 0
+	if not current_active and not next_active:
+		return PackedVector2Array()
+	if index < 0 or index >= obstacle_contact_polygons.size():
+		return _obstacle_polygon_at(index, motion_fraction)
+	if not current_active:
+		return _next_obstacle_contact_polygons[index]
+	if not next_active:
+		return obstacle_contact_polygons[index]
+	var current := obstacle_contact_polygons[index]
+	var next := _next_obstacle_contact_polygons[index]
+	if current.size() != next.size() or is_zero_approx(motion_fraction):
+		return current
+	var polygon := PackedVector2Array()
+	for point_index in range(current.size()):
+		polygon.append(current[point_index].lerp(
+			next[point_index], clampf(motion_fraction, 0.0, 1.0)))
+	return polygon
+
+
+func obstacle_contact_radius() -> float:
+	return maxf(0.0, config.player_collision_radius - config.obstacle_contact_inset)
+
+
 func _collision_details(
 	center: Vector2,
 	polygon: PackedVector2Array,
@@ -805,7 +854,7 @@ func _first_obstacle_contact(start: Vector2, finish: Vector2) -> Dictionary:
 	if rescue_shield_remaining > 0.0:
 		return {"found": false, "position": finish}
 	var motion := finish - start
-	var maximum_step := maxf(config.player_collision_radius * 0.5, 4.0)
+	var maximum_step := maxf(obstacle_contact_radius() * 0.5, 4.0)
 	var sweep_length := maxf(motion.length(), _maximum_obstacle_motion())
 	var samples := maxi(1, ceili(sweep_length / maximum_step))
 	for sample in range(1, samples + 1):

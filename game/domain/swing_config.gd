@@ -23,7 +23,7 @@ class_name SwingConfig
 ## UI and recommended hiding them behind a debug flag; the disclosure already
 ## exists, which is why they stay visible.
 
-const SCHEMA_VERSION := 13
+const SCHEMA_VERSION := 14
 const PRESET_BALANCED := &"balanced_baseline"
 const PRESET_WEIGHTY := &"weighty_candidate"
 const PRESET_AGILE := &"agile_candidate"
@@ -78,6 +78,12 @@ const DEFAULT_OVERSPEED_CORRECTION := 117.5
 ## band — real headroom for skilled play, against the 112 m/s the old fixed
 ## offset produced. Device feel settles it.
 const DEFAULT_MAXIMUM_SPEED_CAP := 900.0
+## Small reference-pixel margin removed from the player circle for obstacle
+## contacts only. The visible spider already extends beyond its 18 px body
+## circle; retaining a 4 px inset makes contact land inside both silhouettes
+## without changing ceiling/floor collision or web attachment. Owner-directed
+## after a 5346.6 m Bramble screenshot showed a large visible gap at death.
+const DEFAULT_OBSTACLE_CONTACT_INSET := 4.0
 
 @export var schema_version: int = SCHEMA_VERSION
 @export var preset_name: StringName = PRESET_BALANCED
@@ -149,6 +155,7 @@ const DEFAULT_MAXIMUM_SPEED_CAP := 900.0
 @export var camera_follow_strength: float = 8.0
 @export var camera_look_ahead: float = 0.22
 @export var player_collision_radius: float = 18.0
+@export var obstacle_contact_inset: float = DEFAULT_OBSTACLE_CONTACT_INSET
 @export var input_buffer_duration: float = 0.25
 @export var lower_world_boundary: float = 780.0
 @export var camera_left_kill_distance: float = 520.0
@@ -205,6 +212,7 @@ func apply_preset(name: StringName) -> void:
 	preset_name = name
 	web_maximum_length = 1000.0
 	player_collision_radius = 18.0
+	obstacle_contact_inset = DEFAULT_OBSTACLE_CONTACT_INSET
 	web_tap_retargets_when_attached = false
 	attachment_catch_fraction = 0.08
 	reel_energy_capacity = BASE_REEL_ENERGY_CAPACITY
@@ -469,6 +477,9 @@ func set_tuning_value(parameter: StringName, value: float) -> float:
 		&"gate_opening_size":
 			gate_opening_scale = safe_value
 			return gate_opening_scale
+		&"obstacle_contact_inset":
+			obstacle_contact_inset = safe_value
+			return obstacle_contact_inset
 		&"corridor_contours":
 			corridor_contours_enabled = safe_value >= 0.5
 			return 1.0 if corridor_contours_enabled else 0.0
@@ -568,6 +579,8 @@ func value_for(parameter: StringName) -> float:
 			return floating_obstacle_scale
 		&"gate_opening_size":
 			return gate_opening_scale
+		&"obstacle_contact_inset":
+			return obstacle_contact_inset
 		&"corridor_contours":
 			return 1.0 if corridor_contours_enabled else 0.0
 		&"route_clearance":
@@ -643,6 +656,9 @@ func validate() -> PackedStringArray:
 		failures.append("attachment correction cap must be positive")
 	if input_buffer_duration <= 0.0:
 		failures.append("input buffer duration must be positive")
+	if obstacle_contact_inset < 0.0 or \
+			obstacle_contact_inset >= player_collision_radius:
+		failures.append("obstacle contact inset must sit inside the player radius")
 	if middle_hazard_start_distance < 0.0:
 		failures.append("middle hazard start distance must not be negative")
 	if tight_corridor_start_distance < 0.0:

@@ -28,13 +28,23 @@ var decoration_motion_specs: Array[Dictionary] = []
 var boundary_surfaces: Array[PackedVector2Array] = []
 var aim_guides: PackedVector2Array = PackedVector2Array()
 var obstacles: Array[PackedVector2Array] = []
+## Lethal-contact silhouette parallel to `obstacles`.
+##
+## `obstacles` remains the visual, route-validation, and attachment envelope.
+## Most authored hazards use that polygon for contact too. Generated raster
+## art whose painted silhouette is materially smaller may supply a conservative
+## contact polygon so transparent pixels can never kill the player. Missing
+## entries deliberately fall back to the obstacle polygon for legacy/manual
+## geometry.
+var obstacle_contact_polygons: Array[PackedVector2Array] = []
 ## Per-obstacle web-anchor eligibility, parallel to `obstacles`.
 ##
 ## Ceiling-grown hazards stay tappable; floor-grown ones do not. The rule is
 ## about unintended input, not reachability: a release tap and a web tap are
 ## aimed at the same area, so a floor-grown hazard sitting just below the
-## spider turned release taps into Dive Pulls. Collision is untouched — every
-## obstacle stays lethal, floor-grown ones simply stop answering taps.
+## spider turned release taps into Dive Pulls. Contact geometry is independent
+## of this flag — every obstacle stays lethal, floor-grown ones simply stop
+## answering taps.
 ##
 ## An index past the end reads as anchorable, so geometry assembled without
 ## calling `append_obstacle` keeps the original behaviour.
@@ -67,7 +77,11 @@ func append_obstacle(
 	visual_id: StringName = &"",
 	motion_spec: Dictionary = {},
 	anchor_class: StringName = ANCHOR_FIXED,
+	contact_polygon: PackedVector2Array = PackedVector2Array(),
 ) -> void:
+	while obstacle_contact_polygons.size() < obstacles.size():
+		obstacle_contact_polygons.append(
+			obstacles[obstacle_contact_polygons.size()].duplicate())
 	while obstacle_anchorable.size() < obstacles.size():
 		obstacle_anchorable.append(1)
 	while obstacle_kinds.size() < obstacles.size():
@@ -81,6 +95,10 @@ func append_obstacle(
 	while obstacle_anchor_classes.size() < obstacles.size():
 		obstacle_anchor_classes.append(ANCHOR_FIXED)
 	obstacles.append(polygon)
+	obstacle_contact_polygons.append(
+		contact_polygon.duplicate()
+		if contact_polygon.size() >= 3
+		else polygon.duplicate())
 	obstacle_anchorable.append(1 if anchorable else 0)
 	obstacle_kinds.append(kind)
 	obstacle_ids.append(content_id)
@@ -132,6 +150,14 @@ func obstacle_kind(index: int) -> StringName:
 func obstacle_id(index: int) -> StringName:
 	return obstacle_ids[index] if index >= 0 and index < obstacle_ids.size() \
 		else &""
+
+
+func obstacle_contact_polygon(index: int) -> PackedVector2Array:
+	if index >= 0 and index < obstacle_contact_polygons.size() and \
+			obstacle_contact_polygons[index].size() >= 3:
+		return obstacle_contact_polygons[index]
+	return obstacles[index] if index >= 0 and index < obstacles.size() \
+		else PackedVector2Array()
 
 
 func obstacle_anchor_class(index: int) -> StringName:
@@ -204,6 +230,8 @@ func duplicate_geometry() -> CourseGeometry:
 	copy.aim_guides = aim_guides.duplicate()
 	for obstacle: PackedVector2Array in obstacles:
 		copy.obstacles.append(obstacle.duplicate())
+	for contact_polygon: PackedVector2Array in obstacle_contact_polygons:
+		copy.obstacle_contact_polygons.append(contact_polygon.duplicate())
 	copy.obstacle_anchorable = obstacle_anchorable.duplicate()
 	copy.obstacle_kinds = obstacle_kinds.duplicate()
 	copy.obstacle_ids = obstacle_ids.duplicate()

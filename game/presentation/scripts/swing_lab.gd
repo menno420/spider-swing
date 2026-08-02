@@ -664,25 +664,32 @@ func _draw_course(size: Vector2) -> void:
 
 	var obstacle_index := 0
 	while obstacle_index < _snapshot.obstacles.size():
+		var obstacle: PackedVector2Array = _snapshot.obstacles[obstacle_index]
+		var contact_obstacle: PackedVector2Array = \
+			_snapshot.obstacle_contact_polygons[obstacle_index] \
+			if obstacle_index < _snapshot.obstacle_contact_polygons.size() \
+			else obstacle
 		if _snapshot.collision_outlines_visible and \
-				obstacle_index < _snapshot.obstacle_rest_polygons.size() and \
-				_snapshot.obstacle_rest_polygons[obstacle_index] != \
-				_snapshot.obstacles[obstacle_index]:
+				obstacle_index < \
+					_snapshot.obstacle_contact_rest_polygons.size() and \
+				_snapshot.obstacle_contact_rest_polygons[obstacle_index] != \
+					contact_obstacle:
 			var rest := _polygon_to_screen(
-				_snapshot.obstacle_rest_polygons[obstacle_index])
+				_snapshot.obstacle_contact_rest_polygons[obstacle_index])
 			_draw_closed_polyline(rest, Color(0.78, 0.92, 0.90, 0.24), 2.0)
 		if obstacle_index < _snapshot.obstacle_active.size() and \
 				_snapshot.obstacle_active[obstacle_index] == 0:
 			obstacle_index += 1
 			continue
-		var obstacle: PackedVector2Array = _snapshot.obstacles[obstacle_index]
 		var screen_obstacle := _polygon_to_screen(obstacle)
+		var screen_contact_obstacle := _polygon_to_screen(contact_obstacle)
 		var obstacle_bounds := _polygon_bounds(screen_obstacle)
 		if obstacle_bounds.end.x < -80.0 or \
 				obstacle_bounds.position.x > size.x + 80.0:
 			obstacle_index += 1
 			continue
-		_draw_obstacle(obstacle, screen_obstacle, obstacle_index)
+		_draw_obstacle(
+			obstacle, screen_obstacle, screen_contact_obstacle, obstacle_index)
 		obstacle_index += 1
 
 	if _uses_forest_art():
@@ -892,6 +899,7 @@ func _boundary_is_ceiling(world_polygon: PackedVector2Array) -> bool:
 func _draw_obstacle(
 	world_polygon: PackedVector2Array,
 	polygon: PackedVector2Array,
+	contact_polygon: PackedVector2Array,
 	obstacle_index: int,
 ) -> void:
 	var obstacle_kind := _snapshot.obstacle_kinds[obstacle_index] \
@@ -899,7 +907,8 @@ func _draw_obstacle(
 		else CourseObstacleCatalog.UNSPECIFIED
 	var environment := _environment_theme()
 	if not _uses_forest_art():
-		_draw_zone_obstacle(world_polygon, polygon, obstacle_index)
+		_draw_zone_obstacle(
+			world_polygon, polygon, contact_polygon, obstacle_index)
 		return
 	if _uses_forest_art():
 		var world_bounds := _polygon_bounds(world_polygon)
@@ -1017,7 +1026,7 @@ func _draw_obstacle(
 				)
 		if _snapshot.collision_outlines_visible:
 			_draw_closed_polyline(
-				polygon,
+				contact_polygon,
 				environment["lethal_edge"] as Color,
 				2.0,
 			)
@@ -1030,7 +1039,7 @@ func _draw_obstacle(
 	)
 	if _snapshot.collision_outlines_visible:
 		_draw_closed_polyline(
-			polygon,
+			contact_polygon,
 			environment["lethal_edge"] as Color,
 			2.0,
 		)
@@ -1053,6 +1062,7 @@ func _draw_obstacle(
 func _draw_zone_obstacle(
 	_world_polygon: PackedVector2Array,
 	polygon: PackedVector2Array,
+	contact_polygon: PackedVector2Array,
 	obstacle_index: int,
 ) -> void:
 	# World geometry remains the authority. Finished art only replaces the
@@ -1086,13 +1096,13 @@ func _draw_zone_obstacle(
 		# every leg. Component leg polygons remain authoritative collision, but
 		# their old fallback outlines made the finished sprite look wireframed.
 		if _snapshot.collision_outlines_visible:
-			_draw_closed_polyline(polygon, CYAN, 2.0)
+			_draw_closed_polyline(contact_polygon, CYAN, 2.0)
 		return
 	if texture == null:
 		draw_colored_polygon(polygon, fill)
 		_draw_closed_polyline(polygon, edge, 3.5 if anchorable else 4.0)
 		if _snapshot.collision_outlines_visible:
-			_draw_closed_polyline(polygon, CYAN, 2.0)
+			_draw_closed_polyline(contact_polygon, CYAN, 2.0)
 		return
 
 	var overscan := art_spec.get("overscan", Vector2(10.0, 10.0)) as Vector2
@@ -1119,7 +1129,7 @@ func _draw_zone_obstacle(
 		)
 
 	if _snapshot.collision_outlines_visible:
-		_draw_closed_polyline(polygon, CYAN, 2.0)
+		_draw_closed_polyline(contact_polygon, CYAN, 2.0)
 
 
 func _zone_obstacle_colors(
@@ -1547,6 +1557,15 @@ func _draw_spider() -> void:
 		)
 	if _show_debug_tools and _snapshot.collision_outlines_visible:
 		draw_arc(center, _snapshot.player_collision_radius, 0.0, TAU, 40, CYAN, 1.5)
+		draw_arc(
+			center,
+			_snapshot.obstacle_contact_radius,
+			0.0,
+			TAU,
+			40,
+			YELLOW,
+			1.5,
+		)
 		draw_line(center, center + render_velocity * 0.12, YELLOW, 2.0)
 
 

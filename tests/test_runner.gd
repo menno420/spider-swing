@@ -9,13 +9,13 @@ const AudioPresentationSuite = preload(
 const MAIN_SCENE_PATH := "res://game/bootstrap/main.tscn"
 const EXPORT_PRESETS_PATH := "res://export_presets.cfg"
 const ANDROID_WORKFLOW_PATH := "res://.github/workflows/android-debug.yml"
-const BUILD_VERSION := "0.35.0-menu-pass-playtest"
-const ANDROID_VERSION_CODE := 55
-const ANDROID_APP_NAME := "Spider Swing Quick Debug Run Playtest (dev)"
+const BUILD_VERSION := "0.36.0-obstacle-contact-playtest"
+const ANDROID_VERSION_CODE := 56
+const ANDROID_APP_NAME := "Spider Swing Obstacle Contact Playtest (dev)"
 const DEBUG_KEYSTORE_PATH := "res://.github/android/debug.keystore"
 const DEBUG_KEYSTORE_SHA256 := \
 	"e9104672477e0238b6cc2f7d6b994c459e37f130cae06a37aff05001f101bbda"
-const EXPECTED_CHECK_COUNT := 209
+const EXPECTED_CHECK_COUNT := 210
 const REQUIRED_INPUT_ACTIONS := [
 	"web_action", "reel_in", "burst_action", "pause", "restart_run",
 	"toggle_debug"]
