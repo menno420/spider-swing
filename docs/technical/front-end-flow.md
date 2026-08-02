@@ -20,19 +20,40 @@ The first visible screen presents these real routes:
 - **Course Lab** — edits and playtests a six-piece local deterministic pattern;
 - **Region Practice** — starts at a reached 5000 m checkpoint without rewards
   or record eligibility;
+- **Field Guide** — browses one spider at a time, separating biology from game
+  fiction and citations;
 - **Settings** — edits real, persisted player options.
+- **Test Lab** *(when Debug Tools is enabled)* — edits and compares complete
+  noncompetitive run configurations before gameplay is mounted.
+
+Home uses a full landscape dashboard rather than a narrow button strip. The
+selected production spider, role, difficulty and best distance form one
+identity card; the dominant Play action, difficulty selector, and a three-column
+map of two-line route buttons form the other. Every route says what it does
+before the player taps it.
 
 The simulation, input router, and gameplay view are not mounted until Play is
 requested. Returning through the in-game **Menu** control releases held Reel
 input, destroys the current session, and recreates the front end.
 
 Every front-end card uses the same presentation-only `SpiderWebPanel`. Its
-deterministic low-alpha fibres, two tensioned corner webs, six silk knots, and
-two cocoon forms draw behind existing controls and never process navigation or
-gameplay input. Buttons share an asymmetric cocoon silhouette. Garage and Shop
+neutral slate surface carries deterministic low-alpha grain and pits, fibres,
+two tensioned corner webs, six silk knots, and two cocoon forms behind controls;
+it never processes navigation or gameplay input. Buttons share an asymmetric
+cocoon silhouette. Garage and Shop
 derive their restrained border/title accent from the selected spider; Home,
 Settings, Tutorial, Campaign, Course Lab, Region Practice, Field Guide, and Test
 Run reuse the same material layer without changing their layout ownership.
+
+### Field Guide
+
+The guide is a master/detail browser, not one continuous text page. A persistent
+five-spider species index selects one production sprite and identity header.
+The detail scroller then presents four separately bordered sections: **Real
+Animal**, **In Spider Swing**, **Field Note**, and **Sources**. Real scientific
+claims, invented abilities, myth corrections, and provenance therefore cannot
+blend into one green text wall. Back names and follows the route that opened the
+guide (Home or Garage).
 
 ### Tutorial
 
@@ -119,7 +140,27 @@ The current options all affect runtime behavior:
 | Haunted background music | Enables or mutes the persistent two-stem score independently |
 | Gameplay sound effects | Enables or mutes the presentation-owned SFX layer |
 | Handheld haptics | Enables or suppresses Android vibration feedback independently |
-| Debug tools | Shows or removes the laboratory DEBUG control and panel hit regions |
+| Debug tools | Shows or removes the Home Test Lab route plus in-run diagnostic controls |
+
+### Test Lab
+
+The pre-run Test Lab exposes the eight configuration categories that can
+meaningfully exist before a run: Movement, Pacing, Rope, Pulls, Course, Routes,
+Run, and Abilities. All entries come from `TuningCatalog`; presentation does not
+duplicate bounds, steps, descriptions, or quick values. Pacing includes the
+OFF/SLOW/BASE/FAST bird comparisons. Recorded traces live compactly inside Run,
+while live-only pause, frame-step, recording, overlays, and diagnostics remain
+in gameplay.
+
+The current working set is written automatically to
+`user://debug_test_profile.json`. A/B/C each save and restore a whole comparison
+with a visible difference count. The editor displays the fully resolved values
+for the selected spider, difficulty, preset, and owned/debug upgrade level, but
+persists a separate sparse set of manually overridden axes. Only that sparse set
+is applied after normal config resolution, so merely viewing or saving L40 can
+never flatten its progression bonuses. Starting or replaying one of these runs
+uses the practice/no-awards ownership path and cannot update flies, records,
+checkpoints, leaderboards, or `PlayerProgress`.
 
 DEBUG availability is a player setting; world overlays are not. Every new run
 starts with collision outlines and web-target guides off. Their independent
@@ -131,7 +172,8 @@ versions lifetime/spendable flies, distance milestones, selected spider,
 profile upgrades, palettes, web variants, the saved creator pattern, and reached
 region checkpoints.
 `SaveRepository` is the exclusive persistent writer and performs a recoverable
-temp → primary rotation for both records.
+temp → primary rotation for settings, progression, and the separate Test Lab
+profile.
 Settings survive app restarts; invalid or corrupt values fall back safely.
 `SpiderUiTheme` supplies one Ancient-Forest-aligned bark, moss, sap, and silk
 skin to every screen, including panels, buttons, disabled/focus states, and
@@ -148,12 +190,14 @@ recording and on taller aspect ratios.
 ## Ownership
 
 - `FrontEndState` owns navigation, tutorial progress, settings validation,
-  Garage/Shop/Course Lab/Region Practice intent, and run requests.
+  Garage/Shop/Course Lab/Region Practice intent, Field Guide selection, the
+  Test Lab working set, and run requests.
 - `FrontEndView` renders state and forwards button intent.
 - `TutorialPreview` renders illustration only.
 - `ProgressionService` applies each run settlement once and owns fly-funded
   upgrades, selections, creator edits, and milestone cosmetic unlocks.
-- `SaveRepository` exclusively reads and writes settings and progression files.
+- `SaveRepository` exclusively reads and writes settings, progression, and the
+  debug-only Test Lab profile.
 - `main.gd` is the composition root: it mounts one surface at a time and wires
   the transition.
 - `SwingLabSession` remains the sole owner of authoritative run state.
@@ -165,17 +209,18 @@ No global manager or autoload is introduced.
 `python3 tools/verify.py --require-godot` verifies:
 
 - startup mounts Home without creating gameplay;
-- Play, Garage, Shop, Tutorial, Campaign, Course Lab, Region Practice, and Settings are real
+- Play, Garage, Shop, Tutorial, Campaign, Course Lab, Region Practice, Field
+  Guide, Settings, and Test Lab are real
   event-consuming Buttons;
 - the tutorial has exactly six steps and covers the live mechanics;
 - Settings owns a vertical scroll surface with readable type and mobile-sized
   three-card preset/action controls, a touch deadzone, no focus snapping, and
   complete descendant drag bubbling;
 - invalid settings are rejected and valid changes emit once;
-- settings and progression encode/decode and actual atomic filesystem
-  persistence round-trips;
+- settings, progression, and Test Lab profiles encode/decode and actual atomic
+  filesystem persistence round-trip;
 - duplicate settlement rejection, the five-core/two-identity Shop structure,
-  20-level caps and breakthroughs, proportional one-time migration,
+  40-level caps and breakthroughs, proportional one-time migration,
   fly-funded upgrades, creator edits, custom body/Silk rails and preview,
   themed progress knots, selections, and fly/distance cosmetic milestones;
 - schema-4 checkpoint migration, locked/unlocked practice cards, and practice
@@ -184,4 +229,9 @@ No global manager or autoload is introduced.
 - Menu emits one return request without leaking into a web action;
 - effects and haptics migrate on for older settings, persist independently, and
   cannot alter gameplay events;
-- disabling debug tools removes their touch surface.
+- Home keeps one dominant Play action and a three-column explanatory route map;
+- Field Guide retains its index plus four separate glance-readable sections;
+- the Test Lab exposes all eight pre-run catalogue categories, auto-saves its
+  working set, round-trips A/B/C, preserves unedited progression, reaches the
+  real session before its first tick, and remains noncompetitive;
+- disabling debug tools removes its Home and in-run touch surfaces.

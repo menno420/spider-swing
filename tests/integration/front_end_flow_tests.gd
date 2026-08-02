@@ -11,11 +11,14 @@ static func run() -> Dictionary:
 	var passed := 0
 	passed += _test_startup_is_home_not_gameplay(failures)
 	passed += _test_primary_routes_are_real_buttons(failures)
+	passed += _test_home_has_primary_action_hierarchy(failures)
 	passed += _test_tutorial_covers_current_mechanics(failures)
 	passed += _test_settings_are_validated_and_emitted(failures)
 	passed += _test_settings_are_scrollable_and_mobile_readable(failures)
 	passed += _test_settings_codec_round_trip(failures)
 	passed += _test_settings_repository_round_trip(failures)
+	passed += _test_debug_profile_repository_round_trip(failures)
+	passed += _test_debug_profile_preserves_unoverridden_progression(failures)
 	passed += _test_progression_is_idempotent_and_persistent(failures)
 	passed += _test_checkpoint_migration_and_practice_are_noncompetitive(
 		failures)
@@ -30,7 +33,7 @@ static func run() -> Dictionary:
 	passed += _test_debug_upgrade_overlay_restores_exact_saved_levels(failures)
 	passed += _test_garage_and_shop_disclose_debug_upgrade_levels(failures)
 	passed += _test_debug_run_setup_stages_and_starts_before_play(failures)
-	passed += _test_debug_bird_presets_are_session_only(failures)
+	passed += _test_debug_bird_presets_change_only_test_profile(failures)
 	passed += _test_debug_bird_controls_are_visible_and_labeled(failures)
 	passed += _test_upgrades_and_creator_edits_use_progression_service(failures)
 	passed += _test_composition_root_mounts_front_end_first(failures)
@@ -79,6 +82,38 @@ static func _test_primary_routes_are_real_buttons(
 		failures.append("Settings button does not route to settings")
 		view.free()
 		return 0
+	view.free()
+	return 1
+
+
+static func _test_home_has_primary_action_hierarchy(
+	failures: PackedStringArray,
+) -> int:
+	var settings := PlayerSettings.defaults()
+	settings.show_debug_tools = true
+	var state := FrontEndState.new()
+	state.configure(settings, PlayerProgress.defaults())
+	var view := FrontEndView.new()
+	view.bind_state(state)
+	var identity := view.find_child("HomeIdentityPanel", true, false) as Control
+	var dashboard := view.find_child("HomeWebPanel", true, false) as Control
+	var preview := view.find_child("HomeSpiderPreview", true, false) as TextureRect
+	var routes := view.find_child("HomeRouteGrid", true, false) as GridContainer
+	var play := view.front_end_button(&"Play")
+	if identity == null or dashboard == null or preview == null or \
+			routes == null or play == null or preview.texture == null or \
+			dashboard.anchor_left > 0.4 or dashboard.anchor_right < 0.95 or \
+			routes.columns != 3 or routes.get_child_count() != 9 or \
+			play.custom_minimum_size.y < 72.0 or \
+			play.get_theme_font_size("font_size") < 24:
+		failures.append("Home lost its identity, dominant PLAY, or three-column map")
+		view.free()
+		return 0
+	for route: Control in routes.get_children():
+		if route is Button and not (route as Button).text.contains("\n"):
+			failures.append("Home route does not explain its purpose at a glance")
+			view.free()
+			return 0
 	view.free()
 	return 1
 
@@ -275,6 +310,96 @@ static func _test_settings_repository_round_trip(
 	return 1
 
 
+static func _test_debug_profile_repository_round_trip(
+	failures: PackedStringArray,
+) -> int:
+	var settings_path := "user://debug_profile_test_settings.json"
+	var progress_path := "user://debug_profile_test_progress.json"
+	var profile_path := "user://debug_profile_test_profile.json"
+	for path: String in [settings_path, progress_path, profile_path]:
+		_remove_test_file(path)
+		_remove_test_file("%s.tmp" % path)
+		_remove_test_file("%s.bak" % path)
+	var repository := SaveRepository.new(
+		settings_path,
+		progress_path,
+		profile_path,
+	)
+	var expected := DebugTestProfile.defaults(SwingConfig.PRESET_BALANCED)
+	expected.set_value(&"reel_rate", 440.0)
+	expected.set_value(&"bird_speed", 680.0)
+	expected.set_value(TuningCatalog.DEBUG_START_DISTANCE, 123450.0)
+	expected.save_slot(&"a")
+	expected.set_value(&"gravity", 1320.0)
+	if not repository.save_debug_test_profile(expected):
+		failures.append("SaveRepository could not atomically write Test Lab setup")
+		return 0
+	var actual := repository.load_debug_test_profile()
+	var clamped := DebugTestProfile.from_dictionary({
+		"working_values": {
+			"reel_rate": 9999.0,
+			"unknown_axis": 12.0,
+		},
+	})
+	for path: String in [settings_path, progress_path, profile_path]:
+		_remove_test_file(path)
+		_remove_test_file("%s.tmp" % path)
+		_remove_test_file("%s.bak" % path)
+	if actual.to_dictionary() != expected.to_dictionary() or \
+			not actual.has_slot(&"a") or \
+			not is_equal_approx(clamped.value(&"reel_rate"), 720.0) or \
+			clamped.to_dictionary()["working_values"].has("unknown_axis"):
+		failures.append("Test Lab profile did not validate and round-trip independently")
+		return 0
+	return 1
+
+
+## The editor shows resolved values, but only explicitly changed axes may be
+## applied after spider/upgrade resolution. This guards the exact failure mode
+## where auto-saving a full catalogue would turn L40 into a fixed baseline.
+static func _test_debug_profile_preserves_unoverridden_progression(
+	failures: PackedStringArray,
+) -> int:
+	var settings := PlayerSettings.defaults()
+	settings.show_debug_tools = true
+	var progress := PlayerProgress.defaults()
+	var service := ProgressionService.new()
+	var state := FrontEndState.new()
+	state.configure(settings, progress, service)
+	state.set_debug_run_upgrade_level(SpiderCatalog.MAX_UPGRADE_LEVEL)
+	var comparison_service := ProgressionService.new()
+	comparison_service.set_debug_upgrade_overlay_level(
+		SpiderCatalog.MAX_UPGRADE_LEVEL)
+	var expected_config := SpiderCatalog.resolved_config(
+		settings.swing_preset,
+		comparison_service.resolved_progress(progress),
+	)
+	DifficultyCatalog.apply_to_config(expected_config, state.selected_difficulty())
+	var sparse := state.debug_tuning_overrides()
+	if sparse.has(&"reel_rate") or \
+			not is_equal_approx(
+				state.debug_tuning_value(&"reel_rate"),
+				expected_config.reel_retraction_rate,
+			):
+		failures.append("Test Lab flattened the unedited L40 Reel value")
+		return 0
+	var requests: Array[Dictionary] = []
+	state.debug_play_requested.connect(func(
+		_settings: PlayerSettings,
+		_distance: float,
+		_level: int,
+		_bird: Dictionary,
+		tuning: Dictionary,
+	) -> void:
+		requests.append(tuning.duplicate(true)))
+	state.request_debug_play()
+	if requests.size() != 1 or requests[0].has(&"reel_rate") or \
+			service.debug_upgrade_overlay_level() != SpiderCatalog.MAX_UPGRADE_LEVEL:
+		failures.append("Test Lab emitted resolved progression as a manual override")
+		return 0
+	return 1
+
+
 static func _test_composition_root_mounts_front_end_first(
 	failures: PackedStringArray,
 ) -> int:
@@ -303,6 +428,11 @@ static func _test_composition_root_mounts_front_end_first(
 		"_front_end_state.campaign_play_requested.connect(_start_campaign_game)"
 	):
 		failures.append("campaign start bypasses the composition root")
+		return 0
+	if not source.contains("load_debug_test_profile") or \
+			not source.contains("save_debug_test_profile") or \
+			not source.contains("apply_debug_tuning_profile"):
+		failures.append("saved Test Lab profiles bypass repository or session ownership")
 		return 0
 	return 1
 
@@ -506,25 +636,31 @@ static func _test_field_guide_separates_biology_from_game(
 		return 0
 	for spider_id: StringName in SpiderCatalog.ALL_IDS:
 		var entry_name := "FieldGuideEntry%s" % str(spider_id).to_pascal_case()
-		var entry := view.find_child(entry_name, true, false) as Control
-		if entry == null:
+		var entry := view.find_child(entry_name, true, false) as Button
+		if entry == null or entry.custom_minimum_size.y < 64.0:
 			failures.append("the Field Guide omits %s" % spider_id)
 			view.free()
 			return 0
-		# Inspiration, real biology, and the game's invention must each be
-		# present and separately labelled; a merged claim is the failure mode
-		# this screen exists to prevent.
-		var found := {"INSPIRED BY": false, "REAL SPIDER": false,
-			"IN THIS GAME": false}
-		for label: Node in entry.find_children("*", "Label", true, false):
-			for marker: String in found:
-				if (label as Label).text.begins_with(marker):
-					found[marker] = true
-		for marker: String in found:
-			if not found[marker]:
-				failures.append("%s entry has no %s line" % [spider_id, marker])
-				view.free()
-				return 0
+		entry.pressed.emit()
+		if state.field_guide_spider_id != spider_id or \
+				not view._field_guide_inspiration.text.begins_with("INSPIRED BY") or \
+				view._field_guide_real.text.is_empty() or \
+				view._field_guide_game.text.is_empty() or \
+				view._field_guide_sources.text.is_empty():
+			failures.append(
+				"%s does not resolve separate real, game, and source detail" % spider_id)
+			view.free()
+			return 0
+	for section_name in [
+		"FieldGuideSectionRealAnimal",
+		"FieldGuideSectionInSpiderSwing",
+		"FieldGuideSectionFieldNote",
+		"FieldGuideSectionSources",
+	]:
+		if view.find_child(section_name, true, false) == null:
+			failures.append("Field Guide lacks glance-readable section %s" % section_name)
+			view.free()
+			return 0
 	# The guide is entered from two places, so back must follow the route the
 	# player actually took rather than always landing in the Garage.
 	var guide_back := view.front_end_button(&"FieldGuideBack")
@@ -627,6 +763,29 @@ static func _test_garage_uses_spider_cosmetic_rails(
 static func _test_spider_web_theme_is_reusable_and_layout_passive(
 	failures: PackedStringArray,
 ) -> int:
+	var material: Dictionary = SpiderWebPanelScript.material_geometry(
+		Vector2(480.0, 240.0))
+	if (material["grain"] as Array).size() != 72 or \
+			(material["pits"] as Array).size() != 24 or \
+			maxf(
+				SpiderUiTheme.PANEL.r,
+				maxf(SpiderUiTheme.PANEL.g, SpiderUiTheme.PANEL.b),
+			) - minf(
+				SpiderUiTheme.PANEL.r,
+				minf(SpiderUiTheme.PANEL.g, SpiderUiTheme.PANEL.b),
+			) > 0.04:
+		failures.append("front-end surface is not neutral textured slate")
+		return 0
+	for grain: PackedVector2Array in material["grain"]:
+		for point: Vector2 in grain:
+			if point.x < 0.0 or point.x > 480.0 or \
+					point.y < 0.0 or point.y > 240.0:
+				failures.append("slate grain escaped its reusable card")
+				return 0
+	for pit: Vector2 in material["pits"]:
+		if pit.x < 0.0 or pit.x > 480.0 or pit.y < 0.0 or pit.y > 240.0:
+			failures.append("slate pit escaped its reusable card")
+			return 0
 	var geometry: Dictionary = SpiderWebPanelScript.ornament_geometry(
 		Vector2(480.0, 240.0))
 	if (geometry["fibres"] as Array).size() < 8 or \
@@ -1035,7 +1194,7 @@ static func _test_debug_run_setup_stages_and_starts_before_play(
 
 	state.set_debug_tools(true)
 	if not route.visible:
-		failures.append("debug run setup did not appear after enabling debug tools")
+		failures.append("Test Lab did not appear after enabling debug tools")
 		viewport.free()
 		return 0
 	route.pressed.emit()
@@ -1044,22 +1203,24 @@ static func _test_debug_run_setup_stages_and_starts_before_play(
 	var card := view.find_child("DebugRunSetupCard", true, false) as Control
 	var shell := view.find_child(
 		"DebugRunSetupShell", true, false) as VBoxContainer
-	var scroll := view.find_child(
-		"DebugRunSetupScroll", true, false) as ScrollContainer
-	var content := view.find_child(
-		"DebugRunSetupContent", true, false) as VBoxContainer
-	var columns := view.find_child(
-		"DebugRunSetupColumns", true, false) as HBoxContainer
+	var profile_strip := view.find_child(
+		"DebugProfileStrip", true, false) as PanelContainer
+	var category_rail := view.find_child(
+		"DebugCategoryRail", true, false) as GridContainer
+	var category_stack := view.find_child(
+		"DebugCategoryStack", true, false) as Control
+	var footer := view.find_child(
+		"DebugRunFooter", true, false) as HBoxContainer
 	var entry := view.find_child(
 		"DebugRunDistanceEntry", true, false) as LineEdit
 	var warning := view.find_child(
 		"DebugRunAwardsWarning", true, false) as Label
 	if state.screen != FrontEndState.Screen.DEBUG_RUN_SETUP or \
 			screen == null or not screen.visible or card == null or \
-			shell == null or scroll == null or content == null or \
-			columns == null or columns.get_child_count() != 3 or entry == null or \
+			shell == null or profile_strip == null or category_rail == null or \
+			category_stack == null or footer == null or entry == null or \
 			warning == null or not warning.text.contains("NO RECORD"):
-		failures.append("debug route did not open a complete pre-run setup")
+		failures.append("debug route did not open the complete pre-run Test Lab")
 		viewport.free()
 		return 0
 	if card.anchor_left < 0.0 or card.anchor_top < 0.0 or \
@@ -1068,45 +1229,87 @@ static func _test_debug_run_setup_stages_and_starts_before_play(
 		viewport.free()
 		return 0
 	var start := view.front_end_button(&"DebugRunStart")
-	if scroll.get_parent() != shell or content.get_parent() != scroll or \
-			start == null or start.get_parent() != shell or \
-			scroll.vertical_scroll_mode != ScrollContainer.SCROLL_MODE_AUTO or \
-			scroll.horizontal_scroll_mode != ScrollContainer.SCROLL_MODE_DISABLED or \
-			scroll.follow_focus or scroll.scroll_deadzone != 12 or \
-			start.get_index() <= scroll.get_index() or \
-			start.mouse_filter != Control.MOUSE_FILTER_STOP:
+	if start == null or start.get_parent() != footer or \
+			footer.get_parent() != shell or \
+			footer.get_index() <= category_stack.get_index() or \
+			start.mouse_filter != Control.MOUSE_FILTER_STOP or \
+			start.custom_minimum_size.y < 60.0:
 		failures.append(
-			"debug setup does not keep a touch scroller above a pinned start action")
+			"Test Lab does not keep a pinned, mobile-sized start action")
 		viewport.free()
 		return 0
-	for button_name: StringName in [
-		&"DebugDistanceMinus", &"DebugDistancePlus",
-		&"DebugUpgradeMinus", &"DebugUpgradePlus", &"DebugRunStart",
-	]:
-		var button := view.front_end_button(button_name)
-		if button == null or button.custom_minimum_size.y < 64.0:
-			failures.append("%s is not a mobile-sized pre-run control" % button_name)
+	if category_rail.columns != 8 or category_rail.get_child_count() != 8:
+		failures.append("Test Lab does not expose all eight pre-run categories")
+		viewport.free()
+		return 0
+	for category_id: StringName in FrontEndView.TEST_LAB_CATEGORIES:
+		var category_index := TuningCatalog.category_index(category_id)
+		var category_button := view.front_end_button(
+			StringName("DebugCategory_%s" % category_id))
+		var category_panel := view.find_child(
+			"DebugCategoryPanel_%s" % category_id, true, false) as Control
+		var scroll := view.find_child(
+			"DebugRunSetupScroll_%s" % category_id,
+			true,
+			false,
+		) as ScrollContainer
+		if category_button == null or category_panel == null or scroll == null or \
+				scroll.vertical_scroll_mode != ScrollContainer.SCROLL_MODE_AUTO or \
+				scroll.horizontal_scroll_mode != ScrollContainer.SCROLL_MODE_DISABLED:
+			failures.append("%s is not a mobile Test Lab category" % category_id)
 			viewport.free()
 			return 0
-	for parameter_id: StringName in [
-		&"bird_speed", &"bird_acceleration", &"bird_start_offset",
-	]:
-		for prefix: String in ["DebugBirdMinus_", "DebugBirdPlus_"]:
-			var bird_button := view.front_end_button(
-				StringName("%s%s" % [prefix, parameter_id]))
-			if bird_button == null or bird_button.custom_minimum_size.y < 48.0:
-				failures.append("bird tuning control is not mobile-sized")
+		category_button.pressed.emit()
+		if state.debug_category_index != category_index or not category_panel.visible:
+			failures.append("%s does not become the selected Test Lab category" % category_id)
+			viewport.free()
+			return 0
+		for parameter: Dictionary in TuningCatalog.parameters_for_category(
+			category_id):
+			var parameter_id := StringName(parameter["id"])
+			var parameter_card := view.find_child(
+				"DebugParameter_%s" % parameter_id, true, false) as PanelContainer
+			var minus := view.front_end_button(
+				StringName("DebugTuningMinus_%s" % parameter_id))
+			var plus := view.front_end_button(
+				StringName("DebugTuningPlus_%s" % parameter_id))
+			if parameter_card == null or minus == null or plus == null or \
+					minus.custom_minimum_size.y < 48.0 or \
+					plus.custom_minimum_size.y < 48.0:
+				failures.append("%s lacks direct mobile pre-run controls" % parameter_id)
 				viewport.free()
 				return 0
 
-	# OWNED -> L0 -> L1 -> L0 proves both large controls cross the overlay edge.
-	view.front_end_button(&"DebugUpgradePlus").pressed.emit()
-	view.front_end_button(&"DebugUpgradePlus").pressed.emit()
-	view.front_end_button(&"DebugUpgradeMinus").pressed.emit()
+	# OWNED -> L0 -> L1 -> L0 proves the catalogue crosses the overlay edge.
+	view.front_end_button(&"DebugTuningPlus_debug_upgrade_level").pressed.emit()
+	view.front_end_button(&"DebugTuningPlus_debug_upgrade_level").pressed.emit()
+	view.front_end_button(&"DebugTuningMinus_debug_upgrade_level").pressed.emit()
 	if state.debug_run_upgrade_level != 0:
 		failures.append("pre-run upgrade −/+ does not switch levels directly")
 		viewport.free()
 		return 0
+
+	# The working set saves immediately; A captures the whole catalogue and can
+	# later restore it after multiple values diverge.
+	var profile_events: Array[DebugTestProfile] = []
+	state.debug_test_profile_changed.connect(func(profile: DebugTestProfile) -> void:
+		profile_events.append(profile))
+	state.set_debug_tuning_value(&"reel_rate", 440.0)
+	view.front_end_button(&"DebugProfileSave_a").pressed.emit()
+	state.set_debug_tuning_value(&"reel_rate", 520.0)
+	state.set_debug_tuning_value(&"gravity", 1320.0)
+	if state.debug_test_profile.slot_difference_count(&"a") != 2:
+		failures.append("saved comparison A does not report its two changed axes")
+		viewport.free()
+		return 0
+	view.front_end_button(&"DebugProfileLoad_a").pressed.emit()
+	if not is_equal_approx(state.debug_tuning_value(&"reel_rate"), 440.0) or \
+			not is_equal_approx(state.debug_tuning_value(&"gravity"), 1120.0) or \
+			profile_events.size() < 4:
+		failures.append("comparison A did not restore the complete auto-saved setup")
+		viewport.free()
+		return 0
+
 	state.set_debug_run_upgrade_level(6)
 	state.apply_debug_bird_preset(&"slow")
 	entry.text = "12345,7"
@@ -1117,12 +1320,14 @@ static func _test_debug_run_setup_stages_and_starts_before_play(
 		distance_pixels: float,
 		upgrade_level: int,
 		bird_overrides: Dictionary,
+		tuning_overrides: Dictionary,
 	) -> void:
 		debug_requests.append({
 			"debug": requested_settings.show_debug_tools,
 			"distance": distance_pixels,
 			"level": upgrade_level,
 			"bird": bird_overrides.duplicate(true),
+			"tuning": tuning_overrides.duplicate(true),
 		}))
 	view.front_end_button(&"DebugRunStart").pressed.emit()
 	if debug_requests.size() != 1 or not bool(debug_requests[0]["debug"]) or \
@@ -1130,6 +1335,8 @@ static func _test_debug_run_setup_stages_and_starts_before_play(
 			int(debug_requests[0]["level"]) != 6 or \
 			debug_requests[0]["bird"] != \
 				FrontEndState.BIRD_DEBUG_PRESETS[&"slow"] or \
+			not is_equal_approx(float(
+				(debug_requests[0]["tuning"] as Dictionary)[&"reel_rate"]), 440.0) or \
 			service.debug_upgrade_overlay_level() != 6 or \
 			progress.to_dictionary() != exact_saved:
 		failures.append("pre-run choices did not start one exact temporary test")
@@ -1146,6 +1353,7 @@ static func _test_debug_run_setup_stages_and_starts_before_play(
 		true,
 	)
 	session._reset_run()
+	session.apply_debug_tuning_profile(debug_requests[0]["tuning"])
 	var snapshot := session.current_snapshot()
 	if not snapshot.debug_start_active or \
 			snapshot.run_mode != SwingLabSession.RUN_PRACTICE or \
@@ -1153,7 +1361,9 @@ static func _test_debug_run_setup_stages_and_starts_before_play(
 		not is_equal_approx(snapshot.distance_pixels, 123457.0) or \
 		snapshot.debug_upgrade_overlay_level != 6 or \
 		not is_equal_approx(
-			float(snapshot.tuning_values[&"bird_speed"]), 240.0):
+			float(snapshot.tuning_values[&"bird_speed"]), 240.0) or \
+		not is_equal_approx(
+			float(snapshot.tuning_values[&"reel_rate"]), 440.0):
 		failures.append("pre-run setup did not inherit debug practice ownership")
 		session.free()
 		viewport.free()
@@ -1182,7 +1392,7 @@ static func _test_debug_run_setup_stages_and_starts_before_play(
 	return 1
 
 
-static func _test_debug_bird_presets_are_session_only(
+static func _test_debug_bird_presets_change_only_test_profile(
 	failures: PackedStringArray,
 ) -> int:
 	var settings := PlayerSettings.defaults()
@@ -1200,7 +1410,7 @@ static func _test_debug_bird_presets_are_session_only(
 	if not is_zero_approx(state.debug_bird_speed) or \
 			not is_equal_approx(state.debug_bird_acceleration, 12.0) or \
 			state.settings.to_dictionary() != original_settings:
-		failures.append("bird-off was not a true session-only speed switch")
+		failures.append("bird-off changed player settings instead of only Test Lab")
 		return 0
 	state.adjust_debug_bird_value(&"bird_speed", 1)
 	state.adjust_debug_bird_value(&"bird_acceleration", -1)
@@ -1227,24 +1437,26 @@ static func _test_debug_bird_controls_are_visible_and_labeled(
 	view.size = Vector2(viewport.size)
 	viewport.add_child(view)
 	view.bind_state(state)
-	var card := view.find_child("DebugRunBirdCard", true, false) as Control
+	view.front_end_button(&"DebugCategory_pacing").pressed.emit()
+	var card := view.find_child(
+		"DebugCategoryPanel_pacing", true, false) as Control
 	var presets := view.find_child("DebugBirdPresets", true, false) as Control
 	if card == null or presets == null or not card.visible or \
-			presets.get_child_count() != 4:
-		failures.append("Test Run does not expose the complete bird tuning card")
+			presets.get_child_count() != 5:
+		failures.append("Test Lab does not expose bird tuning inside Pacing")
 		viewport.free()
 		return 0
 	for preset_id: StringName in [&"off", &"slow", &"base", &"fast"]:
 		var button := view.front_end_button(
 			StringName("DebugBirdPreset_%s" % preset_id))
-		if button == null or button.custom_minimum_size.y < 48.0 or \
+		if button == null or button.custom_minimum_size.y < 44.0 or \
 				button.text != str(preset_id).to_upper():
 			failures.append("bird comparison preset is missing or unreadable")
 			viewport.free()
 			return 0
 	view.front_end_button(&"DebugBirdPreset_off").pressed.emit()
 	var speed_label := view.find_child(
-		"DebugBirdValue_bird_speed", true, false) as Label
+		"DebugTuningValue_bird_speed", true, false) as Label
 	if speed_label == null or speed_label.text != "OFF":
 		failures.append("bird speed zero is not visibly labeled OFF")
 		viewport.free()

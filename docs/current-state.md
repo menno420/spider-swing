@@ -14,7 +14,7 @@ the core loop is right. Target, corroborating evidence, the hard monetisation
 boundaries (death stays meaningful; lives capped at 3) and the parked list live
 in [`player-preference research`](product/player-preference-research-2026-08-02.md).
 
-Build `0.29.0-haunted-soundtrack-playtest` is current. Continuous drive is
+Build `0.30.0-menu-system-playtest` is current. Continuous drive is
 zero; release, swing control, Reel, and pull timing earn speed; the former left
 kill line is a visible pursuing bird. `target_speed_at` remains a named
 reference. The non-pumping bot cannot tune the bird, so Test Run owns its three
@@ -53,7 +53,10 @@ without a reported regression.
   pattern, reached checkpoints, and bounded idempotent-settlement history.
   Older settings default music/effects/haptics on; every progression migration
   remains one-way and explicit.
-- Build `0.29.0-haunted-soundtrack-playtest` (Android version code 49, package
+- A separately versioned `DebugTestProfile` auto-saves the Test Lab working set
+  and A/B/C comparison slots. Its resolved display values and sparse explicit
+  overrides never enter `PlayerSettings` or `PlayerProgress`.
+- Build `0.30.0-menu-system-playtest` (Android version code 50, package
   `com.menno420.spiderswing.dev`) retains the stable conventional public debug
   identity introduced by `0.19.0-depth-testing` in
   `.github/android/debug.keystore`. The workflow pins its file and certificate
@@ -113,20 +116,11 @@ without a reported regression.
   campaign/checkpoint ownership. Existing 5000 m and 10000 m Region Practice
   remains authoritatively noncompetitive: no flies, best distance, later
   checkpoint, record, or future leaderboard eligibility.
-- Bramble Canopy owns both presentation and obstacle vocabulary: an open lime-
-  lit backdrop, braided thorn rails, sockets, ambience, deep concave hook vines,
-  and diagonal giant-leaf shutters replace Ancient Forest. Its eight normal
-  pattern ids share no player-facing obstacle id with Ancient Forest; a semantic
-  kind travels beside each polygon and anchor flag so presentation selects the
-  inspected art explicitly. Foreground art resolves from obstacle world
-  position; the backdrop crossfades for 2.2 seconds or changes immediately
-  under Reduced Motion. Device correction now alternates every single/pair
-  commitment with a completely open chunk, expands pair timing from the former
-  overcrowded half-second change, and prevents the authored shapes from being
-  enlarged again by Ancient Forest's distance-growth curve. Silk Hollow now
-  replaces shared forest silhouettes with concave silk membranes, suspended
-  cocoons, ceiling/floor-grown spindles, lattices, and a supported thread-eye
-  precision gap.
+- Bramble Canopy replaces Ancient Forest's presentation and obstacles with a
+  lime-lit backdrop, thorn rails, hook vines, and leaf shutters. Eight exclusive
+  patterns alternate commitments with open recovery chunks and keep authored
+  sizing. Silk Hollow likewise owns membranes, cocoons, spindles, lattices, and
+  a supported thread-eye precision gap.
 
 **Depth-testing access**
 
@@ -145,14 +139,20 @@ without a reported regression.
   first, and `OWNED` restores the exact saved level dictionary. Garage and Shop
   label displayed overlay levels `NOT OWNED`, Shop pauses purchases, and an
   overlay run is noncompetitive.
-- The pre-run screen uses one native touch scroller for every staged condition
-  and keeps its 68 px `START TEST RUN` action pinned below that scrolling body,
-  so shorter phone viewports cannot clip the only launch path. It also stages
-  bird speed, distance gain and start gap with
+- The pre-run screen is a full Test Lab with eight catalogue-backed categories:
+  Movement, Pacing, Rope, Pulls, Course, Routes, Run, and Abilities. Each owns a
+  native touch scroller, while the working-set/A/B/C strip and 62 px
+  `START TEST RUN` action remain pinned. Measured 1280×720 and 1280×600 layouts
+  enclose the complete shell and launch action. It also stages bird speed,
+  distance gain and start gap with
   mobile `−`/`+` controls and OFF/SLOW/BASE/FAST presets. These values never
   enter settings or progression. OFF is a true isolation switch even if the
   acceleration field is nonzero; SLOW/BASE/FAST are explicitly `assumed` until
   the owner answers OQ-15 on device.
+- The working set saves automatically through `SaveRepository`; A/B/C store
+  whole comparisons. Fully resolved values remain readable, while only manual
+  axes are applied after spider/difficulty/upgrade resolution. Returning from a
+  debug run saves live tuning differences against that same baseline.
 - DEBUG → RUN retains its live distance and upgrade controls for adjustments
   during a test, including typed `GO`, Enter/Done, focus loss, presets, and
   `−`/`+`. The pre-run screen is the primary setup path. Both surfaces are
@@ -179,14 +179,18 @@ without a reported regression.
   only through `ProgressionService`. Course Lab persists six local pattern slots.
   These are local test foundations, not claims of production economy, billing,
   or user-generated-content infrastructure.
-- `SpiderBiologyCatalog` is separate from balance data. The discoverable Field
-  Guide distinguishes game identity, inspiration, real biology, invented
-  adaptation, myth correction, and cited sources. A real readable spider name
+- `SpiderBiologyCatalog` is separate from balance data. The Field Guide is a
+  five-spider master/detail browser with separate Real Animal, In Spider Swing,
+  Field Note, and Sources cards instead of a continuous text page. It
+  distinguishes game identity, inspiration, real biology, invented adaptation,
+  myth correction, and cited sources. A real readable spider name
   wins; an invented name must list every real spider it draws from and what each
   contributes.
 - One shared spider-built UI theme covers the front end. Every card uses a
-  passive renderer for low-alpha fibres, corner webs, silk knots, and cocoon
-  forms behind unchanged controls; buttons use an asymmetric cocoon silhouette.
+  neutral graphite/slate surface with deterministic grain and pits plus passive
+  low-alpha fibres, corner webs, silk knots, and cocoon forms; buttons use an
+  asymmetric cocoon silhouette. Home now fills the landscape with one identity
+  card and one primary-action dashboard instead of a narrow menu column.
   Garage and Shop inherit the selected spider's accent. Settings and Shop use
   a single native vertical scroller whose descendants pass drag input.
   The finished five-spider roster, flies, Ancient Forest pack, and eight-asset
@@ -211,26 +215,19 @@ without a reported regression.
 
 **Verification**
 
-- Local source passes the 200-contract engine runner with the exact
+- Local source passes the 203-contract engine runner with the exact
   `4.7.1.stable.official.a13da4feb` Standard binary. The declared suite contains
   11 bootstrap/build, 68 deterministic physics, 15 zone, 11 spider-biology,
   10 Campaign, 9 difficulty, 4 upgrade-wiring, 10 simulation-lab/replay,
-  2 economy, 8 generated-audio, 27 mobile GUI/layout, and 25 front-end/settings/
+  2 economy, 8 generated-audio, 27 mobile GUI/layout, and 28 front-end/settings/
   progression checks. The full
   required `python3 tools/verify.py --require-godot` result is recorded at
   session close.
-- The same gate regenerates all 25 WAVs in a temporary directory and compares
-  exact bytes before Godot runs. The committed pack is 536 KiB, mono 44.1 kHz
-  16-bit PCM, peaks between −12 and −3 dBFS, and carries a hash/level/duration/
-  loop manifest. The Reel loop has a measured boundary-step ratio of 0.718.
-- New contracts prove stable signing cannot silently return to per-run key
-  generation; debug starts grant no rewards or records and cannot unlock
-  checkpoints; off-grid seeded geometry equals traversal from zero; overlay
-  levels never serialize; disabling the overlay restores exact owned levels;
-  Garage/Shop disclose ownership; overlay play is noncompetitive; typed values
-  have an explicit mobile commit path; pre-run `−`/`+` choices reach the real
-  practice session; normal Play clears the overlay; and both surfaces gate
-  correctly at 1280×720.
+- The same gate regenerates all 27 WAV assets and compares exact bytes before
+  Godot runs; their manifest records hashes, levels, durations, and loop data.
+- Contracts cover stable signing, seeded geometry, noncompetitive debug starts,
+  temporary overlay ownership, mobile value entry, normal-run restoration, and
+  the saved sparse Test Lab profile.
 - Bramble's content contracts reject any Ancient Forest pattern id, require all
   eight hook/shutter variants across representative seeds, preserve explicit
   left/right art kinds through geometry snapshots, interrupt a neutral Garden

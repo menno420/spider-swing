@@ -89,11 +89,11 @@ Run directly:
 godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-200 checks, grouped so one subsystem failure never hides the rest:
+203 checks, grouped so one subsystem failure never hides the rest:
 
 - engine, main-scene, input-action, 60 Hz, renderer/viewport, Android preset,
   inward-dependency, and no-autoload bootstrap contracts;
-- sixty deterministic physics contracts, including extended arbitrary-point
+- sixty-eight deterministic physics contracts, including extended arbitrary-point
   solid attachment, larger aim forgiveness, bounded arc/rise-scored manual
   release momentum, forced-detach exclusion, wrap-safe attachment history,
   speed-neutral Reel and automatic take-up, a bounded 2.0-second/640-pixel base Reel budget,
@@ -101,7 +101,7 @@ godot --headless --path . --script res://tests/test_runner.gd
   hold-time tuning, maxed Balanced Flow producing a shorter web,
   exact Burst/Dive distance shares and minimum
   Burst travel, unchanged level-zero Burst cadence plus the level-10 stored
-  reserve Burst on one serial refill timer, recovery-web interruption,
+  reserve Burst at the L20 midpoint on one serial refill timer, recovery-web interruption,
   detached cooldown double-tap fallback, explicit release/retarget behavior,
   polygon anchoring/collision, a 1000 m runway, smooth 5000 m speed ramp, and
   bounded organic streaming with continuous contoured rails, lower rail
@@ -115,8 +115,8 @@ godot --headless --path . --script res://tests/test_runner.gd
   three-lane Classic-sized steering-envelope sweep through every root-passage
   fly route, the guided opening
   trajectory, one-run rescue, five spider profiles, the shared
-  five-core/two-identity upgrade structure, 20-level cost bounds,
-  5/10/15/20 breakthroughs, level-zero preservation,
+  five-core/two-identity upgrade structure, 40-level cost bounds,
+  5/10/15/20/25/30/35/40 breakthroughs, level-zero preservation,
   bounded glide and impact-shell recovery, creator-pattern bounds, swept
   pickups, runtime pull tuning, and
   exact off-grid polygons plus identity/anchor/motion descriptors through every
@@ -160,7 +160,7 @@ godot --headless --path . --script res://tests/test_runner.gd
   interpolation, mipmapped moving art, restrained/reduced-motion-safe action
   poses, region ambience and persistent practice status remain presentation-only,
   and world input waits for Godot GUI handling;
-- twenty-five front-end contracts proving Home starts before gameplay,
+- twenty-eight front-end contracts proving Home starts before gameplay,
   Play/Garage/Shop/Tutorial/Campaign/Course Lab/Region Practice/Field Guide/
   Settings route correctly,
   the six tutorial
