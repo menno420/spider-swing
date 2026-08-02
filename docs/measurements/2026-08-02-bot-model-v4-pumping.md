@@ -39,13 +39,35 @@ One knob, `pump_window_deg`, plus the policy that reads it
 many degrees of straight-down, in addition to the old "below the route" rule,
 and a pump is no longer cut short by having reached route height.
 
-**Why that is pumping, physically.** `WebConstraint.advance_resource` only
-shortens the rope; the constraint then resolves position along the radius,
-killing outward radial velocity and preserving tangential. So a reel adds no
-speed directly — the design's "speed-neutral" — it **buys height for free**, and
-shortening by `dr` at angle `θ` from straight down raises the spider by
-`dr·cos θ`. Pumping at the bottom of the arc is therefore worth `1/cos θ` times
-pumping off to the side, and the height comes back as speed on the next descent.
+**Why that is pumping, physically.**
+
+> **Reeling makes you faster.** `measured` — ablating Reel on the endorsed
+> policy costs **79.2 → 74.5 m/s** mean speed and **1 908 → 1 252 m**
+> ([`2026-08-01-upgrade-playstyle-sweep.md`](2026-08-01-upgrade-playstyle-sweep.md)
+> § "Reeling buys speed"), and the owner reports reeling partly to gain speed.
+> **The design's "speed-neutral" is narrower than it reads and must never be
+> restated as "reeling does not make you faster".** An earlier draft of this
+> document did exactly that; the owner caught it.
+
+What is narrow is only the **retraction step**. `advance_resource` moves
+`rope_length` and writes no velocity, and the constraint that runs afterwards
+(`solve_moving_anchor`) removes outward radial velocity while preserving
+tangential. The speed therefore arrives one step later, through the pendulum, by
+two routes:
+
+1. **The rope going taut converts a radial fall into tangential travel.** The
+   solver zeroes only the outward radial component, so a dive that would have
+   been spent going down is redirected along the arc. This is the conversion the
+   earned-speed spec calls "real, and the whole point".
+2. **Shortening while below the anchor lifts the spider for free**, injecting
+   `m·g·dr` of energy that returns as speed on the next descent.
+
+Both routes are strongest at the bottom of the arc, and that is what makes this
+a pump window rather than an arbitrary gate: the lift bought by shortening `dr`
+is `dr·cos θ` for `θ` off straight down, so the bottom is worth `1/cos θ` times
+anywhere else — **and tangential speed, the component the constraint preserves,
+peaks there too.** The two mechanisms agree on the same phase, which is why a
+tight window measures better than a wide one.
 
 The old policy reeled purely on being below the route. Being low correlates with
 the bottom of a swing but does not imply it: **low and far out to the side is

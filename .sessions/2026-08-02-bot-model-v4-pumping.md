@@ -19,15 +19,27 @@
 repository than any other — *the bot cannot pump a pendulum* — and measured it
 honestly on two disjoint seed sets.
 
-**The mechanism.** `WebConstraint.advance_resource` only shortens the rope; the
-constraint resolves position along the radius, killing outward radial velocity
-and preserving tangential. A reel adds no speed directly — it **buys height for
-free**, and shortening by `dr` at angle `θ` from straight down raises the spider
-by `dr·cos θ`. So the bottom of the arc is worth `1/cos θ` times anywhere else,
-and the height returns as speed on the next descent. The old policy reeled on
+**The mechanism.** Reeling makes you faster — `measured`, 79.2 → 74.5 m/s under
+ablation — and the design's "speed-neutral" is narrower than it reads. What is
+narrow is only the retraction step: `advance_resource` writes no velocity, and
+the constraint afterwards removes outward radial velocity while preserving
+tangential. Speed arrives one step later through the pendulum, by two routes —
+the rope going taut redirects a radial fall into tangential travel, and
+shortening below the anchor lifts the spider for free, injecting `m·g·dr` that
+returns as speed on the next descent. Both peak at the bottom of the arc: the
+lift from shortening `dr` is `dr·cos θ` off straight down, and the tangential
+component the constraint preserves peaks there too. The old policy reeled on
 being *below the route*, which correlates with the bottom of a swing but does
 not imply it: low and far out to the side is the worst place to spend the meter,
 and it was being spent there routinely.
+
+**Correction, owner-caught.** The first draft of this work stated the mechanism
+as "a reel adds no speed". That is the exact misreading
+`2026-08-01-upgrade-playstyle-sweep.md` § "Reeling buys speed" warns against —
+in a document this session had already read. The physics and the implementation
+were unaffected (both mechanisms peak at the same phase, so the pump window is
+unchanged), but the framing was wrong and was corrected in source, in the
+measurement, and in the PR before merge.
 
 **The finding worth carrying.** Pumping is worth **+46.0% at L40 against +14.8%
 at L0**. That is not a coincidence — L40 reels at 454 px/s into a 2.67 s meter

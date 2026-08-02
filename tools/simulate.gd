@@ -1703,15 +1703,26 @@ class RunDriver:
 	## True while the web is near enough to straight-down that shortening it
 	## buys height efficiently — the model's stand-in for pumping a pendulum.
 	##
-	## `WebConstraint.advance_resource` only shortens the rope; the constraint
-	## then resolves position along the radius, killing outward radial velocity
-	## and preserving tangential. So a reel does not add speed directly (the
-	## design's "speed-neutral"), it **buys height for free**, and the height
-	## bought by shortening `dr` is `dr * cos(theta)` where `theta` is the
-	## angle from straight down. Pumping at the bottom of the arc is therefore
-	## worth `1 / cos(theta)` times pumping off to the side, and the energy
-	## comes back as speed on the next descent — which is the +52% distance the
-	## reel ablation measured.
+	## **Reeling makes you faster.** That is `measured` — ablating Reel on the
+	## endorsed policy costs 79.2 → 74.5 m/s mean speed and 1 908 → 1 252 m
+	## (`docs/measurements/2026-08-01-upgrade-playstyle-sweep.md`), and the
+	## owner reports reeling partly to gain speed. The design's
+	## "speed-neutral" is narrower than it reads and must not be repeated as
+	## "reeling does not make you faster".
+	##
+	## What is narrow is only the *retraction step*: `advance_resource` moves
+	## `rope_length` and writes no velocity, and the constraint that follows
+	## removes outward radial velocity while preserving tangential. The speed
+	## therefore arrives one step later, through the pendulum, by two routes —
+	## the rope going taut converts a radial fall into tangential travel, and
+	## shortening while below the anchor **lifts the spider for free**, adding
+	## `m*g*dr` of energy that returns as speed on the next descent.
+	##
+	## Both routes are strongest at the bottom of the arc, which is what makes
+	## this the pump window: the lift bought by shortening `dr` is
+	## `dr * cos(theta)` for `theta` off straight down, so the bottom is worth
+	## `1 / cos(theta)` times anywhere else, and tangential speed — the
+	## component the constraint preserves — peaks there too.
 	##
 	## The old policy reeled purely on being below the route. Being low
 	## correlates with the bottom of a swing but does not imply it: low and far
