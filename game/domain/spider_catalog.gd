@@ -17,14 +17,24 @@ const BUCKLER := &"springtail"
 const ALL_IDS: Array[StringName] = [
 	CLASSIC, SKITTER, ANCHORITE, BALLOONER, BUCKLER,
 ]
-const MAX_UPGRADE_LEVEL := 20
+const MAX_UPGRADE_LEVEL := 40
 const LEGACY_LEVEL_MULTIPLIER := 4
+const TWENTY_TO_FORTY_LEVEL_MULTIPLIER := 2
 const BREAKTHROUGH_INTERVAL := 5
+## `assumed`: forty smaller levels should preserve readable progress while
+## ending above the old twenty-level maximum. Forty levels plus eight
+## breakthroughs yield 48 effective steps; at 70% strength that is 140% of
+## the old 24-step total. Device play, not the non-pumping bot, settles feel.
+const EXTENDED_LEVEL_STEP_SCALE := 0.70
 const UPGRADE_COSTS := [
-	2, 2, 3, 3, 5,
-	3, 4, 4, 5, 7,
-	5, 6, 7, 8, 12,
-	8, 10, 12, 15, 20,
+	1, 2, 2, 3, 5,
+	2, 3, 4, 5, 7,
+	4, 5, 6, 7, 10,
+	6, 7, 8, 10, 14,
+	8, 9, 10, 12, 18,
+	10, 12, 14, 16, 24,
+	14, 16, 18, 22, 32,
+	18, 22, 26, 32, 46,
 ]
 
 const PROFILES := [
@@ -137,35 +147,35 @@ const CORE_TRACKS := [
 		"kind": REEL_SPEED,
 		"name": "Silk Winder",
 		"description":
-			"Reel-In shortens the web 1.25% faster per tuning step.",
+			"Reel-In shortens the web 0.875% faster per tuning step.",
 	},
 	{
 		"suffix": &"burst",
 		"kind": BURST_REACH,
 		"name": "Anchor Drive",
 		"description":
-			"Anchor Burst crosses 0.5% more of the starting distance per tuning step. Level 10 stores a second Burst charge.",
+			"Anchor Burst crosses 0.35% more of the starting distance per tuning step. Level 20 stores a second Burst charge.",
 	},
 	{
 		"suffix": &"burst_floor",
 		"kind": BURST_FLOOR,
 		"name": "Reliable Launch",
 		"description":
-			"Minimum useful Burst travel gains 5 px per tuning step.",
+			"Minimum useful Burst travel gains 3.5 px per tuning step.",
 	},
 	{
 		"suffix": &"reel_capacity",
 		"kind": REEL_CAPACITY,
 		"name": "Silk Reserve",
 		"description":
-			"Reel energy capacity gains 1% per tuning step.",
+			"Reel energy capacity gains 0.7% per tuning step.",
 	},
 	{
 		"suffix": &"reel_recovery",
 		"kind": REEL_RECOVERY,
 		"name": "Rapid Recovery",
 		"description":
-			"Reel energy regenerates 1% faster and empty lockout shortens slightly per tuning step.",
+			"Reel energy regenerates 0.7% faster and empty lockout shortens slightly per tuning step.",
 	},
 ]
 
@@ -176,14 +186,14 @@ const UNIQUE_TRACKS := {
 			"kind": TAKE_UP_RETENTION,
 			"name": "Balanced Flow",
 			"description":
-				"Automatic take-up keeps 0.25% less slack per tuning step, shortening the web.",
+				"Automatic take-up keeps 0.175% less slack per tuning step, shortening the web.",
 		},
 		{
 			"suffix": &"rhythm",
 			"kind": BURST_RHYTHM,
 			"name": "Garden Rhythm",
 			"description":
-				"Anchor Burst recovers 0.4% sooner per tuning step.",
+				"Anchor Burst recovers 0.28% sooner per tuning step.",
 		},
 	],
 	SKITTER: [
@@ -192,14 +202,14 @@ const UNIQUE_TRACKS := {
 			"kind": COMPACT_STANCE,
 			"name": "Compact Stance",
 			"description":
-				"Hitbox radius shrinks 0.4% per tuning step.",
+				"Hitbox radius shrinks 0.28% per tuning step.",
 		},
 		{
 			"suffix": &"drive",
 			"kind": QUICK_FEET,
 			"name": "Quick Feet",
 			"description":
-				"Forward recovery gains 0.83% per tuning step.",
+				"Forward recovery gains 0.581% per tuning step.",
 		},
 	],
 	ANCHORITE: [
@@ -208,14 +218,14 @@ const UNIQUE_TRACKS := {
 			"kind": HEAVY_MOMENTUM,
 			"name": "Momentum Core",
 			"description":
-				"Burst exit speed gains 1.04% per tuning step.",
+				"Burst exit speed gains 0.728% per tuning step.",
 		},
 		{
 			"suffix": &"pendulum",
 			"kind": PENDULUM_MASS,
 			"name": "Pendulum Mass",
 			"description":
-				"Anchor Burst retains 0.3% more tangential motion per tuning step.",
+				"Anchor Burst retains 0.21% more tangential motion per tuning step.",
 		},
 	],
 	BALLOONER: [
@@ -224,14 +234,14 @@ const UNIQUE_TRACKS := {
 			"kind": GLIDE_DURATION,
 			"name": "Long Silk Sail",
 			"description":
-				"Detached glide lasts 0.038 seconds longer per tuning step.",
+				"Detached glide lasts 0.0266 seconds longer per tuning step.",
 		},
 		{
 			"suffix": &"reach",
 			"kind": SILK_REACH,
 			"name": "Featherline",
 			"description":
-				"Maximum web reach gains 0.625% per tuning step.",
+				"Maximum web reach gains 0.4375% per tuning step.",
 		},
 	],
 	BUCKLER: [
@@ -240,14 +250,14 @@ const UNIQUE_TRACKS := {
 			"kind": IMPACT_SHELL,
 			"name": "Impact Carapace",
 			"description":
-				"Maximum survivable rail impact gains 12.5 px/s per tuning step.",
+				"Maximum survivable rail impact gains 8.75 px/s per tuning step.",
 		},
 		{
 			"suffix": &"bounce",
 			"kind": ELASTIC_GUARD,
 			"name": "Elastic Guard",
 			"description":
-				"Rail bounce retention gains 0.83% per tuning step.",
+				"Rail bounce retention gains 0.581% per tuning step.",
 		},
 	],
 }
@@ -356,7 +366,7 @@ static func apply_to_config(
 	for upgrade_item: Dictionary in upgrades_for(selected):
 		var upgrade_id := StringName(upgrade_item["id"])
 		var level := progress.upgrade_level(upgrade_id)
-		var steps := float(effective_steps(level))
+		var steps := float(effective_steps(level)) * EXTENDED_LEVEL_STEP_SCALE
 		match StringName(upgrade_item["kind"]):
 			REEL_SPEED:
 				config.reel_retraction_rate *= 1.0 + 0.0125 * steps
@@ -365,9 +375,9 @@ static func apply_to_config(
 					0.60,
 					config.burst_distance_fraction + 0.005 * steps,
 				)
-				# The level-10 breakthrough is a rule change, not a bigger
+				# The level-20 breakthrough is a rule change, not a bigger
 				# number: a second stored Burst on one serial refill timer.
-				if level >= 2 * BREAKTHROUGH_INTERVAL:
+				if level >= 4 * BREAKTHROUGH_INTERVAL:
 					config.burst_charge_capacity = maxi(
 						config.burst_charge_capacity, 2)
 			BURST_FLOOR:

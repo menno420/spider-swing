@@ -201,13 +201,13 @@ static func _test_reel_resource_baseline_and_resolution(
 		resolved.reel_energy_capacity / resolved.reel_drain_rate)
 	var max_shortening_budget := (
 		max_seconds * resolved.reel_retraction_rate)
-	if not is_equal_approx(resolved.reel_retraction_rate, 416.0) or \
-			not is_equal_approx(max_seconds, 2.48) or \
-			absf(max_shortening_budget - 1031.68) > 0.01 or \
-			resolved.reel_retraction_rate < 400.0 or \
-			resolved.reel_retraction_rate > 450.0:
+	if not is_equal_approx(resolved.reel_retraction_rate, 454.4) or \
+			not is_equal_approx(max_seconds, 2.672) or \
+			absf(max_shortening_budget - 1214.1568) > 0.01 or \
+			resolved.reel_retraction_rate < 450.0 or \
+			resolved.reel_retraction_rate > 470.0:
 		failures.append(
-			"maxed Garden Reel is outside the owner-tested 400–450 px/s band")
+			"maxed Garden Reel does not deliver the bounded forty-level gain")
 		return 0
 
 	var reused := SpiderCatalog.resolved_config(
@@ -854,8 +854,8 @@ static func _test_balanced_flow_shortens_web_more_at_max_level(
 	var max_config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 	SpiderCatalog.apply_to_config(max_config, progress)
 	if not is_equal_approx(base_config.automatic_take_up_retention, 0.85) or \
-			not is_equal_approx(max_config.automatic_take_up_retention, 0.91):
-		failures.append("Balanced Flow retention no longer scales from 85% to 91%")
+			not is_equal_approx(max_config.automatic_take_up_retention, 0.934):
+		failures.append("Balanced Flow retention no longer scales from 85% to 93.4%")
 		return 0
 
 	var base_web := WebConstraint.new()
@@ -879,7 +879,7 @@ static func _test_balanced_flow_shortens_web_more_at_max_level(
 	max_web.solve(inward_position, Vector2.ZERO, FIXED_DELTA, max_config)
 	if max_web.rope_length >= base_web.rope_length or \
 			not is_equal_approx(base_web.rope_length, 483.0) or \
-			not is_equal_approx(max_web.rope_length, 481.8):
+			not is_equal_approx(max_web.rope_length, 481.32):
 		failures.append(
 			"maxed Balanced Flow did not leave a shorter web than level zero")
 		return 0
@@ -1071,7 +1071,7 @@ static func _test_minimum_burst_travel_is_real_and_upgradeable(
 	var upgraded := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 	SpiderCatalog.apply_to_config(upgraded, progress)
 	if upgraded.burst_minimum_distance <= config.burst_minimum_distance or \
-			not is_equal_approx(upgraded.burst_minimum_distance, 200.0):
+			not is_equal_approx(upgraded.burst_minimum_distance, 248.0):
 		failures.append("Reliable Launch did not raise minimum Burst travel by level")
 		return 0
 	return 1
@@ -1080,27 +1080,41 @@ static func _test_minimum_burst_travel_is_real_and_upgradeable(
 static func _test_upgrade_catalog_has_shared_core_and_breakthroughs(
 	failures: PackedStringArray,
 ) -> int:
-	if SpiderCatalog.MAX_UPGRADE_LEVEL != 20 or \
-			SpiderCatalog.UPGRADE_COSTS.size() != 20 or \
-			SpiderCatalog.cost_for_level(0) != 2 or \
+	if SpiderCatalog.MAX_UPGRADE_LEVEL != 40 or \
+			SpiderCatalog.UPGRADE_COSTS.size() != 40 or \
+			SpiderCatalog.UPGRADE_COSTS.reduce(func(total, cost):
+				return int(total) + int(cost), 0) != 490 or \
+			SpiderCatalog.cost_for_level(0) != 1 or \
 			SpiderCatalog.cost_for_level(4) != 5 or \
-			SpiderCatalog.cost_for_level(19) != 20 or \
-			SpiderCatalog.cost_for_level(20) != 0:
-		failures.append("twenty-level upgrade pacing or its bounded costs regressed")
+			SpiderCatalog.cost_for_level(19) != 14 or \
+			SpiderCatalog.cost_for_level(39) != 46 or \
+			SpiderCatalog.cost_for_level(40) != 0:
+		failures.append("forty-level upgrade pacing or its bounded costs regressed")
 		return 0
 	if SpiderCatalog.effective_steps(4) != 4 or \
 			SpiderCatalog.effective_steps(5) != 6 or \
 			SpiderCatalog.effective_steps(10) != 12 or \
-			SpiderCatalog.effective_steps(20) != 24:
+			SpiderCatalog.effective_steps(20) != 24 or \
+			SpiderCatalog.effective_steps(40) != 48:
 		failures.append("five-level breakthroughs do not grant a real tuning step")
 		return 0
-	for level in [5, 10, 15, 20]:
+	var old_maximum_steps := 24.0
+	var new_maximum_strength := (
+		float(SpiderCatalog.effective_steps(40)) *
+		SpiderCatalog.EXTENDED_LEVEL_STEP_SCALE)
+	if not is_equal_approx(SpiderCatalog.EXTENDED_LEVEL_STEP_SCALE, 0.70) or \
+			not is_equal_approx(new_maximum_strength / old_maximum_steps, 1.40):
+		failures.append(
+			"forty levels no longer give smaller steps and a 40% stronger maximum")
+		return 0
+	for level in [5, 10, 15, 20, 25, 30, 35, 40]:
 		if not SpiderCatalog.is_breakthrough_level(level):
 			failures.append("level %d is not marked as a breakthrough" % level)
 			return 0
 	if SpiderCatalog.is_breakthrough_level(4) or \
 			SpiderCatalog.next_breakthrough_level(6) != 10 or \
-			SpiderCatalog.next_breakthrough_level(20) != 20:
+			SpiderCatalog.next_breakthrough_level(20) != 25 or \
+			SpiderCatalog.next_breakthrough_level(40) != 40:
 		failures.append("breakthrough boundaries are not deterministic")
 		return 0
 
@@ -1285,17 +1299,17 @@ static func _test_reserve_burst_stores_and_refills_serially(
 	failures: PackedStringArray,
 ) -> int:
 	var progress := PlayerProgress.defaults()
-	progress.upgrade_levels[&"classic_burst"] = 9
+	progress.upgrade_levels[&"classic_burst"] = 19
 	var below := SpiderCatalog.resolved_config(
 		SwingConfig.PRESET_BALANCED, progress)
 	if below.burst_charge_capacity != 1:
-		failures.append("Anchor Drive level 9 must not grant the reserve Burst")
+		failures.append("Anchor Drive level 19 must not grant the reserve Burst")
 		return 0
-	progress.upgrade_levels[&"classic_burst"] = 10
+	progress.upgrade_levels[&"classic_burst"] = 20
 	var config := SpiderCatalog.resolved_config(
 		SwingConfig.PRESET_BALANCED, progress)
 	if config.burst_charge_capacity != 2:
-		failures.append("Anchor Drive level 10 did not store a second Burst")
+		failures.append("Anchor Drive level 20 did not store a second Burst")
 		return 0
 	config.gravity = 0.0001
 	config.horizontal_drive_acceleration = 0.0001

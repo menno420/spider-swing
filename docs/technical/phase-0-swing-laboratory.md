@@ -59,8 +59,8 @@ the web; an empty-world tap still releases.
 Reel immediately shortens the authoritative rope length at 320 px/s in the
 Balanced baseline while energy is available. A full level-zero meter lasts
 2.0 seconds and can therefore remove about 640 px. Maxing Silk Winder raises
-the Garden response to 416 px/s; maxing Silk Reserve as well extends that rate
-to 2.48 seconds. The constraint removes outward motion and applies capped position
+the Garden response to 454.4 px/s; maxing Silk Reserve as well extends that rate
+to 2.672 seconds. The constraint removes outward motion and applies capped position
 correction as the rope tightens; Reel does not add radial acceleration, a
 minimum inward speed, or a forward boost. That keeps its job distinct: change
 the swing radius without replacing manual swing timing.
@@ -190,7 +190,7 @@ When Debug Tools are enabled, Home owns the primary **Debug Test Run** setup.
 Before play begins, it stages a typed exact distance with large 100 m `−` / `+`
 controls and 0/5000/10000/25000 m shortcuts. It also stages one temporary level
 across all seven selected-spider tracks through large `−` / `+` controls plus
-`OWNED`, L0, L10, and `MAX`. The overlay is not applied until the explicit
+`OWNED`, L0, L20, and `MAX`. The overlay is not applied until the explicit
 no-awards start action. That start routes through `RUN_PRACTICE`, so it awards
 no flies, best distance, checkpoint, record, or future leaderboard eligibility.
 
@@ -251,7 +251,7 @@ collision outlines and web-target guides.
 | `Opening training web` | start on the ordinary guided ceiling web | off / on |
 | `One rescue per run` | recover the first lethal mistake | off / on |
 | `Start at exact distance` | restart a no-awards debug run at typed metres on the active seed | typed 0–100,000 m with 48 px `GO`; 100 m `−` / `+` |
-| `Temporary upgrade level` | resolve selected-spider tracks without changing ownership | `OWNED`, 0–20, or one-tap `MAX` |
+| `Temporary upgrade level` | resolve selected-spider tracks without changing ownership | `OWNED`, 0–40, or one-tap `MAX` |
 | `Stored Bursts` | comparison capacity for serially refilled Anchor Burst charges | 1 / 1–3 |
 | `Burst Frenzy time` | Anchor Burst cooldown suppression | 0.5 / 1–10 s |
 | `One-charge rail bounce` | enable bounded moderate rail recovery | off / on |
@@ -270,7 +270,7 @@ These controls are also the measurement surface for possible future upgrades.
 The Garage and seven-track Shop prove that validated profile and fly-funded
 upgrade modifiers can resolve over one base `SwingConfig`; they do not create
 parallel physics implementations. The five shared core tracks and two identity
-tracks each have 20 small levels with deterministic 5/10/15/20 breakthrough
+tracks each have 40 small levels with deterministic five-level breakthrough
 steps. Current costs and caps are test data. Record
 eligibility, the final economy, and any real-money entitlement remain separate
 product decisions.
@@ -356,7 +356,7 @@ current mechanics continuation, use
 and its earned-speed specification. No new recording is expected; device-only
 questions require a playtest verdict.
 
-Install `0.26.1-debug-scroll-playtest` over `0.19.0-depth-testing` or any later
+Install `0.27.0-forty-level-progression-playtest` over `0.19.0-depth-testing` or any later
 stable-key build without uninstalling; both use the stable signer and the update
 should preserve the save.
 Only a device that never installed `0.19.0` or later needs the one final
@@ -432,8 +432,8 @@ Then check the traversal baseline:
 10. use level-zero Garden, hold Reel continuously, and confirm its full ring
     lasts about two seconds, responds at 320 px/s, and changes height/arc
     without a separate forward shove;
-11. use Home → `DEBUG TEST RUN` to compare owned Garden against
-    max, and confirm max Silk Winder resolves to 416 px/s and supplies enough
+11. use Home → `DEBUG TEST RUN` to compare owned Garden against L20 and
+    max, and confirm max Silk Winder resolves to 454.4 px/s and supplies enough
     deliberate high↔low correction near 5000 m;
 12. compare several starting web lengths and confirm base Burst covers roughly
     40% while a close valid target still provides its visible minimum travel;

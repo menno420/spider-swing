@@ -12,7 +12,7 @@
 
 ## Open
 
-Two forks remain from the 2026-08-01 overnight systems run (OQ-9, OQ-10). Two
+One fork remains from the 2026-08-01 overnight systems run (OQ-9). Two
 others (OQ-8, OQ-11) were **closed by owner device evidence the same morning** —
 the lab audit behind them was wrong. **OQ-12 was answered the same evening** and
 opened the earned-speed follow-ups OQ-13 … OQ-16.
@@ -117,19 +117,16 @@ modes, so difficulty is currently **economically invisible**.
 causes, and by how much. A multiplier is the obvious shape; the size is a feel
 decision, not a measurable one.
 
-### OQ-10 · Is a ~21-minute upgrade economy the intended length?
-
-**Measured:** maxing Classic's seven tracks costs 987 flies — 45 runs, about
-**21.5 minutes** of intermediate play. That is the game's only long-term sink.
-
-**Default:** prices are left exactly as they are.
-
-**The fork:** if that is too short, the fix is **more sinks**, not higher
-prices — raising costs makes the same twenty minutes feel slower without adding
-anything to reach for. Adding sinks is a design decision about what else is
-worth wanting.
-
 ## Answered
+
+### OQ-10 · Is a ~21-minute upgrade economy the intended length? — *answered 2026-08-02*
+
+**No.** Every one of the 35 upgrade tracks now has forty smaller levels. Each
+numerical step is 70% of its former size, while the eight breakthroughs make
+the L40 total 140% of the old L20 maximum. Costs total 490 flies per track,
+3,430 per spider, and 17,150 for all five. At the historical **measured**
+~46 flies/min income this is an **inferred** ~74.6 minutes per spider or ~6.2
+hours for the roster; current-device economy pacing remains to be measured.
 
 ### OQ-12 · Which anti-hauling mechanic should ship? — *answered 2026-08-01*
 

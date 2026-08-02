@@ -23,7 +23,7 @@ godot --headless --path . --script res://tools/simulate.gd -- \
 | `--skill=` | `intermediate` | `novice` · `intermediate` · `expert` · `all` |
 | `--spider=` | `classic` | Any catalog id, or `all` |
 | `--preset=` | `balanced_baseline` | Named `SwingConfig` preset (legacy `balanced_candidate` still resolves) |
-| `--upgrades=N` | 0 | Level 0–20 applied to every track of the spider |
+| `--upgrades=N` | 0 | Level 0–40 applied to every track of the spider |
 | `--seed=N` | 1 | Base seed for the bot-imperfection RNG |
 | `--course-seed=N` | 1337 | First production course-order seed |
 | `--course-seeds=N` | 1 | Consecutive course seeds rotated independently across runs |

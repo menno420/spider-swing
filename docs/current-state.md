@@ -6,22 +6,13 @@
 > work always win over this file. Read it second (right after the working
 > agreement) and keep it current as the project moves.
 
-**The earned-speed package is implemented as one testable whole.** Read
-[`next-session-brief-2026-08-01-mechanics.md`](planning/next-session-brief-2026-08-01-mechanics.md)
-and the spec it points at,
-[`earned-speed-and-the-bird.md`](game-design/earned-speed-and-the-bird.md).
-Build `0.26.1-debug-scroll-playtest` removes the continuous forward drive,
-keeps `target_speed_at` as a named reference, and makes the former invisible
-left kill line a deterministic pursuing bird. Release, swing control, Reel and
-pull timing now supply forward speed; the bird supplies visible pressure. Its
-three chase values are session-only Test Run tunables because the non-pumping
-bot cannot tune them. OQ-12 is answered; OQ-13 to OQ-16 are the device/product
-questions measurement could not settle. **No new recordings will be supplied**,
-so nothing may be planned around getting one.
-
-The earlier [`fresh-session handoff`](planning/fresh-session-handoff-2026-08-01.md)
-is **superseded as a plan and still accurate as a record** — read it for what
-merged and what Menno accepted, not for what to do next.
+Build `0.27.0-forty-level-progression-playtest` is current. Continuous drive is
+zero; release, swing control, Reel, and pull timing earn speed; the former left
+kill line is a visible pursuing bird. `target_speed_at` remains a named
+reference. The non-pumping bot cannot tune the bird, so Test Run owns its three
+session-only chase controls. The measured design and seams live in the
+[`mechanics brief`](planning/next-session-brief-2026-08-01-mechanics.md) and
+[`earned-speed specification`](game-design/earned-speed-and-the-bird.md).
 
 ## Stability baseline
 
@@ -48,12 +39,12 @@ without a reported regression.
 
 - `SaveRepository` is the only persistent writer. Schema-2 settings include
   effects and haptics alongside control, motion, and diagnostic choices.
-  Schema-7 progression includes fly and star balances, per-difficulty bests,
+  Schema-8 progression includes fly and star balances, per-difficulty bests,
   Campaign clears, selected profile and cosmetics, upgrade ownership, creator
   pattern, reached checkpoints, and bounded idempotent-settlement history.
   Older settings default audio/haptics on; every progression migration remains
   one-way and explicit.
-- Build `0.26.1-debug-scroll-playtest` (Android version code 46, package
+- Build `0.27.0-forty-level-progression-playtest` (Android version code 47, package
   `com.menno420.spiderswing.dev`) retains the stable conventional public debug
   identity introduced by `0.19.0-depth-testing` in
   `.github/android/debug.keystore`. The workflow pins its file and certificate
@@ -137,8 +128,8 @@ without a reported regression.
   no-awards/no-records policy. A contract compares an off-grid debug start
   against the same seed streamed sequentially from zero and requires exact
   geometry equality.
-- The same screen stages one temporary 0–20 level across all seven selected-
-  spider tracks, with large `−`/`+` controls plus `OWNED`, L0, L10, and `MAX`.
+- The same screen stages one temporary 0–40 level across all seven selected-
+  spider tracks, with large `−`/`+` controls plus `OWNED`, L0, L20, and `MAX`.
   `ProgressionService` applies this session-only resolution overlay only when
   the test starts; the purchase cost check and real `PlayerProgress` remain
   unchanged. Ordinary Play, Course Lab, or Region Practice clears the overlay
@@ -170,8 +161,10 @@ without a reported regression.
 
 - `SpiderCatalog` defines five unlocked Phase-0 comparison profiles over the
   same config: Garden Spider, Magnolia Green Jumper, Anchorite, Ballooner, and
-  Buckler. Each has five shared CORE tracks and two IDENTITY tracks, 20 small
-  levels, and deterministic extra steps at levels 5/10/15/20. Level-zero paths
+  Buckler. Each has five shared CORE tracks and two IDENTITY tracks, 40 small
+  levels, and deterministic extra steps every fifth level through 40. Each
+  numerical step is 70% of the former size, so the 48 effective L40 steps
+  resolve to 140% of the former L20 maximum. Level-zero paths
   remain the baseline and repeated configuration cannot compound modifiers.
 - Garage owns profile, palette, and Silk selection. Shop spends collected flies
   only through `ProgressionService`. Course Lab persists six local pattern slots.
@@ -253,9 +246,11 @@ without a reported regression.
   the model, and half-building an economy is worse than describing one.
 - Measured income, full runs from 0 m: ~13 flies/km, near-invariant across
   skill and difficulty (~46 flies/min at intermediate in both banking modes).
-  Maxing Classic's seven tracks costs 987 flies — about **21.5 minutes** of
-  intermediate play. Harsh currently pays no premium for roughly double the
-  death rate.
+  The forty-level curve costs 490 flies per track, 3,430 per spider, and 17,150
+  across all five. Using that historical measured income gives an **inferred**
+  ~74.6 minutes per spider or ~6.2 hours for the roster; a post-change device
+  economy measurement is still required. Harsh currently pays no premium for
+  roughly double the death rate.
 
 **Simulation lab — now has an acceptance test**
 
@@ -399,11 +394,11 @@ without a reported regression.
 - It **calibrated the anomaly detector**: those runs measure 2.45× Burst
   against a 2.5× threshold that had been guessed, so the alarm sits just above
   endorsed play.
-- Earned-speed/bird physics changes authoritative outcomes, so trace identity is
-  now `@3`; every former `@1`/`@2` trace is intentionally skipped rather than shown
+- Forty-level progression changes upgrade-bearing authoritative outcomes, so
+  trace identity is now `@4`; every former `@1`/`@2`/`@3` trace is intentionally skipped rather than shown
   as the same run under different physics. Their old verdict remains historical
   evidence, not current-build replay evidence. The bundled
-  `earned-speed-bird-technical.json` is a deterministic `@3` cross-path fixture
+  `earned-speed-bird-technical.json` is a deterministic `@4` cross-path fixture
   recorded with bird speed zero,
   not a fair-play or tuning claim. The formerly flagged web-spam trace therefore
   has no pending current-build judgement, and no published conclusion rests on
@@ -574,11 +569,15 @@ with hook-vine and leaf-shutter geometry without retuning either control; the
 
 ## Recently shipped (newest first)
 
+- **2026-08-02 — Forty-level progression (PR #105).** All 35 tracks reach L40.
+  Steps are 70% of their former size; the maximum is 140% of old L20. Schema 8
+  doubles old ownership once. Test Run uses L20 as its midpoint, traces are
+  `@4`, and Reel remains speed-neutral. A track costs 490 flies.
 - **2026-08-02 — Earned speed and pursuing bird (PR #102).** Continuous drive
   is zero, the named reference curve remains for its six explicit couplings,
   and the former left kill line is now deterministic bird state with a finished
   four-pose visual. Test Run owns OFF/SLOW/BASE/FAST comparisons plus direct
-  speed, acceleration and gap controls. The trace boundary is `@3`; the current
+  speed, acceleration and gap controls. The then-current trace boundary was `@3`; the
   technical trace is bird-off and reproduces exactly through both replay paths.
 - **2026-08-01 — Earned release quality (PR #97).** A wide, rising manual
   release earns bounded forward momentum; forced Burst/Dive detach does not.

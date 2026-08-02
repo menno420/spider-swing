@@ -2,8 +2,9 @@ extends RefCounted
 class_name PlayerProgress
 ## Versioned player progression value object.
 
-const SCHEMA_VERSION := 7
+const SCHEMA_VERSION := 8
 const TWENTY_LEVEL_SCHEMA_VERSION := 4
+const FORTY_LEVEL_SCHEMA_VERSION := 8
 const REGION_CHECKPOINT_SCHEMA_VERSION := 5
 const CAMPAIGN_STAR_SCHEMA_VERSION := 6
 const DIFFICULTY_MODE_SCHEMA_VERSION := 7
@@ -107,6 +108,8 @@ static func from_dictionary(data: Dictionary) -> PlayerProgress:
 			var saved_level := int((raw_upgrades as Dictionary)[raw_key])
 			if source_schema < TWENTY_LEVEL_SCHEMA_VERSION:
 				saved_level *= SpiderCatalog.LEGACY_LEVEL_MULTIPLIER
+			if source_schema < FORTY_LEVEL_SCHEMA_VERSION:
+				saved_level *= SpiderCatalog.TWENTY_TO_FORTY_LEVEL_MULTIPLIER
 			progress.upgrade_levels[str(upgrade_id)] = clampi(
 				saved_level,
 				0,

@@ -66,16 +66,16 @@ drift.
 
 ```jsonc
 {
-  "format": "spider-swing-input-trace@3",
+  "format": "spider-swing-input-trace@4",
   "setup": {            // everything needed to rebuild the identical world
     "preset": "balanced_baseline", "spider": "classic", "skill": "expert",
-    "upgrades": 20, "difficulty": "standard", "start_m": 5000,
-    "course_seed": 1342, "bot_seed": 12, "bot": "<policy knobs>",
+    "upgrades": 0, "difficulty": "standard", "start_m": 0,
+    "course_seed": 1337, "bot_seed": 4, "bot": "",
     "bird_speed": 0, "bird_acceleration": 12, "bird_start_offset": 760
   },
   "expected": {         // what the run did, so the trace can be checked
-    "travelled_m": 3335.33, "distance_m": 8335.33,
-    "seconds": 41.32, "cause": "obstacle", "deaths": 2, "flies": 57
+    "travelled_m": 2894.978125, "distance_m": 2894.978125,
+    "seconds": 49.7333333333333, "cause": "obstacle", "deaths": 2, "flies": 58
   },
   "commands": [ { "kind": 0, "target_x": …, "playback_tick": 41 }, … ]
 }
@@ -169,7 +169,7 @@ it is already at the edge of, which no distance number would have said.
 ```bash
 # capture the 3 best runs of a batch
 godot --headless --path . --script res://tools/simulate.gd -- \
-  --runs=24 --skill=expert --start-m=5000 --upgrades=20 \
+  --runs=24 --skill=expert --start-m=5000 --upgrades=40 \
   --trace-top=3 --trace-dir=/tmp/traces
 
 # check each one reproduces before trusting it
@@ -188,8 +188,9 @@ are easy to get wrong:
 - A trace from a superseded format must be **skipped by the catalog**, not
   listed and then refused. The former current trace
   `lab-best-warp5000-l20.json` is retained as a complete `@1` fixture for that
-  rule; after the earned-speed/bird `@3` bump, every old `@1` or `@2` trace
-  looks like it.
+  rule; after the forty-level `@4` bump, every old `@1`, `@2`, or `@3` trace
+  looks like it. Historical names retain `l20` because they record the old
+  twenty-level world rather than describing the current maximum.
 
 ## Bumping the format
 

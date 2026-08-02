@@ -761,3 +761,28 @@
 - provenance: Menno's five 2026-08-01 Android recordings and verdict that the
   obstacles are very nice but too large and too close for the first sequence to
   be passable
+
+## [D-0041] Extend every upgrade track to forty smaller levels with a higher ceiling
+
+- status: decided
+- date: 2026-08-02
+- verdict: Every spider's five shared and two identity tracks now runs from L0
+  to L40. Numerical tuning steps are an `assumed` 70% of their former size;
+  breakthroughs remain every fifth level, so 48 effective L40 steps resolve to
+  140% of the former 24-step L20 maximum. The forty purchase costs total 490
+  flies per track. Schema 8 doubles schema-7 ownership exactly once, preserving
+  proportional progress. Anchor Drive's second stored Burst moves from L10 to
+  L20, its equivalent midpoint. Test Run quick comparison becomes
+  `OWNED`/L0/L20/`MAX`, and authoritative trace identity advances to `@4`.
+  Garden's maximum Reel rate becomes 454.4 px/s with a 2.672-second full meter;
+  it remains rope shortening and adds no direct velocity.
+- why: Twenty levels ended too quickly and left too little long-term growth.
+  Doubling the number of purchases while shrinking each numerical gain makes
+  individual progress gentler, but the additional breakthroughs still provide
+  a materially larger eventual reward. The explicit scale and one-time save
+  migration avoid quietly nerfing existing ownership. The Reel increase helps
+  at the game's newly earned high speeds without turning Reel into another
+  forward-speed source or substantially accelerating the spider by itself.
+- provenance: Menno, 2026-08-02 — add about forty levels for every track,
+  slightly reduce each level's buff, lengthen progression, and retain a larger
+  total reward; increase Reel speed without adding much spider speed

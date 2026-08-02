@@ -54,6 +54,28 @@ shortening can still feel like a large speed gain around the arc. The isolated
 comparison raises Garden from 320 px/s at level zero to 416 px/s with maxed
 Silk Winder while preserving the finite 2.0–2.48-second duration range.
 
+## Extended next: forty smaller levels
+
+Build `0.27.0-forty-level-progression-playtest` extends every one of the 35
+tracks to level 40. The original twenty-level implementation above remains
+historical evidence; it is no longer the current cap.
+
+- Each numerical tuning step is an `assumed` 70% of its former size.
+- Breakthroughs remain every fifth level, yielding 48 effective tuning steps at
+  L40. `48 × 0.70 / 24 = 1.40`, so the new maximum is 40% stronger than the old
+  L20 maximum even though each purchase is smaller.
+- Schema-7 ownership doubles exactly once under schema 8: old L1 becomes L2,
+  old L10 becomes L20, and old L20 becomes L40. The older five-level migration
+  still runs first, preserving proportional ownership across both expansions.
+- Each track costs 490 flies in total. One seven-track spider costs 3,430 and
+  all five cost 17,150. Using the prior **measured** ~46 flies/min income as an
+  instrument gives an **inferred** ~74.6 minutes per spider and ~6.2 hours for
+  the roster; current-device income remains unmeasured.
+- Anchor Drive's second stored Burst moves from L10 to L20, the same midpoint
+  position. Reel remains speed-neutral rope shortening; max Garden Reel rises
+  from 416 to 454.4 px/s and its max meter from 2.48 to 2.672 seconds without
+  directly adding spider velocity.
+
 ## Structured order after this build
 
 1. **Device-balance the foundation.** Build

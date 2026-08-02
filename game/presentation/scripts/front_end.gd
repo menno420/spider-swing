@@ -13,7 +13,7 @@ const ORANGE := SpiderUiTheme.SAP
 const YELLOW := SpiderUiTheme.AMBER
 const SHOP_PROGRESSION_COPY := (
 	"Five CORE tracks shape every spider consistently; two IDENTITY tracks "
-	+ "reinforce its trade-off. Levels 5, 10, 15, and 20 apply the listed "
+	+ "reinforce its trade-off. Every fifth level through 40 applies the listed "
 	+ "increase twice."
 )
 
@@ -1010,10 +1010,10 @@ func _build_debug_upgrade_card() -> PanelContainer:
 	var levels := [
 		ProgressionService.DEBUG_UPGRADE_OVERLAY_DISABLED,
 		0,
-		10,
+		20,
 		SpiderCatalog.MAX_UPGRADE_LEVEL,
 	]
-	var labels := ["OWNED", "L0", "L10", "MAX"]
+	var labels := ["OWNED", "L0", "L20", "MAX"]
 	for index in range(levels.size()):
 		var button := _button(
 			StringName("DebugUpgradeQuick%d" % index),
