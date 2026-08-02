@@ -106,7 +106,7 @@ discipline about *amount*.
 
 ---
 
-## 3 · Six structural findings
+## 3 · Seven structural findings
 
 ### F1 · The `difficulty` label is dead metadata
 
@@ -204,6 +204,47 @@ each that is **40 of its 52 chunks**, an entire section spent teaching.
 Per-pattern introduction is therefore too expensive at the top end, and the unit
 of introduction has to be coarser. See R12.
 
+### F7 · Route predictability varies enormously, and it inversely tracks where the owner dies
+
+Every pattern already declares a **`lane`** — `high`, `low`, `centre`, `weave`,
+`tight` — and the generator builds the corridor around it
+(`_boundary_edge_y_at(..., route_lane, ...)`). **The lane is the route.** Each
+section uses only three or four of them.
+
+Walking the real lane sequence, five seeds, `o` = open recovery:
+
+| section | seeds that differ | same-lane repeats | first 24 chunks, seed 4242 |
+| --- | ---: | ---: | --- |
+| **Bramble Canopy** | **2 of 5** | **0%** | `lowolowolowolowolowolowo` |
+| Silk Hollow | 3 of 5 | 14% | `hhcocllhohcclollhcohclco` |
+| Ancient Forest 2–5 km | **5 of 5** | 27% | `lhthwhchcltlwlclwcthllll` |
+
+`measured`.
+
+> **Bramble Canopy is a memorisable four-beat loop** — low, open, weave, open —
+> and it is nearly seed-independent. Ancient Forest's 2–5 km stretch is fully
+> seeded across five lanes with no cadence at all.
+
+**The ranking is the exact inverse of where the owner dies.** He finds Bramble
+easy, dies most in Ancient Forest 2.5–5 km, and hits a wall at Silk Hollow.
+Predictability, obstacle density and corridor width all point the same way here,
+but they are **independent levers** and only two of them were previously named.
+
+This is the mechanism behind the owner's own account of his 10 605 m run:
+
+> *"once a player knows that they have to take a certain route for the first few
+> obstacles they see, they will naturally focus more on predicting how to take
+> that kind of route again the next time, and that has helped me a lot"*
+
+Predictability converts **reading into execution**, and execution is far faster
+— which is how a sustained 70 m/s is reachable at all. It also explains
+Bramble's felt gentleness better than its 50% recovery cadence does: the player
+is not solving 26 puzzles, he is running one loop 13 times.
+
+The corollary is a warning. Bramble's loop runs unchanged for all 52 of its
+chunks, so **predictability has an optimum, not a maximum** — past some point
+the same loop stops being reassuring and becomes repetitive.
+
 ---
 
 ## 4 · The proposed model
@@ -235,6 +276,7 @@ Pressure is *spent* across named axes. Each is separately measurable:
 | **Anchor quality** | share of anchors that are sticky, rotten or once-only | Web City · Ashen Hollow |
 | **Information** | preview distance before a hazard is legible | Deep Mist |
 | **Verb** | share of chunks whose best line needs a Dive or Burst | — |
+| **Predictability** | how well the next route can be inferred from the current one | Bramble (very high) → Ancient Forest (none) |
 
 A region declares an **axis budget** — how it spends the pressure it is given.
 At the plateau every region spends the *same total* on *different axes*. That
@@ -356,6 +398,25 @@ happened"* — is the same quantity as R8's preview time, and it binds at every
 pressure including the plateau. For scale: one chunk is 1.37 s at 70 m/s, and
 the weave patterns place their two commitments 420 px apart, which is **0.60 s**
 at that speed.
+
+**R14 · Predictability is scheduled, not accidental.** F7 shows it currently
+ranges from a near-deterministic four-beat loop to a fully seeded five-lane
+draw, and nothing chose that spread. It becomes a first-class axis:
+
+- **Maximum during introduction.** A demonstration is only a demonstration if
+  the player can see the pattern *as* a pattern. The introduction phase runs a
+  legible cadence, not a random draw — which is what makes the owner's promise
+  ("shown once forgiving, then real") learnable rather than merely survivable.
+- **Reduced as pressure rises**, within the section and across the run.
+- **Floored.** Fully random is not difficulty, it is noise; below some floor the
+  player is reacting rather than predicting and R13's spacing rule is doing all
+  the work.
+
+This gives the plateau (R5) something to spend that costs no new content:
+**a late section can drop predictability instead of raising density.** Same
+obstacle count, less pattern — genuinely harder, in a different way, which is
+exactly requirement 5. It is the cheapest lever in the doctrine and the only one
+that adds difficulty without adding either hazards or narrowing.
 
 **R11 · Declared identity must match generated behaviour.** A region's `focus`
 and `quirk` are assertions about its output, and a contract checks them. F3 is
@@ -588,10 +649,14 @@ that need his answer, with what evidence would settle each.
    2026-08-02: a rising floor.** *"The sections should scale based on their
    distance in the game / the difficulty of the previous section."* Folded into
    R12's gate table.
-11. **What are the pattern families, and who names them?** R12 cannot be built
-    without a `family` tag on all 97 patterns, and the grouping is a design
-    judgement — "ceiling hazard" and "floor hazard" may be one family or two,
-    and the answer changes every ramp length in the game.
+11. ~~What are the pattern families, and who names them?~~ **Answered
+    2026-08-02 by F7: the family is the `lane`, and it already exists.** Every
+    pattern declares the route it is crossed by, the generator already builds
+    the corridor around it, and each section uses only 3–4. At ~3 chunks per
+    demonstration that is 864–1152 m — the owner's "over the first 1 km" for a
+    third time, from a third direction. **No new tag is needed and R12 is
+    unblocked.** What remains is a judgement call, not a taxonomy: whether
+    `weave` counts as its own family or as a composition of `high` and `low`.
 12. **What is T, the spacing floor in R13?** One chunk is 1.37 s at 70 m/s; a
     weave's two commitments are 0.60 s apart. The floor lies somewhere between,
     and it is the single value that decides whether "keep the pace high" past
