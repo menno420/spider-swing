@@ -711,3 +711,12 @@ never edit.
   capability in an owner-live venue and supplies a repeatable path for future
   recording-led visual corrections; Android/device acceptance remains a
   separate owner judgement after CI export.
+- 2026-08-02 · wall · `owner-live` · **GitHub connector repository reads cannot
+  round-trip a binary Git blob** · PR #110 marks
+  `.substrate/guard-fires.jsonl` binary. `github_fetch_blob` on main blob
+  `8a7947ed6f3a208b8d18e9dafefc923ba6ccaabb` fails with
+  `UnicodeDecodeError: invalid start byte 0xaa at position 1`; `fetch_file` with
+  `encoding=base64` silently substitutes UTF-8 replacement bytes. Workaround:
+  retain the base-tree blob unchanged; never reconstruct it from either read
+  response. A task that must combine binary tails needs a byte-preserving blob
+  download capability not exposed in this venue.

@@ -64,8 +64,10 @@ path in this venue.
 
 PR #110 merged during closeout. Its leaderboard decision keeps D-0045; this
 Music decision moved to D-0046. Its research pointer is preserved beside the
-new build/settings state, and its repaired binary guard ledger is the merge
-base for this session's unique append records. No source or balance value moved.
+new build/settings state. Its repaired binary guard ledger is preserved exactly:
+the connector cannot read that blob without UTF-8 corruption, so this session's
+nonfunctional local telemetry tail is deliberately omitted rather than damaging
+the authoritative ledger. No source or balance value moved.
 
 ## Shipped
 
