@@ -39,6 +39,11 @@ var _home_spider_preview: TextureRect
 var _home_spider_name: Label
 var _home_run_summary: Label
 var _home_play_button: Button
+var _home_best_caption: Label
+var _home_best_value: Label
+var _home_region_label: Label
+var _loadout_chips: Array[Dictionary] = []
+var _rail_badges: Dictionary = {}
 var _spider_hub_preview: TextureRect
 var _spider_hub_name: Label
 var _spider_hub_summary: Label
@@ -316,96 +321,214 @@ func _build_home() -> void:
 	var card := _panel(PANEL)
 	card.name = "HomeWebPanel"
 	_place(card, _home, 0.38, 0.05, 0.96, 0.95)
-	var menu := VBoxContainer.new()
-	menu.add_theme_constant_override("separation", 4)
-	_fill_with_margin(menu, card, 6.0)
-	menu.add_child(_section_label("ENDLESS RUN"))
+	# Home is the run you are about to start, not an index of places to go. The
+	# deck states the target and the loadout, the destinations demote to a rail,
+	# and one filled control is the only thing on screen that looks pressable at
+	# a glance. [D-0053]
+	var deck := HBoxContainer.new()
+	deck.add_theme_constant_override("separation", 14)
+	_fill_with_margin(deck, card, 14.0)
+	var run_column := VBoxContainer.new()
+	run_column.name = "HomeRunColumn"
+	run_column.add_theme_constant_override("separation", 10)
+	run_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	deck.add_child(run_column)
+
 	# Difficulty governs the standard PLAY run, so it is chosen here rather
 	# than buried in Settings.
-	menu.add_child(_section_label("DIFFICULTY"))
+	run_column.add_child(_section_label("ENDLESS RUN · DIFFICULTY"))
 	var difficulty_row := GridContainer.new()
+	difficulty_row.name = "HomeDifficultyRow"
 	difficulty_row.columns = 3
 	difficulty_row.add_theme_constant_override("h_separation", 8)
-	menu.add_child(difficulty_row)
+	run_column.add_child(difficulty_row)
 	for mode: Dictionary in DifficultyCatalog.all_modes():
 		var mode_id := StringName(mode["id"])
 		var button := _button(
 			StringName("Difficulty_%s" % mode_id),
 			str(mode["name"]),
 			CYAN,
-			72.0,
+			84.0,
 		)
 		button.add_theme_font_size_override("font_size", 17)
 		button.pressed.connect(_on_difficulty.bind(mode_id))
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		difficulty_row.add_child(button)
 		_difficulty_buttons[mode_id] = button
+
+	run_column.add_child(_build_home_target_card())
+	run_column.add_child(_section_label("RUN LOADOUT"))
+	run_column.add_child(_build_home_loadout_row())
+
 	_home_play_button = _button(
 		&"Play",
-		"PLAY ENDLESS  ·  STANDARD\nCHASE YOUR BEST DISTANCE",
+		"▶  START RUN",
 		GREEN,
-		72.0,
+		116.0,
 	)
-	_home_play_button.add_theme_font_size_override("font_size", 21)
+	_home_play_button.add_theme_font_size_override("font_size", 30)
+	# The only filled control in the front end. Everything else is an outline, so
+	# the eye lands here without having to compare border hues.
+	_home_play_button.add_theme_stylebox_override(
+		"normal", SpiderUiTheme.hero_style(GREEN))
+	_home_play_button.add_theme_stylebox_override(
+		"hover", SpiderUiTheme.hero_style(CYAN))
+	_home_play_button.add_theme_color_override("font_color", DEEP)
+	_home_play_button.add_theme_color_override("font_hover_color", DEEP)
+	_home_play_button.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_home_play_button.pressed.connect(_on_play)
-	menu.add_child(_home_play_button)
-	menu.add_child(_section_label("WHERE TO NEXT"))
+	run_column.add_child(_home_play_button)
 
-	var routes := GridContainer.new()
-	routes.name = "HomeRouteGrid"
-	routes.columns = 2
-	routes.add_theme_constant_override("h_separation", 8)
-	routes.add_theme_constant_override("v_separation", 8)
-	# Home's dashboard panel measured 231 px of unused height. The route grid
-	# takes it, so the four destinations grow instead of the panel ending in a
-	# band of empty slate.
-	routes.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	menu.add_child(routes)
-	var spider_hub := _home_route_button(
-		&"SpiderHub", "SPIDER\nchoose · style · improve", YELLOW)
-	spider_hub.pressed.connect(_on_spider_hub)
-	routes.add_child(spider_hub)
-	var modes_hub := _home_route_button(
-		&"PlayModesHub", "PLAY MODES\ncampaign · practice · creator", ORANGE)
-	modes_hub.pressed.connect(_on_play_modes_hub)
-	routes.add_child(modes_hub)
-	var guide_hub := _home_route_button(
-		&"GuideHub", "GUIDE\nlearn controls · meet spiders", CYAN)
-	guide_hub.pressed.connect(_on_guide_hub)
-	routes.add_child(guide_hub)
-	var settings := _home_route_button(
-		&"Settings", "SETTINGS\nsound · motion · access", GREEN)
-	settings.pressed.connect(_on_settings)
-	routes.add_child(settings)
+	deck.add_child(_build_home_rail())
+
+
+func _build_home_target_card() -> PanelContainer:
+	var target := _panel(Color(PANEL_SOFT, 0.96), 14, CYAN)
+	target.name = "HomeTargetCard"
+	target.custom_minimum_size.y = 128.0
+	var body := HBoxContainer.new()
+	body.add_theme_constant_override("separation", 14)
+	_fill_with_margin(body, target, 16.0)
+	var figure := VBoxContainer.new()
+	figure.add_theme_constant_override("separation", 0)
+	figure.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	body.add_child(figure)
+	_home_best_caption = _label("", 14, CYAN)
+	_home_best_caption.name = "HomeBestCaption"
+	figure.add_child(_home_best_caption)
+	_home_best_value = _label("", 46, INK)
+	_home_best_value.name = "HomeBestValue"
+	figure.add_child(_home_best_value)
+	_home_region_label = _label("", 15, MUTED)
+	_home_region_label.name = "HomeRegionLabel"
+	_home_region_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_home_region_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_home_region_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_home_region_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.add_child(_home_region_label)
+	return target
+
+
+func _build_home_loadout_row() -> GridContainer:
+	var row := GridContainer.new()
+	row.name = "HomeLoadoutRow"
+	row.columns = 3
+	row.add_theme_constant_override("h_separation", 8)
+	row.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	var accents: Array[Color] = [GREEN, ORANGE, CYAN]
+	for index in range(3):
+		var accent := accents[index]
+		var chip := _panel(Color(PANEL_SOFT, 0.96), 12, accent)
+		chip.name = "HomeLoadoutChip%d" % index
+		chip.custom_minimum_size.y = 116.0
+		chip.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		chip.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		var body := VBoxContainer.new()
+		body.add_theme_constant_override("separation", 2)
+		_fill_with_margin(body, chip, 11.0)
+		var heading := HBoxContainer.new()
+		body.add_child(heading)
+		var name_label := _label("", 15, accent)
+		name_label.name = "HomeLoadoutName%d" % index
+		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		heading.add_child(name_label)
+		var level_label := _label("", 22, INK)
+		level_label.name = "HomeLoadoutLevel%d" % index
+		heading.add_child(level_label)
+		var detail := _label("", 14, MUTED)
+		detail.name = "HomeLoadoutDetail%d" % index
+		detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		detail.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		body.add_child(detail)
+		var meter := ProgressBar.new()
+		meter.name = "HomeLoadoutMeter%d" % index
+		meter.show_percentage = false
+		meter.custom_minimum_size.y = 7.0
+		meter.max_value = 1.0
+		meter.add_theme_stylebox_override(
+			"background", SpiderUiTheme.meter_style(Color(INK, 0.12)))
+		meter.add_theme_stylebox_override(
+			"fill", SpiderUiTheme.meter_style(accent))
+		body.add_child(meter)
+		row.add_child(chip)
+		_loadout_chips.append({
+			"name": name_label,
+			"level": level_label,
+			"detail": detail,
+			"meter": meter,
+		})
+	return row
+
+
+## The four intention routes survive D-0047 unchanged; only their shape moves.
+## A rail keeps each one a full-width target with room for the number that says
+## whether it is worth opening, which a two-line label never had.
+func _build_home_rail() -> VBoxContainer:
+	var rail := VBoxContainer.new()
+	rail.name = "HomeRouteGrid"
+	rail.add_theme_constant_override("separation", 8)
+	rail.custom_minimum_size.x = 214.0
+	var routes := [
+		[&"SpiderHub", "SPIDER", "choose · style · improve", YELLOW,
+			_on_spider_hub],
+		[&"PlayModesHub", "PLAY MODES", "campaign · practice · creator", ORANGE,
+			_on_play_modes_hub],
+		[&"GuideHub", "GUIDE", "learn controls · meet spiders", CYAN,
+			_on_guide_hub],
+		[&"Settings", "SETTINGS", "sound · motion · access", GREEN,
+			_on_settings],
+	]
+	for route: Array in routes:
+		var button := _rail_route_button(
+			route[0] as StringName,
+			route[1] as String,
+			route[2] as String,
+			route[3] as Color,
+		)
+		button.pressed.connect(route[4] as Callable)
+		rail.add_child(button)
 	_debug_run_route = _button(
 		&"DebugRunSetup",
-		"DEBUG TEST RUN  ·  QUICK SETUP  ·  AWARDS NOTHING",
+		"DEBUG TEST RUN\nQUICK SETUP · AWARDS NOTHING",
 		ORANGE,
-		48.0,
+		64.0,
 	)
-	_debug_run_route.add_theme_font_size_override("font_size", 13)
+	_debug_run_route.add_theme_font_size_override("font_size", 12)
+	_debug_run_route.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_debug_run_route.pressed.connect(_on_debug_run_setup)
 	_debug_run_route.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	menu.add_child(_debug_run_route)
-	var note := _label(
-		"ENDLESS PLAY uses your owned spider and upgrades", 13, MUTED)
-	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	menu.add_child(note)
+	rail.add_child(_debug_run_route)
+	return rail
 
 
 ## Sized against the thumb, not the reference viewport. `canvas_items`/`expand`
 ## maps 1280×720 onto a 2340×1080 phone at 1.5×, and an xxhdpi screen is
 ## 2.5 device px per dp, so a reference pixel is 0.6 dp: the 48 dp minimum this
-## project targets is 80 reference pixels, and the old 58 px route was 35 dp.
-func _home_route_button(
+## project targets is 80 reference pixels.
+func _rail_route_button(
 	button_name: StringName,
-	text_value: String,
+	title: String,
+	subtitle: String,
 	accent: Color,
 ) -> Button:
-	var button := _button(button_name, text_value, accent, 88.0)
+	var button := _button(button_name, "%s\n%s" % [title, subtitle], accent, 92.0)
 	button.add_theme_font_size_override("font_size", 16)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	# The badge rides on top of the button and never takes the tap, so the whole
+	# rail item stays one event-consuming control.
+	var badge := _label("", 15, accent)
+	badge.name = "%sBadge" % button_name
+	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	badge.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	badge.set_anchors_preset(Control.PRESET_FULL_RECT)
+	badge.offset_left = 10.0
+	badge.offset_right = -12.0
+	badge.offset_top = 8.0
+	button.add_child(badge)
+	_rail_badges[button_name] = badge
 	return button
 
 
@@ -1929,6 +2052,95 @@ func _render_home() -> void:
 	]
 	_home_run_summary.text = summary
 	_spider_hub_summary.text = summary
+	_render_home_deck(spider_id, accent)
+
+
+## Everything on the deck is read from PlayerProgress or resolved from the
+## catalogue. There is no derived "power" or "control" score behind any of it —
+## a number on this screen is a number the save actually holds.
+func _render_home_deck(spider_id: StringName, accent: Color) -> void:
+	var mode := _state.selected_difficulty()
+	var best_pixels := _state.progress.best_distance_for_mode(mode)
+	var best_metres := best_pixels / CourseRegionCatalog.PIXELS_PER_METRE
+	_home_best_caption.text = "PERSONAL BEST · %s" % str(mode).to_upper()
+	_home_best_value.text = (
+		"%s m" % _grouped_metres(best_metres) if best_metres > 0.0
+		else "NO RUN YET"
+	)
+	if best_metres > 0.0:
+		var region := CourseRegionCatalog.region_for_distance(best_pixels)
+		_home_region_label.text = "REACHED\n%s\nregion %d of %d" % [
+			str(region.get("name", "")),
+			CourseRegionCatalog.region_index_for_distance(best_pixels) + 1,
+			CourseRegionCatalog.REGIONS.size(),
+		]
+	else:
+		_home_region_label.text = "%s\nstarts here" % str(
+			CourseRegionCatalog.REGIONS[0]["name"])
+
+	var resolved := _state.resolved_progress()
+	var preview := SpiderCatalog.resolved_config(
+		SwingConfig.PRESET_BALANCED, resolved)
+	var levels := resolved.upgrade_levels
+	var groups := SpiderCatalog.loadout_groups(spider_id)
+	for index in range(_loadout_chips.size()):
+		var chip: Dictionary = _loadout_chips[index]
+		if index >= groups.size():
+			continue
+		var group: Dictionary = groups[index]
+		var totals := SpiderCatalog.loadout_group_progress(group, levels)
+		(chip["name"] as Label).text = str(group["label"])
+		(chip["level"] as Label).text = "%d/%d" % [
+			int(totals["owned"]), int(totals["maximum"])]
+		(chip["detail"] as Label).text = _loadout_detail(
+			StringName(group["id"]), group, preview)
+		var meter := chip["meter"] as ProgressBar
+		var maximum := maxf(1.0, float(totals["maximum"]))
+		meter.value = clampf(float(totals["owned"]) / maximum, 0.0, 1.0)
+
+	_rail_badges[&"SpiderHub"].text = "%d ◆" % _state.progress.spendable_flies
+	var stars := 0
+	for level: Dictionary in CampaignCatalog.all_levels():
+		stars += mini(1, _state.progress.campaign_stars_for(
+			StringName(level["id"])))
+	_rail_badges[&"PlayModesHub"].text = "%d/%d ★" % [
+		stars, CampaignCatalog.all_levels().size()]
+	_rail_badges[&"GuideHub"].text = "%d lessons" % \
+		FrontEndState.TUTORIAL_STEPS.size()
+	_rail_badges[&"Settings"].text = ""
+	_home_best_caption.add_theme_color_override("font_color", accent)
+
+
+func _loadout_detail(
+	group_id: StringName,
+	group: Dictionary,
+	preview: SwingConfig,
+) -> String:
+	match group_id:
+		&"reel":
+			return "%.0f m/s pull · %.1f s meter" % [
+				preview.reel_retraction_rate / CourseRegionCatalog.PIXELS_PER_METRE,
+				preview.reel_energy_capacity / maxf(0.001, preview.reel_drain_rate),
+			]
+		&"burst":
+			return "%.0f%% of the web · %d charge%s · from %.0f m" % [
+				preview.burst_distance_fraction * 100.0,
+				preview.burst_charge_capacity,
+				"" if preview.burst_charge_capacity == 1 else "s",
+				preview.burst_minimum_distance / CourseRegionCatalog.PIXELS_PER_METRE,
+			]
+	return str(group.get("detail", ""))
+
+
+## 7339 reads faster as 7 339 at a glance, and the deck's whole job is a glance.
+func _grouped_metres(metres: float) -> String:
+	var digits := "%d" % roundi(maxf(0.0, metres))
+	var grouped := ""
+	for index in range(digits.length()):
+		if index > 0 and (digits.length() - index) % 3 == 0:
+			grouped += " "
+		grouped += digits[index]
+	return grouped
 
 
 ## What each hub is worth opening, in the hub itself. Every figure is read from

@@ -14,6 +14,7 @@ static func run() -> Dictionary:
 	passed += _test_home_has_primary_action_hierarchy(failures)
 	passed += _test_focused_hubs_are_enclosed_and_shallow(failures)
 	passed += _test_menus_are_thumb_sized_and_state_their_progress(failures)
+	passed += _test_home_deck_reports_the_run_you_are_about_to_start(failures)
 	passed += _test_tutorial_covers_current_mechanics(failures)
 	passed += _test_settings_are_validated_and_emitted(failures)
 	passed += _test_settings_are_scrollable_and_mobile_readable(failures)
@@ -112,30 +113,43 @@ static func _test_home_has_primary_action_hierarchy(
 	var identity := view.find_child("HomeIdentityPanel", true, false) as Control
 	var dashboard := view.find_child("HomeWebPanel", true, false) as Control
 	var preview := view.find_child("HomeSpiderPreview", true, false) as TextureRect
-	var routes := view.find_child("HomeRouteGrid", true, false) as GridContainer
+	var routes := view.find_child("HomeRouteGrid", true, false) as Control
 	var play := view.front_end_button(&"Play")
 	var debug_route := view.front_end_button(&"DebugRunSetup")
 	if identity == null or dashboard == null or preview == null or \
 			routes == null or play == null or preview.texture == null or \
 			dashboard.anchor_left > 0.4 or dashboard.anchor_right < 0.95 or \
-			routes.columns != 2 or routes.get_child_count() != 4 or \
 			play.custom_minimum_size.y < 68.0 or \
 			play.get_theme_font_size("font_size") < 20 or \
-			debug_route == null or debug_route.get_parent() == routes or \
-			debug_route.custom_minimum_size.y < 48.0 or \
-			debug_route.custom_minimum_size.y > 50.0:
+			debug_route == null or debug_route.get_parent() != routes or \
+			debug_route.custom_minimum_size.y < 56.0 or \
+			debug_route.custom_minimum_size.y > 72.0:
 		failures.append("Home lost its identity, dominant Play, or focused route map")
+		view.free()
+		return 0
+	# Play is the only filled control in the front end, so hierarchy never rests
+	# on comparing two outline hues. [D-0053]
+	var hero := play.get_theme_stylebox("normal") as StyleBoxFlat
+	var route_style := view.front_end_button(&"SpiderHub") \
+		.get_theme_stylebox("normal") as StyleBoxFlat
+	if hero == null or route_style == null or hero.bg_color.a < 0.95 or \
+			hero.bg_color.get_luminance() <= route_style.bg_color.get_luminance():
+		failures.append("Home's primary action is not the one filled control")
 		view.free()
 		return 0
 	var expected_routes := ["SpiderHub", "PlayModesHub", "GuideHub", "Settings"]
 	var actual_routes: Array[String] = []
 	for route: Control in routes.get_children():
-		if route is Button:
+		if route is Button and route.name != "DebugRunSetup":
 			actual_routes.append(route.name)
-		if route is Button and not (route as Button).text.contains("\n"):
-			failures.append("Home route does not explain its purpose at a glance")
-			view.free()
-			return 0
+			if not (route as Button).text.contains("\n"):
+				failures.append("Home route does not explain its purpose at a glance")
+				view.free()
+				return 0
+			if route.custom_minimum_size.y < 80.0:
+				failures.append("Home route is below its 80 px touch floor")
+				view.free()
+				return 0
 	if actual_routes != expected_routes:
 		failures.append("Home exposes feature buttons instead of four semantic choices")
 		view.free()
@@ -301,6 +315,78 @@ static func _test_menus_are_thumb_sized_and_state_their_progress(
 					status_name, fragment])
 				view.free()
 				return 0
+	view.free()
+	return 1
+
+
+## Home states the run you are about to start. Every figure on the deck has to
+## come from PlayerProgress or the resolved config — no derived "power" score
+## and no placeholder, or the screen is decoration wearing an instrument's
+## clothes. [D-0053]
+static func _test_home_deck_reports_the_run_you_are_about_to_start(
+	failures: PackedStringArray,
+) -> int:
+	var progress := PlayerProgress.defaults()
+	progress.spendable_flies = 41
+	progress.best_distance_by_mode["standard"] = 73390.0
+	progress.upgrade_levels = {
+		"classic_reel": 18, "classic_reel_capacity": 9,
+		"classic_reel_recovery": 7, "classic_burst": 8,
+		"classic_burst_floor": 4, "classic_flow": 6, "classic_rhythm": 2,
+	}
+	var state := FrontEndState.new()
+	state.configure(PlayerSettings.defaults(), progress)
+	var view := FrontEndView.new()
+	view.bind_state(state)
+
+	# 73 390 px is 7 339 m, which lands in the second of eight regions.
+	var expectations := {
+		"HomeBestCaption": "PERSONAL BEST · STANDARD",
+		"HomeBestValue": "7 339 m",
+		"HomeRegionLabel": "region 2 of 8",
+		# 18+9+7 reel, 8+4 burst, 6+2 identity — grouped by the catalogue's own
+		# scopes and kinds, so the totals cannot drift from the tracks.
+		"HomeLoadoutName0": "REEL",       "HomeLoadoutLevel0": "34/120",
+		"HomeLoadoutName1": "BURST",      "HomeLoadoutLevel1": "12/80",
+		"HomeLoadoutLevel2": "8/80",
+		"SpiderHubBadge": "41",
+	}
+	for node_name: String in expectations:
+		var label := view.find_child(node_name, true, false) as Label
+		if label == null or not label.text.contains(expectations[node_name]):
+			failures.append("Home deck %s does not report %s" % [
+				node_name, expectations[node_name]])
+			view.free()
+			return 0
+
+	# The effect lines must move with the resolved config, not be fixed strings.
+	var reel_detail := view.find_child("HomeLoadoutDetail0", true, false) as Label
+	var burst_detail := view.find_child("HomeLoadoutDetail1", true, false) as Label
+	if reel_detail == null or burst_detail == null or \
+			not reel_detail.text.contains("m/s") or \
+			not burst_detail.text.contains("charge"):
+		failures.append("Home loadout chips do not state their resolved effect")
+		view.free()
+		return 0
+	var upgraded_reel := reel_detail.text
+
+	var base := PlayerProgress.defaults()
+	base.best_distance_by_mode["standard"] = 73390.0
+	var fresh := FrontEndState.new()
+	fresh.configure(PlayerSettings.defaults(), base)
+	var fresh_view := FrontEndView.new()
+	fresh_view.bind_state(fresh)
+	var fresh_reel := fresh_view.find_child(
+		"HomeLoadoutDetail0", true, false) as Label
+	var fresh_level := fresh_view.find_child(
+		"HomeLoadoutLevel0", true, false) as Label
+	if fresh_reel == null or fresh_reel.text == upgraded_reel or \
+			fresh_level == null or not fresh_level.text.begins_with("0/"):
+		failures.append("Home loadout does not change with owned upgrades")
+		fresh_view.free()
+		view.free()
+		return 0
+	fresh_view.free()
 	view.free()
 	return 1
 

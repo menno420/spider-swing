@@ -145,6 +145,27 @@ static func button_style(
 	return style
 
 
+## The one filled control in the front end. Every other button is an outline on
+## slate, so hierarchy stops depending on border hue — which is the weakest cue
+## available once the reference viewport is scaled down onto a phone.
+static func hero_style(accent: Color) -> StyleBoxFlat:
+	var style := button_style(accent, Color(SILK, 0.55), 2)
+	style.bg_color = accent
+	style.shadow_color = Color(accent, 0.34)
+	style.shadow_size = 14
+	style.shadow_offset = Vector2(0.0, 5.0)
+	style.content_margin_top = 10.0
+	style.content_margin_bottom = 10.0
+	return style
+
+
+static func meter_style(fill: Color) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = fill
+	style.set_corner_radius_all(4)
+	return style
+
+
 static func badge_style(accent: Color) -> StyleBoxFlat:
 	var style := button_style(Color(accent, 0.12), Color(accent, 0.72), 2)
 	style.set_corner_radius_all(18)
