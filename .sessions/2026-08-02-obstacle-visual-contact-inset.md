@@ -18,7 +18,7 @@ input, progression, saves, settlement, audio, and menu presentation.
 
 ## Owner evidence and root-cause probe
 
-The supplied 1040×480 build `0.34.0-speed-cap-playtest` screenshot ends at
+The supplied 2048×945 build `0.34.0-speed-cap-playtest` screenshot ends at
 5346.6 m on a floor-grown Bramble leaf shutter while visible air remains between
 the spider and the painted leaves. A local alpha-versus-polygon audit reproduces
 the mismatch: only about 73% of that lethal polygon is visibly occupied, with
@@ -33,6 +33,36 @@ author contact silhouettes for the two Bramble families that demonstrably need
 them, apply one small shared inset to every obstacle contact, expose the actual
 contact shape in the opt-in collision overlay, and falsify the fix against the
 reported visible-gap class before landing on green.
+
+## Implemented design
+
+- `CourseGeometry.obstacles` remains the visible, route-validation, and web
+  attachment envelope; a parallel contact polygon is lethal.
+- Every obstacle contact uses a default 4 px inset from the 18 px player circle.
+  Ceiling/floor boundaries retain the complete player radius.
+- Bramble hook and shutter variants mirror alpha-traced contact profiles four
+  runtime pixels inside their finished art at the shipped scale.
+- Moving hazards sample and sweep visual and contact polygons through the same
+  deterministic motion descriptor.
+- Advanced Test Lab exposes 0/2/4/6 px presets. The opt-in overlay draws contact
+  polygons plus the full boundary radius and smaller obstacle-contact radius.
+
+## Verification so far
+
+Exact Godot 4.7.1 passes 208/208 contracts. The new owner-device regression
+rejects the former 17 px gap death, requires collision at 13 px, keeps full-size
+rails and visual-envelope attachment, preserves distinct Bramble profiles
+through geometry copies, and sweeps a smaller moving contact silhouette. Final
+strict/CI/Android evidence is deliberately pending while this card is
+`in-progress`.
+
+## Adversarial falsification
+
+Three one-at-a-time production mutations turned the permanent contract red for
+the intended reason: changing the shared default from 4 px to 0 resurrected the
+gap death; replacing the hook's alpha profile with its broad visual polygon was
+identified by family name; and applying the obstacle inset to course boundaries
+was rejected. The implemented source was restored after each mutation.
 
 ## 💡 Session idea
 

@@ -44,8 +44,18 @@ files.
 
 Phone-scale composition review kept the centre brighter and more open than
 Ancient Forest but applies a green-dark runtime modulation so the white web,
-dark spider, golden flies, and thorn edges retain contrast. Collision outlines
-and route envelopes—not the raster silhouettes—remain the geometry proof.
+dark spider, golden flies, and thorn edges retain contrast.
+
+An owner-device death at 5346.6 m later falsified the original assumption that
+route polygons alone were sufficient contact evidence. Replaying the exact
+cover mapping showed that visible alpha occupied about 73% of the leaf
+shutter's lethal polygon, with an invisible reach of roughly 77 runtime pixels;
+the hook-vine family reached roughly 42 pixels. Their lethal-contact profiles
+are now traced four runtime pixels inside the actual alpha at the shipped 0.90
+scale and mirrored from one source for ceiling/floor and left/right variants.
+The broader polygons remain authoritative for texture fitting, route proof, and
+web attachment. A shared four-pixel obstacle-only radius inset gives every
+other obstacle the same conservative contact margin; solid rails are unchanged.
 
 The follow-up hook and shutter were also compared together in a 1280×720
 phone-scale composition over the exact runtime backdrop and rail textures. The

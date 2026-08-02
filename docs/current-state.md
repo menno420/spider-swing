@@ -10,15 +10,12 @@
 upgrade impact until excellent play can meaningfully reach 25 k+.** The game is
 still "too difficult and moves too quickly" for that to feel achievable. Unlock
 systems, expanded Campaign trees and deeper monetisation are **deferred** until
-the core loop is right. Target, corroborating evidence, the hard monetisation
-boundaries (death stays meaningful; lives capped at 3) and the parked list live
-in [`player-preference research`](product/player-preference-research-2026-08-02.md).
-External benchmarks plus a verified source audit — Ancient Forest is the one
-region with no guaranteed recovery, early thresholds are 1/2/3.5 km not 10/20/35,
-and warning time shrinks as skill rises — live in
+the core loop is right. Evidence, hard monetisation boundaries, and parked work
+live in [`player-preference research`](product/player-preference-research-2026-08-02.md).
+External benchmarks and the verified zone audit live in
 [`upgrade-and-difficulty research`](product/upgrade-and-difficulty-research-2026-08-02.md).
 
-Build `0.34.0-speed-cap-playtest` is current. Continuous drive is
+Build `0.35.0-obstacle-contact-playtest` is current. Continuous drive is
 zero; release, swing control, Reel, and pull timing earn speed; the former left
 kill line is a visible pursuing bird. `target_speed_at` remains a named
 reference. The non-pumping bot cannot tune the bird, so Test Run owns its three
@@ -62,7 +59,7 @@ without a reported regression.
 - A separately versioned `DebugTestProfile` auto-saves the Test Lab working set
   and A/B/C comparison slots. Its resolved display values and sparse explicit
   overrides never enter `PlayerSettings` or `PlayerProgress`.
-- Build `0.34.0-speed-cap-playtest` (Android version code 54, package
+- Build `0.35.0-obstacle-contact-playtest` (Android version code 55, package
   `com.menno420.spiderswing.dev`) retains the stable conventional public debug
   identity introduced by `0.19.0-depth-testing` in
   `.github/android/debug.keystore`. The workflow pins its file and certificate
@@ -125,8 +122,12 @@ without a reported regression.
 - Bramble Canopy replaces Ancient Forest's presentation and obstacles with a
   lime-lit backdrop, thorn rails, hook vines, and leaf shutters. Eight exclusive
   patterns alternate commitments with open recovery chunks and keep authored
-  sizing. Silk Hollow likewise owns membranes, cocoons, spindles, lattices, and
-  a supported thread-eye precision gap.
+  sizing. Hook and shutter contact profiles sit four runtime pixels inside the
+  actual alpha; the broader authored polygons remain the visual, route, and web
+  attachment envelope. Every other obstacle receives the same shared 4 px
+  obstacle-only contact inset, while ceiling/floor boundaries retain the full
+  player radius. Silk Hollow likewise owns membranes, cocoons, spindles,
+  lattices, and a supported thread-eye precision gap.
 
 **Depth-testing access**
 
@@ -211,9 +212,11 @@ without a reported regression.
   Garage and Shop inherit the selected spider's accent. Settings and Shop use
   a single native vertical scroller whose descendants pass drag input.
   The finished five-spider roster, flies, Ancient Forest pack, and eight-asset
-  Bramble Canopy pack are presentation-owned over the same authoritative
-  polygons. Missing art falls back to geometry; mipmapped spider/web rendering
-  interpolates fixed snapshots and snaps teleports.
+  Bramble Canopy pack are presentation-owned over authoritative visual
+  envelopes. A parallel contact silhouette is published for truthful opt-in
+  collision overlays; missing art/contact metadata falls back to the authored
+  polygon. Mipmapped spider/web rendering interpolates fixed snapshots and
+  snaps teleports.
 - The pursuer uses four original transparent robin poses on normalized 280 px
   canvases. Fixed-tick phase blends the flap cycle without a wrap snap; vertical
   bob shares that phase, banking reads authoritative Y velocity, closing raises
@@ -234,9 +237,9 @@ without a reported regression.
 
 **Verification**
 
-- Local source passes the 205-contract engine runner with the exact
+- Local source passes the 208-contract engine runner with the exact
   `4.7.1.stable.official.a13da4feb` Standard binary. The declared suite contains
-  11 bootstrap/build, 68 deterministic physics, 15 zone, 11 spider-biology,
+  11 bootstrap/build, 71 deterministic physics, 15 zone, 11 spider-biology,
   10 Campaign, 9 difficulty, 4 upgrade-wiring, 10 simulation-lab/replay,
   2 economy, 9 generated-audio, 27 mobile GUI/layout, and 29 front-end/settings/
   progression checks. The full
@@ -253,7 +256,11 @@ without a reported regression.
   path, and sweep a conservative route between every guide. The device-led timed
   envelope additionally rejects adjacent hard chunks, pair commitments below
   0.85 seconds at full speed, widths above 340 px, or heights above 48% of the
-  usable corridor. It was falsified first against the shipped values.
+  usable corridor. A separate owner-device regression recreates the old
+  17-pixel invisible-gap death, proves contact at 13 pixels, preserves full-size
+  rails and visible-envelope web attachment, and requires alpha-traced forgiving
+  lobes for both Bramble art families. It was falsified first against the
+  shipped values.
 - `tools/check_architecture.py` passes all 14 self-test fixtures and the live
   source scan. `python3 bootstrap.py check --strict` passes all content checks;
   during implementation its only hold is the session card's deliberate

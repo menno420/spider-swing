@@ -799,12 +799,20 @@ func _make_snapshot() -> SimulationSnapshot:
 			snapshot.boundary_surfaces.append(boundary.duplicate())
 	for index in range(_world.obstacles.size()):
 		snapshot.obstacles.append(_world.obstacles[index].duplicate())
+		snapshot.obstacle_contact_polygons.append(
+			_world.obstacle_contact_polygons[index].duplicate()
+			if index < _world.obstacle_contact_polygons.size()
+			else _world.obstacles[index].duplicate())
 		snapshot.obstacle_kinds.append(
 			_world.obstacle_kinds[index]
 				if index < _world.obstacle_kinds.size()
 				else CourseObstacleCatalog.UNSPECIFIED)
 		snapshot.obstacle_rest_polygons.append(
 			_world._base_obstacles[index].duplicate())
+		snapshot.obstacle_contact_rest_polygons.append(
+			_world._base_obstacle_contact_polygons[index].duplicate()
+			if index < _world._base_obstacle_contact_polygons.size()
+			else _world._base_obstacles[index].duplicate())
 		snapshot.obstacle_ids.append(_world.obstacle_ids[index])
 		snapshot.obstacle_anchor_classes.append(
 			_world.obstacle_anchor_classes[index])
@@ -831,6 +839,7 @@ func _make_snapshot() -> SimulationSnapshot:
 	snapshot.spider_id = _progress.selected_spider_id
 	snapshot.web_variant = _progress.selected_web_variant
 	snapshot.player_collision_radius = _config.player_collision_radius
+	snapshot.obstacle_contact_radius = _world.obstacle_contact_radius()
 	_populate_dive_preview(snapshot)
 	snapshot.debug_visible = _debug_visible
 	snapshot.collision_outlines_visible = _collision_outlines_visible

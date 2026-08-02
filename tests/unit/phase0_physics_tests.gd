@@ -76,6 +76,7 @@ static func run() -> Dictionary:
 	passed += _test_debug_start_matches_seeded_geometry_from_zero(failures)
 	passed += _test_authored_weaves_and_small_silk_burrs_are_fair(failures)
 	passed += _test_contoured_rails_are_continuous_and_varied(failures)
+	passed += _test_obstacle_contact_is_inside_the_painted_hazard(failures)
 	passed += _test_obstacle_collision_is_authoritative(failures)
 	passed += _test_boundary_lethality_is_a_toggle(failures)
 	passed += _test_buckler_impact_shell_is_bounded(failures)
@@ -2705,6 +2706,8 @@ static func _course_geometry_matches_exactly(
 		actual.boundary_surfaces == expected.boundary_surfaces and \
 		actual.aim_guides == expected.aim_guides and \
 		actual.obstacles == expected.obstacles and \
+		actual.obstacle_contact_polygons == \
+			expected.obstacle_contact_polygons and \
 		actual.obstacle_anchorable == expected.obstacle_anchorable and \
 		actual.obstacle_kinds == expected.obstacle_kinds and \
 		actual.obstacle_ids == expected.obstacle_ids and \
@@ -3382,6 +3385,130 @@ static func _test_burst_frenzy_suppresses_only_cooldown(
 	if not effects.advance(0.03).is_empty() or \
 			effects.advance(0.03) != PackedStringArray([EffectState.BURST_FRENZY]):
 		failures.append("Burst Frenzy expiry is not deterministic")
+		return 0
+	return 1
+
+
+static func _test_obstacle_contact_is_inside_the_painted_hazard(
+	failures: PackedStringArray,
+) -> int:
+	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	config.gravity = 0.0001
+	config.horizontal_drive_acceleration = 0.0001
+	config.air_drag = 0.0
+	if not is_equal_approx(config.obstacle_contact_inset, 4.0):
+		failures.append("obstacles lost the four-pixel default contact inset")
+		return 0
+
+	# A centre 17 px from an ordinary obstacle died with the old 18 px player
+	# radius. The obstacle-only inset must preserve that visible sliver, while a
+	# centre 13 px away must still make contact. This fallback covers every
+	# obstacle that does not need a raster-specific silhouette.
+	var visual := _rectangle_polygon(Rect2(300.0, 320.0, 120.0, 150.0))
+	var geometry := CourseGeometry.new()
+	geometry.append_obstacle(visual)
+	var world := SimulationWorld.new()
+	world.reset(config, geometry)
+	if not is_equal_approx(world.obstacle_contact_radius(), 14.0) or \
+			world._collides_with_obstacle(Vector2(283.0, 390.0)) or \
+			not world._collides_with_obstacle(Vector2(287.0, 390.0)):
+		failures.append(
+			"ordinary obstacles do not keep contact slightly inside their art")
+		return 0
+
+	# Course rails retain the full player radius. The fairness inset belongs to
+	# obstacle contact only and must never open a gap through ceiling/floor.
+	var rail_geometry := CourseGeometry.new()
+	rail_geometry.boundary_surfaces.append(visual)
+	var rail_world := SimulationWorld.new()
+	rail_world.reset(config, rail_geometry)
+	var rail_contact: Dictionary = rail_world._collision_at(
+		Vector2(283.0, 390.0))
+	if not bool(rail_contact["found"]) or \
+			StringName(rail_contact["kind"]) != &"boundary":
+		failures.append("obstacle forgiveness incorrectly shrank course rails")
+		return 0
+
+	# Web selection remains on the broad authored/visible envelope, not the
+	# smaller lethal silhouette. A graphics fix must not remove legal anchors.
+	var anchor_visual := PackedVector2Array([
+		Vector2(520.0, 210.0), Vector2(680.0, 230.0),
+		Vector2(620.0, 320.0),
+	])
+	var anchor_contact := _rectangle_polygon(
+		Rect2(590.0, 235.0, 50.0, 55.0))
+	var anchor_geometry := CourseGeometry.new()
+	anchor_geometry.append_obstacle(
+		anchor_visual, true, CourseObstacleCatalog.UNSPECIFIED,
+		&"contact_separation_fixture", &"", {},
+		CourseGeometry.ANCHOR_FIXED, anchor_contact)
+	var anchor_world := SimulationWorld.new()
+	anchor_world.reset(config, anchor_geometry)
+	var anchor := anchor_world.nearest_solid_point(anchor_visual[0])
+	if not bool(anchor["found"]) or \
+			StringName(anchor["kind"]) != &"obstacle" or \
+			Vector2(anchor["anchor"]).distance_to(anchor_visual[0]) > 0.01:
+		failures.append("smaller lethal silhouettes also shrank web attachment")
+		return 0
+
+	# Bramble's finished hook and leaf images contain broad transparent corners.
+	# Their contact profiles are traced inside the real alpha rather than using
+	# the larger cover-mapped texture bounds seen in the owner-device report.
+	var expected_kinds := {
+		CourseObstacleCatalog.CANOPY_HOOK_VINE_RIGHT: false,
+		CourseObstacleCatalog.CANOPY_LEAF_SHUTTER_RIGHT: false,
+	}
+	for seed in [0, 7, 77, 707]:
+		var stream := CourseStream.new()
+		stream.reset(
+			10000.0, 0.94, 0.90, 1.12, [], true, 1.0, 1.0,
+			20000.0, seed,
+		)
+		for chunk_index in range(52, 105):
+			var pattern_id := stream.pattern_id_for_chunk(chunk_index)
+			if pattern_id not in [&"canopy_hook_high", &"canopy_hook_low",
+					&"canopy_leaf_high", &"canopy_leaf_low"]:
+				continue
+			var chunk_start := float(chunk_index) * CourseStream.CHUNK_WIDTH
+			var geometry_at_chunk := stream.update_for_position(chunk_start + 1.0)
+			for obstacle_index in range(geometry_at_chunk.obstacles.size()):
+				var kind := geometry_at_chunk.obstacle_kind(obstacle_index)
+				if not expected_kinds.has(kind) or bool(expected_kinds[kind]):
+					continue
+				var obstacle := geometry_at_chunk.obstacles[obstacle_index]
+				var bounds := SolidGeometry.bounds(obstacle)
+				if bounds.get_center().x < chunk_start or \
+						bounds.get_center().x >= \
+							chunk_start + CourseStream.CHUNK_WIDTH:
+					continue
+				var contact := geometry_at_chunk.obstacle_contact_polygon(
+					obstacle_index)
+				var found_forgiving_lobe := false
+				for x_index in range(17):
+					for y_index in range(17):
+						var sample := Vector2(
+							lerpf(bounds.position.x, bounds.end.x,
+								float(x_index) / 16.0),
+							lerpf(bounds.position.y, bounds.end.y,
+								float(y_index) / 16.0),
+						)
+						if SolidGeometry.circle_intersects_polygon(
+							sample, 0.0, obstacle) and \
+								not SolidGeometry.circle_intersects_polygon(
+									sample, world.obstacle_contact_radius(), contact):
+							found_forgiving_lobe = true
+							break
+					if found_forgiving_lobe:
+						break
+				var copy := geometry_at_chunk.duplicate_geometry()
+				if contact == obstacle or not found_forgiving_lobe or \
+						copy.obstacle_contact_polygon(obstacle_index) != contact:
+					failures.append(
+						"%s lost its alpha-traced forgiving contact silhouette" % kind)
+					return 0
+				expected_kinds[kind] = true
+	if expected_kinds.values().has(false):
+		failures.append("deterministic Bramble fixtures expose no hook/leaf contact")
 		return 0
 	return 1
 

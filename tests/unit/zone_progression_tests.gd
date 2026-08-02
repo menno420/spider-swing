@@ -114,7 +114,8 @@ static func _test_authored_hazards_declare_identity_and_anchorability(
 					geometry.decorations.is_empty():
 				failures.append("authored pattern %s has no zone geometry" % pattern["id"])
 				return 0
-			if geometry.obstacle_anchorable.size() != geometry.obstacles.size() or \
+			if geometry.obstacle_contact_polygons.size() != geometry.obstacles.size() or \
+					geometry.obstacle_anchorable.size() != geometry.obstacles.size() or \
 					geometry.obstacle_ids.size() != geometry.obstacles.size() or \
 					geometry.obstacle_visual_ids.size() != geometry.obstacles.size() or \
 					geometry.obstacle_anchor_classes.size() != geometry.obstacles.size() or \
@@ -230,8 +231,14 @@ static func _test_moving_polygon_collision_is_swept(
 	var world := SimulationWorld.new()
 	world.reset(config, CourseGeometry.new())
 	world.obstacles = [_rectangle_polygon(Rect2(360.0, 360.0, 40.0, 76.0))]
+	world.obstacle_contact_polygons = [
+		_rectangle_polygon(Rect2(370.0, 370.0, 20.0, 56.0)),
+	]
 	world._next_obstacles = [
 		_rectangle_polygon(Rect2(800.0, 360.0, 40.0, 76.0)),
+	]
+	world._next_obstacle_contact_polygons = [
+		_rectangle_polygon(Rect2(810.0, 370.0, 20.0, 56.0)),
 	]
 	world._obstacle_active = PackedByteArray([1])
 	world._next_obstacle_active = PackedByteArray([1])
@@ -239,7 +246,8 @@ static func _test_moving_polygon_collision_is_swept(
 	var contact := world._first_obstacle_contact(
 		stationary_spider, stationary_spider + Vector2(0.1, 0.0))
 	if not bool(contact["found"]):
-		failures.append("a fast moving polygon can tunnel through a near-static spider")
+		failures.append(
+			"a fast moving contact silhouette can tunnel through a near-static spider")
 		return 0
 	return 1
 
@@ -722,7 +730,7 @@ static func _test_finished_art_outlines_are_debug_only(
 	if source.contains("var finished_edge"):
 		failures.append("finished obstacle art still receives a semantic polygon rim")
 		return 0
-	var ghost_clause := "if _snapshot.collision_outlines_visible and \\\n\t\t\t\tobstacle_index < _snapshot.obstacle_rest_polygons.size()"
+	var ghost_clause := "if _snapshot.collision_outlines_visible and \\\n\t\t\t\tobstacle_index < \\\n\t\t\t\t\t_snapshot.obstacle_contact_rest_polygons.size()"
 	if not source.contains(ghost_clause):
 		failures.append("moving rest-position ghosts are not gated by diagnostics")
 		return 0

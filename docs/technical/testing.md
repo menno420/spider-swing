@@ -89,11 +89,11 @@ Run directly:
 godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-203 checks, grouped so one subsystem failure never hides the rest:
+208 checks, grouped so one subsystem failure never hides the rest:
 
 - engine, main-scene, input-action, 60 Hz, renderer/viewport, Android preset,
   inward-dependency, and no-autoload bootstrap contracts;
-- sixty-eight deterministic physics contracts, including extended arbitrary-point
+- seventy-one deterministic physics contracts, including extended arbitrary-point
   solid attachment, larger aim forgiveness, bounded arc/rise-scored manual
   release momentum, forced-detach exclusion, wrap-safe attachment history,
   speed-neutral Reel and automatic take-up, a bounded 2.0-second/640-pixel base Reel budget,
@@ -103,7 +103,9 @@ godot --headless --path . --script res://tests/test_runner.gd
   Burst travel, unchanged level-zero Burst cadence plus the level-10 stored
   reserve Burst at the L20 midpoint on one serial refill timer, recovery-web interruption,
   detached cooldown double-tap fallback, explicit release/retarget behavior,
-  polygon anchoring/collision, a 1000 m runway, smooth 5000 m speed ramp, and
+  polygon anchoring/collision, a shared obstacle-only contact inset, distinct
+  alpha-traced Bramble contact silhouettes, unchanged full-radius rails and
+  visible-envelope web attachment, a 1000 m runway, smooth 5000 m speed ramp, and
   bounded organic streaming with continuous contoured rails, lower rail
   coverage, independent rail lethality, authoritative obstacle scaling, a
   deterministic distance-banded pattern catalog with repetition protection and
@@ -137,7 +139,7 @@ godot --headless --path . --script res://tests/test_runner.gd
   without any physics change;
 - four upgrade-wiring contracts retain all seven saleable tracks and guard the
   simulator's known blind spots;
-- nine simulation-lab/replay contracts: four prove the measurement tool receives
+- ten simulation-lab/replay contracts: five prove the measurement tool receives
   typed anchor classes, timed-anchor life, and the real Dive input path without
   freezing any bot conclusion; five prove a committed trace reproduces through
   the real session, incompatible or unrelated JSON is refused, valid traces are
@@ -148,7 +150,7 @@ godot --headless --path . --script res://tests/test_runner.gd
   cooldown policy, five distinct later-zone warnings, two seamless bounded
   music stems, pressure-driven presentation mixing, the Music slider's original
   midpoint and bounded +6 dB ceiling, and independent Effects/Haptics wiring;
-- twenty-five mobile HUD contracts proving large separated Reel and Burst controls,
+- twenty-seven mobile HUD contracts proving large separated Reel and Burst controls,
   DEBUG, and Menu are event-consuming
   Buttons, GUI geometry shares one layout source, accepted actions drive visual
   and haptic feedback, UI actions do not leak into web input, debug tools can be
@@ -160,7 +162,7 @@ godot --headless --path . --script res://tests/test_runner.gd
   interpolation, mipmapped moving art, restrained/reduced-motion-safe action
   poses, region ambience and persistent practice status remain presentation-only,
   and world input waits for Godot GUI handling;
-- twenty-eight front-end contracts proving Home starts before gameplay,
+- twenty-nine front-end contracts proving Home starts before gameplay,
   Play/Garage/Shop/Tutorial/Campaign/Course Lab/Region Practice/Field Guide/
   Settings route correctly,
   the six tutorial

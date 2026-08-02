@@ -1050,3 +1050,26 @@
   number he had already tried moving.
 - provenance: Menno, 2026-08-02 — "I updated to v0.33 but I think the speed cap
   is still missing or too high"
+
+## [D-0051] Separate visible obstacle envelopes from forgiving lethal contact
+
+- status: decided
+- date: 2026-08-02
+- verdict: All lethal obstacles subtract one shared four-pixel default inset
+  from the player contact radius. `CourseGeometry` owns a parallel lethal-contact
+  polygon while retaining the broader obstacle polygon for drawing, route
+  validation, and web attachment. Bramble hook vines and leaf shutters use
+  alpha-traced profiles four runtime pixels inside their finished art; legacy
+  and other obstacles fall back to their authored polygon. Ceiling and floor
+  boundaries keep the full player radius. The opt-in collision overlay shows
+  the contact polygon and both radii, and Advanced Test Lab exposes the inset.
+- why: The owner's 5346.6 m Android screenshot showed a death with visible air
+  before a floor-grown Bramble leaf. Mapping the shipped art exactly as
+  presentation does found that the leaf image occupied only about 73% of its
+  lethal polygon and left an invisible reach of roughly 77 px; the hook family
+  reached roughly 42 px. A global four-pixel obstacle-only inset makes every
+  ordinary contact conservative, while distinct alpha-derived Bramble
+  silhouettes remove the much larger transparent lobes without changing
+  placement, routes, rails, or legal web anchors.
+- provenance: Menno, 2026-08-02 — obstacles should be a very small amount
+  smaller than their visual display so contact, not visible air, causes death
