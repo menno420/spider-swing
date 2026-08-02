@@ -8,8 +8,17 @@
 > that document set the 25 km north star, this one supplies the comparative
 > evidence and the code-level audit of why the current build does not reach it.
 >
-> **Nothing here is a decision.** No physics, progression, course, or bird value
-> is changed by this document.
+> **Nothing here is a decision**, with one exception recorded after the fact:
+> the leaderboard fork in § 4.4 was answered by the owner and is now **[D-0045]**.
+> No physics, progression, course, or bird value is changed by this document.
+>
+> **Still current after PR #109 merged** (build `0.30.0-menu-system-playtest`).
+> Re-checked: none of the eight source files behind the § 2 findings moved
+> between `5afa54a` and the merge — `course_pattern_catalog.gd`,
+> `course_region_catalog.gd`, `spider_catalog.gd`, `spider_motor.gd`,
+> `simulation_world.gd`, `swing_config.gd`, `course_stream.gd` and
+> `swing_lab.gd` are byte-identical. `swing_lab_session.gd` did change, and the
+> trace/recording seams cited in § 5.2 were re-confirmed present in it.
 
 ## ⚠ Provenance — read before quoting anything
 
@@ -542,17 +551,57 @@ constants as metres.
 See § 2.1. `course_region_catalog.gd:38` versus
 `course_pattern_catalog.gd:288-299`. Source-versus-source, not doc drift.
 
-## 4.4 The leaderboard-eligibility conflict is real and still open
+## 4.4 The leaderboard-eligibility conflict — **answered by the owner, D-0045**
 
-GDD §12.3: a future leaderboard's standard mode uses *fixed Classic stats*, and
-gameplay purchases do not affect it. `DifficultyCatalog.MODES` marks **Standard,
-with upgrades fully applied**, as the sole `leaderboards_eligible` mode.
+GDD §12.3 says a future leaderboard's standard mode uses *fixed Classic stats*
+with gameplay purchases excluded. `DifficultyCatalog.MODES` marks **Standard,
+with upgrades fully applied**, as the sole `leaderboards_eligible` mode. Session A
+recommended splitting the board into baseline / upgraded / assisted classes
+(§ 1.6).
 
-Leaderboards are unimplemented, so this is latent — but it is the **highest
-leverage open decision in the whole area**, because an upgrade-free competitive
-lane removes most of the "upgrades flatten the skill ceiling" objection and makes
-several capability designs safe that are otherwise risky. Session A's run-class
-structure (§ 1.6) is a ready-made resolution.
+**The owner chose none of those.** Recorded as **[D-0045]**, 2026-08-02:
+
+> One **general** leaderboard, not segmented by upgrade level. Upgrades apply
+> normally. Every entry records **its course seed and upgrade levels** — plus
+> spider, difficulty mode and build/trace identity — so anyone can reproduce the
+> exact run.
+
+Transparency instead of segmentation. It resolves the conflict by superseding
+GDD §12.3's eligibility rule rather than the source, so **`DifficultyCatalog`'s
+current behaviour is now correct as written** and needs no change.
+
+Three consequences worth carrying forward:
+
+1. **Disclosure makes the difference visible, not absent.** Two entries at
+   different upgrade levels are still not like-for-like. The board's fairness
+   therefore rests on upgrades staying in a bounded band (§ 1.4's +50–100%) and
+   remaining earnable only by play — both already required by
+   [`economy-model.md`](economy-model.md). This *raises* the stakes on § 3.2:
+   if upgrades were ever allowed into the 2–4× band, the general board would
+   become an account-age ranking.
+2. **"Reproduce the run" has two strengths, and both already have seams.**
+   *Reproduce the course* needs only metadata — seed, upgrade levels, spider,
+   mode — and lets another player attempt the same conditions. *Reproduce the
+   run itself* needs the input trace, and that is what makes an entry
+   **verifiable** rather than merely believable. Production already draws a
+   fresh course seed per run (`SwingLabSession._next_course_seed`);
+   `toggle_recording` already captures human input; `export_diagnostic()`
+   already writes seed plus resolved config plus commands; and `--replay` /
+   `load_input_trace` already reproduce a recorded run within a
+   contract-enforced one metre.
+3. **Entries are reproducible only within one physics generation.** The trace
+   format already refuses input recorded under different authoritative physics
+   (`spider-swing-input-trace@4`, bumped by the forty-level progression work).
+   Any change that moves upgrade-bearing outcomes — including most options in
+   this document — invalidates reproduction of older entries unless the
+   identity is stored on each one. **Store it from the first entry**, not after
+   the first regeneration.
+
+**GDD §12.3 still reads the other way.** The GDD is vendored byte-exact and
+checksum-pinned (`docs/game-design/README.md`), so it cannot be edited in place:
+changing it means a new owner-authored version with a new checksum. Until then,
+D-0045 is the current rule and §12.3 is the superseded text. This is flagged, not
+silently left to drift.
 
 ## 4.5 Profile copy describes drive trade-offs that no longer exist
 
@@ -583,12 +632,21 @@ approved work** — each needs its own session and, where marked, an owner verdi
 **Three are structural and gate honest measurement of everything else** (1, 3, 4).
 **One is a live currency sink** (5).
 
-## 5.1 Coordination note
+## 5.1 The A/B harness these findings need has just landed
 
-PR **#109** (`claude/menu-system-overhaul`, open, no code yet) plans a persistent
-Test Lab with **A/B/C comparison snapshots** and pre-run profile application. Any
-A/B work on recovery cadence or bird curves is therefore **coordination-sensitive**
-and should be sequenced into or after that session rather than built in parallel.
+PR **#109 merged** on 2026-08-02 (build `0.30.0-menu-system-playtest`), while
+this document was being written. It ships a separately versioned
+`DebugTestProfile` that auto-saves the Test Lab working set and **A/B/C
+comparison slots**, applying the chosen profile before the session's first
+simulation tick, with resolved values that never enter `PlayerSettings` or
+`PlayerProgress`.
+
+That converts the coordination risk noted earlier into an asset: **the paired
+comparisons every device verdict in § 5.2 needs now have a harness.** The
+comparisons that matter most — current Ancient Forest cadence versus a candidate
+with guaranteed recovery, and current linear bird versus a tapered capped
+curve — are exactly the A/B shape it was built for, and both must hold the course
+seed fixed across the pair to be worth anything.
 
 ## 5.2 What can be settled headlessly, and what cannot
 
@@ -620,8 +678,13 @@ with mature upgrades.
 
 Only forks that source inspection cannot resolve.
 
-1. **Does the competitive lane run on base or upgraded stats?** (§ 4.4) Free to
-   settle now; changes the risk profile of every progression option.
+1. ~~**Does the competitive lane run on base or upgraded stats?**~~
+   **Answered 2026-08-02 — [D-0045].** One general board, not segmented by
+   upgrade level; upgrades apply; every entry carries its course seed and
+   upgrade levels so the run can be reproduced. § 4.4 records the three
+   consequences, the most load-bearing being that a general board turns the
+   **bounded upgrade band into a fairness requirement** rather than a design
+   preference — which raises the stakes on § 3.2 rather than lowering them.
 2. **Which progression state should make 25 km credible** — excellent Garden L0,
    excellent with mature upgrades, or L0 approaching it with upgrades adding
    consistency? Both sessions flag this; it materially changes both targets.
