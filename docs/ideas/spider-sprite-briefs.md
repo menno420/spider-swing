@@ -1,4 +1,4 @@
-# Production sprite briefs — Skitter, Ballooner, Buckler
+# Production sprite briefs — Magnolia Green Jumper, Ballooner, Buckler
 
 > **Status:** `plan`
 >
@@ -33,7 +33,7 @@
   already spent as: Garden = dark fur + orange-banded legs; Anchorite =
   broad low matte-dark tarantula. Do not reuse those combinations.
 
-## Skitter — Magnolia Green Jumper (*Lyssomanes viridis*)
+## Magnolia Green Jumper (*Lyssomanes viridis*) — formerly "Skitter"
 
 The owner's own reference research (Grok session, 2026-07-31) landed here
 and it is the right call: a real, common, leaf-coloured jumping spider.

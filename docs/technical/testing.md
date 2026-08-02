@@ -252,3 +252,15 @@ Keep simulation checks deterministic: fixed seeds and recorded input traces in
 `tests/test_runner.gd`. New moving content must extend ADR 0004's pure phase,
 swept-contact, off-grid descriptor, and moving-anchor contracts rather than add
 a second animation or physics authority.
+
+**Falsify every new contract before trusting it.** Break the code it guards,
+confirm the suite fails, restore, confirm it passes. A test that has never
+failed is a claim, not a check.
+
+**`EXPECTED_CHECK_COUNT` is the one merge hazard that leaves no marker.** Two
+branches that each add a contract each write the *same* new total, so git merges
+identical text with no conflict while the tree runs one higher. It has fired
+twice — 120 → 121 on 2026-07-31, and 210 → 211 on 2026-08-02. **After any merge
+of the default branch, re-run the suite before trusting the diff**; the runner's
+own failure message names the executed total and the fix. Never state a contract
+count in prose — `EXPECTED_CHECK_COUNT` is the only live figure.

@@ -10,25 +10,31 @@ cannot start or persist a run by itself.
 
 ### Home
 
-The first visible screen presents intentions rather than indexing every feature:
+**Home is the run you are about to start, not an index of places to go.** It
+fills the landscape with two columns:
 
-- **Play** — starts Endless immediately with the selected difficulty, spider,
-  owned upgrades, and saved options;
-- **Spider** — opens Garage and Upgrades together;
-- **Play Modes** — opens Campaign, Region Practice, and Course Lab together;
-- **Guide** — opens How to Swing and Field Guide together;
-- **Settings** — edits real persisted options directly;
-- **Debug Test Run** *(when Debug Tools is enabled)* — remains a subordinate
-  direct utility for quick noncompetitive launches; Advanced Test Lab is one
-  more tap from there.
+- an **identity card** — the selected production spider, its role, and its art;
+- a **run column** (`HomeRunColumn`) — the difficulty choice, the personal best
+  with the region it was set in, three loadout chips grouped by the catalogue's
+  own scopes, and `▶ START RUN`, which is **the only filled control in the whole
+  front end**. A contract asserts that by comparing style-box luminance;
+- a **route rail** (`HomeRouteGrid`) — the four intentions, each carrying a live
+  badge drawn from `PlayerProgress`: **Spider** (choose · style · improve),
+  **Play Modes** (campaign · practice · creator), **Guide** (learn controls ·
+  meet spiders), and **Settings** (sound · motion · access);
+- **Debug Test Run** *(when Debug Tools is enabled)* — subordinate beneath the
+  rail, a direct utility for quick noncompetitive launches; Advanced Test Lab is
+  one more tap from there.
 
-Home uses a full landscape dashboard rather than a feature grid. The selected
-production spider, role, difficulty, and best distance form one identity card;
-the other reserves its strongest weight for one Endless Play action. The four
-normal secondary choices are a two-column semantic map. Every previous
-destination remains reachable within two taps, and its back action names and
-returns to the hub that opened it. This topology is state-owned by
-`FrontEndState`; presentation does not maintain a second overlay history.
+The loadout chips report the catalogue's own totals against their ceilings —
+never an invented weighted score, so they cannot drift from the tracks that
+produce them. The selected difficulty is the strongest state on Home and is
+never expressed with Godot's `disabled` styling, which would make the current
+choice the dimmest control on the screen.
+
+Every previous destination remains reachable within two taps, and its back
+action names and returns to the hub that opened it. This topology is state-owned
+by `FrontEndState`; presentation does not maintain a second overlay history.
 
 The simulation, input router, and gameplay view are not mounted until Play is
 requested. Returning through the in-game **Menu** control releases held Reel
@@ -89,7 +95,7 @@ without owning web physics or attachment rules.
 
 The Shop gives every profile the same five core tracks plus two identity tracks.
 Each track has 40 small levels. Every fifth level through 40 is a visible
-breakthroughs that grant one extra tuning step without adding another input or
+breakthrough that grants one extra tuning step without adding another input or
 charge. The seven selected-profile rows use one fly-balance badge, CORE/IDENTITY
 accent cards, and eight visible silk knots for those milestones. The Shop states
 the rule once above the list, marks an upcoming milestone `BREAKTHROUGH ×2`,

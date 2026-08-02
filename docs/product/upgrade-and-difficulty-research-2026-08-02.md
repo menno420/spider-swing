@@ -104,8 +104,8 @@ navigation agents ahead of the player. The literature also warns that **agent
 difficulty is only a proxy for human difficulty**.
 
 > **This is the academic form of the rule this repository already enforces from
-> its own measurements** — the non-pumping bot is a floor, not a target. Two
-> independent lines of evidence now say the same thing.
+> its own measurements** — the bot is a floor, not a target. Two independent
+> lines of evidence now say the same thing.
 
 ## 1.2 Session A's folklore table, kept because it is directly usable
 
@@ -404,7 +404,8 @@ Levels 37, 38, 39 and 40 are paid no-effect purchases. The existing cap contract
 (`upgrade_audit_tests.gd:128`) asserts the ceiling *holds*; nothing asserts that
 each purchased level *does something*.
 
-**All profile drive modifiers are inert.** Skitter +16%, Anchorite −12%,
+**All profile drive modifiers are inert.** Magnolia Green Jumper +16%,
+Anchorite −12%,
 Ballooner −6% and Buckler −8% all multiply a zero baseline. Their user-facing
 copy still describes drive trade-offs ("Forward recovery gains…", "weaker drive")
 that resolve to nothing. Their radius, gravity, reference-speed, Reel, Burst,
@@ -707,9 +708,11 @@ Only forks that source inspection cannot resolve.
 > **No bird value, Reel value, release coefficient, recovery cadence, warning
 > time, or 25 km target may be selected because it makes the bot travel further.**
 >
-> The model cannot pump a pendulum, has never performed a Dive, reels far more
-> lightly than the owner, and ignores anchor classes. Its no-drive distances are
-> **floors**. Session A supplies the independent academic form of the same rule:
+> The model now pumps, Dives and reads anchor classes — those three blind spots
+> closed on 2026-08-01/02 — and it **still fails most of its acceptance
+> targets**, running 26 m/s below the reference curve in the band where the
+> owner plays and getting the upgrade sign wrong. Its distances are **floors**.
+> Session A supplies the independent academic form of the same rule:
 > agent difficulty is a proxy for human difficulty that is known to fail across
 > player styles.
 >

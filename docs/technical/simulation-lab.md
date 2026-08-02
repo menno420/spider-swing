@@ -37,7 +37,7 @@ godot --headless --path . --script res://tools/simulate.gd -- \
 | `--sweep=SPEC` | — | Parameter grid, e.g. `reel_rate:260:440:4,pull_cooldown:1.2:2.4:3` (≤60 points, one skill + spider). Names resolve as TuningCatalog ids first, else raw `SwingConfig` properties (`reel_regeneration_rate`) |
 | `--json=path` | — | Write per-run rows + summaries as JSON |
 
-## The player model (bot v3)
+## The player model (bot v4)
 
 The bot reads only what a player could: its own motion, the fly trail (the
 game's authored route language), solid geometry through the same
@@ -256,8 +256,11 @@ knowing before trusting a result:
   `_decide_attached` only releases when rising fast or high enough, and without
   Reel it never reaches either, so it hangs. This measures the bot model's
   limit, not the course's.
-- **Dive — inert.** The bot never Dives at all (0.0 dives in every batch ever
-  run), so ablating it changes nothing.
+- **Dive — untested since v3.** The original reading was "inert: 0.0 dives in
+  every batch ever run". **That is no longer true** — v3 made Dive a searched
+  verb and the model now takes 0.5–0.7 per web attach. The ablation has **not
+  been re-run** against a Diving model, so treat the old result as withdrawn
+  rather than as evidence either way.
 
 So a geometry-derived "this level cannot be passed without reeling" guarantee
 is **not** available from this lab today. That is why `CampaignCatalog` makes

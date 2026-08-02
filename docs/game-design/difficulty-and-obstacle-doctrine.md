@@ -535,9 +535,10 @@ Both instruments used for §2 were written in minutes.
 **Near-certain — fairness.** Every term in R8 is computable headlessly, as is
 R2, R3, R6 and R7. These become CI, not judgement.
 
-**Low — the feel.** The bot cannot pump, has never performed a Dive, and reels
-far too lightly; `docs/technical/simulation-lab.md` explicitly forbids using it
-to evaluate difficulty. Whether 2 km is the right place for the second rung is
+**Low — the feel.** The bot pumps and Dives now, and it still fails most of its
+acceptance targets — it collapses in the warp band and gets the upgrade sign
+wrong — so `docs/technical/simulation-lab.md` still forbids using it to evaluate
+difficulty. Whether 2 km is the right place for the second rung is
 device-only, permanently.
 
 **The consequence for the plan:** put every knob on one curve, exposed in the

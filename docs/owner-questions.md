@@ -49,11 +49,11 @@ visual work, because it changes what the bird has to communicate.
 ### OQ-15 · How fast does the bird start, and how fast does it accelerate?
 
 **This one cannot be answered from the lab, and that is measured, not a
-guess.** The bot cannot pump — its reel policy is height-based, not
-swing-phase-based — so it reaches 48.4 m/s in the no-drive world while the
-physics allow ~92 m/s from a 380 px web. Every bot number here is a **floor**,
-not a target, and a bird tuned against it would be tuned against a player who
-cannot play the game this design is about.
+guess.** The bot now pumps (model v4, 2026-08-02), and it is still 26 m/s below
+the reference curve in the warp band where the owner sustains 78.6 m/s — it
+fails every pace acceptance target. Every bot number here is a **floor**, not a
+target, and a bird tuned against it would be tuned against a player far slower
+than the one this design is about.
 
 **Default:** build `0.26.0-earned-speed-bird-playtest` ships `assumed` values of
 300 px/s start speed, +12 px/s per 1,000 m, and 760 px start gap. Test Run
@@ -68,8 +68,12 @@ build. No recording is needed — only a verdict.
 
 **The problem:** headless contracts can prove which releases qualify and that
 the award is deterministic and bounded; they cannot prove that a player feels
-the connection between timing and speed on a phone. The bot cannot pump, so it
-is explicitly not a tuning instrument for this question.
+the connection between timing and speed on a phone, so the lab is explicitly not
+a tuning instrument for this question. One piece of bot evidence is worth
+putting in front of it rather than hiding: model v4 measured that **holding a
+swing to collect the release award costs more than the award is worth** (−9%
+distance at both tested arc gates). Whether a human faces the same trade is
+exactly the device question.
 
 **Default:** build `0.26.0-earned-speed-bird-playtest` uses an `assumed` 100 px/s
 maximum award and an `assumed` 90° full-arc threshold. The release must be

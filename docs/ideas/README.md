@@ -47,6 +47,11 @@ frontmatter keeps the score.
 - [Timed traversal envelopes for authored obstacle sequences](timed-traversal-envelopes-2026-08-01.md)
   — routed to a structured cross-zone validator only after PR #86's Bramble
   device verdict proves the first implementation.
+- [Production sprite briefs — Magnolia Green Jumper, Ballooner, Buckler](spider-sprite-briefs.md)
+  — a production brief rather than an idea, and it predates the frontmatter
+  convention above, so it carries none. Linked here because this README indexes
+  every file in the directory. Identity claims lose to
+  [`../product/spider-biology-folio.md`](../product/spider-biology-folio.md).
 
 **The 2026-08-01 owner-conversation batch.** Five linked ideas captured from a
 long live planning session. They interlock: the charter governs the events, the
