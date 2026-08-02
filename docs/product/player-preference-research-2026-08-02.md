@@ -62,8 +62,9 @@ earned-speed work that shipped in `0.29.0`:
   drives the player; speed is earned, so the player sets it.
 - **"Too difficult" may have got worse before it gets better.** `measured`
   pre-ship: at drive zero, 4 of 10 bot runs timed out and `camera_boundary`
-  appeared as a death cause. The bot cannot pump, so that is a floor rather than
-  a prediction — but stalling is now reachable where it previously was not, and
+  appeared as a death cause. That batch was produced with pumping off (bot v3),
+  so it is a floor rather than a prediction — but stalling is now reachable
+  where it previously was not, and
   the bird adds a second failure source.
 
 **Neither is settled without a device verdict.** The next tuning pass should

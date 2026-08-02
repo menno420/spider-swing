@@ -18,8 +18,9 @@ External benchmarks and the verified zone audit live in
 Build `0.37.0-loadout-home-playtest` is current. Continuous drive is
 zero; release, swing control, Reel, and pull timing earn speed; the former left
 kill line is a visible pursuing bird. `target_speed_at` remains a named
-reference. The non-pumping bot cannot tune the bird, so Test Run owns its three
-session-only chase controls. The measured design and seams live in the
+reference. The bot still cannot tune the bird — model v4 pumps, but it sustains
+far below the reference pace in the band where the owner plays — so Test Run
+owns its three session-only chase controls. The measured design and seams live in the
 [`mechanics brief`](planning/next-session-brief-2026-08-01-mechanics.md) and
 [`earned-speed specification`](game-design/earned-speed-and-the-bird.md).
 
@@ -87,8 +88,8 @@ without a reported regression.
   and bounded by the one shared speed cap: its own curve from 720 px/s (72 m/s)
   to an `assumed` 900 px/s (90 m/s) at 10 km. The motor corrects toward the same
   curve, so award and limiter cannot disagree.
-  Zero disables the mechanic. Device feel, not the non-pumping bot, decides the
-  two assumed tuning values.
+  Zero disables the mechanic. Device feel, not the lab, decides the two assumed
+  tuning values.
 - Continuous forward drive is zero in all three presets. The one-time opening,
   rescue grant, guided opening, camera look-ahead and profile reference-speed
   scaling deliberately keep `target_speed_at`; Quick Feet is deliberately inert
@@ -240,14 +241,15 @@ without a reported regression.
 
 **Verification**
 
-- Local source passes the 210-contract engine runner with the exact
-  `4.7.1.stable.official.a13da4feb` Standard binary. The declared suite contains
-  11 bootstrap/build, 71 deterministic physics, 15 zone, 11 spider-biology,
-  10 Campaign, 9 difficulty, 4 upgrade-wiring, 10 simulation-lab/replay,
-  2 economy, 9 generated-audio, 27 mobile GUI/layout, and 31 front-end/settings/
-  progression checks. The full
-  required `python3 tools/verify.py --require-godot` result is recorded at
-  session close.
+- Local source passes the engine runner with the exact
+  `4.7.1.stable.official.a13da4feb` Standard binary. The suite spans
+  bootstrap/build, deterministic physics, zones, spider biology, Campaign,
+  difficulty, upgrade wiring, simulation-lab/replay, economy, generated audio,
+  mobile GUI/layout, and front-end/settings/progression. **The live total and
+  its per-category split are `EXPECTED_CHECK_COUNT` and the declarations in
+  `tests/test_runner.gd`, never prose** — a number written here has drifted
+  twice. The full required `python3 tools/verify.py --require-godot` result is
+  recorded at session close.
 - The same gate regenerates all 27 WAV assets and compares exact bytes before
   Godot runs; their manifest records hashes, levels, durations, and loop data.
 - Contracts cover stable signing, seeded geometry, noncompetitive debug starts,
@@ -290,188 +292,6 @@ without a reported regression.
   economy measurement is still required. Harsh currently pays no premium for
   roughly double the death rate.
 
-**Simulation lab — now has an acceptance test**
-
-- `docs/measurements/2026-08-01-owner-play-calibration.md` records six owner
-  device recordings as ground truth: 0.47 deaths/km at ~52 m/s on a 5 000 m
-  debug start with L20 upgrades, with net progress ranging −122 m to 3 535 m.
-  The bot on the identical warp manages 196 m at 10.23 deaths/km.
-- **No simulation output may be used for conclusions about difficulty, upgrades
-  or the economy until the model meets the targets in that document** — the
-  cheapest of which is that upgrades must *improve* the result.
-- **Bot model v3 (2026-08-01) closes all three named blind spots** and scores
-  **three of eight** targets, so the rule above is unchanged. It Dives, reads
-  its Reel meter in absolute seconds, and reads anchor classes; the upgrade
-  penalty fell from −25.1% to −6.3% and input rate now matches the owner
-  (4.89 taps/s against his 6.60 run average; his peak is 18/s). What still fails is survival — 8.17 deaths/km
-  against 0.47 — and the remaining gap is route choice, not verbs or pace.
-  Details, including three plausible fixes that measured *worse* and were
-  deleted, in `docs/measurements/2026-08-01-bot-model-v3.md`.
-- Ground truth on the Reel meter, read off the button in owner recordings —
-  **two-ended**: at L20 it never falls below 73% in a whole run, and at L0 it
-  **empties in every recorded run** (up to 24% of one run at 0%). The reel
-  upgrades sell relief of a constraint that binds at L0; the untroubled L20
-  meter is a relieved constraint, not an inert resource. The lab cannot see
-  this at either end — bot reel use is far lighter than the owner's.
-
-**Replay review loop — 2026-08-01**
-
-- `tools/simulate.gd --trace-top` writes a batch's best runs as **input
-  traces** in the game's own replay format: which button, where, on which tick,
-  and nothing else. `--replay=<path>` re-runs one and fails unless it lands on
-  its recorded outcome.
-- `TraceCatalog` lists bundled traces and the debug **Test Run** screen replays
-  them in the real game, so a search result can be *watched* rather than only
-  read. This exists because no statistic separates "played well" from "found a
-  loophole" — every automatic check is a rule written in advance, and an
-  exploit is the thing nobody wrote a rule for.
-- A contract replays the committed trace through `SwingLabSession` and requires
-  it within **one metre** of the lab's recorded distance. The guarded failure
-  is quiet: a replay fed into a slightly different world still plays, it is
-  simply not the run in the report.
-- Mechanics: `docs/technical/replay-review-loop.md`.
-
-**The model's real gap is recovery, not route choice — 2026-08-01**
-
-- **88–100% of the model's deaths happen with an unused escape in hand**
-  (Burst, Dive or both), and 58–75% happen while detached — in flight toward
-  the thing that kills it, holding a tool that could have changed the outcome.
-  Its explicit panic path (`save_bursts`) fires **0.00 times per run** in every
-  policy at every configuration.
-- This **supersedes the "route choice" diagnosis** carried since the v3
-  rebuild. A route-choice failure arrives with no options; this arrives with
-  options and does not take them. The dive clearance screen only runs on pulls
-  the model was already choosing to make — its awareness is attached to
-  intention, never to danger.
-- Prompted by the owner's account of why Dive and Burst matter: a person ends
-  up somewhere unplanned and uses them to get out. The model gets surprised
-  just as often (95% obstacle deaths) and has no repertoire for the moment
-  after.
-- **Do not hand-write a recovery loop.** The tap stream already holds the
-  owner's own dives and bursts, timestamped, in the moments after things went
-  wrong — fitting it from those is the honest route.
-  See `docs/measurements/2026-08-01-recovery-gap.md`.
-
-**First confirmed exploit — hauling, 2026-08-01**
-
-- The owner watched the lab's 10 773 m run and named it a loophole: it keeps
-  the web nearly overhead and hauls along the ceiling instead of swinging.
-  Confirmed and measured — **arc per web 21.4° against the endorsed 58.9°**,
-  attaching 1.34×/s against 0.63. Web angle and length barely differ, so the
-  giveaway is that the web never *goes* anywhere.
-- **A speed-based chaser cannot fix it, in principle.** `SpiderMotor` drives
-  horizontal velocity toward `target_speed_at(distance)`, so ground speed is
-  pinned near the pace curve for every style. The exploit runs at 59.0 m/s
-  where its range's mean target is 57.2 — it is travelling at the speed the
-  game sets, not dawdling. The curve has already equalised the thing a chaser
-  would measure.
-- **Height does not discriminate either** — both styles occupy the same band
-  (mean y 405 vs 385, span 423 vs 432), so a ceiling-patrolling predator
-  cannot tell them apart. Only arc per web (2.8×) and attach rate (2.1×) do.
-- **Any penalty denominated in speed washes out**, because `SpiderMotor`
-  refunds it within about a second. That disqualifies a speed chaser, an
-  angle-dependent attach catch, and arc-scaled release momentum as *enforcers*.
-- **The owner's proposal is measured and works: remove the free forward
-  drive.** Swinging generates its own speed (+3.6 to +7.6 m/s above the drive
-  floor, above it 53–60% of the run); hauling is *carried* by it (−5.0 m/s,
-  above it 21%). Ablating the drive costs the swinging style 33% and destroys
-  hauling by **98%** — the drive was not helping hauling, it was its engine.
-- **Dive and Burst already are escape tools** — for obstacles a swing cannot
-  avoid or a reel cannot manage. The bird gives them a second thing to escape
-  (dynamic and behind, rather than static and ahead), extending a verb players
-  know rather than adding one. Note the fidelity gap: the bot's explicit
-  emergency path (`save_bursts`) reads **0.00 in every policy** — it screens
-  dives for clearance rather than escaping with them. The owner escapes; the
-  model avoids.
-- That change also **rescues three mechanics that fail on their own**: a
-  speed-based chaser (the curve currently pins everyone, so speed says
-  nothing), arc-scaled release momentum (the drive currently refunds it), and
-  reel-as-accelerator (already worth 6.2% speed / 52% distance). They are
-  mutually enabling, which is why evaluating them one at a time produced two
-  wrong verdicts.
-- The combined build now completes that package: arc-scaled release momentum is
-  a primary source, the drive no longer refunds missed timing, and the visible
-  bird replaces the ratcheting invisible line.
-- **Wide swinging wins outright in the no-drive world.** Re-measured there on
-  held-out seeds: hauling 65 m (dangling), searched no-drive optimum 2 424 m
-  at 27.6° arc, **endorsed wide-swinging 2 717 m at 48.4 m/s holding a 61.2°
-  arc**. The intended style becomes optimal *by physics*, with no rule saying
-  "you must swing".
-- **Open risk:** 48.4 m/s against today's 55–76, so the pace curve needs
-  re-tuning around it — and the bird's speed still cannot come from bot
-  numbers, because the model **cannot pump** (height-based reel policy, not
-  swing-phase-based) and pumping is the skill the design makes central.
-  Physics allows far more (92 m/s at the bottom of a 380 px swing). Needs a
-  device playtest of a no-drive build.
-- Fallback candidates if the drive stays: **silk as a per-web cost**, or
-  **generalised spent anchors** (reuses `_spent_anchor_sources`).
-- The lab now reports swing shape every batch, so any fix can be tested by
-  re-running the search and checking whether hauling still wins.
-  See `docs/measurements/2026-08-01-hauling-loophole.md`.
-
-**Upgrades — what they buy, 2026-08-01**
-
-- Measured with one policy held constant across levels on held-out seeds:
-  deaths/km 0.55 → 0.51, runs surviving to the cap 1 → 3, duration +21%,
-  input −20%, reel time −45% — at **flat distance**. Upgrades buy **survival
-  and economy of effort**, not distance. Whether that converts into distance
-  depends on what was limiting the player; the bot is limited by route choice
-  and cannot convert it, a survival-limited human converts it directly.
-- The gradient −12.0% (weak policy) → −1.6% (searched) → strongly positive
-  (owner) says **the better the play, the better upgrades pay**.
-- **Never compare best-per-configuration searches directly** — cross-apply
-  each policy to the other configuration first. A 12% under-converged search
-  reads exactly like a 12% upgrade penalty.
-  See `docs/measurements/2026-08-01-upgrade-playstyle-sweep.md`.
-
-**Replay review — first verdict, 2026-08-01**
-
-- The owner watched both then-current `@1` warp-L20 lab traces in game and judged them
-  fair: *"genuinely good and match my own playstyle, a little excessive on the
-  burst and dives."* First fair-play verdict on lab output.
-- It **calibrated the anomaly detector**: those runs measure 2.45× Burst
-  against a 2.5× threshold that had been guessed, so the alarm sits just above
-  endorsed play.
-- Forty-level progression changes upgrade-bearing authoritative outcomes, so
-  trace identity is now `@4`; every former `@1`/`@2`/`@3` trace is intentionally skipped rather than shown
-  as the same run under different physics. Their old verdict remains historical
-  evidence, not current-build replay evidence. The bundled
-  `earned-speed-bird-technical.json` is a deterministic `@4` cross-path fixture
-  recorded with bird speed zero,
-  not a fair-play or tuning claim. The formerly flagged web-spam trace therefore
-  has no pending current-build judgement, and no published conclusion rests on
-  it.
-
-**Difficulty — owner verdict, 2026-08-01**
-
-- **The difficulty curve is balanced.** Owner from device play: ~2 km
-  unupgraded, well above 5 km upgraded, with speed and obstacles scaling well.
-  Every run draws a fresh course seed, so runs are genuinely different from one
-  another.
-- The overnight lab measurements that claimed otherwise — a difficulty peak
-  around 6 km, and Web City at 25 km being far too easy — are **retracted**.
-  They measured the bot failing at pace. Detail and the calibration numbers are
-  in `docs/measurements/2026-08-01-difficulty-curve.md`.
-- **Where the lab is still trustworthy:** unupgraded play from a standing start.
-  The bot's 0 m band (intermediate 1 623 m, expert 2 193 m) matches the owner's
-  ~2 km ceiling, which is the configuration the fly-income figures used.
-
-**Upgrade measurement — a lab finding the owner corrected**
-
-- A 2026-08-01 lab audit concluded the upgrade bundle made the player 25% worse
-  and that two Reel tracks were inert. **Owner device evidence says otherwise:
-  max upgrades play far better than none.** He is right and the cause is
-  identified — the bot's Reel policy is written in *fractions* of the meter, so
-  scaling capacity scales both sides and it behaves identically. Silk Reserve
-  at level 20 is a genuine 2.00 s → 2.48 s increase in continuous reel time.
-  The audit's "the meter never empties" premise was circular: the bot stops
-  reeling at 6% remaining and can never empty it.
-- **The shop suspension that finding motivated has been reverted.** All seven
-  tracks sell normally again; no save was affected. The lab's blind spot is
-  recorded in `docs/technical/simulation-lab.md` — **do not use the simulator
-  to evaluate upgrades.**
-
-
 **Deliberately absent — scope boundaries, not gaps**
 
 - Weighty and Agile are untuned. They are kept, not deleted, but they were
@@ -489,7 +309,8 @@ without a reported regression.
   is cleared only by reaching its goal **and** performing the verb it teaches,
   so it cannot be swung past; the requirement is an explicit objective, not a
   property of geometry, because the lab's bot cannot certify terrain as
-  verb-gated (it deadlocks without Reel and never Dives). Levels run fixed
+  verb-gated — ablating Reel deadlocks the model rather than the course, which
+  measures the bot's limit and not the level's. Levels run fixed
   course seeds on existing Ancient Forest geometry, add no obstacle kinds and
   no art, and settle non-competitively: one star each, never a fly, no record,
   no leaderboard. Campaign stars entered in schema 6 and remain compatible in
@@ -514,125 +335,153 @@ without a reported regression.
 - No production signing or Google Play publishing. The stable debug key is not a
   release credential and must never become one.
 
+## What measurement has settled
+
+Verdicts only. **The dated document is the record** — its numbers, method and
+provenance are not repeated here, and where this ledger and a measurement
+document disagree, the measurement document wins.
+
+- **No simulation output may settle difficulty, upgrades or the economy.** This
+  is a standing publication ban, not a caveat, and it is unchanged since it was
+  written: `docs/technical/simulation-lab.md`. The bot fails most acceptance
+  targets in
+  [`owner-play-calibration`](measurements/2026-08-01-owner-play-calibration.md)
+  — model v4 scores roughly two and a half of eight — and the cheapest of those
+  targets is simply that upgrades must *improve* the result.
+- **The model can pump, and pumping is how reel upgrades get spent**
+  (2026-08-02). The repository's most-cited blind spot is closed. Pumping
+  converts reliably into speed, and it is worth 46% at L40 against 15% at L0 —
+  which mechanically explains why the lab kept reading reel upgrades as
+  worthless while the owner reported the opposite. The sign is still wrong
+  (−20.7% at L40), so the ban above stands. **Bot numbers published before
+  2026-08-02 came from v3 and do not reproduce under the v4 default;**
+  `--bot=pump_window_deg:0` restores v3 exactly, and `BOT_MODEL_VERSION` is
+  printed in every batch header.
+  [`bot-model-v4-pumping`](measurements/2026-08-02-bot-model-v4-pumping.md).
+- **The model's remaining gap is recovery, not route choice.** 88–100% of its
+  deaths happen with an unused escape in hand. Do not hand-write a recovery
+  loop — the owner's own tap stream already holds his dives and bursts,
+  timestamped, in the moments after things went wrong.
+  [`recovery-gap`](measurements/2026-08-01-recovery-gap.md).
+- **Hauling was the first confirmed exploit, and removing the free forward drive
+  killed it** — 98% against 33% for the endorsed swinging style, so wide
+  swinging is now optimal *by physics* with no rule saying "you must swing". A
+  speed-based chaser could never have separated the two: the pace curve had
+  already equalised the thing such a chaser would measure. The lab reports swing
+  shape every batch, so any regression shows up as arc-per-web falling again.
+  [`hauling-loophole`](measurements/2026-08-01-hauling-loophole.md).
+- **Upgrades buy survival and economy of effort, not distance** — and the better
+  the play, the better they pay. Never compare best-per-configuration searches
+  directly; cross-apply each policy to the other configuration first, or an
+  under-converged search reads exactly like an upgrade penalty.
+  [`upgrade-playstyle-sweep`](measurements/2026-08-01-upgrade-playstyle-sweep.md).
+- **The reel meter is a two-ended constraint.** At L20 it never falls below 73%
+  across a whole owner run; at L0 it empties in every recorded run. The reel
+  tracks sell relief of a constraint that binds at L0, so an untroubled L20
+  meter is a relieved constraint rather than an inert resource.
+  [`owner-play-calibration`](measurements/2026-08-01-owner-play-calibration.md).
+- **The difficulty curve is not balanced.** The 2026-08-01 owner verdict that it
+  was is **superseded** by the 2026-08-02 device session: the first 500 m is too
+  easy, difficulty jumps sharply near 2 500 m, 2 500–5 000 m holds most deaths,
+  5 000–10 000 m opens up again, and 10 km at least doubles with no ramp. Eight
+  structural findings and fourteen proposed rules — **none implemented, scoped to
+  the first 15 km** — are in
+  [`difficulty-and-obstacle-doctrine`](game-design/difficulty-and-obstacle-doctrine.md).
+  The overnight lab measurements that claimed a 6 km peak stay retracted; they
+  measured the bot failing at pace:
+  [`difficulty-curve`](measurements/2026-08-01-difficulty-curve.md).
+- **Traces are replayable and watchable.** `tools/simulate.gd --trace-top`
+  writes a batch's best runs in the game's own input-trace format;
+  `--replay=<path>` re-runs one and fails unless it lands on its recorded
+  outcome; `TraceCatalog` plays them inside the real game from Test Run. This
+  exists because no statistic separates "played well" from "found a loophole" —
+  every automatic check is a rule written in advance, and an exploit is the
+  thing nobody wrote a rule for. A contract requires a replay within **one
+  metre** of its recorded distance. Forty-level progression moved trace identity
+  to `@4`, and every `@1`–`@3` trace is deliberately skipped rather than shown as
+  the same run under different physics — so the owner's 2026-08-01 fair-play
+  verdict is historical evidence, not current-build replay evidence.
+  [`replay-review-loop`](technical/replay-review-loop.md).
+
 ## Owner playtest gates
 
-**Zones 3–8 identity and mechanics (PR #73 merged).** Silk Hollow has its
-own suspended precision geometry and art. Ruined Arboretum introduces pure
-fixed-tick panes, rotors, drip phase teaching, swept moving collision, and an
-energy-safe moving pivot. Storm Ridge adds deterministic wind/gusts and phased
-lightning; Web City adds ridable and sticky safe-anchor classes plus phased
-residents; Ashen Hollow adds once-only timed anchors and falling embers; Deep
-Mist spends draw distance while preserving lit targets and 700–820 px audio
-cues, now backed by distinct generated warning samples. Every lethal polygon
-carries explicit tap eligibility. Thirty-three generated RGBA assets pass source/
-runtime/25% fringe inspection, and eight actual seeded
-world captures remain sortable as 320×180 pure-black silhouettes. Android
-small-screen readability and all six human success sentences remain owner
-playtest gates. The owner's 2026-08-01 10 km/15 km recordings accepted the
-backgrounds but rejected flat obstacle fallbacks; build
-`0.23.0-obstacle-art-playtest` replaced those bars with explicit cocoon,
-spindle, lattice, beam, rotor, hub, and collapsed-frame art while preserving
-the exact polygons and phase descriptors. Build
-`0.24.0-environment-finish-playtest` then compares all six owner recordings:
-Zones 10–30 km gain a second independently scrolling backdrop plane, finished
-corridor material, outline-free resolved art, and explicit Storm scree/City
-highway/egg routes. Arboretum beams, Storm spires, and the City egg tether now
-use narrow authoritative supports to meet the actual local ceiling profile;
-their primary silhouettes, corridor profiles, route guides, and physics are
-unchanged.
+Everything here is an owner verdict no contract can produce. The build history
+behind each surface lives in `docs/decisions.md`, the session cards and git —
+this section carries only what is still owed.
 
-**Bramble clearance device correction (PR #86).** Five owner recordings from
-`0.22.0-audio-playtest` reject PR #69's passability claim: the new silhouettes
-are distinct, but the first sequence is too large and too dense to traverse.
-The static fly-guide test was insufficient. The correction keeps the art and
-vertical-displacement identity, isolates hard chunks with open recovery,
-spreads pair commitments across the authored route, and reduces collision
-occupancy without changing any movement value. A non-gating v3 bot smoke moved
-from its documented 217 m median to 652 m, but still fails owner calibration and
-is not balance evidence. Exact-engine CI and Android run `30694253389` pass on
-source `965df9c6`; inspected artifact `8816709938` reports the matching build,
-package, embedded Bramble code/assets, and stable certificate. The new APK
-remains the decisive owner-device proof.
+- **Zones 3–8 identity and mechanics.** Silk Hollow, Ruined Arboretum, Storm
+  Ridge, Web City, Ashen Hollow and Deep Mist each ship their own geometry, art
+  and mechanics: fixed-tick panes and rotors, swept moving collision, an
+  energy-safe moving pivot, deterministic wind and phased lightning, ridable and
+  sticky safe-anchor classes, once-only timed anchors, and spent draw distance
+  that preserves lit targets and 700–820 px audio cues. Every lethal polygon
+  carries explicit tap eligibility. **All six human success sentences in
+  [`zone-progression`](product/zone-progression.md), plus Android small-screen
+  readability, remain ungated.** The decisive question is whether every zone
+  stays readable and mechanically legible on a phone.
+- **Issue #2 stays open, and is expected to stay open for weeks or months.** It
+  is the whole Phase 0 build behind an owner-judged feel gate, not a test run
+  that closes it. `balanced_baseline` is approved and satisfies one of its six
+  exit criteria — record that precisely: **it was not chosen over the other two,
+  it is the only one that was ever played.** The other five are unaffected.
+- **No spider is finished; one is further along.** Owner testing concentrates on
+  the Garden Spider, whose core mechanics behave correctly at the distances
+  reached so far. The owner is explicit that this is *not* a completion claim:
+  baseline versus upgrade levels, and behaviour at long distances, are both
+  substantially untested.
+- **Evidence still to gather:** exact far starts, `OWNED` versus `MAX`, upgrade
+  A/B feel, save survival across two stable-key builds, long-distance region
+  identity, and the traversal checklist in
+  [`phase-0-swing-laboratory`](technical/phase-0-swing-laboratory.md). The
+  prioritised queue is in the
+  [`fresh-session handoff`](planning/fresh-session-handoff-2026-08-01.md); do
+  not turn that full checklist into one implementation task.
 
-**Web anchors are now surface-typed (2026-07-31, owner).** Rails, walls and
-ceiling-grown hazards answer web taps; floor-grown hazards are lethal but not
-tappable. Owner evidence: every accidental Dive Pull came from an obstacle, not
-from the floor, because release taps and web taps are aimed at the same area
-while only dives use a different aiming point — so a hazard rising from the
-floor just below the spider converted releases into dives. Collision is
-untouched and diving to the floor is unchanged, so the Dive stays always
-available, which is its whole purpose. This also moves the implementation
-toward GDD §7.1 ("webs attach only to surfaces or anchor volumes marked as
-web-compatible") rather than away from it. Floating silk-suspended burrs are
-treated as ceiling-hung and stay tappable — the one case the owner's rule does
-not name; one flag flips it.
-
-**Baseline preset approved (2026-07-31, owner).** `balanced_baseline` is the
-approved physics baseline, satisfying one of issue #2's six exit-gate criteria.
-Record it precisely: it was not chosen over the other two, it is the only one
-that was ever played. The other five criteria are unaffected.
-
-**Issue #2 stays open, and is expected to stay open for weeks or months.** It is
-the whole Phase 0 build with an owner-judged feel gate, not a test run that
-closes it. Owner testing so far concentrates on the Garden Spider, whose core
-mechanics behave correctly at the distances reached so far — but the owner is
-explicit that this is **not** a completion claim for that spider: comparing the
-baseline against upgrade levels, and behaviour at longer distances, are both
-substantially untested. No spider is finished; one is further along.
-
-The first depth build mounted setup after play had already begun, so the repair
-makes Home own a debug-only pre-run setup with exact distance, large upgrade
-`−`/`+`, shortcuts, and one no-awards start; the in-run controls also gain
-explicit `GO` and focus-loss submission. It updates over the stable-key build
-without uninstalling, and `OWNED` versus a selected upgrade level can be
-compared without wiping or granting progression.
-
-Owner evidence still to gather: exact far starts, `OWNED` versus `MAX`, upgrade
-A/B feel, save survival across two stable-key builds, long-distance region
-identity, and the existing traversal checklist in the Swing Laboratory
-reference. The prioritized queue and one-slice-at-a-time protocol live in the
-[`fresh-session handoff`](planning/fresh-session-handoff-2026-08-01.md); do not
-turn that full checklist into one implementation task. The 5000 m recordings
-establish a healthy late-game distinction:
-Reel shapes an arc when the next route is read early, while Burst performs the
-fast late height correction. PR #62 preserved those values and fixed the
-background/material transition, but its first device review rejected the
-obstacles as old roles under new skins. PR #69 replaced that inherited pool
-with hook-vine and leaf-shutter geometry without retuning either control; the
-  owner's next device pass then rejected its scale and cadence. PR #86 is that
-  clearance correction. Silk Hollow and Zones 4–8 now have their own geometry
-  and art; the decisive remaining gate is whether every zone stays readable and
-  mechanically legible on-device.
+**Two device corrections are worth keeping here, because each overturned a
+passing test.** Bramble's first clearance claim was accepted by a static
+fly-guide test and rejected on device as too large and too dense to traverse;
+the correction kept the art and vertical-displacement identity, isolated hard
+chunks with open recovery, and reduced collision occupancy without changing any
+movement value. And web anchors are now surface-typed — rails, walls and
+ceiling-grown hazards answer web taps while floor-grown hazards stay lethal but
+untappable — because release taps and web taps are aimed at the same area, so a
+hazard rising from the floor just below the spider was converting releases into
+accidental dives. Collision is untouched and diving to the floor is unchanged,
+so the Dive stays always available, which is its whole purpose.
 
 ## Recently shipped (newest first)
 
-- **2026-08-02 — Persistent Music volume (PR #111).** Settings replaces the
-  binary Music toggle with a saved 0–100% slider. Existing saves retain their
-  prior audible/silent result, 50% preserves the shipped mix, and 100% adds a
-  bounded 6.02 dB without changing Effects, Haptics, or adaptive tension.
-- **2026-08-02 — Haunted adaptive soundtrack (PR #107).** One original
-  32-second bed persists across Home and runs; a synchronized chase stem fades
-  with presentation-only pressure. All 27 files regenerate exactly and Music,
-  Effects, and Haptics remain independent.
-- **2026-08-02 — Spider-web menu theme (PR #106).** One reusable passive card
-  renderer gives every menu deterministic fibres, corner webs, knots, cocoons,
-  and selected-spider accents without changing navigation or touch geometry.
-- **2026-08-02 — Forty-level progression (PR #105).** All 35 tracks reach L40.
-  Steps are 70% of their former size; the maximum is 140% of old L20. Schema 8
-  doubles old ownership once. Test Run uses L20 as its midpoint, traces are
-  `@4`, and Reel remains speed-neutral. A track costs 490 flies.
-- **2026-08-02 — Earned speed and pursuing bird (PR #102).** Continuous drive
-  is zero, the named reference curve remains for its six explicit couplings,
-  and the former left kill line is now deterministic bird state with a finished
-  four-pose visual. Test Run owns OFF/SLOW/BASE/FAST comparisons plus direct
-  speed, acceleration and gap controls. The then-current trace boundary was `@3`; the
-  technical trace is bird-off and reproduces exactly through both replay paths.
-- **2026-08-01 — Earned release quality (PR #97).** A wide, rising manual
-  release earns bounded forward momentum; forced Burst/Dive detach does not.
-  Its two feel values remain assumed for the combined device session.
+- **2026-08-02 — Difficulty and obstacle doctrine (PRs #124–#129).** A measured
+  baseline and a proposed rule set for how difficulty and obstacle placement are
+  decided, scoped to the first 15 km. **Nothing in it is implemented and no
+  ledger entry records it** — it is a proposal the owner is analysing. See
+  [`the doctrine`](game-design/difficulty-and-obstacle-doctrine.md).
+- **2026-08-02 — Home is the run you are about to start (PR #122, 0.37.0).**
+  Home becomes an identity card plus a run deck — difficulty, personal best with
+  its region, three loadout chips grouped by the catalogue's own scopes, and one
+  filled Start Run — with the four intentions moved to a right-hand rail. The
+  chips report the catalogue's own totals rather than an invented weighted
+  score.
+- **2026-08-02 — Obstacle collision inside the visible silhouette (PR #119).**
+  Every obstacle receives the shared 4 px contact inset; ceiling and floor
+  boundaries keep the full player radius.
+- **2026-08-02 — Trapped upgrades freed, menus sized for a thumb (PRs #120,
+  #121, 0.35.0).** A debug overlay now ends with the run it was launched for, so
+  the Garage and Shop stop reporting borrowed levels; controls are sized in dp
+  against a real device rather than in reference pixels.
+- **2026-08-02 — The speed cap gets its own curve (PRs #117, #118, 0.34.0).**
+  One shared ceiling, its own coefficient, reaching maximum at 10 km, with the
+  bird bounded strictly beneath it by construction rather than by tuning.
+- **2026-08-02 — Bot model v4 pumps (PR #113).** The simulator's most-cited
+  blind spot is closed. It remains a better instrument, not a licence — see
+  *What measurement has settled*.
+- **2026-08-02 — Home simplified into focused hubs (PR #112).** Spider, Play
+  Modes and Guide become hubs; every destination is within two taps and returns
+  through its hub.
+
 Older slices remain in their session cards and git history; this ledger keeps
-only recent cross-cutting changes. The live contract total is always
-`EXPECTED_CHECK_COUNT` in `tests/test_runner.gd`, never prose.
+only recent cross-cutting changes.
+
 ## Review rhythm
 
 Agents work through ready born-red PRs, finish the declared scope, run the exact

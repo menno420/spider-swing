@@ -317,19 +317,25 @@ be treated as a tuning knob, not a constant.**
 
 **Read this before proposing any bird speed.**
 
-The bot **cannot pump**. Its reel policy is height-based, not swing-phase-based
-(`tools/simulate.gd`), so it cannot add energy at the bottom of an arc — the
-single skill this design makes central. Consequences, all `measured`:
+The limitation is **no longer that the bot cannot pump** — model v4 closed that
+blind spot on 2026-08-02 (`pump_window_deg`, `RunDriver._in_pump_window`). The
+conclusion is unchanged, but the reason is now pace. All `measured`:
 
-- No-drive bot reaches **48.4 m/s**.
-- The physics allow far more: a 380 px web swung from horizontal reaches
+- The **48.4 m/s** no-drive figure was produced by **v3, with pumping off**, and
+  does **not** reproduce under the v4 default. `--bot=pump_window_deg:0`
+  restores it exactly.
+- Pumping buys a replicated **≈ +3.3 m/s** — real, and nowhere near the gap.
+- In the warp band where the owner sustains **78.6 m/s**, v4 runs **26 m/s below
+  the reference curve** and fails every pace acceptance target in
+  [`../measurements/2026-08-01-owner-play-calibration.md`](../measurements/2026-08-01-owner-play-calibration.md).
+- The physics allow far more still: a 380 px web swung from horizontal reaches
   `sqrt(2gL)` ≈ **92 m/s** at the bottom.
 - Today's play sits at **55–76 m/s** with the drive helping.
 
 **So every bot number in the no-drive world is a floor, not a target**, and a
-bird speed derived from bot runs would be tuned against a player who cannot
-play the game the design is about. A human should beat the bot here by more
-than in any configuration measured so far.
+bird speed derived from bot runs would be tuned against a player 26 m/s slower
+than the one this design is about. A human should beat the bot here by more than
+in any configuration measured so far.
 
 The owner has stated he cannot supply new recordings for this work. Therefore:
 
@@ -346,8 +352,9 @@ The owner has stated he cannot supply new recordings for this work. Therefore:
 
 **Measured** on the implementation tree with `tools/simulate.gd`, 12 runs,
 intermediate, L20, bot seeds 4242–4253, course seeds 9000–9005, 120 s cap,
-bird speed zero. Resolution is one 60 Hz tick; the bot still cannot pump and no
-number here tuned the bird.
+bird speed zero. Resolution is one 60 Hz tick. Produced by **bot v3, before
+pumping existed** — reproduce with `--bot=pump_window_deg:0`. No number here
+tuned the bird.
 
 - The previously flagged hauling policy travels a mean **73.5 m** (median
   65.3 m, p10–p90 60.4–75.4 m, max 148.2 m) and all 12 runs time out dangling.

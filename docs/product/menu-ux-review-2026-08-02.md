@@ -17,6 +17,14 @@
 > `4.7.1.stable.official.a13da4feb` and reading control rectangles. Screenshots
 > could not be captured — the dummy renderer returns an empty image
 > (`docs/CAPABILITIES.md`, 2026-08-02) — so raster judgment stays with the owner.
+>
+> **What has shipped since this audit was written** (it measures `0.34.0`; the
+> build is now `0.37.0`): dp-based control sizing and the debug-overlay fix
+> landed in 0.35.0, and Home was rebuilt as the run deck in 0.37.0 — which also
+> answered the audit's *"one button style is doing four different jobs"* finding
+> by making Start Run the only filled control. **Still open from this audit:**
+> Shop progressive disclosure, the Field Guide detail panel at 69% empty, a Test
+> Lab search, and panel borders at 2.25:1 contrast.
 
 ---
 

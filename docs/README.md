@@ -12,11 +12,11 @@
 | ---: | --- | --- |
 | 1 | [`AGENT_ORIENTATION.md`](AGENT_ORIENTATION.md) | How to work in this repository. |
 | 2 | [`current-state.md`](current-state.md) | What is true right now — the stability baseline, what is in flight, what shipped. |
-| 3 | [`planning/next-session-brief-2026-08-01-mechanics.md`](planning/next-session-brief-2026-08-01-mechanics.md) | **The current next-session entry point.** Earned speed and the bird — what to build, the three mistakes that look correct from the outside, and the paste-ready prompt. Supersedes the recording-led handoff below. |
-| 4 | [`game-design/earned-speed-and-the-bird.md`](game-design/earned-speed-and-the-bird.md) | The spec that brief points at: the measured argument, every seam with a file:line, and what cannot be tuned from the lab. |
-| 5 | [`game-design/difficulty-and-obstacle-doctrine.md`](game-design/difficulty-and-obstacle-doctrine.md) | **Open proposal, owner is analysing it.** The measured difficulty baseline — authored curve, real corridor width, the eight authored axes — four structural findings, and proposed rules for how difficulty and obstacle placement are decided. Nothing here is implemented. |
+| 3 | [`game-design/difficulty-and-obstacle-doctrine.md`](game-design/difficulty-and-obstacle-doctrine.md) | **The live open proposal — the owner is analysing it.** The measured difficulty baseline, eight structural findings, and fourteen proposed rules for how difficulty and obstacle placement are decided, scoped to the first 15 km. **Nothing in it is implemented and no ledger entry records it.** |
+| 4 | [`game-design/earned-speed-and-the-bird.md`](game-design/earned-speed-and-the-bird.md) | **Binding mechanics spec.** How speed became earned, every seam with a file:line, and what cannot be tuned from the lab. |
+| 5 | [`owner-questions.md`](owner-questions.md) | Open owner-only forks (OQ-13 … OQ-16), each with the default the work proceeds under. |
 | 6 | [`CAPABILITIES.md`](CAPABILITIES.md) | What sessions in this environment can and cannot do, with verified evidence. |
-| — | [`planning/fresh-session-handoff-2026-08-01.md`](planning/fresh-session-handoff-2026-08-01.md) | **Superseded as a plan, accurate as a record.** The recording-led, visuals-led continuation. Read it for what merged and what Menno accepted; not for what to do next. |
+| — | [`planning/fresh-session-handoff-2026-08-01.md`](planning/fresh-session-handoff-2026-08-01.md) | **Not a plan — the evidence boundary and the device-verification queue.** What the owner has actually accepted versus what is only repository-proven. |
 
 ## Product
 
@@ -27,7 +27,9 @@
 | [`product/spider-biology-folio.md`](product/spider-biology-folio.md) | **Spider identity source of truth.** The naming rule (real name first, otherwise name the science), the approved mapping per profile, editorial voice, art and image-sourcing rules, and the parked candidate backlog. |
 | [`product/spider-biology-verification-2026-07-31.md`](product/spider-biology-verification-2026-07-31.md) | Dated verification log for the second deep-research report — what was re-checked, against what, and what was deliberately not adopted. |
 | [`product/zone-progression.md`](product/zone-progression.md) | **Zone source of truth.** The axis each 5000 m zone owns, its hazards, mechanics, density curve and the one sentence a playtester must say. Zones 4–8 are shipped; their human success sentences remain device-playtest gates. |
-| [`planning/overnight-brief-2026-08-01.md`](planning/overnight-brief-2026-08-01.md) | Slice backlog and standing constraints for the unattended overnight session that builds zones 4+. |
+| [`product/deep-progression-direction.md`](product/deep-progression-direction.md) | The approved direction for depth beyond Phase 0 — comparison spiders over one shared config, and what was deferred. |
+| [`product/upgrade-and-difficulty-research-2026-08-02.md`](product/upgrade-and-difficulty-research-2026-08-02.md) | External benchmarks and the verified zone audit behind the 25 k north star, with the standing warning that no value may be chosen because it makes the bot travel further. |
+| [`product/menu-ux-review-2026-08-02.md`](product/menu-ux-review-2026-08-02.md) | Dated audit of every front-end screen against the owner's menu research — what was adopted, what was ranked and deferred. |
 | [`product/player-preference-research-2026-08-02.md`](product/player-preference-research-2026-08-02.md) | **The 25 k north star** and the genre-preference research behind it — plus the provenance block separating the three corroborated claims from the unverified ones, the upgrade capability-vs-numbers fork, the hard monetisation boundaries, and what is explicitly parked. |
 | [`product/economy-model.md`](product/economy-model.md) | **Economy source of truth.** What each currency is for, what it buys, what cannot be bought at any price, and what happens to the measurably inert upgrade tracks. |
 | [`owner-questions.md`](owner-questions.md) | Open owner-only forks, each with the default the work proceeds under, plus the answered ones. |
@@ -40,7 +42,9 @@
 | [`technical/testing.md`](technical/testing.md) | The two gates, how to run them locally, what CI enforces. |
 | [`technical/substrate-kit-provenance.md`](technical/substrate-kit-provenance.md) | How the vendored Substrate Kit got here; how to re-verify the pin. |
 | [`technical/replay-review-loop.md`](technical/replay-review-loop.md) | How a run the lab found gets in front of a person to be judged — the trace format, the two independent replays that prove it reproduces, and what to look for while watching. |
-| [`technical/simulation-lab.md`](technical/simulation-lab.md) | The headless batch-run lab — what it can and cannot answer, and how to measure a difficulty curve with it. |
+| [`technical/simulation-lab.md`](technical/simulation-lab.md) | The headless batch-run lab — what it can and cannot answer, and the standing ban on using it to settle difficulty, upgrades or the economy. |
+| [`technical/phase-0-swing-laboratory.md`](technical/phase-0-swing-laboratory.md) | The Swing Laboratory reference — traversal response contract, the depth-access gate, and the device traversal checklist. |
+| [`technical/front-end-flow.md`](technical/front-end-flow.md) | How the front end is wired: states, hubs, and which surface owns each write path. |
 
 ## Measurements
 
@@ -62,6 +66,7 @@ convention does not wait for it.
 | Document | What it is |
 | --- | --- |
 | [`measurements/2026-08-01-owner-play-calibration.md`](measurements/2026-08-01-owner-play-calibration.md) | **Ground truth for how the game is actually played**, from owner device recordings — and the acceptance test any simulation model must pass before its output is published. |
+| [`measurements/2026-08-02-bot-model-v4-pumping.md`](measurements/2026-08-02-bot-model-v4-pumping.md) | **The model can pump, and that is how reel upgrades get spent** — the repository's most-cited blind spot, closed. It still fails the acceptance targets, so the publication ban is unchanged. **Bot numbers published before 2026-08-02 came from v3 and reproduce only with `--bot=pump_window_deg:0`.** |
 | [`measurements/2026-08-01-recovery-gap.md`](measurements/2026-08-01-recovery-gap.md) | **88–100% of the model's deaths happen with an unused escape in hand.** The remaining gap is recovery, not route choice — superseding the diagnosis in the v3 document. |
 | [`measurements/2026-08-01-hauling-loophole.md`](measurements/2026-08-01-hauling-loophole.md) | **The first confirmed exploit** — hauling along the ceiling instead of swinging — measured on arc-per-web, and why a speed-based chaser cannot separate it from the owner's own play. |
 | [`measurements/2026-08-01-upgrade-playstyle-sweep.md`](measurements/2026-08-01-upgrade-playstyle-sweep.md) | **What upgrades change about how the game is played** — they buy survival and economy of effort, not distance — plus the cross-application test that separates a real effect from search luck. |
@@ -79,6 +84,20 @@ Binding. Superseded rather than deleted.
 | [`0002`](technical/adr/0002-simulation-and-event-boundaries.md) | Inward layering and deterministic event flow. |
 | [`0003`](technical/adr/0003-android-build-strategy.md) | Debug-only Android CI now; production signing later, owner-controlled. |
 | [`0004`](technical/adr/0004-deterministic-moving-parts.md) | Pure fixed-tick motion, swept moving collision, and energy-safe moving web anchors. |
+
+## Executed plans — records, not queues
+
+A brief whose work has shipped is kept for the reasoning and the mistakes, not
+for the instructions. **Do not take work from any of these.** Their slice
+prompts, build snapshots and contract counts were removed on 2026-08-02; the
+durable rules in them were promoted to
+[`technical/testing.md`](technical/testing.md) first.
+
+| Record | What it is still good for |
+| --- | --- |
+| [`planning/next-session-brief-2026-08-01-mechanics.md`](planning/next-session-brief-2026-08-01-mechanics.md) | Earned speed and the bird, executed. Kept for the owner's own framing of the redirect and **three recorded mistakes** — including why "one slice, one green PR" was wrong here and cost a day. |
+| [`planning/overnight-brief-2026-08-01.md`](planning/overnight-brief-2026-08-01.md) | The unattended overnight session that built zones 4+. Kept because **two of its five delivered findings were later overturned by owner device evidence** — the origin of the lab publication ban. |
+| [`planning/fresh-session-handoff-2026-08-01.md`](planning/fresh-session-handoff-2026-08-01.md) | Listed under *Start here* — its evidence boundary and device queue are live, its plan is not. |
 
 ## Substrate-generated living ledgers
 
