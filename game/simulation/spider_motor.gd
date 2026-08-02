@@ -13,18 +13,27 @@ static func apply_forces(
 	var velocity := current_velocity
 	var target_speed := config.target_speed_at(distance_pixels)
 
+	# The floor and the ceiling are deliberately independent. Continuous drive
+	# is zero because speed must be earned; the ceiling is not, because a
+	# runaway the player cannot correct is a different problem from a free
+	# push. Both branches shared `horizontal_drive_acceleration` until
+	# 2026-08-02, so zeroing the drive silently removed the speed limit too —
+	# after which only air drag acted on overspeed, proportionally, and
+	# therefore never as a ceiling at all.
 	if velocity.x < target_speed:
 		velocity.x = move_toward(
 			velocity.x,
 			target_speed,
 			config.horizontal_drive_acceleration * delta,
 		)
-	elif velocity.x > target_speed + config.maximum_horizontal_overspeed:
-		velocity.x = move_toward(
-			velocity.x,
-			target_speed + config.maximum_horizontal_overspeed,
-			config.horizontal_drive_acceleration * 0.25 * delta,
-		)
+	else:
+		var speed_cap := config.spider_speed_cap_at(distance_pixels)
+		if velocity.x > speed_cap:
+			velocity.x = move_toward(
+				velocity.x,
+				speed_cap,
+				config.overspeed_correction_acceleration * delta,
+			)
 
 	velocity.y += config.gravity * gravity_scale * delta
 	var drag_factor := 1.0 / (1.0 + config.air_drag * delta)

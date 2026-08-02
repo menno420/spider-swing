@@ -56,7 +56,7 @@ present while the fast comparison path was functionally gone.
 - Both launches retain the shared temporary progression overlay and the existing
   no-flies/no-records/no-checkpoints/no-leaderboard practice path. Ordinary Play
   still clears the overlay and neither route mutates owned progression.
-- Build identity is `0.33.0-quick-debug-run-playtest`, Android code 53. D-0048
+- Build identity is `0.33.0-quick-debug-run-playtest`, Android code 53. D-0049
   records the quick-versus-advanced boundary; no menu material or visual layout
   direction changed.
 
@@ -102,12 +102,20 @@ and was not duplicated in the ledger.
 ## Verification evidence
 
 - `python3 tools/verify.py --require-godot`: exact Godot
-  `4.7.1.stable.official.a13da4feb`; tail: `[test_runner] PASS — 205 check(s)
+  `4.7.1.stable.official.a13da4feb`; tail: `[test_runner] PASS — 207 check(s)
   passed` and `[verify] all checks passed`.
 - `python3 bootstrap.py check --strict`: tail: `session log
   .sessions/2026-08-02-restore-quick-debug-run.md complete` and `check: all
   checks passed.` Advisory stale-wall and orientation-headroom notes remain
   non-exit-affecting.
+
+## Current-main reconciliation
+
+PR #115 merged while this closeout was starting. The final tree retains its
+restored overspeed correction, 10 km pace curve, bird ceiling-share invariant,
+two added contracts, research note, and repaired opaque guard ledger. Its
+speed/bird decision remains D-0048; this launcher's non-overlapping decision is
+renumbered D-0049. No quick-launch production value changed during the merge.
 
 ## Owner questions
 

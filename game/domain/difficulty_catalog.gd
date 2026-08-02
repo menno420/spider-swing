@@ -27,7 +27,8 @@ const MODE_HARSH := &"harsh"
 const PHYSICS_FIELDS := [
 	"gravity", "spider_mass", "horizontal_drive_acceleration",
 	"starting_target_speed", "maximum_target_speed", "speed_curve_distance",
-	"maximum_horizontal_overspeed", "release_momentum_bonus_speed", "air_drag",
+	"maximum_horizontal_overspeed", "overspeed_correction_acceleration",
+	"bird_ceiling_share", "release_momentum_bonus_speed", "air_drag",
 	"web_minimum_length", "web_maximum_length",
 	"web_tap_retargets_when_attached", "attachment_cone_degrees",
 	"attachment_snap_radius", "attachment_correction_cap",

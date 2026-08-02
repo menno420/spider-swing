@@ -943,22 +943,70 @@
 - provenance: Menno, 2026-08-02 — the main menu still looks crowded and is not
   easy to navigate
 
-## [D-0048] Keep quick debug launch separate from persistent advanced tuning
+## [D-0048] The bird may never outrun the spider, and the speed ceiling is real again
 
 - status: decided
 - date: 2026-08-02
-- verdict: Home's subordinate debug route opens a compact Debug Test Run
-  launcher with only distance, one temporary all-track upgrade level, pursuing-
-  bird controls, and immediate start. Advanced Test Lab remains one tap deeper
-  with the complete catalogue, auto-saved working set, A/B/C profiles, and trace
-  review. A quick request applies only its visible fields; sparse advanced
-  overrides remain saved but cannot silently affect it. Both routes use the same
-  state-owned values, progression overlay, composition-root guard, and
-  noncompetitive practice settlement path.
+- verdict: Three coupled changes to the approved baseline. **(1)** The
+  overspeed correction gets its own coefficient,
+  `overspeed_correction_acceleration`, defaulting to the exact pre-#102
+  effective value of 117.5 px/s². **(2)** The pursuer's speed is hard-bounded
+  at `bird_ceiling_share` of the spider's own distance-scaled ceiling —
+  `assumed` 0.62 — so it can never overtake a spider that is swinging well;
+  `validate()` rejects a share at or above 1.0 and a contract sweeps to 200 km
+  on every preset. **(3)** `speed_curve_distance` rises from 5 km to 10 km, so
+  pace grows more gradually. All three are exposed as Test Lab tunables; the
+  values are `assumed` and await the owner's device verdict.
+- why: The owner reported on device that speed gained through reeling climbs to
+  a point he cannot correct from, and identified the structural consequence
+  himself: *"If the spider speed is capped after a certain distance but the bird
+  isn't, then it's eventually not possible to outrun the bird."* Both halves are
+  confirmed in source. `SpiderMotor.apply_forces` has always had a floor branch
+  and a ceiling branch, and **both were scaled by
+  `horizontal_drive_acceleration`** — so PR #102 zeroing the drive to remove the
+  free forward push silently removed the speed limit as well. The earned-speed
+  spec enumerated six `target_speed_at` couplings that had to survive drive
+  removal; the motor's own overspeed branch was not among them, and after #102
+  only air drag acted on overspeed, proportionally, and therefore never as a
+  ceiling at all. Separately, the bird rose linearly forever against a pace
+  curve that flattened: with the shipped values it overtook the spider's
+  ceiling at roughly **68 km** and reached 150 m/s against a 112 m/s cap by
+  100 km, so a sufficiently good run ended on arithmetic rather than on a
+  mistake.
+  The bound is expressed as a **share of the spider's ceiling rather than an
+  absolute speed** so the invariant survives any future retune of either curve
+  instead of resting on a coincidence between two independently authored
+  constants. This also records the owner's correction to the bird's purpose:
+  it exists to make dangling and ceiling-hauling non-viable — the exploit in
+  `measurements/2026-08-01-hauling-loophole.md` — and **not** to be the
+  difficulty ramp, which supersedes the earned-speed spec's "the ramp moves
+  into the bird" framing. Measured after the change: permanent headroom of
+  +42 to +70 m/s at every distance, bot distance and death rate essentially
+  unchanged (1 931 → 1 936 m, 1.04 → 1.03 deaths/km) and arc per web 43.7°, so
+  the hauling exploit stays dead.
+- provenance: Menno, 2026-08-02 — "the total speed gained from reel should be
+  lowered a little", then "the speed should rise a little more gradually and
+  reach its maximum speed at 10K, and the bird should never be able to have a
+  higher max speed than the spider, the main purpose of the bird is to prevent
+  the players from using strategies that don't involve actually swinging"
+
+## [D-0049] Keep quick debug launch separate from persistent advanced tuning
+
+- status: decided
+- date: 2026-08-02
+- verdict: Home's debug-only action opens a compact Debug Test Run launcher for
+  distance, one temporary all-track upgrade level, bird controls, and an
+  immediate noncompetitive start. The persistent eight-category editor remains
+  available one tap deeper as Advanced Test Lab. A quick launch applies only
+  the controls visible on the compact screen and carries no saved sparse tuning
+  overrides; an advanced launch applies the saved working profile. Both routes
+  retain the existing no-awards practice boundary and never mutate owned
+  progression.
 - why: Replacing the former launch form with the complete Test Lab preserved
-  capability but removed the fast comparison workflow. Restoring the compact
-  form as a separate route avoids forcing routine distance/upgrade tests through
-  eight categories, while explicit override isolation prevents the simpler UI
-  from hiding a materially different run configuration.
-- provenance: Menno, 2026-08-02 — restore the missing easy Debug Test Run screen
-  from the supplied screenshot and defer all menu-style work to another session
+  capability but made common distance/upgrade comparisons slow and allowed
+  hidden saved parameters to become ambiguous. Separating the two intentions
+  restores the fast setup shown in the owner's reference while keeping detailed
+  reproducible tuning intact and explicit.
+- provenance: Menno, 2026-08-02 — restore the easy debug test-run entry for
+  quickly selecting distance and upgrades; defer menu styling to another
+  session
