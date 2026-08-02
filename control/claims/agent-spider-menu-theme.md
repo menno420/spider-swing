@@ -1,0 +1,1 @@
+- `agent/spider-menu-theme` · **spider-web menu presentation** — add reusable web ornamentation, fibrous panel texture, cocoon corners, and profile accents without changing navigation, touch layout, gameplay, saves, or audio · game/presentation, tests, docs, build identity · 2026-08-02
