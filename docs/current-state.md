@@ -15,7 +15,7 @@ live in [`player-preference research`](product/player-preference-research-2026-0
 External benchmarks and the verified zone audit live in
 [`upgrade-and-difficulty research`](product/upgrade-and-difficulty-research-2026-08-02.md).
 
-Build `0.36.0-obstacle-contact-playtest` is current. Continuous drive is
+Build `0.37.0-loadout-home-playtest` is current. Continuous drive is
 zero; release, swing control, Reel, and pull timing earn speed; the former left
 kill line is a visible pursuing bird. `target_speed_at` remains a named
 reference. The non-pumping bot cannot tune the bird, so Test Run owns its three
@@ -59,7 +59,7 @@ without a reported regression.
 - A separately versioned `DebugTestProfile` auto-saves the Test Lab working set
   and A/B/C comparison slots. Its resolved display values and sparse explicit
   overrides never enter `PlayerSettings` or `PlayerProgress`.
-- Build `0.36.0-obstacle-contact-playtest` (Android version code 56, package
+- Build `0.37.0-loadout-home-playtest` (Android version code 57, package
   `com.menno420.spiderswing.dev`) retains the stable conventional public debug
   identity introduced by `0.19.0-depth-testing` in
   `.github/android/debug.keystore`. The workflow pins its file and certificate
@@ -202,11 +202,12 @@ without a reported regression.
   neutral graphite/slate surface with deterministic grain and pits plus passive
   low-alpha fibres, corner webs, silk knots, and cocoon forms; buttons use an
   asymmetric cocoon silhouette. Home fills the landscape with one identity
-  card, difficulty, a dominant Endless Play action, and four intention-level
-  choices: Spider (Garage, Upgrades), Play Modes (Campaign, Region Practice,
-  Course Lab), Guide (Tutorial, Field Guide), and direct Settings. Debug Test
-  Run is a subordinate direct utility with Advanced Test Lab behind it. Every
-  destination is within two taps and returns through its hub, and each
+  card and a run deck: difficulty, personal best with its region, three loadout
+  chips grouped by the catalogue's own scopes, and one filled Start Run — the
+  only filled control in the front end. The four intention choices — Spider,
+  Play Modes, Guide, Settings — become a right-hand rail carrying a live badge
+  each, with Debug Test Run subordinate beneath them. Every destination is
+  within two taps and returns through its hub, and each
   hub ends in a live status line drawn from `PlayerProgress`. Controls are sized
   in dp: one reference pixel is 0.6 dp on a 2340x1080 phone, so contract floors
   are set per control. The selected difficulty is the strongest state on Home,
@@ -629,31 +630,9 @@ with hook-vine and leaf-shutter geometry without retuning either control; the
 - **2026-08-01 — Earned release quality (PR #97).** A wide, rising manual
   release earns bounded forward momentum; forced Burst/Dive detach does not.
   Its two feel values remain assumed for the combined device session.
-- **2026-08-01 — Upgrade playstyle sweep and first replay verdict (PR #92).**
-  The owner accepted the two original bundled lab traces as fair, slightly
-  Burst/Dive-heavy representations of his play. Cross-applying the same policy
-  at L0 and L20 shows upgrades buy survival and lower effort rather than a
-  guaranteed bot-distance increase. One separate 10,773 m web-spam trace is
-  reproducible but intentionally awaits owner judgement. No physics, zone, or
-  balance value changed.
-- **2026-08-01 — Replay review loop and final fresh-eye guards (PR #89).** Two
-  input-only lab traces now reproduce through both the headless driver and the
-  real run session, and Debug Test Run can play them without awards. Timeout
-  caps, actual spider/skill identities, trace-format ownership, picker movement,
-  export inclusion, and near-threshold anomaly reporting were corrected before
-  merge. The final merged runner is **181 contracts**; the PR's 176-contract
-  prose was an intermediate count and is superseded by the executable runner.
-- **2026-08-01 — Recorded Zones 3–6 environment finish.** The six owner
-  recordings establish Ancient Forest and Bramble as the benchmark. Four later
-  recorded zones now match their depth/material hierarchy with two scroll
-  planes, continuous walls, explicit safe-surface/obstacle art, no normal-play
-  polygon ghosts, and collision-honest ceiling joins. Thirty-three runtime
-  assets pass source/runtime/25% alpha checks; the full suite passes. The live
-  total is `EXPECTED_CHECK_COUNT` in `tests/test_runner.gd`; the dated
-  fresh-session handoff records the exact verified snapshot instead of letting
-  this living summary go stale on the next merge.
-Older shipped slices remain in their session cards and git history; this boot
-ledger retains only the most recent cross-cutting changes.
+Older slices remain in their session cards and git history; this ledger keeps
+only recent cross-cutting changes. The live contract total is always
+`EXPECTED_CHECK_COUNT` in `tests/test_runner.gd`, never prose.
 ## Review rhythm
 
 Agents work through ready born-red PRs, finish the declared scope, run the exact

@@ -1124,3 +1124,47 @@
   placement, routes, rails, or legal web anchors.
 - provenance: Menno, 2026-08-02 — obstacles should be a very small amount
   smaller than their visual display so contact, not visible air, causes death
+
+## [D-0053] Home is the run you are about to start, not an index of places to go
+
+- status: decided
+- date: 2026-08-02
+- verdict: Home's dashboard becomes a **run deck**. It states the target
+  (personal best for the selected difficulty, and which of the eight regions
+  that reached), the **run loadout** as three chips grouped by the catalogue's
+  own structure — Reel, Anchor Burst, and the selected spider's two identity
+  tracks — each showing owned levels against its ceiling, a meter, and the
+  resolved effect in real units, and one **filled** Start Run control. The four
+  intention routes of D-0047 survive unchanged in name, order and destination
+  but move to a right-hand rail, each carrying a live badge (flies, campaign
+  stars, lesson count). Start Run is the **only filled control in the front
+  end**; every other button stays an outline on slate, so hierarchy no longer
+  depends on comparing two border hues. No figure on the deck may be a derived
+  score: `SpiderCatalog.loadout_groups` returns real track ids and every number
+  resolves from `PlayerProgress` or the resolved `SwingConfig`.
+- why: The owner reviewed twelve external menu concepts against the shipping
+  build and could not choose between them, but was precise about the fault:
+  *"our buttons don't have any identity, they all look the same and they don't
+  really stand out, everything looks dull"*. Measuring the screen rather than
+  reading it named the mechanism — the left panel holds an image and a number
+  and the right panel holds neither, and **one button style was doing four
+  different jobs** (primary action, navigation, selection, debug utility),
+  separated only by border hue, which is the weakest cue available once the
+  1280×720 reference is scaled onto a phone. The previous session had already
+  raised those buttons toward the 48 dp floor and the owner still called them
+  dull, which is the evidence that size was never the complaint.
+  This direction was chosen by the owner from three mocked at the device's real
+  aspect ratio, explicitly as an experiment: *"this is a really different kind
+  of menu shape than what we have now it would be a good way to actually compare
+  what the change actually means for the UX."* It is therefore expected to move
+  again, and is recorded as a reversible presentation decision rather than a
+  settled one.
+  One temptation was refused. The mockup showed Control / Power / Recovery stat
+  bars, which read well and correspond to nothing in the data. Inventing a
+  weighted score over `SwingConfig` fields would have put a number on Home that
+  no field backs and no contract could defend. The three loadout groups are the
+  catalogue's own scopes and kinds instead, so the totals cannot drift from the
+  tracks that produce them.
+- provenance: Menno, 2026-08-02 — twelve-concept comparison video plus a 0.36.0
+  Home screenshot; direction chosen from `docs/product/menu-ux-review-2026-08-02.md`
+  § 4 and the three mocked directions

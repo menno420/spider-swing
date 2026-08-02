@@ -324,7 +324,7 @@ func _build_home() -> void:
 	# Home is the run you are about to start, not an index of places to go. The
 	# deck states the target and the loadout, the destinations demote to a rail,
 	# and one filled control is the only thing on screen that looks pressable at
-	# a glance. [D-0052]
+	# a glance. [D-0053]
 	var deck := HBoxContainer.new()
 	deck.add_theme_constant_override("separation", 14)
 	_fill_with_margin(deck, card, 14.0)

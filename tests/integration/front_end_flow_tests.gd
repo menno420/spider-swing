@@ -128,7 +128,7 @@ static func _test_home_has_primary_action_hierarchy(
 		view.free()
 		return 0
 	# Play is the only filled control in the front end, so hierarchy never rests
-	# on comparing two outline hues. [D-0052]
+	# on comparing two outline hues. [D-0053]
 	var hero := play.get_theme_stylebox("normal") as StyleBoxFlat
 	var route_style := view.front_end_button(&"SpiderHub") \
 		.get_theme_stylebox("normal") as StyleBoxFlat
@@ -322,7 +322,7 @@ static func _test_menus_are_thumb_sized_and_state_their_progress(
 ## Home states the run you are about to start. Every figure on the deck has to
 ## come from PlayerProgress or the resolved config — no derived "power" score
 ## and no placeholder, or the screen is decoration wearing an instrument's
-## clothes. [D-0052]
+## clothes. [D-0053]
 static func _test_home_deck_reports_the_run_you_are_about_to_start(
 	failures: PackedStringArray,
 ) -> int:
