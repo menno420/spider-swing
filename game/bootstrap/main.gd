@@ -34,6 +34,11 @@ func _ready() -> void:
 	_save_repository = SAVE_REPOSITORY_SCRIPT.new() as SaveRepository
 	_progression_service = PROGRESSION_SERVICE_SCRIPT.new() as ProgressionService
 	_progress = _save_repository.load_progress()
+	var settings := _save_repository.load_settings()
+	_audio_director = AUDIO_DIRECTOR.new() as AudioDirector
+	_audio_director.configure_effects(settings.effects_enabled)
+	_audio_director.configure_music(settings.music_enabled)
+	add_child(_audio_director)
 	_front_end_state = FRONT_END_STATE_SCRIPT.new() as FrontEndState
 	_front_end_state.play_requested.connect(_start_game)
 	_front_end_state.practice_play_requested.connect(_start_practice_game)
@@ -50,7 +55,7 @@ func _ready() -> void:
 	_front_end_state.creator_piece_requested.connect(_cycle_creator_piece)
 	_front_end_state.creator_clear_requested.connect(_clear_creator_pattern)
 	_front_end_state.configure(
-		_save_repository.load_settings(),
+		settings,
 		_progress,
 		_progression_service,
 	)
@@ -72,6 +77,11 @@ func _mount_front_end() -> PackedStringArray:
 	if not failures.is_empty():
 		return failures
 	_front_end_view.bind_state(_front_end_state)
+	if _front_end_state.settings.music_enabled and (
+			_audio_director == null or \
+			not _audio_director.music_playback_requested()
+	):
+		failures.append("enabled background music did not request playback")
 	return failures
 
 
@@ -281,7 +291,6 @@ func _mount_swing_lab(
 
 	_session = SWING_LAB_SESSION.new() as SwingLabSession
 	_input_router = INPUT_ROUTER.new() as InputRouter
-	_audio_director = AUDIO_DIRECTOR.new() as AudioDirector
 	if _session == null or _input_router == null or _audio_director == null:
 		failures.append("run session, input, or audio presentation failed to instantiate")
 		return failures
@@ -331,9 +340,9 @@ func _mount_swing_lab(
 	_input_router.diagnostic_export_requested.connect(_session.export_diagnostic)
 
 	_audio_director.configure_effects(settings.effects_enabled)
+	_audio_director.configure_music(settings.music_enabled)
 	_input_router.configure_haptics(settings.haptics_enabled)
 	add_child(_view)
-	add_child(_audio_director)
 	add_child(_session)
 	add_child(_input_router)
 	_view.configure_player_options(
@@ -392,10 +401,7 @@ func _unmount_swing_lab() -> void:
 		_session.queue_free()
 		_session = null
 	if _audio_director != null:
-		_audio_director.stop_all()
-		remove_child(_audio_director)
-		_audio_director.queue_free()
-		_audio_director = null
+		_audio_director.leave_run()
 	if _view != null:
 		remove_child(_view)
 		_view.queue_free()
@@ -403,6 +409,9 @@ func _unmount_swing_lab() -> void:
 
 
 func _save_settings(settings: PlayerSettings) -> void:
+	if _audio_director != null:
+		_audio_director.configure_effects(settings.effects_enabled)
+		_audio_director.configure_music(settings.music_enabled)
 	if not _save_repository.save_settings(settings):
 		printerr("[spider-swing] settings write failed; current session continues")
 

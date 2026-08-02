@@ -106,8 +106,8 @@ hand-editing the output.
   open it, how to get an Android debug build.
 - [`../CONSTITUTION.md`](../CONSTITUTION.md) — the binding working contract.
 - [`../assets/source/audio/README.md`](../assets/source/audio/README.md) — original
-  generated-SFX policy, regeneration, and provenance.
+  generated-audio policy, regeneration, and provenance.
 - [`../assets/runtime/audio/README.md`](../assets/runtime/audio/README.md) — the
-  25-sample playtest pack and runtime audit contract.
+  25-SFX/two-stem playtest pack and runtime audit contract.
 - `../control/` — the coordination bus: status heartbeat, inbox, claims.
 - `../.sessions/` — append-only session memory.

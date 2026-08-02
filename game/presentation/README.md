@@ -35,8 +35,9 @@ endpoints; it does not drive physics (GDD § 17.2).
 - `tutorial_preview.gd` — reduced-motion-aware in-engine mechanics animation.
 - `audio_asset_catalog.gd` + `audio_director.gd` — event-to-sample mapping,
   bounded voice playback, high-frequency variants/cooldowns, and a continuous
-  Reel loop. They consume authoritative events/snapshots and never emit gameplay
-  intent.
+  Reel loop. The same director keeps one haunted two-stem score alive across
+  menus and runs; snapshots only set a bounded presentation mix target for its
+  chase layer. It never emits gameplay intent.
 - `swing_lab.tscn` + `swing_lab.gd` — Phase 0 camera, anchors, spider, web,
   HUD, Reel energy, opening/rescue/profile feedback,
   authoritative-event-driven action flashes, and opt-in collision/web-guide

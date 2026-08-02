@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Generate Spider Swing's original, deterministic gameplay SFX samples.
+"""Generate Spider Swing's original, deterministic audio samples.
 
-The runtime files are intentionally small mono PCM WAVs for Android.  Every
-sample is synthesized from elementary waveforms and seeded noise in this file;
-no recorded or third-party source material is used.
+The runtime files are intentionally mono PCM WAVs for Android. Every sample is
+synthesized from elementary waveforms and seeded noise in this file; no
+recorded or third-party source material is used. Short effects and the longer
+two-stem score share one provenance and exact-regeneration boundary.
 """
 
 from __future__ import annotations
@@ -26,7 +27,7 @@ CHANNELS = 1
 SAMPLE_WIDTH_BYTES = 2
 MANIFEST_NAME = "audio-sample-manifest.json"
 OUTPUT_DIR = Path("assets/runtime/audio")
-GENERATOR_DATE = "2026-08-01"
+GENERATOR_DATE = "2026-08-02"
 
 
 @dataclass(frozen=True)
@@ -36,6 +37,7 @@ class ClipDefinition:
     target_peak_dbfs: float
     loop: bool
     builder: Callable[[], list[float]]
+    category: str = "sfx"
 
 
 def _frames(duration: float) -> int:
@@ -528,6 +530,138 @@ def _storm_charge() -> list[float]:
     return _mix((rise, 0.64, 0.0), (static, 0.18, 0.02))
 
 
+def _loop_frequency(frequency: float, duration: float) -> float:
+    """Quantize a tone to a whole number of cycles across one loop."""
+    return round(frequency * duration) / duration
+
+
+def _haunted_silk_bed() -> list[float]:
+    """A slow D-minor/Phrygian forest bed with distant silk-bell phrases."""
+    duration = 32.0
+    frame_count = _frames(duration)
+    # The root and fifth never leave. The upper voices crossfade through an
+    # eight-bar circular progression, so both the harmony and waveform meet at
+    # the loop boundary without a baked fade-to-silence.
+    drone_frequencies = [36.71, 73.42, 110.0, 146.83]
+    chords = [
+        [146.83, 174.61, 220.0],   # Dm(add b9)
+        [155.56, 196.0, 233.08],   # Eb/Bb shadow
+        [130.81, 174.61, 220.0],   # C minor colour
+        [110.0, 164.81, 207.65],   # A diminished colour
+        [146.83, 174.61, 261.63],
+        [155.56, 220.0, 293.66],
+        [130.81, 196.0, 233.08],
+        [110.0, 138.59, 207.65],
+    ]
+    drone_steps = [
+        math.tau * _loop_frequency(frequency, duration) / SAMPLE_RATE
+        for frequency in drone_frequencies
+    ]
+    chord_steps = [
+        [
+            math.tau * _loop_frequency(frequency, duration) / SAMPLE_RATE
+            for frequency in chord
+        ]
+        for chord in chords
+    ]
+    wind_partials: list[tuple[float, float, float]] = []
+    generator = random.Random(220802)
+    for partial in range(18):
+        frequency = 82.0 + partial * 37.0 + generator.uniform(-7.0, 7.0)
+        wind_partials.append((
+            math.tau * _loop_frequency(frequency, duration) / SAMPLE_RATE,
+            generator.uniform(0.0, math.tau),
+            generator.uniform(0.012, 0.035) / (1.0 + partial * 0.08),
+        ))
+
+    bell_events = [
+        (2.0, 293.66), (5.5, 220.0), (10.0, 311.13), (13.5, 261.63),
+        (18.0, 349.23), (21.5, 293.66), (26.0, 233.08), (29.5, 220.0),
+    ]
+    output: list[float] = []
+    for index in range(frame_count):
+        time = index / SAMPLE_RATE
+        loop_phase = time / duration
+        bar_position = loop_phase * len(chords)
+        chord_index = int(bar_position) % len(chords)
+        next_index = (chord_index + 1) % len(chords)
+        local = bar_position - math.floor(bar_position)
+        blend = 0.5 - 0.5 * math.cos(math.pi * local)
+
+        slow_breath = 0.78 + 0.22 * math.sin(math.tau * loop_phase * 2.0 - 0.7)
+        drone = 0.0
+        for voice, step in enumerate(drone_steps):
+            phase = step * index + voice * 0.71
+            drone += math.sin(phase) * (0.19 / (1.0 + voice * 0.34))
+            drone += math.sin(phase * 2.0 + 0.19) * 0.025
+        drone *= slow_breath
+
+        harmony = 0.0
+        for voice in range(3):
+            current = math.sin(chord_steps[chord_index][voice] * index + voice * 0.43)
+            following = math.sin(chord_steps[next_index][voice] * index + voice * 0.43)
+            harmony += ((1.0 - blend) * current + blend * following) * (
+                0.075 / (1.0 + voice * 0.22)
+            )
+
+        wind = 0.0
+        wind_breath = 0.55 + 0.45 * math.sin(math.tau * loop_phase * 3.0 + 0.8) ** 2
+        for step, phase, gain in wind_partials:
+            wind += math.sin(step * index + phase) * gain
+        wind *= wind_breath
+
+        bells = 0.0
+        for event_time, frequency in bell_events:
+            age = (time - event_time) % duration
+            if age > 4.0:
+                continue
+            attack = min(1.0, age / 0.035)
+            envelope = attack * math.exp(-age * 1.45)
+            bell_phase = math.tau * frequency * age
+            bells += envelope * (
+                math.sin(bell_phase) * 0.12
+                + math.sin(bell_phase * 2.01 + 0.3) * 0.055
+                + math.sin(bell_phase * 3.98 + 0.7) * 0.022
+            )
+        output.append(drone + harmony + wind + bells)
+    return output
+
+
+def _haunted_chase_pulse() -> list[float]:
+    """A restrained pulse stem revealed only by presentation-owned pressure."""
+    duration = 32.0
+    frame_count = _frames(duration)
+    root_notes = [73.42, 77.78, 65.41, 55.0]
+    shimmer_steps = [
+        math.tau * _loop_frequency(frequency, duration) / SAMPLE_RATE
+        for frequency in [293.66, 311.13, 415.30, 440.0]
+    ]
+    output: list[float] = []
+    for index in range(frame_count):
+        time = index / SAMPLE_RATE
+        loop_phase = time / duration
+        pulse_index = int(time / 2.0) % 16
+        pulse_age = time % 2.0
+        pulse_frequency = root_notes[(pulse_index // 4) % len(root_notes)]
+        pulse_envelope = min(1.0, pulse_age / 0.018) * math.exp(-pulse_age * 3.8)
+        pulse = pulse_envelope * (
+            math.sin(math.tau * pulse_frequency * pulse_age) * 0.48
+            + math.sin(math.tau * pulse_frequency * 2.0 * pulse_age + 0.2) * 0.11
+        )
+
+        # Four phase-locked high strands trade prominence around the loop. The
+        # mild semitone rub is eerie without becoming a hazard-like alarm.
+        shimmer = 0.0
+        for voice, step in enumerate(shimmer_steps):
+            prominence = 0.5 + 0.5 * math.sin(
+                math.tau * loop_phase * (voice + 1) + voice * 1.17
+            )
+            shimmer += math.sin(step * index + voice * 0.6) * prominence * 0.035
+        tremolo = 0.42 + 0.58 * math.sin(math.tau * loop_phase * 16.0) ** 2
+        output.append(pulse + shimmer * tremolo)
+    return output
+
+
 def _definitions() -> tuple[ClipDefinition, ...]:
     return (
         ClipDefinition("web-attach-01.wav", "ATTACHED", -4.0, False,
@@ -580,6 +714,10 @@ def _definitions() -> tuple[ClipDefinition, ...]:
                        False, _storm_gust),
         ClipDefinition("storm-charge.wav", "HAZARD_CUE:storm_charge", -6.0,
                        False, _storm_charge),
+        ClipDefinition("haunted-silk-bed.wav", "MUSIC_BED", -10.0, True,
+                       _haunted_silk_bed, "music"),
+        ClipDefinition("haunted-chase-pulse.wav", "MUSIC_TENSION", -11.0, True,
+                       _haunted_chase_pulse, "music"),
     )
 
 
@@ -631,6 +769,7 @@ def build(output_dir: Path) -> dict[str, object]:
         assets.append({
             "file": definition.filename,
             "event": definition.event,
+            "category": definition.category,
             "duration_seconds": round(len(samples) / SAMPLE_RATE, 4),
             "sample_rate_hz": SAMPLE_RATE,
             "channels": CHANNELS,
@@ -645,7 +784,7 @@ def build(output_dir: Path) -> dict[str, object]:
         })
     generator_hash = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
     manifest: dict[str, object] = {
-        "schema_version": 1,
+        "schema_version": 2,
         "generated_on": GENERATOR_DATE,
         "generator": "tools/generate_audio_samples.py",
         "generator_sha256": generator_hash,

@@ -6,7 +6,7 @@
 > work always win over this file. Read it second (right after the working
 > agreement) and keep it current as the project moves.
 
-Build `0.28.0-spider-menu-theme-playtest` is current. Continuous drive is
+Build `0.29.0-haunted-soundtrack-playtest` is current. Continuous drive is
 zero; release, swing control, Reel, and pull timing earn speed; the former left
 kill line is a visible pursuing bird. `target_speed_at` remains a named
 reference. The non-pumping bot cannot tune the bird, so Test Run owns its three
@@ -16,7 +16,7 @@ session-only chase controls. The measured design and seams live in the
 
 ## Stability baseline
 
-As of 2026-08-01, verified against the live source. Known-good; do not re-audit
+As of 2026-08-02, verified against the live source. Known-good; do not re-audit
 without a reported regression.
 
 **Engine, architecture, and application shell**
@@ -37,14 +37,15 @@ without a reported regression.
 
 **Persistence and Android test delivery**
 
-- `SaveRepository` is the only persistent writer. Schema-2 settings include
-  effects and haptics alongside control, motion, and diagnostic choices.
+- `SaveRepository` is the only persistent writer. Schema-3 settings include
+  independent music, effects, and haptics alongside control, motion, and
+  diagnostic choices.
   Schema-8 progression includes fly and star balances, per-difficulty bests,
   Campaign clears, selected profile and cosmetics, upgrade ownership, creator
   pattern, reached checkpoints, and bounded idempotent-settlement history.
-  Older settings default audio/haptics on; every progression migration remains
-  one-way and explicit.
-- Build `0.28.0-spider-menu-theme-playtest` (Android version code 48, package
+  Older settings default music/effects/haptics on; every progression migration
+  remains one-way and explicit.
+- Build `0.29.0-haunted-soundtrack-playtest` (Android version code 49, package
   `com.menno420.spiderswing.dev`) retains the stable conventional public debug
   identity introduced by `0.19.0-depth-testing` in
   `.github/android/debug.keystore`. The workflow pins its file and certificate
@@ -191,22 +192,22 @@ without a reported regression.
   softens bank. At its 300 px render canvas the visible silhouette reads just
   over 2× the nominal spider canvas.
 - A presentation-owned `AudioDirector` consumes authoritative events and
-  snapshots without feeding back into simulation. Twenty-five original,
-  reproducibly generated mono PCM samples cover attach/release, Reel,
-  Burst/Dive, pickups, rescue/death, Buckler bounce, and all five later-zone
-  warnings. High-frequency actions round-robin variants and have explicit
-  cooldowns; effects and haptics are independently persistent settings.
+  snapshots without feeding back into simulation. Twenty-five original mono
+  SFX cover traversal, pickups, impacts, and later-zone warnings. A persistent
+  32-second haunted bed and chase stem play across menus and runs; bird/pace
+  snapshots only set a bounded mix target. Its -10.3 dBFS maximum retains about
+  7 dB for SFX. Music, effects, and haptics persist independently.
 - Graybox plus four environment looks remain visual-only. Collision outlines and
   target guides load off and can be enabled independently under DEBUG →
   OVERLAYS. Reduced motion freezes decorative movement and restrained poses.
 
 **Verification**
 
-- Local source passes the 197-contract engine runner with the exact
+- Local source passes the 200-contract engine runner with the exact
   `4.7.1.stable.official.a13da4feb` Standard binary. The declared suite contains
   11 bootstrap/build, 68 deterministic physics, 15 zone, 11 spider-biology,
   10 Campaign, 9 difficulty, 4 upgrade-wiring, 10 simulation-lab/replay,
-  2 economy, 6 generated-SFX, 27 mobile GUI/layout, and 24 front-end/settings/
+  2 economy, 8 generated-audio, 27 mobile GUI/layout, and 25 front-end/settings/
   progression checks. The full
   required `python3 tools/verify.py --require-godot` result is recorded at
   session close.
@@ -473,10 +474,9 @@ without a reported regression.
   are not lethal; only Standard is leaderboard-eligible. Measured ordering is
   monotone — Relaxed 3 096 m, Standard 1 714 m, Harsh 1 133 m at intermediate.
 - Rewards beyond Campaign stars still have approved direction in D-0033 but no
-  implementation: cosmetics/stars rather than flies. The first generated-SFX
-  playtest pass now exists; ambience and music remain absent and, when sourced,
-  require individually verified CC0 records. Difficulty still cannot alter the
-  approved physics preset.
+  implementation. Generated SFX and the original haunted score now exist;
+  zone ambience remains absent and retains per-file CC0 verification. Difficulty
+  cannot alter physics or the music mix law.
 - No production signing or Google Play publishing. The stable debug key is not a
   release credential and must never become one.
 
@@ -572,6 +572,10 @@ with hook-vine and leaf-shutter geometry without retuning either control; the
 
 ## Recently shipped (newest first)
 
+- **2026-08-02 — Haunted adaptive soundtrack (PR #107).** One original
+  32-second bed persists across Home and runs; a synchronized chase stem fades
+  with presentation-only pressure. All 27 files regenerate exactly and Music,
+  Effects, and Haptics remain independent.
 - **2026-08-02 — Spider-web menu theme (PR #106).** One reusable passive card
   renderer gives every menu deterministic fibres, corner webs, knots, cocoons,
   and selected-spider accents without changing navigation or touch geometry.
@@ -620,10 +624,6 @@ with hook-vine and leaf-shutter geometry without retuning either control; the
   supersedes the point-guide proof: Bramble now alternates open recovery with
   smaller single/pair commitments, gives each pair a full readable transition,
   and carries a timed full-speed envelope regression without retuning physics.
-- **2026-08-01 — Audio playtest slice.** Build `0.22.0-audio-playtest` replaces
-  the renderer's temporary sine cue with 25 original generated samples, one
-  event-driven audio director, persistent effects/haptics controls, exact
-  regeneration, level/headroom checks, and a seamless Reel loop contract.
 - **2026-08-01 — Campaign and difficulty (PRs #75–#76).** Three verb-gated
   teaching levels award non-repeatable stars; Relaxed, Standard and Harsh vary
   content/recovery while leaving the approved physics baseline identical.
@@ -638,31 +638,6 @@ with hook-vine and leaf-shutter geometry without retuning either control; the
   transition receives its own generated art pack and world-anchored foreground,
   but the first device pass found its obstacle roles still too inherited; PR
   #69 is the correction rather than overstating this pass as complete.
-- **2026-07-31 — Pre-run debug depth controls (PR #60).** Home now
-  stages exact distance and temporary upgrades through large `−`/`+` before one
-  no-awards test start; ordinary Play restores owned levels, and the in-run
-  controls remain available for live adjustments.
-- **2026-07-31 — Debug depth-testing access.** Stable debug signing, exact
-  arbitrary-distance practice starts, and a session-only selectable upgrade
-  overlay make persistent far-course and progression testing possible without
-  changing physics, economy, ownership, or settlement architecture.
-- **2026-07-31 — Owner direction (PR #55).** Records the staged campaign,
-  difficulty-record, campaign-reward, audio-source, and agent-merge decisions;
-  no gameplay implementation was added.
-- **2026-07-31 — Spider identity and Field Guide (PR #53).** Separates biology
-  from balance, makes the guide a Home and Garage route, adopts real names where
-  usable, renames Skitter to Magnolia Green Jumper, and documents Buckler's
-  *Ummidia*/*Cyclocosmia* inspiration without changing persisted ids.
-- **2026-07-30 — Device-led Reel correction (PRs #38, #40).** Bounds the
-  level-zero Reel resource, raises Balanced response to the owner-tested band,
-  and keeps resolution idempotent and speed-neutral.
-- **2026-07-29/30 — Progression, course, and presentation foundation.** Twenty
-  small upgrade levels with breakthroughs, five profiles, a bounded living
-  forest course, environment themes, scroll-safe front-end routes, and finished
-  runtime art landed through PRs #21–#36. Earlier Phase-0 history remains in git,
-  session cards, decisions, and the technical reference rather than this boot
-  ledger.
-
 ## Review rhythm
 
 Agents work through ready born-red PRs, finish the declared scope, run the exact
