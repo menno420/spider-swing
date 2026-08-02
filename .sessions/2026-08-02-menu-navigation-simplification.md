@@ -1,6 +1,6 @@
 # Simplify Home navigation into focused hubs
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 
@@ -53,6 +53,14 @@ only adds Music volume and does not change this information architecture.
 - Build identity is `0.32.0-menu-navigation-playtest`, Android version code 52.
   D-0047 supersedes only the former three-column Home topology.
 
+## Shipped
+
+- PR #112 implementation commit `7b444e744c8516a6664262c127192f2dd24c4143`
+  carries all 15 changed files. Its remote tree and locally verified commit both
+  resolve to `08d29a4055ffd6f59854999dcbbfa532595e81fe`.
+- This closeout removes only `claude/menu-navigation-simplification`'s claim.
+  Required GitHub checks and Android export decide the terminal merge/build state.
+
 ## Layout evidence
 
 - Real `SubViewport` layout after two frames encloses Home and all three hubs at
@@ -84,8 +92,8 @@ dummy-renderer error and Android-artifact workaround. The already-recorded
 - Exact Godot `4.7.1.stable.official.a13da4feb`: 205/205 contracts pass.
 - `python3 tools/verify.py --require-godot`: all seven stages pass, including
   deterministic audio regeneration, import, boot, architecture, and engine run.
-- `python3 bootstrap.py check --strict`: pre-close red is the designed
-  `in-progress` hold; final evidence awaits the remote implementation tree.
+- `python3 bootstrap.py check --strict`: closeout exits 0 with the card complete,
+  the claim withdrawn, the capability digest current, and all checks passed.
 
 ## Owner questions
 
