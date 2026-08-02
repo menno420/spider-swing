@@ -455,7 +455,11 @@ so the Dive stays always available, which is its whole purpose.
   baseline and a proposed rule set for how difficulty and obstacle placement are
   decided, scoped to the first 15 km. **Nothing in it is implemented and no
   ledger entry records it** — it is a proposal the owner is analysing. See
-  [`the doctrine`](game-design/difficulty-and-obstacle-doctrine.md).
+  [`the doctrine`](game-design/difficulty-and-obstacle-doctrine.md) and the
+  external evidence behind it in
+  [`difficulty-research`](game-design/difficulty-research-2026-08-02.md), which
+  bounds the reaction-window question and argues the axis budget should be an
+  admission envelope rather than a fungible point-sum.
 - **2026-08-02 — Home is the run you are about to start (PR #122, 0.37.0).**
   Home becomes an identity card plus a run deck — difficulty, personal best with
   its region, three loadout chips grouped by the catalogue's own scopes, and one
