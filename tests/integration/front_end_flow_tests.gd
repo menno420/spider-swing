@@ -2,6 +2,9 @@ extends RefCounted
 class_name FrontEndFlowTests
 ## Contracts for startup navigation, tutorial completeness, and real settings.
 
+const SpiderWebPanelScript = preload(
+	"res://game/presentation/scripts/spider_web_panel.gd")
+
 
 static func run() -> Dictionary:
 	var failures := PackedStringArray()
@@ -19,6 +22,7 @@ static func run() -> Dictionary:
 	passed += _test_legacy_upgrade_levels_migrate_proportionally(failures)
 	passed += _test_garage_shop_and_creator_are_real_routes(failures)
 	passed += _test_garage_uses_spider_cosmetic_rails(failures)
+	passed += _test_spider_web_theme_is_reusable_and_layout_passive(failures)
 	passed += _test_field_guide_separates_biology_from_game(failures)
 	passed += _test_shop_exposes_seven_mobile_readable_tracks(failures)
 	passed += _test_shop_explains_breakthrough_bonuses(failures)
@@ -607,6 +611,78 @@ static func _test_garage_uses_spider_cosmetic_rails(
 	if view.theme == null or \
 			view.theme.get_stylebox(&"grabber", &"VScrollBar") == null:
 		failures.append("front-end widgets do not share the central spider theme")
+		view.free()
+		return 0
+	view.free()
+	return 1
+
+
+static func _test_spider_web_theme_is_reusable_and_layout_passive(
+	failures: PackedStringArray,
+) -> int:
+	var geometry: Dictionary = SpiderWebPanelScript.ornament_geometry(
+		Vector2(480.0, 240.0))
+	if (geometry["fibres"] as Array).size() < 8 or \
+			(geometry["spokes"] as Array).size() != 12 or \
+			(geometry["rings"] as Array).size() != 6 or \
+			(geometry["knots"] as Array).size() != 6 or \
+			(geometry["cocoons"] as Array).size() != 2:
+		failures.append(
+			"spider-web cards lost fibres, tension webs, knots, or cocoons")
+		return 0
+	for group_name in ["fibres", "spokes", "rings", "cocoons"]:
+		for shape: PackedVector2Array in geometry[group_name]:
+			for point: Vector2 in shape:
+				if point.x < 0.0 or point.x > 480.0 or \
+						point.y < 0.0 or point.y > 240.0:
+					failures.append(
+						"spider-web card ornament escaped its visual bounds")
+					return 0
+	for knot: Vector2 in geometry["knots"]:
+		if knot.x < 0.0 or knot.x > 480.0 or \
+				knot.y < 0.0 or knot.y > 240.0:
+			failures.append("spider-web silk knot escaped its visual bounds")
+			return 0
+
+	var button_style := SpiderUiTheme.button_style(
+		SpiderUiTheme.PANEL_SOFT, SpiderUiTheme.MOSS)
+	if button_style.corner_radius_top_left >= \
+			button_style.corner_radius_top_right or \
+			button_style.corner_radius_bottom_right >= \
+			button_style.corner_radius_bottom_left or \
+			not button_style.border_blend:
+		failures.append("buttons lost their tensioned cocoon silhouette")
+		return 0
+
+	var progress := PlayerProgress.defaults()
+	progress.selected_spider_id = SpiderCatalog.ANCHORITE
+	var state := FrontEndState.new()
+	state.configure(PlayerSettings.defaults(), progress)
+	var view := FrontEndView.new()
+	view.bind_state(state)
+	for panel_name in [
+		"HomeWebPanel",
+		"GarageDetailWebPanel",
+		"ShopWebPanel",
+		"DebugRunSetupCard",
+	]:
+		var panel := view.find_child(panel_name, true, false) as PanelContainer
+		if panel == null or panel.get_script() != SpiderWebPanelScript or \
+				panel.mouse_filter != Control.MOUSE_FILTER_PASS:
+			failures.append(
+				"%s does not use the passive reusable spider-web card" % panel_name)
+			view.free()
+			return 0
+	var garage_panel := view.find_child(
+		"GarageDetailWebPanel", true, false) as PanelContainer
+	var shop_panel := view.find_child(
+		"ShopWebPanel", true, false) as PanelContainer
+	var expected_accent := SpiderUiTheme.SAP
+	if not (garage_panel.get("accent_color") as Color).is_equal_approx(
+			expected_accent) or \
+			not (shop_panel.get("accent_color") as Color).is_equal_approx(
+				expected_accent):
+		failures.append("Garage and Shop do not carry the selected spider accent")
 		view.free()
 		return 0
 	view.free()

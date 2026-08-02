@@ -104,6 +104,7 @@ static func panel_style(
 	style.shadow_color = Color(BACKGROUND, 0.68)
 	style.shadow_size = 8
 	style.shadow_offset = Vector2(0.0, 4.0)
+	style.border_blend = true
 	return style
 
 
@@ -116,7 +117,11 @@ static func button_style(
 	style.bg_color = fill
 	style.border_color = border
 	style.set_border_width_all(width)
-	style.set_corner_radius_all(13)
+	style.corner_radius_top_left = 6
+	style.corner_radius_top_right = 16
+	style.corner_radius_bottom_left = 16
+	style.corner_radius_bottom_right = 6
+	style.border_blend = true
 	style.content_margin_left = 16.0
 	style.content_margin_right = 16.0
 	style.content_margin_top = 6.0
@@ -134,6 +139,20 @@ static func badge_style(accent: Color) -> StyleBoxFlat:
 
 static func selected_style(accent: Color) -> StyleBoxFlat:
 	return button_style(Color(accent, 0.26), accent, 3)
+
+
+static func profile_accent(profile_id: StringName) -> Color:
+	match profile_id:
+		&"skitter":
+			return DEW
+		&"anchorite":
+			return SAP
+		&"ballooner":
+			return SILK
+		&"springtail":
+			return AMBER
+		_:
+			return MOSS
 
 
 static func scroll_track_style() -> StyleBoxFlat:

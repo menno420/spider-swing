@@ -27,6 +27,9 @@ endpoints; it does not drive physics (GDD § 17.2).
 - `spider_ui_theme.gd` — one Ancient-Forest-aligned theme for panels, buttons,
   focus/disabled states, touch scroll configuration, descendant gesture
   bubbling, and silk-like scrollbars.
+- `spider_web_panel.gd` — the passive reusable card renderer: deterministic
+  fibrous texture, tensioned corner webs, silk knots, cocoon forms, and selected-
+  spider accents behind unchanged child controls.
 - `silk_preview.gd` — compact visual-only Classic/Dew/Ember thread preview for
   the Garage's custom Silk card rail.
 - `tutorial_preview.gd` — reduced-motion-aware in-engine mechanics animation.

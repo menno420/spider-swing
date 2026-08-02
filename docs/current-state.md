@@ -6,7 +6,7 @@
 > work always win over this file. Read it second (right after the working
 > agreement) and keep it current as the project moves.
 
-Build `0.27.0-forty-level-progression-playtest` is current. Continuous drive is
+Build `0.28.0-spider-menu-theme-playtest` is current. Continuous drive is
 zero; release, swing control, Reel, and pull timing earn speed; the former left
 kill line is a visible pursuing bird. `target_speed_at` remains a named
 reference. The non-pumping bot cannot tune the bird, so Test Run owns its three
@@ -44,7 +44,7 @@ without a reported regression.
   pattern, reached checkpoints, and bounded idempotent-settlement history.
   Older settings default audio/haptics on; every progression migration remains
   one-way and explicit.
-- Build `0.27.0-forty-level-progression-playtest` (Android version code 47, package
+- Build `0.28.0-spider-menu-theme-playtest` (Android version code 48, package
   `com.menno420.spiderswing.dev`) retains the stable conventional public debug
   identity introduced by `0.19.0-depth-testing` in
   `.github/android/debug.keystore`. The workflow pins its file and certificate
@@ -175,8 +175,11 @@ without a reported regression.
   adaptation, myth correction, and cited sources. A real readable spider name
   wins; an invented name must list every real spider it draws from and what each
   contributes.
-- One shared Ancient-Forest-aligned UI theme covers the front end. Settings and
-  Shop use a single native vertical scroller whose descendants pass drag input.
+- One shared spider-built UI theme covers the front end. Every card uses a
+  passive renderer for low-alpha fibres, corner webs, silk knots, and cocoon
+  forms behind unchanged controls; buttons use an asymmetric cocoon silhouette.
+  Garage and Shop inherit the selected spider's accent. Settings and Shop use
+  a single native vertical scroller whose descendants pass drag input.
   The finished five-spider roster, flies, Ancient Forest pack, and eight-asset
   Bramble Canopy pack are presentation-owned over the same authoritative
   polygons. Missing art falls back to geometry; mipmapped spider/web rendering
@@ -569,6 +572,9 @@ with hook-vine and leaf-shutter geometry without retuning either control; the
 
 ## Recently shipped (newest first)
 
+- **2026-08-02 — Spider-web menu theme (PR #106).** One reusable passive card
+  renderer gives every menu deterministic fibres, corner webs, knots, cocoons,
+  and selected-spider accents without changing navigation or touch geometry.
 - **2026-08-02 — Forty-level progression (PR #105).** All 35 tracks reach L40.
   Steps are 70% of their former size; the maximum is 140% of old L20. Schema 8
   doubles old ownership once. Test Run uses L20 as its midpoint, traces are
@@ -647,13 +653,6 @@ with hook-vine and leaf-shutter geometry without retuning either control; the
   from balance, makes the guide a Home and Garage route, adopts real names where
   usable, renames Skitter to Magnolia Green Jumper, and documents Buckler's
   *Ummidia*/*Cyclocosmia* inspiration without changing persisted ids.
-- **2026-07-30 — Seeded regions and checkpoint practice (PR #48).** Adds three
-  deterministic 5000 m identities, bounded recovery cadence, region atmosphere,
-  schema-5 checkpoints, and explicitly noncompetitive late-section practice.
-- **2026-07-30 — Reserve Burst and simulation labs (PRs #47, #45, #41).** Adds a
-  serially recharging second Burst at Anchor Drive level 10 and two diagnostic
-  headless simulation surfaces without changing level-zero cadence or CI
-  authority.
 - **2026-07-30 — Device-led Reel correction (PRs #38, #40).** Bounds the
   level-zero Reel resource, raises Balanced response to the owner-tested band,
   and keeps resolution idempotent and speed-neutral.

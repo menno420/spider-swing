@@ -26,6 +26,14 @@ The simulation, input router, and gameplay view are not mounted until Play is
 requested. Returning through the in-game **Menu** control releases held Reel
 input, destroys the current session, and recreates the front end.
 
+Every front-end card uses the same presentation-only `SpiderWebPanel`. Its
+deterministic low-alpha fibres, two tensioned corner webs, six silk knots, and
+two cocoon forms draw behind existing controls and never process navigation or
+gameplay input. Buttons share an asymmetric cocoon silhouette. Garage and Shop
+derive their restrained border/title accent from the selected spider; Home,
+Settings, Tutorial, Campaign, Course Lab, Region Practice, Field Guide, and Test
+Run reuse the same material layer without changing their layout ownership.
+
 ### Tutorial
 
 The tutorial is data-driven by `FrontEndState.TUTORIAL_STEPS` and illustrated by
