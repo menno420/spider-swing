@@ -39,6 +39,9 @@ signal creator_clear_requested
 
 enum Screen {
 	HOME,
+	SPIDER_HUB,
+	PLAY_MODES_HUB,
+	GUIDE_HUB,
 	TUTORIAL,
 	SETTINGS,
 	GARAGE,
@@ -191,6 +194,21 @@ func show_home() -> void:
 	changed.emit()
 
 
+func show_spider_hub() -> void:
+	screen = Screen.SPIDER_HUB
+	changed.emit()
+
+
+func show_play_modes_hub() -> void:
+	screen = Screen.PLAY_MODES_HUB
+	changed.emit()
+
+
+func show_guide_hub() -> void:
+	screen = Screen.GUIDE_HUB
+	changed.emit()
+
+
 func show_tutorial() -> void:
 	screen = Screen.TUTORIAL
 	tutorial_index = 0
@@ -212,12 +230,14 @@ func show_shop() -> void:
 	changed.emit()
 
 
-## The Field Guide is reachable from Home (discoverability) and from the Garage
-## (next to the spider it describes), so it remembers which one to go back to
-## rather than guessing.
+## The Field Guide is reachable from the Guide hub and from the Garage beside
+## the spider it describes, so it remembers which route to return to rather
+## than guessing.
 func show_field_guide(return_to: int = Screen.HOME) -> void:
 	field_guide_return_screen = (
-		return_to if return_to in [Screen.HOME, Screen.GARAGE] else Screen.HOME
+		return_to
+		if return_to in [Screen.HOME, Screen.GUIDE_HUB, Screen.GARAGE]
+		else Screen.HOME
 	)
 	field_guide_spider_id = progress.selected_spider_id
 	screen = Screen.FIELD_GUIDE

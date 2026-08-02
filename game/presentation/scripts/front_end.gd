@@ -32,9 +32,16 @@ const TEST_LAB_CATEGORIES: Array[StringName] = [
 
 var _state: FrontEndState
 var _home: Control
+var _spider_hub: Control
+var _play_modes_hub: Control
+var _guide_hub: Control
 var _home_spider_preview: TextureRect
 var _home_spider_name: Label
 var _home_run_summary: Label
+var _home_play_button: Button
+var _spider_hub_preview: TextureRect
+var _spider_hub_name: Label
+var _spider_hub_summary: Label
 var _tutorial: Control
 var _settings: Control
 var _garage: Control
@@ -138,6 +145,9 @@ func ensure_interface() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	theme = SpiderUiTheme.create_theme()
 	_build_home()
+	_build_spider_hub()
+	_build_play_modes_hub()
+	_build_guide_hub()
 	_build_tutorial()
 	_build_settings()
 	_build_garage()
@@ -300,18 +310,9 @@ func _build_home() -> void:
 	card.name = "HomeWebPanel"
 	_place(card, _home, 0.38, 0.05, 0.96, 0.95)
 	var menu := VBoxContainer.new()
-	menu.add_theme_constant_override("separation", 8)
-	_fill_with_margin(menu, card, 20.0)
-	menu.add_child(_section_label("READY TO SWING"))
-	var intro := _paragraph(
-		"Build speed through clean arcs, escape the bird, and push deeper into the forest.")
-	intro.add_theme_font_size_override("font_size", 16)
-	intro.custom_minimum_size.y = 30.0
-	menu.add_child(intro)
-	var play := _button(&"Play", "PLAY  ·  CHASE YOUR BEST DISTANCE", GREEN, 76.0)
-	play.add_theme_font_size_override("font_size", 25)
-	play.pressed.connect(_on_play)
-	menu.add_child(play)
+	menu.add_theme_constant_override("separation", 4)
+	_fill_with_margin(menu, card, 6.0)
+	menu.add_child(_section_label("ENDLESS RUN"))
 	# Difficulty governs the standard PLAY run, so it is chosen here rather
 	# than buried in Settings.
 	menu.add_child(_section_label("DIFFICULTY"))
@@ -325,63 +326,58 @@ func _build_home() -> void:
 			StringName("Difficulty_%s" % mode_id),
 			str(mode["name"]),
 			CYAN,
-			50.0,
+			48.0,
 		)
+		button.add_theme_font_size_override("font_size", 16)
 		button.pressed.connect(_on_difficulty.bind(mode_id))
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		difficulty_row.add_child(button)
 		_difficulty_buttons[mode_id] = button
+	_home_play_button = _button(
+		&"Play",
+		"PLAY ENDLESS  ·  STANDARD\nCHASE YOUR BEST DISTANCE",
+		GREEN,
+		72.0,
+	)
+	_home_play_button.add_theme_font_size_override("font_size", 21)
+	_home_play_button.pressed.connect(_on_play)
+	menu.add_child(_home_play_button)
+	menu.add_child(_section_label("WHERE TO NEXT"))
 
 	var routes := GridContainer.new()
 	routes.name = "HomeRouteGrid"
-	routes.columns = 3
+	routes.columns = 2
 	routes.add_theme_constant_override("h_separation", 8)
 	routes.add_theme_constant_override("v_separation", 8)
 	menu.add_child(routes)
-	var garage := _home_route_button(
-		&"Garage", "SPIDER GARAGE\nchoose your spider", YELLOW)
-	garage.pressed.connect(_on_garage)
-	routes.add_child(garage)
-	var shop := _home_route_button(
-		&"Shop", "UPGRADES\nspend collected flies", GREEN)
-	shop.pressed.connect(_on_shop)
-	routes.add_child(shop)
-	var tutorial := _home_route_button(
-		&"Tutorial", "HOW TO SWING\nsix visual lessons", CYAN)
-	tutorial.pressed.connect(_on_tutorial)
-	routes.add_child(tutorial)
-	var campaign := _home_route_button(
-		&"Campaign", "CAMPAIGN\nfocused challenges", ORANGE)
-	campaign.pressed.connect(_on_campaign)
-	routes.add_child(campaign)
-	var practice := _home_route_button(
-		&"Practice", "REGION PRACTICE\nreplay checkpoints", CYAN)
-	practice.pressed.connect(_on_practice)
-	routes.add_child(practice)
-	var creator := _home_route_button(
-		&"Creator", "COURSE LAB\nbuild a route", ORANGE)
-	creator.pressed.connect(_on_creator)
-	routes.add_child(creator)
-	var field_guide := _home_route_button(
-		&"FieldGuide", "FIELD GUIDE\nreal spider vs game", YELLOW)
-	field_guide.pressed.connect(_on_field_guide.bind(FrontEndState.Screen.HOME))
-	routes.add_child(field_guide)
+	var spider_hub := _home_route_button(
+		&"SpiderHub", "SPIDER\nchoose · style · improve", YELLOW)
+	spider_hub.pressed.connect(_on_spider_hub)
+	routes.add_child(spider_hub)
+	var modes_hub := _home_route_button(
+		&"PlayModesHub", "PLAY MODES\ncampaign · practice · creator", ORANGE)
+	modes_hub.pressed.connect(_on_play_modes_hub)
+	routes.add_child(modes_hub)
+	var guide_hub := _home_route_button(
+		&"GuideHub", "GUIDE\nlearn controls · meet spiders", CYAN)
+	guide_hub.pressed.connect(_on_guide_hub)
+	routes.add_child(guide_hub)
 	var settings := _home_route_button(
-		&"Settings", "SETTINGS\naudio, motion, access", ORANGE)
+		&"Settings", "SETTINGS\nsound · motion · access", GREEN)
 	settings.pressed.connect(_on_settings)
 	routes.add_child(settings)
 	_debug_run_route = _button(
 		&"DebugRunSetup",
-		"TEST LAB\nconfigure & compare",
+		"TEST LAB  ·  SAVED COMPARISONS  ·  AWARDS NOTHING",
 		ORANGE,
-		68.0,
+		48.0,
 	)
-	_debug_run_route.add_theme_font_size_override("font_size", 15)
+	_debug_run_route.add_theme_font_size_override("font_size", 13)
 	_debug_run_route.pressed.connect(_on_debug_run_setup)
 	_debug_run_route.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	routes.add_child(_debug_run_route)
+	menu.add_child(_debug_run_route)
 	var note := _label(
-		"PLAY uses owned progress · TEST LAB always awards nothing", 13, MUTED)
+		"ENDLESS PLAY uses your owned spider and upgrades", 13, MUTED)
 	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	menu.add_child(note)
 
@@ -391,16 +387,160 @@ func _home_route_button(
 	text_value: String,
 	accent: Color,
 ) -> Button:
-	var button := _button(button_name, text_value, accent, 68.0)
-	button.add_theme_font_size_override("font_size", 15)
+	var button := _button(button_name, text_value, accent, 58.0)
+	button.add_theme_font_size_override("font_size", 14)
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	return button
+
+
+func _build_spider_hub() -> void:
+	_spider_hub = _full_screen(&"SpiderHubScreen")
+	var back := _button(&"SpiderHubBack", "‹  HOME", CYAN, 50.0)
+	back.pressed.connect(_on_home)
+	_place(back, _spider_hub, 0.025, 0.035, 0.16, 0.11)
+	var heading := _label("YOUR SPIDER", 38, INK)
+	_place(heading, _spider_hub, 0.19, 0.035, 0.58, 0.12)
+	var explanation := _label(
+		"Choose who you swing as, then decide whether to change its look or improve its abilities.",
+		17,
+		MUTED,
+	)
+	explanation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_place(explanation, _spider_hub, 0.19, 0.105, 0.94, 0.18)
+
+	var identity := _panel(PANEL)
+	identity.name = "SpiderHubIdentity"
+	_place(identity, _spider_hub, 0.05, 0.20, 0.43, 0.92)
+	var identity_body := VBoxContainer.new()
+	identity_body.add_theme_constant_override("separation", 8)
+	_fill_with_margin(identity_body, identity, 20.0)
+	identity_body.add_child(_section_label("CURRENTLY EQUIPPED"))
+	_spider_hub_preview = _spider_preview(
+		&"SpiderHubPreview", Vector2(280.0, 180.0))
+	_spider_hub_preview.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_spider_hub_preview.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	identity_body.add_child(_spider_hub_preview)
+	_spider_hub_name = _label("", 28, GREEN)
+	_spider_hub_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	identity_body.add_child(_spider_hub_name)
+	_spider_hub_summary = _label("", 16, MUTED)
+	_spider_hub_summary.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_spider_hub_summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	identity_body.add_child(_spider_hub_summary)
+
+	var actions := _panel(PANEL)
+	actions.name = "SpiderHubRoutes"
+	_place(actions, _spider_hub, 0.46, 0.20, 0.95, 0.92)
+	var route_body := VBoxContainer.new()
+	route_body.add_theme_constant_override("separation", 12)
+	_fill_with_margin(route_body, actions, 18.0)
+	route_body.add_child(_section_label("CHOOSE WHAT TO CHANGE"))
+	var garage := _hub_route_button(
+		&"Garage", "SPIDER GARAGE\nchoose spider · body · silk", YELLOW)
+	garage.pressed.connect(_on_garage)
+	route_body.add_child(garage)
+	var shop := _hub_route_button(
+		&"Shop", "UPGRADES\ninspect tracks · spend flies", GREEN)
+	shop.pressed.connect(_on_shop)
+	route_body.add_child(shop)
+
+
+func _build_play_modes_hub() -> void:
+	_play_modes_hub = _full_screen(&"PlayModesHubScreen")
+	var back := _button(&"PlayModesHubBack", "‹  HOME", CYAN, 50.0)
+	back.pressed.connect(_on_home)
+	_place(back, _play_modes_hub, 0.025, 0.035, 0.16, 0.11)
+	var heading := _label("PLAY MODES", 38, INK)
+	_place(heading, _play_modes_hub, 0.19, 0.035, 0.58, 0.12)
+	var explanation := _label(
+		"Endless starts directly from Home. These modes change the goal, starting point, or route.",
+		17,
+		MUTED,
+	)
+	explanation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_place(explanation, _play_modes_hub, 0.19, 0.105, 0.94, 0.18)
+	var card := _panel(PANEL)
+	card.name = "PlayModesHubRoutes"
+	_place(card, _play_modes_hub, 0.06, 0.21, 0.94, 0.91)
+	var body := VBoxContainer.new()
+	body.add_theme_constant_override("separation", 16)
+	_fill_with_margin(body, card, 26.0)
+	body.add_child(_section_label("CHOOSE A DIFFERENT WAY TO SWING"))
+	var routes := GridContainer.new()
+	routes.name = "PlayModesRouteGrid"
+	routes.columns = 3
+	routes.add_theme_constant_override("h_separation", 16)
+	body.add_child(routes)
+	var campaign := _hub_route_button(
+		&"Campaign", "CAMPAIGN\nfocused skill challenges · stars", ORANGE)
+	campaign.pressed.connect(_on_campaign)
+	routes.add_child(campaign)
+	var practice := _hub_route_button(
+		&"Practice", "REGION PRACTICE\ntrain reached checkpoints", CYAN)
+	practice.pressed.connect(_on_practice)
+	routes.add_child(practice)
+	var creator := _hub_route_button(
+		&"Creator", "COURSE LAB\nbuild a six-piece route", YELLOW)
+	creator.pressed.connect(_on_creator)
+	routes.add_child(creator)
+	body.add_child(_setting_description(
+		"Campaign awards stars. Practice and Course Lab are noncompetitive and never change Endless records."))
+
+
+func _build_guide_hub() -> void:
+	_guide_hub = _full_screen(&"GuideHubScreen")
+	var back := _button(&"GuideHubBack", "‹  HOME", CYAN, 50.0)
+	back.pressed.connect(_on_home)
+	_place(back, _guide_hub, 0.025, 0.035, 0.16, 0.11)
+	var heading := _label("GUIDE", 38, INK)
+	_place(heading, _guide_hub, 0.19, 0.035, 0.58, 0.12)
+	var explanation := _label(
+		"Learn the movement first, then see where each playable spider ends and its real-world inspiration begins.",
+		17,
+		MUTED,
+	)
+	explanation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_place(explanation, _guide_hub, 0.19, 0.105, 0.94, 0.18)
+	var card := _panel(PANEL)
+	card.name = "GuideHubRoutes"
+	_place(card, _guide_hub, 0.13, 0.21, 0.87, 0.91)
+	var body := VBoxContainer.new()
+	body.add_theme_constant_override("separation", 18)
+	_fill_with_margin(body, card, 28.0)
+	body.add_child(_section_label("CHOOSE WHAT YOU WANT TO UNDERSTAND"))
+	var routes := GridContainer.new()
+	routes.name = "GuideRouteGrid"
+	routes.columns = 2
+	routes.add_theme_constant_override("h_separation", 18)
+	body.add_child(routes)
+	var tutorial := _hub_route_button(
+		&"Tutorial", "HOW TO SWING\nsix visual lessons · practice", CYAN)
+	tutorial.pressed.connect(_on_tutorial)
+	routes.add_child(tutorial)
+	var field_guide := _hub_route_button(
+		&"FieldGuide", "SPIDER FIELD GUIDE\nreal animal · game ability · sources", YELLOW)
+	field_guide.pressed.connect(
+		_on_field_guide.bind(FrontEndState.Screen.GUIDE_HUB))
+	routes.add_child(field_guide)
+	body.add_child(_setting_description(
+		"How to Swing teaches the controls. Field Guide explains identity and biology without mixing them into gameplay rules."))
+
+
+func _hub_route_button(
+	button_name: StringName,
+	text_value: String,
+	accent: Color,
+) -> Button:
+	var button := _button(button_name, text_value, accent, 112.0)
+	button.add_theme_font_size_override("font_size", 18)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	return button
 
 
 func _build_tutorial() -> void:
 	_tutorial = _full_screen(&"Tutorial")
-	var back := _button(&"TutorialBack", "‹  HOME", CYAN, 50.0)
-	back.pressed.connect(_on_home)
+	var back := _button(&"TutorialBack", "‹  GUIDE", CYAN, 50.0)
+	back.pressed.connect(_on_guide_hub)
 	_place(back, _tutorial, 0.025, 0.035, 0.16, 0.11)
 
 	_tutorial_preview = TutorialPreview.new()
@@ -577,8 +717,8 @@ func _build_settings() -> void:
 
 func _build_garage() -> void:
 	_garage = _full_screen(&"Garage")
-	var back := _button(&"GarageBack", "‹  HOME", CYAN, 50.0)
-	back.pressed.connect(_on_home)
+	var back := _button(&"GarageBack", "‹  SPIDER", CYAN, 50.0)
+	back.pressed.connect(_on_spider_hub)
 	_place(back, _garage, 0.025, 0.035, 0.16, 0.11)
 	var heading := _label("SPIDER GARAGE", 34, INK)
 	_place(heading, _garage, 0.20, 0.035, 0.58, 0.12)
@@ -705,8 +845,8 @@ func _build_garage() -> void:
 
 func _build_shop() -> void:
 	_shop = _full_screen(&"Shop")
-	var back := _button(&"ShopBack", "‹  HOME", CYAN, 50.0)
-	back.pressed.connect(_on_home)
+	var back := _button(&"ShopBack", "‹  SPIDER", CYAN, 50.0)
+	back.pressed.connect(_on_spider_hub)
 	_place(back, _shop, 0.025, 0.035, 0.16, 0.11)
 	_shop_panel = _panel(PANEL)
 	_shop_panel.name = "ShopWebPanel"
@@ -800,8 +940,8 @@ func _build_shop() -> void:
 
 func _build_creator() -> void:
 	_creator = _full_screen(&"Creator")
-	var back := _button(&"CreatorBack", "‹  HOME", CYAN, 50.0)
-	back.pressed.connect(_on_home)
+	var back := _button(&"CreatorBack", "‹  PLAY MODES", CYAN, 50.0)
+	back.pressed.connect(_on_play_modes_hub)
 	_place(back, _creator, 0.025, 0.035, 0.16, 0.11)
 	var card := _panel(PANEL)
 	_place(card, _creator, 0.12, 0.08, 0.88, 0.94)
@@ -846,8 +986,8 @@ func _build_creator() -> void:
 
 func _build_practice() -> void:
 	_practice = _full_screen(&"Practice")
-	var back := _button(&"PracticeBack", "‹  HOME", CYAN, 50.0)
-	back.pressed.connect(_on_home)
+	var back := _button(&"PracticeBack", "‹  PLAY MODES", CYAN, 50.0)
+	back.pressed.connect(_on_play_modes_hub)
 	_place(back, _practice, 0.025, 0.035, 0.16, 0.11)
 
 	var heading := _label("REGION PRACTICE", 38, INK)
@@ -891,8 +1031,8 @@ func _build_practice() -> void:
 
 func _build_campaign() -> void:
 	_campaign = _full_screen(&"Campaign")
-	var back := _button(&"CampaignBack", "‹  HOME", CYAN, 50.0)
-	back.pressed.connect(_on_home)
+	var back := _button(&"CampaignBack", "‹  PLAY MODES", CYAN, 50.0)
+	back.pressed.connect(_on_play_modes_hub)
 	_place(back, _campaign, 0.025, 0.035, 0.16, 0.11)
 
 	var heading := _label("CAMPAIGN", 38, INK)
@@ -1568,6 +1708,10 @@ func _render() -> void:
 	if _state == null:
 		return
 	_home.visible = _state.screen == FrontEndState.Screen.HOME
+	_spider_hub.visible = _state.screen == FrontEndState.Screen.SPIDER_HUB
+	_play_modes_hub.visible = \
+		_state.screen == FrontEndState.Screen.PLAY_MODES_HUB
+	_guide_hub.visible = _state.screen == FrontEndState.Screen.GUIDE_HUB
 	_tutorial.visible = _state.screen == FrontEndState.Screen.TUTORIAL
 	_settings.visible = _state.screen == FrontEndState.Screen.SETTINGS
 	_garage.visible = _state.screen == FrontEndState.Screen.GARAGE
@@ -1576,6 +1720,7 @@ func _render() -> void:
 	_practice.visible = _state.screen == FrontEndState.Screen.PRACTICE
 	if _home.visible:
 		_refresh_difficulty_buttons()
+	if _home.visible or _spider_hub.visible:
 		_render_home()
 	_campaign.visible = _state.screen == FrontEndState.Screen.CAMPAIGN
 	if _campaign.visible:
@@ -1586,11 +1731,13 @@ func _render() -> void:
 	_field_guide.visible = _state.screen == FrontEndState.Screen.FIELD_GUIDE
 	_debug_run_route.visible = _state.settings.show_debug_tools
 	if _field_guide.visible:
-		_field_guide_back.text = (
-			"‹  GARAGE"
-			if _state.field_guide_return_screen == FrontEndState.Screen.GARAGE
-			else "‹  HOME"
-		)
+		match _state.field_guide_return_screen:
+			FrontEndState.Screen.GARAGE:
+				_field_guide_back.text = "‹  GARAGE"
+			FrontEndState.Screen.GUIDE_HUB:
+				_field_guide_back.text = "‹  GUIDE"
+			_:
+				_field_guide_back.text = "‹  HOME"
 		_render_field_guide()
 	if _tutorial.visible:
 		var step := _state.current_tutorial_step()
@@ -1648,15 +1795,20 @@ func _render_home() -> void:
 	var profile_item := SpiderCatalog.profile(spider_id)
 	var accent := SpiderUiTheme.profile_accent(spider_id)
 	_sync_spider_preview(_home_spider_preview, spider_id)
+	_sync_spider_preview(_spider_hub_preview, spider_id)
 	_home_spider_name.text = str(profile_item["name"]).to_upper()
 	_home_spider_name.add_theme_color_override("font_color", accent)
+	_spider_hub_name.text = str(profile_item["name"]).to_upper()
+	_spider_hub_name.add_theme_color_override("font_color", accent)
 	var best_metres := _state.progress.best_distance_for_mode(
 		_state.selected_difficulty()) / CourseRegionCatalog.PIXELS_PER_METRE
-	_home_run_summary.text = "%s · %s\n%s" % [
+	var summary := "%s · %s\n%s" % [
 		str(profile_item["role"]),
 		str(DifficultyCatalog.resolve(_state.selected_difficulty())).to_upper(),
 		"BEST %.0f m" % best_metres if best_metres > 0.0 else "NO RUN YET",
 	]
+	_home_run_summary.text = summary
+	_spider_hub_summary.text = summary
 
 
 func _render_field_guide() -> void:
@@ -1939,6 +2091,21 @@ func _on_home() -> void:
 		_state.show_home()
 
 
+func _on_spider_hub() -> void:
+	if _state != null:
+		_state.show_spider_hub()
+
+
+func _on_play_modes_hub() -> void:
+	if _state != null:
+		_state.show_play_modes_hub()
+
+
+func _on_guide_hub() -> void:
+	if _state != null:
+		_state.show_guide_hub()
+
+
 func _on_tutorial() -> void:
 	if _state != null:
 		_state.show_tutorial()
@@ -1992,6 +2159,7 @@ func _on_difficulty(mode_id: StringName) -> void:
 func _refresh_difficulty_buttons() -> void:
 	if _state == null:
 		return
+	var selected_name := "ENDLESS"
 	for mode: Dictionary in _state.difficulty_modes():
 		var mode_id := StringName(mode["id"])
 		if not _difficulty_buttons.has(mode_id):
@@ -2004,6 +2172,10 @@ func _refresh_difficulty_buttons() -> void:
 			"best %.0f m" % best_m if best_m > 0.0 else "no run yet",
 		]
 		button.disabled = bool(mode["selected"])
+		if bool(mode["selected"]):
+			selected_name = str(mode["name"]).to_upper()
+	_home_play_button.text = \
+		"PLAY ENDLESS  ·  %s\nCHASE YOUR BEST DISTANCE" % selected_name
 
 
 func _on_campaign() -> void:
