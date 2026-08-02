@@ -61,17 +61,18 @@ Ember thread treatment in place, so the visual choice is readable before Play
 without owning web physics or attachment rules.
 
 The Shop gives every profile the same five core tracks plus two identity tracks.
-Each track has 20 small levels. Levels 5, 10, 15, and 20 are visible
+Each track has 40 small levels. Every fifth level through 40 is a visible
 breakthroughs that grant one extra tuning step without adding another input or
 charge. The seven selected-profile rows use one fly-balance badge, CORE/IDENTITY
-accent cards, and four visible silk knots for those milestones. The Shop states
+accent cards, and eight visible silk knots for those milestones. The Shop states
 the rule once above the list, marks an upcoming milestone `BREAKTHROUGH ×2`,
 and says on its card that the purchase grants two tuning steps. A maxed card
-derives its four-breakthrough/24-step summary from `SpiderCatalog`, so
+derives its eight-breakthrough/48-step summary from `SpiderCatalog`, so
 presentation does not duplicate the progression calculation.
 Purchases spend `spendable_flies` through `ProgressionService` and persist
 atomically through `SaveRepository`. Schema 4 maps each former five-level value
-to the equivalent four-level interval exactly once. There are no real-money
+to the equivalent four-level interval exactly once; schema 8 then doubles
+twenty-level ownership once, preserving the same proportional position. There are no real-money
 products or entitlements in this build.
 
 ### Course Lab

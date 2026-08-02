@@ -492,9 +492,9 @@ const PARAMETERS := [
 		"help": "Tap MAX to test all seven tracks; nothing is bought or saved.",
 		"format": &"debug_level",
 		"minimum": -1.0,
-		"maximum": 20.0,
+		"maximum": 40.0,
 		"step": 1.0,
-		"quick": [-1.0, 0.0, 10.0, 20.0],
+		"quick": [-1.0, 0.0, 20.0, 40.0],
 	},
 	{
 		"id": &"boost_duration",

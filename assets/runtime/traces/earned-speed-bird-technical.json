@@ -2125,7 +2125,7 @@
 		"seconds": 49.7333333333333,
 		"travelled_m": 2894.978125
 	},
-	"format": "spider-swing-input-trace@3",
+	"format": "spider-swing-input-trace@4",
 	"setup": {
 		"bird_acceleration": 12.0,
 		"bird_speed": 0.0,

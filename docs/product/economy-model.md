@@ -39,10 +39,13 @@ every skill tier and both banking difficulty modes:
 Per minute of play the two modes are indistinguishable — about 46 flies/min at
 intermediate in both. Three consequences follow, and all three are problems:
 
-**1. The whole upgrade economy is about twenty minutes long.** Maxing Classic's
-seven tracks costs 987 flies. At measured income that is 45 runs — **21.5
-minutes** at intermediate, 17.7 at expert. The single long-term sink in the
-game is exhausted before a player has properly learned it.
+**1. The former upgrade economy was about twenty minutes long.** Before the
+forty-level extension, maxing Classic's seven tracks cost 987 flies. At measured
+income that was 45 runs — **21.5 minutes** at intermediate, 17.7 at expert. The
+2026-08-02 owner decision extends every track to L40: 490 flies per track, 3,430
+per spider, and 17,150 for all five. Applying the prior measured ~46 flies/min
+rate gives an **inferred** ~74.6 minutes per spider and ~6.2 hours for the full
+roster; it is not a post-change income measurement.
 
 **2. Twenty-nine percent of that spend buys nothing.** Silk Reserve and Rapid
 Recovery cost 282 flies between them and produce bit-identical play at every
@@ -125,9 +128,11 @@ These are genuinely open and the model is written so any answer drops in:
 2. **Should Harsh pay a fly premium, and how much?** The measurement says it
    currently pays nothing extra for roughly double the death rate. A multiplier
    is the obvious fix; the size is a feel decision.
-3. **Is a twenty-minute upgrade economy the intended length?** If the answer is
-   no, the fix is more sinks rather than higher prices — raising costs just
-   makes the same twenty minutes feel slower.
+3. **How long should the full five-spider upgrade path feel?** The owner has
+   answered that twenty levels per track were too short and chose forty smaller
+   levels with a larger eventual reward. The resulting ~6.2-hour roster estimate
+   is inferred from pre-change income and still needs device confirmation; new
+   cosmetic and mastery sinks remain separate product work.
 4. **What do cosmetics cost in stars?** Three campaign levels exist, so three
    stars exist. That prices at most a small number of items until the campaign
    grows.

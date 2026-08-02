@@ -29,16 +29,15 @@ failure never hides the rest.
 
 ## What exists now
 
-184 runtime contracts: eleven bootstrap/build checks plus sixty
-deterministic physics, fifteen zone-progression, eleven spider-biology, ten
-Campaign, nine difficulty, four upgrade-wiring, nine simulation-lab/replay, two
-economy, six generated-SFX, twenty-five mobile HUD, and twenty-two front-end
-checks. The bootstrap group pins the public stable debug signer and
+197 runtime contracts across bootstrap/build, deterministic physics, zone,
+biology, Campaign, difficulty, upgrade-wiring, simulation/replay, economy,
+audio, mobile HUD, and front-end groups. The executable source of truth is
+`EXPECTED_CHECK_COUNT` in `tests/test_runner.gd`. The bootstrap group pins the public stable debug signer and
 rejects per-run key generation. The physics group proves continuous
 solid targeting, larger aim forgiveness, bounded arc/rise-scored manual release
 momentum with forced-detach exclusion and wrap-safe history,
 speed-neutral Reel and automatic take-up, the two-second base resource plus the
-owner-tested 400–450 px/s max Garden response band, non-compounding config
+bounded 454.4 px/s max Garden response, non-compounding config
 resolution, exact percentage Burst/Dive Pull travel,
 recovery-web interruption, detached cooldown double-tap fallback, explicit
 release/retarget behavior, a paced bounded organic course with lower rail routes,

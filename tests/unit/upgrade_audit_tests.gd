@@ -103,23 +103,23 @@ static func _test_track_ids_are_unique(
 	return 1
 
 
-## Anchor Drive's level-10 step is a rule change, not a bigger number: a second
+## Anchor Drive's level-20 step is a rule change, not a bigger number: a second
 ## stored Burst charge. The audit measured it bundled with the longer pull, so
 ## the rule itself is worth pinning separately from any tuning.
 static func _test_burst_breakthrough_grants_the_second_charge(
 	failures: PackedStringArray,
 ) -> int:
 	var upgrade_id := &"classic_burst"
-	var below := _config_with_track(SpiderCatalog.CLASSIC, upgrade_id, 9)
-	var at := _config_with_track(SpiderCatalog.CLASSIC, upgrade_id, 10)
+	var below := _config_with_track(SpiderCatalog.CLASSIC, upgrade_id, 19)
+	var at := _config_with_track(SpiderCatalog.CLASSIC, upgrade_id, 20)
 	if below.burst_charge_capacity != 1:
 		failures.append(
-			"Anchor Drive granted a second Burst charge before level 10 (%d)" %
+			"Anchor Drive granted a second Burst charge before level 20 (%d)" %
 				below.burst_charge_capacity)
 		return 0
 	if at.burst_charge_capacity != 2:
 		failures.append(
-			"Anchor Drive did not grant the second Burst charge at level 10 (%d)"
+			"Anchor Drive did not grant the second Burst charge at level 20 (%d)"
 				% at.burst_charge_capacity)
 		return 0
 	return 1

@@ -363,9 +363,9 @@ static func _test_checkpoint_migration_and_practice_are_noncompetitive(
 	if not migrated.has_region_checkpoint(
 		CourseRegionCatalog.BRAMBLE_CANOPY) or \
 			migrated.has_region_checkpoint(CourseRegionCatalog.SILK_HOLLOW) or \
-			migrated.upgrade_level(&"classic_reel") != 5:
+			migrated.upgrade_level(&"classic_reel") != 10:
 		failures.append(
-			"schema-4 checkpoint migration changed an existing upgrade level")
+			"schema-4 checkpoint migration did not scale its upgrade level once")
 		return 0
 	var restored := PlayerProgress.from_dictionary(migrated.to_dictionary())
 	if restored.to_dictionary() != migrated.to_dictionary():
@@ -646,7 +646,7 @@ static func _test_shop_exposes_seven_mobile_readable_tracks(
 			identity.custom_minimum_size.y < 64.0 or \
 			not core.text.contains("CORE") or \
 			not identity.text.contains("IDENTITY") or \
-			not core.text.contains("LEVEL 0/20"):
+			not core.text.contains("LEVEL 0/40"):
 		failures.append("Shop does not clearly present core and identity progression")
 		view.free()
 		return 0
@@ -715,7 +715,7 @@ static func _test_shop_explains_breakthrough_bonuses(
 	) as Label
 	var button := view.front_end_button(&"UpgradeClassicReel")
 	if rule == null or \
-			not rule.text.contains("Levels 5, 10, 15, and 20") or \
+			not rule.text.contains("Every fifth level through 40") or \
 			not rule.text.contains("listed increase twice") or \
 			description == null or \
 			not description.text.contains(
@@ -742,9 +742,9 @@ static func _test_shop_explains_breakthrough_bonuses(
 	) as Label
 	if description == null or \
 			not description.text.contains(
-				"4 breakthroughs earned · 24 tuning steps total"):
+				"8 breakthroughs earned · 48 tuning steps total"):
 		failures.append(
-			"maxed Shop card does not summarize its four bonus steps")
+			"maxed Shop card does not summarize its eight bonus steps")
 		view.free()
 		return 0
 	view.free()
@@ -876,7 +876,7 @@ static func _test_garage_and_shop_disclose_debug_upgrade_levels(
 	progress.spendable_flies = 100
 	progress.upgrade_levels["classic_reel"] = 4
 	var service := ProgressionService.new()
-	service.set_debug_upgrade_overlay_level(20)
+	service.set_debug_upgrade_overlay_level(SpiderCatalog.MAX_UPGRADE_LEVEL)
 	var state := FrontEndState.new()
 	state.configure(settings, progress, service)
 	var purchase_requests: Array[StringName] = []
@@ -901,7 +901,7 @@ static func _test_garage_and_shop_disclose_debug_upgrade_levels(
 	if rule == null or not rule.text.contains("NOT OWNED") or \
 			not rule.text.contains("Saved levels are unchanged") or \
 			upgrade == null or not upgrade.disabled or \
-			not upgrade.text.contains("DEBUG OVERLAY LEVEL 20/20") or \
+			not upgrade.text.contains("DEBUG OVERLAY LEVEL 40/40") or \
 			not purchase_requests.is_empty():
 		failures.append("Shop does not disclose or safely pause debug ownership")
 		view.free()
@@ -1187,7 +1187,7 @@ static func _test_upgrades_and_creator_edits_use_progression_service(
 	var result := service.purchase_upgrade(progress, track)
 	if not bool(result.get("purchased", false)) or \
 			progress.upgrade_level(track) != 1 or \
-			progress.spendable_flies != 18 or \
+			progress.spendable_flies != 19 or \
 			bool(result.get("breakthrough", true)):
 		failures.append("fly-funded spider upgrade did not apply atomically")
 		return 0
@@ -1230,17 +1230,32 @@ static func _test_legacy_upgrade_levels_migrate_proportionally(
 		},
 	}
 	var migrated := PlayerProgress.from_dictionary(legacy)
-	if migrated.upgrade_level(&"classic_reel") != 4 or \
-			migrated.upgrade_level(&"classic_burst_floor") != 20 or \
-			migrated.upgrade_level(&"skitter_size") != 12 or \
+	if migrated.upgrade_level(&"classic_reel") != 8 or \
+			migrated.upgrade_level(&"classic_burst_floor") != 40 or \
+			migrated.upgrade_level(&"skitter_size") != 24 or \
 			migrated.upgrade_levels.has("unknown_track"):
-		failures.append("legacy five-level progress did not migrate proportionally")
+		failures.append("legacy five-level progress did not migrate to forty levels")
 		return 0
 	var round_trip := PlayerProgress.from_dictionary(migrated.to_dictionary())
-	if round_trip.upgrade_level(&"classic_reel") != 4 or \
-			round_trip.upgrade_level(&"classic_burst_floor") != 20 or \
-			round_trip.upgrade_level(&"skitter_size") != 12:
+	if round_trip.upgrade_level(&"classic_reel") != 8 or \
+			round_trip.upgrade_level(&"classic_burst_floor") != 40 or \
+			round_trip.upgrade_level(&"skitter_size") != 24:
 		failures.append("current-schema upgrade levels were migrated twice")
+		return 0
+	var schema_seven := PlayerProgress.from_dictionary({
+		"schema_version": 7,
+		"upgrade_levels": {
+			"classic_reel": 1,
+			"classic_burst": 5,
+			"classic_reel_capacity": 10,
+			"classic_reel_recovery": 20,
+		},
+	})
+	if schema_seven.upgrade_level(&"classic_reel") != 2 or \
+			schema_seven.upgrade_level(&"classic_burst") != 10 or \
+			schema_seven.upgrade_level(&"classic_reel_capacity") != 20 or \
+			schema_seven.upgrade_level(&"classic_reel_recovery") != 40:
+		failures.append("schema-7 twenty-level ownership was not doubled once")
 		return 0
 	return 1
 
