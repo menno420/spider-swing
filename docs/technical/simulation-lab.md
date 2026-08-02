@@ -197,9 +197,24 @@ Full mechanics: [`replay-review-loop.md`](replay-review-loop.md).
 
 **No output from this lab may be used to draw conclusions about difficulty,
 upgrades or the economy until the model passes the acceptance targets in
-`docs/measurements/2026-08-01-owner-play-calibration.md`.** Bot v3 passes
-three of eight. Until that changes, batches here are for comparing course
-content and geometry against each other, not for stating what the game is.
+`docs/measurements/2026-08-01-owner-play-calibration.md`.** Bot **v4** passes
+about two and a half of eight — it still fails the upgrade-sign target, the
+whole warp band, and sustained pace. Until that changes, batches here are for
+comparing course content and geometry against each other, not for stating what
+the game is.
+
+**v4 closed the pumping blind spot and the rule did not move.** The model now
+reels near the bottom of its arc (`pump_window_deg`), which is worth **+46% at
+L40 against +14.8% at L0** — pumping is *how a bigger reel gets spent*, and that
+mechanically explains why this lab kept reading reel upgrades as worthless while
+the owner reported the opposite. It shrank the L40 upgrade penalty from −37.7%
+to −20.7%: a large move toward his reality, still the wrong sign. Detail,
+including a release-arc fix that measured worse and was deleted, in
+[`../measurements/2026-08-02-bot-model-v4-pumping.md`](../measurements/2026-08-02-bot-model-v4-pumping.md).
+
+**Every pre-v4 batch in `docs/measurements/` reproduces only with
+`--bot=pump_window_deg:0`.** `BOT_MODEL_VERSION` prints in each batch header, so
+a pasted result always names the model that produced it.
 
 The rule exists because the alternative was tried. A lab audit concluded that
 buying every upgrade made the player 25% worse; the owner reported the
