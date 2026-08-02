@@ -111,6 +111,18 @@ Format: `- YYYY-MM-DD · capability|wall · <venue> · finding · evidence · wo
 `any`; older five-field lines without a venue token stay valid — read them
 as venue `any`.)
 
+- 2026-08-02 · capability · `owner-live` · **A link-shared Google Drive video
+  downloads and decodes in this seat, so owner playtest footage no longer has to
+  be uploaded into chat.** · evidence: two `drive.google.com/file/d/<id>/view`
+  links returned `http=200 video/mp4` (20 MB and 66 MB) from
+  `https://drive.google.com/uc?export=download&id=<id>` through the agent proxy
+  with no credential; `pip install imageio-ffmpeg` supplies a static ffmpeg
+  (none is preinstalled) that probed both and extracted frames, and the HUD text
+  was legible enough to read run distance to 0.1 m. · workaround: none needed —
+  but **a readable link means the file is public to anyone holding it**, not
+  that this seat has account access, which is worth saying back to the owner
+  before he shares anything he considers private.
+
 - 2026-08-02 · wall · `owner-live` · **Exact Godot headless can measure GUI
   geometry but cannot capture menu pixels in this seat.** · evidence:
   `4.7.1.stable.official.a13da4feb` laid out Home and three hubs in a real
