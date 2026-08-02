@@ -43,6 +43,7 @@ static func run() -> Dictionary:
 	passed += _test_composition_root_mounts_front_end_first(failures)
 	passed += _test_trace_watch_is_reachable_and_debug_only(failures)
 	passed += _test_every_campaign_level_is_reachable_and_scrolls(failures)
+	passed += _test_field_guide_sections_grow_with_their_copy(failures)
 	return {"passed": passed, "failures": failures}
 
 
@@ -247,6 +248,77 @@ const MINIMUM_TARGET_HEIGHTS := {
 	&"SpiderStyleGarden": 56.0,
 	&"WebVariantDewSilk": 56.0,
 }
+
+
+## The Field Guide's four sections carry the longest copy in the build, and
+## `docs/product/menu-ux-review-2026-08-02.md` listed the panel as 69 % empty
+## and possibly "mis-wired". **A rendered measurement says otherwise** — with a
+## spider selected the panel is fully used and the copy overflows into a working
+## scroller; the 69 % came from measuring a screen that had never been shown.
+##
+## A rendered measurement cannot live here, because a suite is synchronous and
+## layout needs frames. What is pinned instead is the wiring that lets a section
+## grow: each body label autowraps and expands horizontally, and the panel sets
+## only a minimum height, never a maximum. Break any of those and long copy is
+## clipped with nothing on screen to say so — which is the regression the audit
+## thought it had found.
+static func _test_field_guide_sections_grow_with_their_copy(
+	failures: PackedStringArray,
+) -> int:
+	var state := FrontEndState.new()
+	state.configure(PlayerSettings.defaults(), PlayerProgress.defaults())
+	var view := FrontEndView.new()
+	view.bind_state(state)
+
+	var section_names := [
+		"FieldGuideSectionRealAnimal",
+		"FieldGuideSectionInSpiderSwing",
+		"FieldGuideSectionFieldNote",
+		"FieldGuideSectionSources",
+	]
+	for section_name: String in section_names:
+		var panel := view.find_child(section_name, true, false) as Control
+		if panel == null:
+			failures.append("Field Guide section %s is missing" % section_name)
+			view.free()
+			return 0
+		# A maximum would clip; a minimum only sets a floor.
+		if panel.size_flags_vertical == Control.SIZE_SHRINK_CENTER:
+			failures.append(
+				"Field Guide section %s cannot grow past its floor" % section_name)
+			view.free()
+			return 0
+		var wrapped := 0
+		for candidate: Node in panel.find_children("", "Label", true, false):
+			var label := candidate as Label
+			if label.autowrap_mode == TextServer.AUTOWRAP_OFF:
+				continue
+			wrapped += 1
+			if label.size_flags_horizontal != Control.SIZE_EXPAND_FILL:
+				failures.append(
+					("Field Guide section %s has a wrapping label that does not "
+						+ "expand, so its width — and therefore its wrap — is "
+						+ "undefined") % section_name)
+				view.free()
+				return 0
+		if wrapped == 0:
+			failures.append(
+				("Field Guide section %s has no wrapping body label, so long "
+					+ "copy would run off its edge") % section_name)
+			view.free()
+			return 0
+
+	# The sections must live inside a scroller: measured, they total 500 px of
+	# copy against a 401 px viewport, so a fifth of it is below the fold.
+	var scroll := view.find_child("FieldGuideScroll", true, false)
+	if scroll == null or not (scroll is ScrollContainer):
+		failures.append(
+			"the Field Guide detail has no scroller, so the copy that does not "
+			+ "fit is unreachable")
+		view.free()
+		return 0
+	view.free()
+	return 1
 
 
 ## A level in the catalog that has no button is a level nobody can play, and

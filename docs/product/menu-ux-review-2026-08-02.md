@@ -23,8 +23,10 @@
 > landed in 0.35.0, and Home was rebuilt as the run deck in 0.37.0 — which also
 > answered the audit's *"one button style is doing four different jobs"* finding
 > by making Start Run the only filled control. **Still open from this audit:**
-> Shop progressive disclosure, the Field Guide detail panel at 69% empty, a Test
-> Lab search, and panel borders at 2.25:1 contrast.
+> Shop progressive disclosure, a Test Lab search, and panel borders at 2.25:1
+> contrast — each a product choice rather than a contained fix. **The Field
+> Guide dead-space item is withdrawn**: it was a measurement artefact, corrected
+> in § 2.5.
 
 ---
 
@@ -188,8 +190,37 @@ worth going in there?*
 - Guide: lesson count, spider count.
 
 Every figure reads from `PlayerProgress`, so a hub cannot claim progress the save
-does not hold. Field Guide detail (69 %) and Practice (50 %) are untouched and
-remain the two worst panels.
+does not hold.
+
+> ### ⚠ Correction, 2026-08-02 — the Field Guide row is a measurement artefact
+>
+> Re-measured on the rendered screen, and **the 69 % does not reproduce.** The
+> row above was taken from a Field Guide that had **never been shown**, where
+> the panel reports an unlaid-out 1 723 px and the section bodies still hold
+> empty text. Measured after the screen is displayed — the only state a player
+> can reach, since `field_guide_spider_id` defaults to `classic`:
+>
+> | | detail panel | identity | sections | used |
+> | --- | ---: | ---: | ---: | ---: |
+> | never shown *(what the row measured)* | 1 723 | 142 | 446 | 34 % |
+> | **rendered** | **583** | 142 | **500** | **110 %** |
+>
+> `measured` — real `FrontEndView` in a headless 1280×720 `SubViewport`, eight
+> frames of layout, `4.7.1.stable.official.a13da4feb`.
+>
+> **Nothing is mis-wired and nothing is clipped.** Every section grows past the
+> 104 px floor when its copy needs it — Real Animal renders 5 wrapped lines at
+> 158 px — and `get_visible_line_count()` equals `get_line_count()` on all four.
+> The content *exceeds* its 401 px scroll viewport by a fifth, which is what a
+> detail panel with a working scroller is supposed to do.
+>
+> **The lesson is about the instrument, not the panel:** a headless layout
+> measurement of a screen that was never displayed reads plausible numbers off
+> an unresolved layout. Show the screen and settle the frames first. A
+> structural contract now pins the wiring that lets sections grow.
+
+Practice (50 %) is untouched and, with the Field Guide row withdrawn, is the
+worst remaining panel.
 
 ### 2.6 Interactie en invoer — **out of scope, honestly**
 
@@ -249,10 +280,10 @@ Each of these is a real product choice, not a contained technical one.
    seven tracks on screen. Cost: a selection concept the Shop does not have, and
    the effect text becomes something you must ask for. `assumed` to be worth it.
 
-2. **Field Guide detail is 69 % empty** — the worst panel in the build, and the
-   one screen whose content (real animal, in-game ability, field note, sources)
-   is genuinely long. Something is mis-wired between the sections and the panel;
-   worth a dedicated look rather than a size tweak.
+2. ~~**Field Guide detail is 69 % empty**~~ — **WITHDRAWN 2026-08-02.** The
+   dedicated look happened and found nothing wrong: rendered, the panel is 110 %
+   used and its copy scrolls. The 69 % was measured on a screen that had never
+   been displayed. See the correction in § 2.5. **Nothing to do here.**
 
 3. **A `Test Lab` search or filter.** Eight categories × up to six cards ≈ 48
    knobs, median target 28 dp, no way to find a named parameter. The report's
