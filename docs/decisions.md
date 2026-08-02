@@ -1010,3 +1010,43 @@
 - provenance: Menno, 2026-08-02 — restore the easy debug test-run entry for
   quickly selecting distance and upgrades; defer menu styling to another
   session
+
+## [D-0050] The speed cap gets its own curve, and there is only one of it
+
+- status: decided
+- date: 2026-08-02
+- supersedes: D-0048
+- verdict: `spider_speed_cap_at` is no longer `target_speed_at +
+  maximum_horizontal_overspeed`. It is its own smoothstep from an opening cap
+  of `starting_target_speed + maximum_horizontal_overspeed` (720 px/s, 72 m/s —
+  unchanged) to a new `maximum_speed_cap` (`assumed` 900 px/s, 90 m/s) reached
+  at `speed_curve_distance`. The release award in `_release_web` now reads the
+  same function instead of a separate flat ceiling, so the game has **one** cap
+  rather than two that could disagree. `maximum_speed_cap` is exposed as the
+  Test Lab knob `Top speed cap`; schema 12 → 13.
+- why: The owner reported from device play on `0.33.0` that the cap was "still
+  missing or too high". It was neither missing nor uniformly too high, and the
+  distinction is the finding: a **fixed** 360 px/s offset sat on a reference
+  that itself climbs 360 → 760, so the ceiling ran 72 m/s at the start but
+  **92 m/s at 5 km and 112 m/s from 10 km onward** — while his measured play is
+  73–78 m/s. Past roughly 3 km the limiter could never engage, and the warp
+  bands are exactly where he tests, so it read as absent.
+  **No value of the single offset could fix it.** Low enough to bite at 10 km
+  (~140 px/s) would have throttled the opening to 50 m/s. The offset was
+  inherited from the drive era, when the reference described where the spider
+  actually was; with speed earned, the reference is a number the spider passes
+  in its first few swings and never returns to, so anchoring a ceiling to it
+  produces a ceiling that is tight early and inert late. Giving the cap its own
+  start and top makes the sentence the owner wants to control — "it starts here
+  and reaches there" — two directly tunable numbers.
+  A second fault was fixed in passing: the release award was bounded by a flat
+  `maximum_target_speed + maximum_horizontal_overspeed` (1120 px/s) while the
+  motor corrected toward the distance-local ceiling, so a good release near the
+  start could push to 112 m/s against a limiter aiming at 73 and then be dragged
+  back for seconds. Both now read the same function.
+  Also recorded: the Test Lab exposed the pull-back *strength* but never the
+  cap's *height*, so the owner could not have tuned his way out of this. That
+  omission is the reason the report came back as "missing" rather than as a
+  number he had already tried moving.
+- provenance: Menno, 2026-08-02 — "I updated to v0.33 but I think the speed cap
+  is still missing or too high"

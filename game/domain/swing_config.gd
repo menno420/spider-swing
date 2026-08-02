@@ -23,7 +23,7 @@ class_name SwingConfig
 ## UI and recommended hiding them behind a debug flag; the disclosure already
 ## exists, which is why they stay visible.
 
-const SCHEMA_VERSION := 12
+const SCHEMA_VERSION := 13
 const PRESET_BALANCED := &"balanced_baseline"
 const PRESET_WEIGHTY := &"weighty_candidate"
 const PRESET_AGILE := &"agile_candidate"
@@ -71,6 +71,13 @@ const DEFAULT_BIRD_CEILING_SHARE := 0.62
 ## times the branch's own 0.25 — so restoring the limiter is a repair rather
 ## than a new tuning claim.
 const DEFAULT_OVERSPEED_CORRECTION := 117.5
+## `assumed`: the spider's top speed once the pace curve is complete. The
+## opening cap stays `starting_target_speed + maximum_horizontal_overspeed`
+## (720 px/s / 72 m/s, unchanged), so this value alone decides how much faster
+## late play may run. 900 px/s is 90 m/s against the owner's measured 73–78 m/s
+## band — real headroom for skilled play, against the 112 m/s the old fixed
+## offset produced. Device feel settles it.
+const DEFAULT_MAXIMUM_SPEED_CAP := 900.0
 
 @export var schema_version: int = SCHEMA_VERSION
 @export var preset_name: StringName = PRESET_BALANCED
@@ -92,6 +99,8 @@ const DEFAULT_OVERSPEED_CORRECTION := 117.5
 ## limiter and reproduces the accidental post-#102 behaviour exactly.
 @export var overspeed_correction_acceleration: float = \
 	DEFAULT_OVERSPEED_CORRECTION
+## Top of the speed-cap curve, reached at `speed_curve_distance`.
+@export var maximum_speed_cap: float = DEFAULT_MAXIMUM_SPEED_CAP
 ## `assumed`: maximum horizontal award from one fully qualified release.
 ## Zero disables the slice completely. Device feel, not the bot, decides whether
 ## 100 px/s is the right strength; the deterministic contracts only prove the
@@ -209,6 +218,7 @@ func apply_preset(name: StringName) -> void:
 	bird_start_offset = DEFAULT_BIRD_START_OFFSET
 	bird_ceiling_share = DEFAULT_BIRD_CEILING_SHARE
 	overspeed_correction_acceleration = DEFAULT_OVERSPEED_CORRECTION
+	maximum_speed_cap = DEFAULT_MAXIMUM_SPEED_CAP
 	burst_distance_fraction = 0.40
 	burst_minimum_distance = 80.0
 	burst_pull_duration = 0.20
@@ -293,11 +303,37 @@ func target_speed_at(distance_pixels: float) -> float:
 	return lerpf(starting_target_speed, maximum_target_speed, smooth_progress)
 
 
-## The fastest the spider may travel at this distance. Rises with the reference
-## curve, so late play is legitimately quicker, and is the value
-## `SpiderMotor.apply_forces` corrects back toward.
+## The fastest the spider may travel at this distance — its own curve, not an
+## offset from the reference.
+##
+## **Corrected 2026-08-02 after owner device play**, which reported the cap as
+## "still missing or too high" in v0.33. It was neither missing nor uniformly
+## too high: it was `target_speed_at + maximum_horizontal_overspeed`, a *fixed*
+## 360 px/s offset on a reference that itself climbs 360 → 760. That produced a
+## ceiling of 72 m/s at the start and **112 m/s from 10 km onward**, while the
+## owner's measured play sits at 73–78 m/s — so past roughly 3 km the limiter
+## could never engage, which is exactly where he tests.
+##
+## The single offset could not be tuned out of the problem. Low enough to bite
+## at 10 km (~140 px/s) would have throttled the opening to 50 m/s, because the
+## reference describes a *drive target the game no longer applies* rather than
+## how fast the spider actually travels. Speed is earned now and is roughly flat
+## from the first swing, so the cap needs its own start and its own top.
 func spider_speed_cap_at(distance_pixels: float) -> float:
-	return target_speed_at(distance_pixels) + maximum_horizontal_overspeed
+	var opening_cap := starting_target_speed + maximum_horizontal_overspeed
+	var linear_progress := clampf(
+		maxf(distance_pixels, 0.0) / speed_curve_distance,
+		0.0,
+		1.0,
+	)
+	var smooth_progress := (
+		linear_progress * linear_progress * (3.0 - 2.0 * linear_progress)
+	)
+	return lerpf(
+		opening_cap,
+		maxf(maximum_speed_cap, opening_cap),
+		smooth_progress,
+	)
 
 
 ## Position-based pursuer law, hard-bounded below the spider's own ceiling.
@@ -578,6 +614,8 @@ func validate() -> PackedStringArray:
 		failures.append("bird ceiling share must sit strictly inside 0..1")
 	if overspeed_correction_acceleration < 0.0:
 		failures.append("overspeed correction must not be negative")
+	if maximum_speed_cap < starting_target_speed + maximum_horizontal_overspeed:
+		failures.append("maximum speed cap sits below the opening cap")
 	if web_minimum_length <= 0.0 or web_maximum_length <= web_minimum_length:
 		failures.append("web length range is invalid")
 	if reel_energy_capacity <= 0.0 or reel_drain_rate <= 0.0 or \

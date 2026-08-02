@@ -87,9 +87,9 @@ without a reported regression.
   attachment arc and the upward share of velocity scale an `assumed` 100 px/s
   maximum forward award; an `assumed` 90° arc reaches full arc quality. The
   award is forward/right-of-anchor only, excluded from forced Burst/Dive detach,
-  and bounded by the run-wide maximum named reference plus overspeed: 1120 px/s
-  (112 m/s) with current values. The absolute cap prevents manufactured speed
-  without throttling the owner's measured 73–78 m/s opening band.
+  and bounded by the one shared speed cap: its own curve from 720 px/s (72 m/s)
+  to an `assumed` 900 px/s (90 m/s) at 10 km. The motor corrects toward the same
+  curve, so award and limiter cannot disagree.
   Zero disables the mechanic. Device feel, not the non-pumping bot, decides the
   two assumed tuning values.
 - Continuous forward drive is zero in all three presets. The one-time opening,

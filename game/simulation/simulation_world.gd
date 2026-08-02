@@ -1292,14 +1292,18 @@ func _release_web(events: Array[SimulationEvent]) -> void:
 	var requested_bonus := (
 		config.release_momentum_bonus_speed * float(release["quality"])
 	)
-	# `inferred` safety rule: retain one absolute ceiling so repeated releases
-	# cannot manufacture unbounded speed. The run-wide maximum reference is used
-	# deliberately: the old local target ceiling throttled normal owner play near
-	# the start once release quality became a primary propulsion source.
-	var forward_cap := (
-		config.maximum_target_speed
-		+ config.maximum_horizontal_overspeed
-	)
+	# One cap in the game, not two. This used to be the run-wide maximum
+	# reference plus overspeed — a flat 1120 px/s — while the motor corrected
+	# toward a *distance-local* ceiling, so a release near the start could push
+	# to 112 m/s against a limiter aiming at 73 and then be dragged back for
+	# seconds. Both now read `spider_speed_cap_at`, so the award stops exactly
+	# where the limiter starts and the two can never disagree.
+	#
+	# The original comment's worry — that a local ceiling would throttle normal
+	# opening play — is answered by the cap curve rather than by a second
+	# number: its opening value is `starting_target_speed +
+	# maximum_horizontal_overspeed`, unchanged at 720 px/s.
+	var forward_cap := config.spider_speed_cap_at(distance_pixels)
 	var forward_bonus := minf(
 		requested_bonus,
 		maxf(0.0, forward_cap - velocity.x),

@@ -168,16 +168,16 @@ const PARAMETERS := [
 		"quick": [0.0, 60.0, 117.5, 240.0],
 	},
 	{
-		"id": &"bird_ceiling_share",
+		"id": &"speed_cap_max",
 		"category": CATEGORY_PACING,
-		"label": "Bird speed ceiling",
-		"help": "Share of the spider's own speed cap the pursuer may never "
-			+ "exceed, so a well-swung run can always outrun it.",
-		"format": &"percent",
-		"minimum": 0.20,
-		"maximum": 0.95,
-		"step": 0.02,
-		"quick": [0.40, 0.55, 0.62, 0.80],
+		"label": "Top speed cap",
+		"help": "Fastest the spider may travel once the pace curve is complete. "
+			+ "The opening cap stays 720 px/s regardless.",
+		"format": &"speed",
+		"minimum": 720.0,
+		"maximum": 1200.0,
+		"step": 20.0,
+		"quick": [800.0, 900.0, 1000.0, 1120.0],
 	},
 	{
 		"id": &"bird_speed",
@@ -563,6 +563,18 @@ const PARAMETERS := [
 		"maximum": 1600.0,
 		"step": 40.0,
 		"quick": [600.0, 760.0, 900.0, 1200.0],
+	},
+	{
+		"id": &"bird_ceiling_share",
+		"category": CATEGORY_RUN,
+		"label": "Bird speed ceiling",
+		"help": "Share of the spider's own speed cap the pursuer may never "
+			+ "exceed, so a well-swung run can always outrun it.",
+		"format": &"percent",
+		"minimum": 0.20,
+		"maximum": 0.95,
+		"step": 0.02,
+		"quick": [0.40, 0.55, 0.62, 0.80],
 	},
 ]
 
