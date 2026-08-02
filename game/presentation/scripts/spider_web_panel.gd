@@ -3,8 +3,9 @@ class_name SpiderWebPanel
 ## Reusable spider-built card surface for the front end.
 ##
 ## The StyleBox remains the authoritative layout background. This layer adds
-## deterministic low-contrast fibres, corner webs, silk knots, and cocoon
-## forms behind child controls. It never processes input or owns navigation.
+## deterministic low-contrast slate grain, fibres, corner webs, silk knots,
+## and cocoon forms behind child controls. It never processes input or owns
+## navigation.
 
 const MINIMUM_SIZE := Vector2(96.0, 64.0)
 const FIBRE_SPACING := 22.0
@@ -41,6 +42,12 @@ func _notification(what: int) -> void:
 
 
 func _draw() -> void:
+	var material := material_geometry(size)
+	for grain: PackedVector2Array in material["grain"]:
+		draw_line(
+			grain[0], grain[1], Color(SpiderUiTheme.INK, 0.035), 1.0, true)
+	for pit: Vector2 in material["pits"]:
+		draw_circle(pit, 1.35, Color(SpiderUiTheme.BACKGROUND, 0.22), true)
 	var geometry := ornament_geometry(size)
 	for fibre: PackedVector2Array in geometry["fibres"]:
 		draw_line(
@@ -56,6 +63,42 @@ func _draw() -> void:
 	for cocoon: PackedVector2Array in geometry["cocoons"]:
 		draw_colored_polygon(cocoon, Color(SpiderUiTheme.SILK, 0.075))
 		draw_polyline(cocoon, Color(accent_color, 0.22), 1.0, true)
+
+
+static func material_geometry(requested_size: Vector2) -> Dictionary:
+	var panel_size := Vector2(
+		maxf(MINIMUM_SIZE.x, requested_size.x),
+		maxf(MINIMUM_SIZE.y, requested_size.y),
+	)
+	var grain: Array[PackedVector2Array] = []
+	var pits: Array[Vector2] = []
+	# Fixed-count, integer-derived placement keeps the material stable between
+	# frames and devices. It reads as worn slate/fibrous bark without allocating
+	# a bitmap or introducing animation behind text.
+	for index in range(72):
+		var x_unit := fposmod(float(index * 37 + 11), 101.0) / 101.0
+		var y_unit := fposmod(float(index * 61 + 17), 103.0) / 103.0
+		var start := Vector2(
+			6.0 + x_unit * (panel_size.x - 12.0),
+			6.0 + y_unit * (panel_size.y - 12.0),
+		)
+		var length := 4.0 + float((index * 13) % 19)
+		var slope := float((index % 5) - 2) * 0.42
+		grain.append(PackedVector2Array([
+			start,
+			Vector2(
+				minf(panel_size.x - 5.0, start.x + length),
+				clampf(start.y + slope, 5.0, panel_size.y - 5.0),
+			),
+		]))
+	for index in range(24):
+		pits.append(Vector2(
+			8.0 + fposmod(float(index * 43 + 19), 97.0) / 97.0 *
+				(panel_size.x - 16.0),
+			8.0 + fposmod(float(index * 29 + 7), 89.0) / 89.0 *
+				(panel_size.y - 16.0),
+		))
+	return {"grain": grain, "pits": pits}
 
 
 static func ornament_geometry(requested_size: Vector2) -> Dictionary:

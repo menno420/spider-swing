@@ -19,9 +19,22 @@ const SHOP_PROGRESSION_COPY := (
 	+ "reinforce its trade-off. Every fifth level through 40 applies the listed "
 	+ "increase twice."
 )
+const TEST_LAB_CATEGORIES: Array[StringName] = [
+	TuningCatalog.CATEGORY_MOVEMENT,
+	TuningCatalog.CATEGORY_PACING,
+	TuningCatalog.CATEGORY_ROPE,
+	TuningCatalog.CATEGORY_PULLS,
+	TuningCatalog.CATEGORY_COURSE,
+	TuningCatalog.CATEGORY_ROUTES,
+	TuningCatalog.CATEGORY_RUN,
+	TuningCatalog.CATEGORY_ABILITIES,
+]
 
 var _state: FrontEndState
 var _home: Control
+var _home_spider_preview: TextureRect
+var _home_spider_name: Label
+var _home_run_summary: Label
 var _tutorial: Control
 var _settings: Control
 var _garage: Control
@@ -32,6 +45,15 @@ var _campaign: Control
 var _debug_run_setup: Control
 var _field_guide: Control
 var _field_guide_back: Button
+var _field_guide_buttons: Dictionary = {}
+var _field_guide_preview: TextureRect
+var _field_guide_title: Label
+var _field_guide_badge: Label
+var _field_guide_inspiration: Label
+var _field_guide_real: Label
+var _field_guide_game: Label
+var _field_guide_note: Label
+var _field_guide_sources: Label
 var _tutorial_preview: TutorialPreview
 var _tutorial_kicker: Label
 var _tutorial_title: Label
@@ -79,6 +101,11 @@ var _debug_trace_label: Label
 var _debug_trace_watch: Button
 var _debug_run_upgrade_value: Label
 var _debug_bird_values: Dictionary = {}
+var _debug_category_buttons: Dictionary = {}
+var _debug_category_panels: Dictionary = {}
+var _debug_tuning_values: Dictionary = {}
+var _debug_profile_load_buttons: Dictionary = {}
+var _debug_profile_status: Label
 var _buttons: Dictionary = {}
 var _interface_ready: bool = false
 var _syncing_settings: bool = false
@@ -137,16 +164,44 @@ func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), DEEP)
 	var drift := 0.0
 	if _state == null or not _state.settings.reduced_motion:
-		drift = sin(_elapsed * 0.22) * 28.0
-	for index in range(6):
-		var center := Vector2(
-			size.x * (0.04 + float(index) * 0.20) + drift * float(index % 2),
-			size.y * (0.12 + float(index % 3) * 0.34),
+		drift = sin(_elapsed * 0.18) * 10.0
+	# Layered graphite/bark planes replace the former empty green circles. The
+	# texture is deterministic and quiet enough to sit behind long-form copy.
+	for index in range(9):
+		var band_x := size.x * float(index) / 8.0 + \
+			drift * float(index % 2)
+		var half_width := 72.0 + float(index % 3) * 28.0
+		draw_colored_polygon(PackedVector2Array([
+			Vector2(band_x - half_width, -20.0),
+			Vector2(band_x + half_width, -20.0),
+			Vector2(band_x + half_width * 0.45, size.y + 20.0),
+			Vector2(band_x - half_width * 1.25, size.y + 20.0),
+		]), Color(
+			SpiderUiTheme.PANEL_SOFT,
+			0.075 if index % 2 == 0 else 0.035,
+		))
+		draw_line(
+			Vector2(band_x + half_width, 0.0),
+			Vector2(band_x + half_width * 0.45, size.y),
+			Color(SpiderUiTheme.INK, 0.025),
+			1.0,
+			true,
 		)
-		draw_circle(
-			center,
-			120.0 + float(index % 3) * 52.0,
-			Color(0.16, 0.35, 0.20, 0.11),
+	for index in range(80):
+		var grain_start := Vector2(
+			fposmod(float(index * 97 + 31), 997.0) / 997.0 * size.x,
+			fposmod(float(index * 53 + 17), 991.0) / 991.0 * size.y,
+		)
+		var grain_length := 8.0 + float((index * 11) % 34)
+		draw_line(
+			grain_start,
+			Vector2(
+				minf(size.x, grain_start.x + grain_length),
+				grain_start.y + float((index % 5) - 2) * 0.7,
+			),
+			Color(SpiderUiTheme.INK, 0.028),
+			1.0,
+			true,
 		)
 	var floor_y := size.y * 0.91
 	draw_colored_polygon(PackedVector2Array([
@@ -158,7 +213,7 @@ func _draw() -> void:
 		Vector2(size.x, floor_y - 20.0),
 		Vector2(size.x, size.y),
 		Vector2(0.0, size.y),
-	]), Color(SpiderUiTheme.BARK, 0.56))
+	]), Color(SpiderUiTheme.BARK, 0.34))
 	_draw_corner_web(Vector2(size.x - 18.0, 18.0), -1.0, 250.0)
 	_draw_corner_web(Vector2(18.0, size.y - 18.0), 1.0, 150.0, -1.0)
 
@@ -200,40 +255,60 @@ func _draw_corner_web(
 func _build_home() -> void:
 	_home = _full_screen(&"Home")
 
-	var eyebrow := _label("PHASE 0 · SWING LABORATORY", 18, CYAN)
-	_place(eyebrow, _home, 0.055, 0.12, 0.58, 0.18)
-	var title := _label("SPIDER\nSWING", 72, INK)
+	var eyebrow := _label("MINIATURE FOREST · ENDLESS SWING", 16, CYAN)
+	_place(eyebrow, _home, 0.045, 0.055, 0.35, 0.11)
+	var title := _label("SPIDER\nSWING", 68, INK)
 	title.add_theme_constant_override("line_spacing", -18)
-	_place(title, _home, 0.055, 0.19, 0.58, 0.46)
+	_place(title, _home, 0.045, 0.105, 0.35, 0.31)
 	var subtitle := _label(
 		"Momentum is the move.\nChoose an anchor. Commit to the arc.",
-		22,
+		19,
 		MUTED,
 	)
-	_place(subtitle, _home, 0.06, 0.51, 0.55, 0.64)
+	_place(subtitle, _home, 0.05, 0.31, 0.35, 0.42)
+
+	var identity := _panel(PANEL)
+	identity.name = "HomeIdentityPanel"
+	_place(identity, _home, 0.04, 0.44, 0.35, 0.84)
+	var identity_body := VBoxContainer.new()
+	identity_body.add_theme_constant_override("separation", 5)
+	_fill_with_margin(identity_body, identity, 18.0)
+	identity_body.add_child(_section_label("CURRENT SPIDER"))
+	_home_spider_preview = _spider_preview(
+		&"HomeSpiderPreview", Vector2(230.0, 126.0))
+	_home_spider_preview.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_home_spider_preview.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	identity_body.add_child(_home_spider_preview)
+	_home_spider_name = _label("", 25, GREEN)
+	_home_spider_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	identity_body.add_child(_home_spider_name)
+	_home_run_summary = _label("", 15, MUTED)
+	_home_run_summary.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_home_run_summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	identity_body.add_child(_home_run_summary)
 
 	var version := _label(
 		"BUILD %s" % ProjectSettings.get_setting(
 			"application/config/version", "unknown"),
-		14,
+		13,
 		MUTED,
 	)
-	_place(version, _home, 0.06, 0.83, 0.46, 0.88)
+	_place(version, _home, 0.05, 0.875, 0.35, 0.92)
 
 	var card := _panel(PANEL)
 	card.name = "HomeWebPanel"
-	_place(card, _home, 0.62, 0.14, 0.94, 0.86)
+	_place(card, _home, 0.38, 0.05, 0.96, 0.95)
 	var menu := VBoxContainer.new()
-	menu.add_theme_constant_override("separation", 10)
-	_fill_with_margin(menu, card, 24.0)
-	menu.add_child(_section_label("READY TO SWING?"))
-	# Eight routes leave this card tight; the intro carries the least weight,
-	# so it gives up the height rather than the buttons shrinking.
+	menu.add_theme_constant_override("separation", 8)
+	_fill_with_margin(menu, card, 20.0)
+	menu.add_child(_section_label("READY TO SWING"))
 	var intro := _paragraph(
-		"Learn the controls, pick your swing feel, then go as far as you can.")
-	intro.add_theme_font_size_override("font_size", 18)
+		"Build speed through clean arcs, escape the bird, and push deeper into the forest.")
+	intro.add_theme_font_size_override("font_size", 16)
+	intro.custom_minimum_size.y = 30.0
 	menu.add_child(intro)
-	var play := _button(&"Play", "PLAY", GREEN, 68.0)
+	var play := _button(&"Play", "PLAY  ·  CHASE YOUR BEST DISTANCE", GREEN, 76.0)
+	play.add_theme_font_size_override("font_size", 25)
 	play.pressed.connect(_on_play)
 	menu.add_child(play)
 	# Difficulty governs the standard PLAY run, so it is chosen here rather
@@ -249,7 +324,7 @@ func _build_home() -> void:
 			StringName("Difficulty_%s" % mode_id),
 			str(mode["name"]),
 			CYAN,
-			48.0,
+			50.0,
 		)
 		button.pressed.connect(_on_difficulty.bind(mode_id))
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -257,54 +332,68 @@ func _build_home() -> void:
 		_difficulty_buttons[mode_id] = button
 
 	var routes := GridContainer.new()
-	routes.columns = 2
-	routes.add_theme_constant_override("h_separation", 10)
-	routes.add_theme_constant_override("v_separation", 10)
+	routes.name = "HomeRouteGrid"
+	routes.columns = 3
+	routes.add_theme_constant_override("h_separation", 8)
+	routes.add_theme_constant_override("v_separation", 8)
 	menu.add_child(routes)
-	var garage := _button(&"Garage", "GARAGE", YELLOW, 54.0)
+	var garage := _home_route_button(
+		&"Garage", "SPIDER GARAGE\nchoose your spider", YELLOW)
 	garage.pressed.connect(_on_garage)
-	garage.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	routes.add_child(garage)
-	var shop := _button(&"Shop", "SHOP", GREEN, 54.0)
+	var shop := _home_route_button(
+		&"Shop", "UPGRADES\nspend collected flies", GREEN)
 	shop.pressed.connect(_on_shop)
-	shop.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	routes.add_child(shop)
-	var tutorial := _button(&"Tutorial", "TUTORIAL", CYAN, 54.0)
+	var tutorial := _home_route_button(
+		&"Tutorial", "HOW TO SWING\nsix visual lessons", CYAN)
 	tutorial.pressed.connect(_on_tutorial)
-	tutorial.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	routes.add_child(tutorial)
-	var creator := _button(&"Creator", "COURSE LAB", ORANGE, 54.0)
-	creator.pressed.connect(_on_creator)
-	creator.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	routes.add_child(creator)
-	var practice := _button(&"Practice", "REGION PRACTICE", CYAN, 54.0)
-	practice.pressed.connect(_on_practice)
-	practice.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	routes.add_child(practice)
-	var campaign := _button(&"Campaign", "CAMPAIGN", ORANGE, 54.0)
+	var campaign := _home_route_button(
+		&"Campaign", "CAMPAIGN\nfocused challenges", ORANGE)
 	campaign.pressed.connect(_on_campaign)
-	campaign.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	routes.add_child(campaign)
-	var settings := _button(&"Settings", "SETTINGS", ORANGE, 54.0)
-	settings.pressed.connect(_on_settings)
-	settings.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	routes.add_child(settings)
-	var field_guide := _button(&"FieldGuide", "FIELD GUIDE", YELLOW, 54.0)
+	var practice := _home_route_button(
+		&"Practice", "REGION PRACTICE\nreplay checkpoints", CYAN)
+	practice.pressed.connect(_on_practice)
+	routes.add_child(practice)
+	var creator := _home_route_button(
+		&"Creator", "COURSE LAB\nbuild a route", ORANGE)
+	creator.pressed.connect(_on_creator)
+	routes.add_child(creator)
+	var field_guide := _home_route_button(
+		&"FieldGuide", "FIELD GUIDE\nreal spider vs game", YELLOW)
 	field_guide.pressed.connect(_on_field_guide.bind(FrontEndState.Screen.HOME))
-	field_guide.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	routes.add_child(field_guide)
+	var settings := _home_route_button(
+		&"Settings", "SETTINGS\naudio, motion, access", ORANGE)
+	settings.pressed.connect(_on_settings)
+	routes.add_child(settings)
 	_debug_run_route = _button(
 		&"DebugRunSetup",
-		"DEBUG TEST RUN",
+		"TEST LAB\nconfigure & compare",
 		ORANGE,
-		54.0,
+		68.0,
 	)
+	_debug_run_route.add_theme_font_size_override("font_size", 15)
 	_debug_run_route.pressed.connect(_on_debug_run_setup)
 	_debug_run_route.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	routes.add_child(_debug_run_route)
-	var note := _label("Your choices save automatically.", 14, MUTED)
+	var note := _label(
+		"PLAY uses owned progress · TEST LAB always awards nothing", 13, MUTED)
 	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	menu.add_child(note)
+
+
+func _home_route_button(
+	button_name: StringName,
+	text_value: String,
+	accent: Color,
+) -> Button:
+	var button := _button(button_name, text_value, accent, 68.0)
+	button.add_theme_font_size_override("font_size", 15)
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	return button
 
 
 func _build_tutorial() -> void:
@@ -829,87 +918,272 @@ func _build_debug_run_setup() -> void:
 	back.pressed.connect(_on_home)
 	_place(back, _debug_run_setup, 0.025, 0.035, 0.16, 0.11)
 
-	var heading := _label("DEBUG TEST RUN", 38, INK)
-	_place(heading, _debug_run_setup, 0.19, 0.035, 0.64, 0.12)
+	var heading := _label("TEST LAB", 38, INK)
+	_place(heading, _debug_run_setup, 0.19, 0.03, 0.48, 0.105)
 	var explanation := _label(
-		"Set distance, temporary upgrades, and the pursuing bird before the run. "
-		+ "These choices are session-only and never change what you own.",
-		18,
+		"Configure the same tuning catalogue available during a run. The working "
+		+ "set auto-saves; A/B/C keep whole comparisons for later.",
+		16,
 		MUTED,
 	)
 	explanation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_place(explanation, _debug_run_setup, 0.19, 0.115, 0.93, 0.205)
+	_place(explanation, _debug_run_setup, 0.19, 0.10, 0.95, 0.17)
 
 	var card := _panel(PANEL)
 	card.name = "DebugRunSetupCard"
-	_place(card, _debug_run_setup, 0.075, 0.215, 0.925, 0.955)
+	_place(card, _debug_run_setup, 0.035, 0.18, 0.965, 0.965)
 	var shell := VBoxContainer.new()
 	shell.name = "DebugRunSetupShell"
-	shell.add_theme_constant_override("separation", 10)
-	_fill_with_margin(shell, card, 20.0)
+	shell.add_theme_constant_override("separation", 8)
+	_fill_with_margin(shell, card, 16.0)
+	shell.add_child(_build_debug_profile_strip())
+	shell.add_child(_build_debug_category_rail())
 
-	var scroll := ScrollContainer.new()
-	scroll.name = "DebugRunSetupScroll"
-	SpiderUiTheme.configure_touch_scroll(scroll)
-	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	shell.add_child(scroll)
+	var category_stack := Control.new()
+	category_stack.name = "DebugCategoryStack"
+	category_stack.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	category_stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	shell.add_child(category_stack)
+	for category_id: StringName in TEST_LAB_CATEGORIES:
+		var category_panel := _build_debug_category_panel(category_id)
+		category_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		category_stack.add_child(category_panel)
+		_debug_category_panels[category_id] = category_panel
 
-	var content := VBoxContainer.new()
-	content.name = "DebugRunSetupContent"
-	content.add_theme_constant_override("separation", 10)
-	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.add_child(content)
-	content.add_child(_section_label("CHOOSE THE TEST CONDITIONS, THEN START ONCE"))
-
-	var columns := HBoxContainer.new()
-	columns.name = "DebugRunSetupColumns"
-	columns.add_theme_constant_override("separation", 16)
-	columns.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	content.add_child(columns)
-	columns.add_child(_build_debug_distance_card())
-	columns.add_child(_build_debug_upgrade_card())
-	columns.add_child(_build_debug_bird_card())
-
-	content.add_child(_build_trace_watch_row())
-
+	var footer := HBoxContainer.new()
+	footer.name = "DebugRunFooter"
+	footer.add_theme_constant_override("separation", 10)
+	shell.add_child(footer)
 	var warning := _label(
-		"DEBUG PRACTICE · NO FLIES · NO RECORD · NO CHECKPOINTS · NO LEADERBOARD",
-		16,
+		"TEST RUN · NO FLIES · NO RECORDS · NO CHECKPOINTS · NO LEADERBOARD",
+		14,
 		YELLOW,
 	)
 	warning.name = "DebugRunAwardsWarning"
 	warning.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	warning.custom_minimum_size.y = 28.0
-	content.add_child(warning)
+	warning.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	footer.add_child(warning)
 	var start := _button(
 		&"DebugRunStart",
 		"START TEST RUN  ·  AWARDS NOTHING",
 		GREEN,
-		68.0,
+		62.0,
 	)
+	start.custom_minimum_size.x = 330.0
 	start.pressed.connect(_on_debug_run_start)
-	shell.add_child(start)
+	footer.add_child(start)
+
+
+func _build_debug_profile_strip() -> PanelContainer:
+	var panel := _panel(PANEL_SOFT, 14, ORANGE)
+	panel.name = "DebugProfileStrip"
+	panel.custom_minimum_size.y = 64.0
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	_fill_with_margin(row, panel, 8.0)
+	var title := VBoxContainer.new()
+	title.custom_minimum_size.x = 220.0
+	row.add_child(title)
+	title.add_child(_setting_heading("WORKING SET · AUTO-SAVED"))
+	_debug_profile_status = _label("", 13, MUTED)
+	title.add_child(_debug_profile_status)
+	for slot_id: StringName in DebugTestProfile.SLOT_IDS:
+		var slot := HBoxContainer.new()
+		slot.add_theme_constant_override("separation", 4)
+		slot.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(slot)
+		var save := _button(
+			StringName("DebugProfileSave_%s" % slot_id),
+			"SAVE %s" % str(slot_id).to_upper(),
+			ORANGE,
+			46.0,
+		)
+		save.add_theme_font_size_override("font_size", 14)
+		save.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		save.pressed.connect(_on_debug_profile_save.bind(slot_id))
+		slot.add_child(save)
+		var load := _button(
+			StringName("DebugProfileLoad_%s" % slot_id),
+			"EMPTY",
+			CYAN,
+			46.0,
+		)
+		load.add_theme_font_size_override("font_size", 14)
+		load.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		load.pressed.connect(_on_debug_profile_load.bind(slot_id))
+		slot.add_child(load)
+		_debug_profile_load_buttons[slot_id] = load
+	var reset := _button(&"DebugProfileReset", "RESET TO BASE", MUTED, 46.0)
+	reset.add_theme_font_size_override("font_size", 14)
+	reset.custom_minimum_size.x = 150.0
+	reset.pressed.connect(_on_debug_profile_reset)
+	row.add_child(reset)
+	return panel
+
+
+func _build_debug_category_rail() -> GridContainer:
+	var rail := GridContainer.new()
+	rail.name = "DebugCategoryRail"
+	rail.columns = TEST_LAB_CATEGORIES.size()
+	rail.add_theme_constant_override("h_separation", 6)
+	for category_id: StringName in TEST_LAB_CATEGORIES:
+		var category_index := TuningCatalog.category_index(category_id)
+		var descriptor := TuningCatalog.category(category_index)
+		var button := _button(
+			StringName("DebugCategory_%s" % category_id),
+			str(descriptor["label"]),
+			CYAN,
+			46.0,
+		)
+		button.add_theme_font_size_override("font_size", 14)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.pressed.connect(_on_debug_category.bind(category_index))
+		rail.add_child(button)
+		_debug_category_buttons[category_id] = button
+	return rail
+
+
+func _build_debug_category_panel(category_id: StringName) -> Control:
+	var body := VBoxContainer.new()
+	body.name = "DebugCategoryPanel_%s" % category_id
+	body.add_theme_constant_override("separation", 5)
+	var descriptor := TuningCatalog.category(
+		TuningCatalog.category_index(category_id))
+	var help := _label(str(descriptor["help"]), 14, MUTED)
+	help.custom_minimum_size.y = 24.0
+	body.add_child(help)
+	if category_id == TuningCatalog.CATEGORY_PACING:
+		body.add_child(_build_debug_bird_presets())
+	if category_id == TuningCatalog.CATEGORY_RUN:
+		body.add_child(_build_trace_watch_row())
+	var scroll := ScrollContainer.new()
+	scroll.name = "DebugRunSetupScroll_%s" % category_id
+	SpiderUiTheme.configure_touch_scroll(scroll)
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	body.add_child(scroll)
+	var grid := GridContainer.new()
+	grid.name = "DebugParameterGrid_%s" % category_id
+	grid.columns = 2
+	grid.add_theme_constant_override("h_separation", 10)
+	grid.add_theme_constant_override("v_separation", 10)
+	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(grid)
+	for parameter: Dictionary in TuningCatalog.parameters_for_category(category_id):
+		grid.add_child(_build_debug_parameter_card(parameter))
 	SpiderUiTheme.enable_descendant_drag_bubbling(scroll)
+	return body
 
 
-## One row for watching a recorded lab run, under the two setup cards.
-##
-## It is a row rather than a third column because the trace carries its own
-## distance and upgrade level — choosing them here would only invite them to
-## disagree with what is actually replayed.
-func _build_trace_watch_row() -> VBoxContainer:
-	var row := VBoxContainer.new()
-	row.name = "DebugTraceWatchRow"
+func _build_debug_bird_presets() -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.name = "DebugBirdPresets"
 	row.add_theme_constant_override("separation", 6)
-	row.add_child(_section_label("OR WATCH A RECORDED LAB RUN"))
+	row.add_child(_label("BIRD COMPARISON", 13, GREEN))
+	for preset_id: StringName in [&"off", &"slow", &"base", &"fast"]:
+		var button := _button(
+			StringName("DebugBirdPreset_%s" % preset_id),
+			str(preset_id).to_upper(),
+			GREEN,
+			44.0,
+		)
+		button.add_theme_font_size_override("font_size", 13)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.pressed.connect(_on_debug_bird_preset.bind(preset_id))
+		row.add_child(button)
+	return row
 
+
+func _build_debug_parameter_card(parameter: Dictionary) -> PanelContainer:
+	var parameter_id := StringName(parameter["id"])
+	var card := _panel(PANEL_SOFT, 12, CYAN)
+	card.name = "DebugParameter_%s" % parameter_id
+	card.custom_minimum_size = Vector2(0.0, 132.0)
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var body := VBoxContainer.new()
+	body.add_theme_constant_override("separation", 3)
+	_fill_with_margin(body, card, 10.0)
+	var header := HBoxContainer.new()
+	body.add_child(header)
+	var title := _label(str(parameter["label"]).to_upper(), 16, INK)
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(title)
+	var help := _label(str(parameter["help"]), 13, MUTED)
+	help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	help.custom_minimum_size.y = 34.0
+	body.add_child(help)
+	var adjustment := HBoxContainer.new()
+	adjustment.add_theme_constant_override("separation", 6)
+	body.add_child(adjustment)
+	var minus := _button(
+		StringName("DebugTuningMinus_%s" % parameter_id), "−", CYAN, 50.0)
+	minus.custom_minimum_size.x = 58.0
+	minus.add_theme_font_size_override("font_size", 27)
+	minus.pressed.connect(_on_debug_tuning_adjust.bind(parameter_id, -1))
+	adjustment.add_child(minus)
+	if parameter_id == TuningCatalog.DEBUG_START_DISTANCE:
+		_debug_run_distance_entry = _debug_distance_entry()
+		_debug_run_distance_entry.custom_minimum_size.y = 50.0
+		_debug_run_distance_entry.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		adjustment.add_child(_debug_run_distance_entry)
+	else:
+		var value_panel := _panel(Color(SpiderUiTheme.BACKGROUND, 0.72), 8, CYAN)
+		value_panel.custom_minimum_size.y = 50.0
+		value_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		adjustment.add_child(value_panel)
+		var value := _label("", 17, YELLOW)
+		value.name = "DebugTuningValue_%s" % parameter_id
+		value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_fill_with_margin(value, value_panel, 4.0)
+		_debug_tuning_values[parameter_id] = value
+		if parameter_id == TuningCatalog.DEBUG_UPGRADE_LEVEL:
+			_debug_run_upgrade_value = value
+	var plus := _button(
+		StringName("DebugTuningPlus_%s" % parameter_id), "+", CYAN, 50.0)
+	plus.custom_minimum_size.x = 58.0
+	plus.add_theme_font_size_override("font_size", 25)
+	plus.pressed.connect(_on_debug_tuning_adjust.bind(parameter_id, 1))
+	adjustment.add_child(plus)
+	var quick := HBoxContainer.new()
+	quick.add_theme_constant_override("separation", 4)
+	body.add_child(quick)
+	var quick_values: Array = parameter.get("quick", [])
+	for index in range(quick_values.size()):
+		var quick_value := float(quick_values[index])
+		var button := _button(
+			StringName("DebugTuningQuick_%s_%d" % [parameter_id, index]),
+			_quick_tuning_label(parameter_id, quick_value),
+			ORANGE,
+			34.0,
+		)
+		button.add_theme_font_size_override("font_size", 12)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.pressed.connect(
+			_on_debug_tuning_set.bind(parameter_id, quick_value))
+		quick.add_child(button)
+	return card
+
+
+## One compact row for watching a recorded lab run inside the Run category.
+##
+## The trace carries its own distance and upgrade level, so it is visually
+## separate from editable values and does not enlarge the pinned footer.
+func _build_trace_watch_row() -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.name = "DebugTraceWatchRow"
+	row.add_theme_constant_override("separation", 8)
+	row.custom_minimum_size.y = 48.0
+	var heading := _label("RECORDED RUN", 13, MUTED)
+	heading.custom_minimum_size.x = 125.0
+	heading.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(heading)
 	var picker := HBoxContainer.new()
 	picker.name = "DebugTracePicker"
 	picker.add_theme_constant_override("separation", 8)
+	picker.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(picker)
-	var previous := _button(&"DebugTracePrevious", "‹", CYAN, 48.0)
-	previous.custom_minimum_size.x = 60.0
+	var previous := _button(&"DebugTracePrevious", "‹", CYAN, 44.0)
+	previous.custom_minimum_size.x = 52.0
 	previous.pressed.connect(_on_debug_trace_step.bind(-1))
 	picker.add_child(previous)
 	_debug_trace_label = _label("", 16, CYAN)
@@ -918,13 +1192,14 @@ func _build_trace_watch_row() -> VBoxContainer:
 	_debug_trace_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_debug_trace_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	picker.add_child(_debug_trace_label)
-	var next := _button(&"DebugTraceNext", "›", CYAN, 48.0)
-	next.custom_minimum_size.x = 60.0
+	var next := _button(&"DebugTraceNext", "›", CYAN, 44.0)
+	next.custom_minimum_size.x = 52.0
 	next.pressed.connect(_on_debug_trace_step.bind(1))
 	picker.add_child(next)
 
 	_debug_trace_watch = _button(
-		&"DebugTraceWatch", "WATCH THIS RUN  ·  AWARDS NOTHING", CYAN, 52.0)
+		&"DebugTraceWatch", "WATCH · NO AWARDS", CYAN, 44.0)
+	_debug_trace_watch.custom_minimum_size.x = 220.0
 	_debug_trace_watch.pressed.connect(_on_debug_trace_watch)
 	row.add_child(_debug_trace_watch)
 	return row
@@ -1130,33 +1405,104 @@ func _build_field_guide() -> void:
 	_field_guide = _full_screen(&"FieldGuide")
 	_field_guide_back = _button(&"FieldGuideBack", "‹  BACK", CYAN, 50.0)
 	_field_guide_back.pressed.connect(_on_leave_field_guide)
-	_place(_field_guide_back, _field_guide, 0.025, 0.035, 0.18, 0.11)
-	var card := _panel(PANEL)
-	_place(card, _field_guide, 0.14, 0.08, 0.86, 0.94)
-	var content := VBoxContainer.new()
-	content.add_theme_constant_override("separation", 10)
-	_fill_with_margin(content, card, 24.0)
-	content.add_child(_label("SPIDER FIELD GUIDE", 32, INK))
-	var frame_note := _paragraph(
-		"Each spider in this game names what inspired it, what the real animal "
-		+ "does, and what the game invents. Those are three different things and "
-		+ "this page never mixes them.")
+	_place(_field_guide_back, _field_guide, 0.025, 0.03, 0.16, 0.105)
+	var heading := _label("SPIDER FIELD GUIDE", 36, INK)
+	_place(heading, _field_guide, 0.19, 0.025, 0.55, 0.10)
+	var frame_note := _label(
+		"Choose a spider, then compare the real animal with the ability invented for the game.",
+		15,
+		MUTED,
+	)
 	frame_note.name = "FieldGuideFrame"
-	frame_note.add_theme_font_size_override("font_size", 16)
-	frame_note.custom_minimum_size.y = 46.0
-	content.add_child(frame_note)
+	_place(frame_note, _field_guide, 0.19, 0.09, 0.92, 0.145)
+
+	var index_card := _panel(PANEL)
+	index_card.name = "FieldGuideIndex"
+	_place(index_card, _field_guide, 0.035, 0.16, 0.31, 0.95)
+	var index := VBoxContainer.new()
+	index.add_theme_constant_override("separation", 8)
+	_fill_with_margin(index, index_card, 14.0)
+	index.add_child(_section_label("SPECIES INDEX"))
+	var index_help := _label(
+		"REAL names identify one animal. COMPOSITE names combine inspirations.",
+		13,
+		MUTED,
+	)
+	index_help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	index_help.custom_minimum_size.y = 44.0
+	index.add_child(index_help)
+	for spider_id: StringName in SpiderCatalog.ALL_IDS:
+		var profile_item := SpiderCatalog.profile(spider_id)
+		var bio := SpiderBiologyCatalog.record(spider_id)
+		var inspiration := StringName(bio.get("inspiration", &""))
+		var button := _button(
+			StringName("FieldGuideEntry%s" % str(spider_id).to_pascal_case()),
+			"%s\n%s" % [
+				str(profile_item["name"]).to_upper(),
+				SpiderBiologyCatalog.inspiration_label(inspiration),
+			],
+			ORANGE if inspiration == SpiderBiologyCatalog.FICTIONAL else GREEN,
+			68.0,
+		)
+		button.add_theme_font_size_override("font_size", 15)
+		button.pressed.connect(_on_field_guide_spider.bind(spider_id))
+		index.add_child(button)
+		_field_guide_buttons[spider_id] = button
+
+	var detail := _panel(PANEL)
+	detail.name = "FieldGuideDetail"
+	_place(detail, _field_guide, 0.33, 0.15, 0.965, 0.96)
+	var detail_body := VBoxContainer.new()
+	detail_body.add_theme_constant_override("separation", 8)
+	_fill_with_margin(detail_body, detail, 18.0)
+	var identity := HBoxContainer.new()
+	identity.name = "FieldGuideIdentity"
+	identity.custom_minimum_size.y = 142.0
+	identity.add_theme_constant_override("separation", 18)
+	detail_body.add_child(identity)
+	_field_guide_preview = _spider_preview(
+		&"FieldGuideSpiderPreview", Vector2(230.0, 136.0))
+	_field_guide_preview.custom_minimum_size.x = 230.0
+	identity.add_child(_field_guide_preview)
+	var identity_copy := VBoxContainer.new()
+	identity_copy.add_theme_constant_override("separation", 5)
+	identity_copy.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	identity.add_child(identity_copy)
+	_field_guide_badge = _section_label("")
+	identity_copy.add_child(_field_guide_badge)
+	_field_guide_title = _label("", 32, INK)
+	identity_copy.add_child(_field_guide_title)
+	_field_guide_inspiration = _label("", 16, CYAN)
+	_field_guide_inspiration.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	identity_copy.add_child(_field_guide_inspiration)
+
 	var scroll := ScrollContainer.new()
 	scroll.name = "FieldGuideScroll"
 	SpiderUiTheme.configure_touch_scroll(scroll)
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	content.add_child(scroll)
-	var entries := VBoxContainer.new()
-	entries.add_theme_constant_override("separation", 12)
-	entries.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.add_child(entries)
-	for spider_id: StringName in SpiderCatalog.ALL_IDS:
-		entries.add_child(_field_guide_entry(spider_id))
+	detail_body.add_child(scroll)
+	var sections := VBoxContainer.new()
+	sections.name = "FieldGuideSections"
+	sections.add_theme_constant_override("separation", 10)
+	sections.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(sections)
+	var real_section := _field_guide_section(
+		"REAL ANIMAL", "What biologists actually observe", GREEN)
+	sections.add_child(real_section["panel"])
+	_field_guide_real = real_section["body"] as Label
+	var game_section := _field_guide_section(
+		"IN SPIDER SWING", "The ability and trade-off created for play", YELLOW)
+	sections.add_child(game_section["panel"])
+	_field_guide_game = game_section["body"] as Label
+	var note_section := _field_guide_section(
+		"FIELD NOTE", "A useful myth correction or design boundary", ORANGE)
+	sections.add_child(note_section["panel"])
+	_field_guide_note = note_section["body"] as Label
+	var source_section := _field_guide_section(
+		"SOURCES", "Publishers used for the real-world description", CYAN)
+	sections.add_child(source_section["panel"])
+	_field_guide_sources = source_section["body"] as Label
 	SpiderUiTheme.enable_descendant_drag_bubbling(scroll)
 	var provenance := _label(
 		"Accepted names follow %s. Records reviewed %s." % [
@@ -1168,70 +1514,35 @@ func _build_field_guide() -> void:
 	)
 	provenance.name = "FieldGuideProvenance"
 	provenance.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	content.add_child(provenance)
+	detail_body.add_child(provenance)
 
 
-func _field_guide_entry(spider_id: StringName) -> Control:
-	var profile_item := SpiderCatalog.profile(spider_id)
-	var bio := SpiderBiologyCatalog.record(spider_id)
-	var inspiration := StringName(bio.get("inspiration", &""))
-	var accent := ORANGE if inspiration == SpiderBiologyCatalog.FICTIONAL else GREEN
-	var row := _panel(Color(PANEL_SOFT, 0.96), 16, accent)
-	row.name = "FieldGuideEntry%s" % str(spider_id).to_pascal_case()
-	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+func _field_guide_section(
+	title_text: String,
+	caption_text: String,
+	accent: Color,
+) -> Dictionary:
+	var panel := _panel(PANEL_SOFT, 14, accent)
+	panel.name = "FieldGuideSection%s" % title_text.to_pascal_case()
+	panel.custom_minimum_size.y = 104.0
+	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var body := VBoxContainer.new()
-	body.add_theme_constant_override("separation", 4)
-	_fill_with_margin(body, row, 16.0)
+	body.add_theme_constant_override("separation", 3)
+	_fill_with_margin(body, panel, 12.0)
 	var header := HBoxContainer.new()
-	header.add_theme_constant_override("separation", 12)
 	body.add_child(header)
-	var title := _label(str(profile_item["name"]).to_upper(), 22, INK)
-	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var title := _label(title_text, 17, accent)
+	title.custom_minimum_size.x = 170.0
 	header.add_child(title)
-	header.add_child(_label(
-		SpiderBiologyCatalog.inspiration_label(inspiration),
-		14,
-		accent,
-	))
-	body.add_child(_field_guide_line(
-		"INSPIRED BY · %s" % bio.get("inspired_by", ""), CYAN))
-	# An invented name owes the player the science it borrowed. A real name
-	# already carries it, so that entry states the animal's own binomial.
-	var drawn_from := SpiderBiologyCatalog.drawn_from_line(spider_id)
-	if not drawn_from.is_empty():
-		body.add_child(_field_guide_line(
-			"%s · %s" % [
-				"ABILITIES DRAWN FROM"
-				if SpiderBiologyCatalog.has_invented_name(spider_id)
-				else "SCIENTIFIC NAME",
-				drawn_from,
-			],
-			MUTED,
-		))
-	body.add_child(_field_guide_line(
-		"REAL SPIDER · %s" % bio.get("real_trait", ""), INK))
-	body.add_child(_field_guide_line(
-		"IN THIS GAME · %s" % bio.get("game_adaptation", ""), YELLOW))
-	var correction := str(bio.get("correction", ""))
-	if not correction.is_empty():
-		body.add_child(_field_guide_line(
-			"GOOD TO KNOW · %s" % correction, ORANGE))
-	var citations := PackedStringArray()
-	for source: Dictionary in SpiderBiologyCatalog.sources_for(spider_id):
-		citations.append(str(source["publisher"]))
-	if not citations.is_empty():
-		# Publishers contain their own commas ("Natural History Museum, London"),
-		# so a comma-joined list reads as more sources than were cited.
-		body.add_child(_field_guide_line(
-			"SOURCES · %s" % "  ·  ".join(citations), MUTED))
-	return row
-
-
-func _field_guide_line(text_value: String, color: Color) -> Label:
-	var label := _label(text_value, 15, color)
-	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	return label
+	var caption := _label(caption_text, 13, MUTED)
+	caption.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(caption)
+	var copy := _label("", 16, INK)
+	copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	copy.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	copy.custom_minimum_size.y = 50.0
+	body.add_child(copy)
+	return {"panel": panel, "body": copy}
 
 
 func _render() -> void:
@@ -1246,6 +1557,7 @@ func _render() -> void:
 	_practice.visible = _state.screen == FrontEndState.Screen.PRACTICE
 	if _home.visible:
 		_refresh_difficulty_buttons()
+		_render_home()
 	_campaign.visible = _state.screen == FrontEndState.Screen.CAMPAIGN
 	if _campaign.visible:
 		_refresh_campaign_buttons()
@@ -1260,6 +1572,7 @@ func _render() -> void:
 			if _state.field_guide_return_screen == FrontEndState.Screen.GARAGE
 			else "‹  HOME"
 		)
+		_render_field_guide()
 	if _tutorial.visible:
 		var step := _state.current_tutorial_step()
 		_tutorial_kicker.text = str(step.get("kicker", ""))
@@ -1304,6 +1617,67 @@ func _render() -> void:
 	_render_debug_run_setup()
 	_syncing_progress = false
 	queue_redraw()
+
+
+func _render_home() -> void:
+	var spider_id := _state.progress.selected_spider_id
+	var profile_item := SpiderCatalog.profile(spider_id)
+	var accent := SpiderUiTheme.profile_accent(spider_id)
+	_sync_spider_preview(_home_spider_preview, spider_id)
+	_home_spider_name.text = str(profile_item["name"]).to_upper()
+	_home_spider_name.add_theme_color_override("font_color", accent)
+	var best_metres := _state.progress.best_distance_for_mode(
+		_state.selected_difficulty()) / CourseRegionCatalog.PIXELS_PER_METRE
+	_home_run_summary.text = "%s · %s\n%s" % [
+		str(profile_item["role"]),
+		str(DifficultyCatalog.resolve(_state.selected_difficulty())).to_upper(),
+		"BEST %.0f m" % best_metres if best_metres > 0.0 else "NO RUN YET",
+	]
+
+
+func _render_field_guide() -> void:
+	var spider_id := _state.field_guide_spider_id
+	var profile_item := SpiderCatalog.profile(spider_id)
+	var bio := SpiderBiologyCatalog.record(spider_id)
+	var inspiration := StringName(bio.get("inspiration", &""))
+	var accent := ORANGE if inspiration == SpiderBiologyCatalog.FICTIONAL else GREEN
+	for candidate_id: StringName in _field_guide_buttons:
+		_set_selector_state(
+			_field_guide_buttons[candidate_id] as Button,
+			candidate_id == spider_id,
+			accent if candidate_id == spider_id else CYAN,
+		)
+	_sync_spider_preview(_field_guide_preview, spider_id)
+	_field_guide_title.text = str(profile_item["name"]).to_upper()
+	_field_guide_title.add_theme_color_override("font_color", accent)
+	_field_guide_badge.text = SpiderBiologyCatalog.inspiration_label(inspiration)
+	_field_guide_badge.add_theme_color_override("font_color", accent)
+	_field_guide_inspiration.text = "INSPIRED BY · %s\n%s" % [
+		bio.get("inspired_by", ""),
+		bio.get("hook", ""),
+	]
+	var scientific := SpiderBiologyCatalog.scientific_line(spider_id)
+	var drawn_from := SpiderBiologyCatalog.drawn_from_line(spider_id)
+	_field_guide_real.text = "%s%s" % [
+		("SCIENTIFIC IDENTITY · %s\n\n" % scientific) if not scientific.is_empty()
+		else "",
+		str(bio.get("real_trait", "")),
+	]
+	if SpiderBiologyCatalog.has_invented_name(spider_id) and not drawn_from.is_empty():
+		_field_guide_real.text += "\n\nBIOLOGY BORROWED FROM · %s" % drawn_from
+	_field_guide_game.text = str(bio.get("game_adaptation", ""))
+	var correction := str(bio.get("correction", ""))
+	_field_guide_note.text = (
+		correction if not correction.is_empty()
+		else "No additional myth correction is recorded for this profile."
+	)
+	var source_lines := PackedStringArray()
+	for source: Dictionary in SpiderBiologyCatalog.sources_for(spider_id):
+		source_lines.append("• %s — %s" % [
+			source["publisher"],
+			source["title"],
+		])
+	_field_guide_sources.text = "\n".join(source_lines)
 
 
 func _render_garage() -> void:
@@ -1482,35 +1856,45 @@ func _render_practice() -> void:
 
 
 func _render_debug_run_setup() -> void:
-	if not _debug_run_distance_entry.has_focus():
+	if _debug_run_distance_entry != null and \
+			not _debug_run_distance_entry.has_focus():
 		_syncing_debug_run_setup = true
 		_debug_run_distance_entry.text = _format_debug_distance_metres(
 			_state.debug_run_distance_pixels,
 		)
 		_syncing_debug_run_setup = false
-	_debug_run_distance_value.text = "STAGED START · %s m" % \
-		_format_debug_distance_metres(_state.debug_run_distance_pixels)
-	_debug_run_upgrade_value.text = (
-		"OWNED LEVELS"
-		if _state.debug_run_upgrade_level < 0
-		else "LEVEL %d / %d" % [
-			_state.debug_run_upgrade_level,
-			SpiderCatalog.MAX_UPGRADE_LEVEL,
-		]
-	)
-	(_debug_bird_values[&"bird_speed"] as Label).text = (
-		"OFF" if is_zero_approx(_state.debug_bird_speed)
-		else "%.1f m/s" % (
-			_state.debug_bird_speed / CourseRegionCatalog.PIXELS_PER_METRE)
-	)
-	(_debug_bird_values[&"bird_acceleration"] as Label).text = \
-		"+%.1f m/s" % (
-			_state.debug_bird_acceleration /
-			CourseRegionCatalog.PIXELS_PER_METRE)
-	(_debug_bird_values[&"bird_start_offset"] as Label).text = \
-		"%.0f m gap" % (
-			_state.debug_bird_start_offset /
-			CourseRegionCatalog.PIXELS_PER_METRE)
+	for parameter_id: StringName in _debug_tuning_values:
+		(_debug_tuning_values[parameter_id] as Label).text = \
+			_format_debug_tuning_value(
+				parameter_id,
+				_state.debug_tuning_value(parameter_id),
+			)
+	var category := TuningCatalog.category(_state.debug_category_index)
+	var active_category_id := StringName(category["id"])
+	for category_id: StringName in _debug_category_panels:
+		(_debug_category_panels[category_id] as Control).visible = \
+			category_id == active_category_id
+		_set_selector_state(
+			_debug_category_buttons[category_id] as Button,
+			category_id == active_category_id,
+			CYAN,
+		)
+	_debug_profile_status.text = "%s · %d values in the working comparison" % [
+		str(category["label"]),
+		TuningCatalog.parameter_ids().size(),
+	]
+	for slot_id: StringName in DebugTestProfile.SLOT_IDS:
+		var load := _debug_profile_load_buttons[slot_id] as Button
+		var difference := _state.debug_test_profile.slot_difference_count(slot_id)
+		load.disabled = difference < 0
+		load.text = (
+			"EMPTY"
+			if difference < 0
+			else "LOAD %s · %s" % [
+				str(slot_id).to_upper(),
+				"SAME" if difference == 0 else "%d DIFF" % difference,
+			]
+		)
 	# No bundled traces is an ordinary state, not an error: the screen simply
 	# has nothing to offer and says so rather than presenting a dead button.
 	var trace := _state.selected_trace()
@@ -1554,6 +1938,11 @@ func _on_shop() -> void:
 func _on_field_guide(return_to: int) -> void:
 	if _state != null:
 		_state.show_field_guide(return_to)
+
+
+func _on_field_guide_spider(spider_id: StringName) -> void:
+	if _state != null:
+		_state.select_field_guide_spider(spider_id)
 
 
 func _on_leave_field_guide() -> void:
@@ -1622,6 +2011,42 @@ func _refresh_campaign_buttons() -> void:
 func _on_debug_run_setup() -> void:
 	if _state != null:
 		_state.show_debug_run_setup()
+
+
+func _on_debug_category(category_index: int) -> void:
+	if _state != null:
+		_state.select_debug_category(category_index)
+
+
+func _on_debug_tuning_adjust(
+	parameter_id: StringName,
+	direction: int,
+) -> void:
+	if _state != null:
+		_state.adjust_debug_tuning_value(parameter_id, direction)
+
+
+func _on_debug_tuning_set(
+	parameter_id: StringName,
+	value: float,
+) -> void:
+	if _state != null:
+		_state.set_debug_tuning_value(parameter_id, value)
+
+
+func _on_debug_profile_save(slot_id: StringName) -> void:
+	if _state != null:
+		_state.save_debug_test_slot(slot_id)
+
+
+func _on_debug_profile_load(slot_id: StringName) -> void:
+	if _state != null:
+		_state.load_debug_test_slot(slot_id)
+
+
+func _on_debug_profile_reset() -> void:
+	if _state != null:
+		_state.reset_debug_test_profile()
 
 
 func _on_debug_distance_changed(text_value: String) -> void:
@@ -2061,6 +2486,76 @@ func _format_debug_distance_metres(distance_pixels: float) -> String:
 	if is_equal_approx(metres, roundf(metres)):
 		return "%.0f" % metres
 	return ("%.1f" % metres).trim_suffix(".0")
+
+
+func _format_debug_tuning_value(
+	parameter_id: StringName,
+	value: float,
+) -> String:
+	var descriptor := TuningCatalog.descriptor(parameter_id)
+	var format := StringName(descriptor.get("format", &"number"))
+	match format:
+		&"toggle":
+			return "ON" if value >= 0.5 else "OFF"
+		&"percent":
+			return "%.0f%%" % (value * 100.0)
+		&"seconds":
+			return "%.2f s" % value
+		&"pixels":
+			if parameter_id == &"bird_start_offset":
+				return "%.0f m GAP" % (
+					value / CourseRegionCatalog.PIXELS_PER_METRE)
+			return "%.0f px" % value
+		&"speed":
+			if parameter_id == &"bird_speed" and is_zero_approx(value):
+				return "OFF"
+			return "%.1f m/s" % (
+				value / CourseRegionCatalog.PIXELS_PER_METRE)
+		&"speed_gain":
+			return "+%.1f m/s / km" % (
+				value / CourseRegionCatalog.PIXELS_PER_METRE)
+		&"meters":
+			return "%.0f m" % (
+				value / CourseRegionCatalog.PIXELS_PER_METRE)
+		&"debug_level":
+			return (
+				"OWNED LEVELS" if value < 0.0
+				else "LEVEL %d / %d" % [
+					roundi(value),
+					SpiderCatalog.MAX_UPGRADE_LEVEL,
+				]
+			)
+		_:
+			return "%.0f" % value
+
+
+func _quick_tuning_label(parameter_id: StringName, value: float) -> String:
+	var descriptor := TuningCatalog.descriptor(parameter_id)
+	var format := StringName(descriptor.get("format", &"number"))
+	match format:
+		&"toggle":
+			return "ON" if value >= 0.5 else "OFF"
+		&"percent":
+			return "%.0f%%" % (value * 100.0)
+		&"seconds":
+			return "%.1fs" % value
+		&"speed":
+			return "%.0f" % (
+				value / CourseRegionCatalog.PIXELS_PER_METRE)
+		&"speed_gain":
+			return "+%.1f" % (
+				value / CourseRegionCatalog.PIXELS_PER_METRE)
+		&"meters":
+			return "%.0fm" % (
+				value / CourseRegionCatalog.PIXELS_PER_METRE)
+		&"debug_level":
+			if value < 0.0:
+				return "OWNED"
+			if roundi(value) == SpiderCatalog.MAX_UPGRADE_LEVEL:
+				return "MAX"
+			return "L%d" % roundi(value)
+		_:
+			return "%.0f" % value
 
 
 func _toggle(text_value: String) -> CheckButton:

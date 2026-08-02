@@ -7,17 +7,21 @@ class_name SaveRepository
 
 const SETTINGS_PATH := "user://player_settings.json"
 const PROGRESS_PATH := "user://player_progress.json"
+const DEBUG_TEST_PROFILE_PATH := "user://debug_test_profile.json"
 
 var _settings_path: String
 var _progress_path: String
+var _debug_test_profile_path: String
 
 
 func _init(
 	settings_path: String = SETTINGS_PATH,
 	progress_path: String = PROGRESS_PATH,
+	debug_test_profile_path: String = DEBUG_TEST_PROFILE_PATH,
 ) -> void:
 	_settings_path = settings_path
 	_progress_path = progress_path
+	_debug_test_profile_path = debug_test_profile_path
 
 
 func load_settings() -> PlayerSettings:
@@ -46,6 +50,25 @@ func load_progress() -> PlayerProgress:
 
 func save_progress(progress: PlayerProgress) -> bool:
 	return _write_dictionary(_progress_path, progress.to_dictionary())
+
+
+func load_debug_test_profile(
+	preset_name: StringName = SwingConfig.PRESET_BALANCED,
+) -> DebugTestProfile:
+	var primary := _read_dictionary(_debug_test_profile_path)
+	if not primary.is_empty():
+		return DebugTestProfile.from_dictionary(primary, preset_name)
+	var backup := _read_dictionary("%s.bak" % _debug_test_profile_path)
+	if not backup.is_empty():
+		return DebugTestProfile.from_dictionary(backup, preset_name)
+	return DebugTestProfile.defaults(preset_name)
+
+
+func save_debug_test_profile(profile: DebugTestProfile) -> bool:
+	return _write_dictionary(
+		_debug_test_profile_path,
+		profile.to_dictionary(),
+	)
 
 
 func _write_dictionary(path: String, data: Dictionary) -> bool:
@@ -82,6 +105,19 @@ static func decode_settings(text: String) -> PlayerSettings:
 	if parsed is Dictionary:
 		return PlayerSettings.from_dictionary(parsed as Dictionary)
 	return PlayerSettings.defaults()
+
+
+static func decode_debug_test_profile(
+	text: String,
+	preset_name: StringName = SwingConfig.PRESET_BALANCED,
+) -> DebugTestProfile:
+	var parsed: Variant = JSON.parse_string(text)
+	if parsed is Dictionary:
+		return DebugTestProfile.from_dictionary(
+			parsed as Dictionary,
+			preset_name,
+		)
+	return DebugTestProfile.defaults(preset_name)
 
 
 func _read_dictionary(path: String) -> Dictionary:

@@ -2,23 +2,23 @@ extends RefCounted
 class_name SpiderUiTheme
 ## One presentation-owned skin for every front-end surface.
 ##
-## The palette follows the Ancient Forest runtime candidate: dark bark,
-## moss, warm sap, and pale natural silk. Widgets may choose an accent, but
-## their silhouettes, spacing, disabled state, focus state, and scrollbars all
-## come from this helper so individual screens cannot drift back to native UI.
+## The neutral slate is the information surface; moss, sap, dew and silk are
+## reserved for meaning and selection. This gives dense scientific/debug copy
+## the contrast of a real field notebook while keeping the miniature-forest
+## identity in its fibres, webs, and material edges.
 
-const BACKGROUND := Color("07120f")
-const PANEL := Color("122019")
-const PANEL_SOFT := Color("1b2d22")
-const PANEL_RAISED := Color("24382a")
-const INK := Color("f1f3df")
-const MUTED := Color("a8b9a1")
+const BACKGROUND := Color("0d1112")
+const PANEL := Color("1a1f20")
+const PANEL_SOFT := Color("242a2b")
+const PANEL_RAISED := Color("313839")
+const INK := Color("f0f2e9")
+const MUTED := Color("b0bab6")
 const SILK := Color("d9fbff")
-const DEW := Color("73e0c2")
-const MOSS := Color("79b56f")
-const SAP := Color("d69a58")
+const DEW := Color("70d2c2")
+const MOSS := Color("82ad73")
+const SAP := Color("cf9157")
 const AMBER := Color("ffd166")
-const BARK := Color("432d22")
+const BARK := Color("39312d")
 
 
 static func create_theme() -> Theme:

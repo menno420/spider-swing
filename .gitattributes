@@ -11,6 +11,15 @@
 # The vendored GDD is the owner's authored product document, checksum-pinned.
 docs/game-design/Spider-Swing-GDD-v2.0.md text eol=lf
 
+# The guard-fire ledger is an append-only OBFUSCATED BINARY stream despite the
+# .jsonl name. Git's text merge silently injected conflict markers into it on
+# 2026-08-02 when two sessions each appended records, producing a file that
+# still looked mergeable and was not. `binary` turns that silent corruption
+# into a visible conflict. Resolve it as base + both appended tails: the file
+# is strictly append-only, so every version shares the merge-base as an exact
+# byte prefix.
+/.substrate/guard-fires.jsonl binary
+
 # substrate-kit search hygiene (planted by adopt/upgrade; the kit only ever APPENDS missing entries — existing content above is host-owned)
 /bootstrap.py linguist-generated=true
 /.substrate/backup/** linguist-generated=true
