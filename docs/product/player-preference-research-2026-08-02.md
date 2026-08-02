@@ -130,6 +130,13 @@ that reads as a tutorial gets skipped, and skipped content sells no spiders.
 — reel rate, burst reach, capacity, regeneration, drive, glide, radius, and so
 on. Not one grants a capability the player did not previously have.
 
+> **Corrected 2026-08-02 — it is fourteen of fifteen.** `BURST_REACH` raises
+> `burst_charge_capacity` from one to two at level 20 (`spider_catalog.gd:378-382`),
+> pinned by `tests/unit/upgrade_audit_tests.gd:109-125`. One capability
+> breakthrough already ships, in a mechanism built for exactly this. The fork
+> below still stands; the starting position is a hybrid, not pure numeric polish.
+> See [`upgrade-and-difficulty research`](upgrade-and-difficulty-research-2026-08-02.md) § 4.1.
+
 That is a real fork and it is undecided:
 
 - **Capability unlocks** are more felt, more marketable, and risk becoming
