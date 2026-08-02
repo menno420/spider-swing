@@ -830,3 +830,14 @@ func _publish_settings() -> void:
 
 func _clear_debug_overlay_for_normal_run() -> void:
 	_progression_service.clear_debug_upgrade_overlay()
+
+
+## A debug overlay belongs to the run it was launched for, and returning to the
+## menu ends that run. Without this the overlay outlived its run: the Garage and
+## Shop kept reporting borrowed levels and `request_upgrade_purchase` stayed a
+## no-op, so owned upgrades could not be spent until the player happened to
+## launch a normal run or found the DEBUG toggle in Settings. Saved levels were
+## never touched — only the menu's view of them.
+func end_debug_run_overlay() -> void:
+	if _progression_service.clear_debug_upgrade_overlay():
+		changed.emit()

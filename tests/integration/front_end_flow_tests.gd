@@ -13,6 +13,7 @@ static func run() -> Dictionary:
 	passed += _test_primary_routes_are_real_buttons(failures)
 	passed += _test_home_has_primary_action_hierarchy(failures)
 	passed += _test_focused_hubs_are_enclosed_and_shallow(failures)
+	passed += _test_menus_are_thumb_sized_and_state_their_progress(failures)
 	passed += _test_tutorial_covers_current_mechanics(failures)
 	passed += _test_settings_are_validated_and_emitted(failures)
 	passed += _test_settings_are_scrollable_and_mobile_readable(failures)
@@ -33,6 +34,7 @@ static func run() -> Dictionary:
 	passed += _test_debug_upgrade_overlay_never_persists(failures)
 	passed += _test_debug_upgrade_overlay_restores_exact_saved_levels(failures)
 	passed += _test_garage_and_shop_disclose_debug_upgrade_levels(failures)
+	passed += _test_debug_overlay_ends_with_the_run_it_was_launched_for(failures)
 	passed += _test_debug_run_setup_stages_and_starts_before_play(failures)
 	passed += _test_debug_bird_presets_change_only_test_profile(failures)
 	passed += _test_debug_bird_controls_are_visible_and_labeled(failures)
@@ -201,6 +203,105 @@ static func _test_focused_hubs_are_enclosed_and_shallow(
 		viewport.free()
 		return 0
 	viewport.free()
+	return 1
+
+
+## `canvas_items`/`expand` maps the 1280×720 reference onto a 2340×1080 phone at
+## 1.5×, and xxhdpi is 2.5 device pixels per dp, so one reference pixel is 0.6 dp
+## and the 48 dp touch minimum is 80 reference pixels. Front-end controls
+## measured a 32–41 dp median against that, so these floors are the recovered
+## ground: they are deliberately below 80 where a screen genuinely cannot spend
+## the height, and no control may shrink past them again.
+const MINIMUM_TARGET_HEIGHTS := {
+	# name: reference pixels
+	&"Play": 68.0,
+	&"SpiderHub": 80.0,
+	&"PlayModesHub": 80.0,
+	&"GuideHub": 80.0,
+	&"Settings": 80.0,
+	&"Garage": 120.0,
+	&"Shop": 120.0,
+	&"Campaign": 120.0,
+	&"Practice": 120.0,
+	&"Creator": 120.0,
+	&"Tutorial": 120.0,
+	&"FieldGuide": 120.0,
+	&"SpiderHubBack": 60.0,
+	&"GuideHubBack": 60.0,
+	&"GarageFieldGuide": 56.0,
+	&"SpiderStyleGarden": 56.0,
+	&"WebVariantDewSilk": 56.0,
+}
+
+
+static func _test_menus_are_thumb_sized_and_state_their_progress(
+	failures: PackedStringArray,
+) -> int:
+	var progress := PlayerProgress.defaults()
+	progress.spendable_flies = 41
+	progress.upgrade_levels["classic_reel"] = SpiderCatalog.MAX_UPGRADE_LEVEL
+	progress.upgrade_levels["classic_flow"] = 6
+	var state := FrontEndState.new()
+	state.configure(PlayerSettings.defaults(), progress)
+	var view := FrontEndView.new()
+	view.bind_state(state)
+
+	for button_name: StringName in MINIMUM_TARGET_HEIGHTS:
+		var button := view.front_end_button(button_name)
+		var floor_px := float(MINIMUM_TARGET_HEIGHTS[button_name])
+		if button == null or button.custom_minimum_size.y < floor_px:
+			failures.append("%s is below its %.0f px touch floor" % [
+				button_name, floor_px])
+			view.free()
+			return 0
+
+	# The difficulty you are on must be the strongest state on Home, not the
+	# dimmest. `disabled` paints it with font_disabled_color at 2.6:1.
+	for mode: Dictionary in DifficultyCatalog.all_modes():
+		var difficulty := view.front_end_button(
+			StringName("Difficulty_%s" % StringName(mode["id"])))
+		if difficulty == null or difficulty.disabled or \
+				difficulty.custom_minimum_size.y < 64.0:
+			failures.append("difficulty choice is disabled or below its touch floor")
+			view.free()
+			return 0
+	for mode: Dictionary in DifficultyCatalog.all_modes():
+		var mode_id := StringName(mode["id"])
+		var button := view.front_end_button(
+			StringName("Difficulty_%s" % mode_id))
+		var chosen := mode_id == state.selected_difficulty()
+		var style := button.get_theme_stylebox("normal") as StyleBoxFlat
+		# Marked twice — a heavier border and an accent fill — so the state does
+		# not rest on colour alone, and a prefix that survives both.
+		if style == null or button.text.begins_with("▸ ") != chosen or \
+				(style.border_width_top >= 3) != chosen or \
+				(style.bg_color.a < 1.0) != chosen:
+			failures.append("the selected difficulty is not marked as chosen")
+			view.free()
+			return 0
+
+	# 41 flies, one maxed track and one at level 6 out of seven Garden tracks.
+	var expectations := {
+		"SpiderHubStatus": [
+			"46 / 280 levels", "1 of 7 tracks maxed", "41 flies to spend"],
+		"PlayModesHubStatus": ["CAMPAIGN", "PRACTICE", "COURSE LAB"],
+		"GuideHubStatus": [
+			"%d lessons" % FrontEndState.TUTORIAL_STEPS.size(),
+			"%d spiders" % SpiderCatalog.ALL_IDS.size()],
+	}
+	for status_name: String in expectations:
+		var status := view.find_child(status_name, true, false) as Label
+		if status == null:
+			failures.append("%s is missing" % status_name)
+			view.free()
+			return 0
+		for fragment: String in expectations[status_name]:
+			if not status.text.contains(fragment):
+				failures.append("%s does not report \"%s\"" % [
+					status_name, fragment])
+				view.free()
+				return 0
+	view.free()
 	return 1
 
 
@@ -1292,6 +1393,76 @@ static func _test_garage_and_shop_disclose_debug_upgrade_levels(
 		view.free()
 		return 0
 	view.free()
+	return 1
+
+
+## The overlay was only ever released when the *next* normal run was launched,
+## so a debug run left the menu quoting borrowed levels and refusing purchases
+## until the player stumbled onto Play or the DEBUG toggle. Owner-reported on
+## 0.34.0: "the upgrades for my spider are not available anymore until I play a
+## normal run first."
+static func _test_debug_overlay_ends_with_the_run_it_was_launched_for(
+	failures: PackedStringArray,
+) -> int:
+	var settings := PlayerSettings.defaults()
+	settings.show_debug_tools = true
+	var progress := PlayerProgress.defaults()
+	progress.spendable_flies = 500
+	progress.upgrade_levels["classic_reel"] = 7
+	var owned := progress.to_dictionary()
+	var service := ProgressionService.new()
+	var state := FrontEndState.new()
+	state.configure(settings, progress, service)
+	var purchases: Array[StringName] = []
+	state.upgrade_purchase_requested.connect(func(upgrade_id: StringName) -> void:
+		purchases.append(upgrade_id))
+	var launches: Array[int] = []
+	state.debug_play_requested.connect(func(
+		_settings: PlayerSettings,
+		_distance: float,
+		level: int,
+		_bird: Dictionary,
+		_tuning: Dictionary,
+	) -> void:
+		launches.append(level))
+
+	state.show_debug_run_setup()
+	state.set_debug_run_upgrade_level(20)
+	state.request_quick_debug_play()
+	if launches != [20] or not state.debug_upgrade_overlay_enabled() or \
+			state.displayed_upgrade_level(&"classic_reel") != 20:
+		failures.append("quick debug launch did not apply its upgrade overlay")
+		return 0
+	state.request_upgrade_purchase(&"classic_reel")
+	if not purchases.is_empty():
+		failures.append("a borrowed-level run still routed a purchase")
+		return 0
+
+	# Exactly what the composition root does when the run hands the menu back.
+	state.end_debug_run_overlay()
+	if state.debug_upgrade_overlay_enabled() or \
+			state.displayed_upgrade_level(&"classic_reel") != 7 or \
+			state.progress.to_dictionary() != owned:
+		failures.append("returning to the menu did not release the run overlay")
+		return 0
+	state.request_upgrade_purchase(&"classic_reel")
+	if purchases != [&"classic_reel"]:
+		failures.append("owned upgrades stayed unspendable after a debug run")
+		return 0
+	# The launcher keeps its remembered level, so the next debug run is unchanged.
+	if state.debug_run_upgrade_level != 20:
+		failures.append("releasing the overlay also forgot the launcher setting")
+		return 0
+
+	var file := FileAccess.open("res://game/bootstrap/main.gd", FileAccess.READ)
+	if file == null:
+		failures.append("composition root source cannot be read")
+		return 0
+	var show_front_end := file.get_as_text().split("func _show_front_end()")
+	if show_front_end.size() != 2 or not show_front_end[1].split("\nfunc ")[0] \
+			.contains("_front_end_state.end_debug_run_overlay()"):
+		failures.append("returning to the menu does not release the run overlay")
+		return 0
 	return 1
 
 
