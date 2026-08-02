@@ -1,6 +1,6 @@
 # Obstacle contacts sit inside the visible silhouette
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 
@@ -64,6 +64,15 @@ gap death; replacing the hook's alpha profile with its broad visual polygon was
 identified by family name; and applying the obstacle inset to course boundaries
 was rejected. The implemented source was restored after each mutation.
 
+## Remote implementation evidence
+
+PR #119 implementation head `75f95ad4` is a true merge over current `main`
+`1d6778c8`; its GitHub tree `ec622ee72d5ea4ec1ee8d8020d300262d4466895`
+matches the locally verified tree byte-for-byte. Exact Godot 4.7.1 passes
+210/210 after the reconciliation, including both menu-session contracts and
+this obstacle-contact regression. The claim is removed only in the closeout
+batch that follows this recorded evidence.
+
 ## 💡 Session idea
 
 Promote collision-to-alpha coverage into an asset acceptance metric: generated
@@ -80,4 +89,4 @@ that separation: a passable polygon can still be unfair when its player-facing
 art does not cover the lethal shape. This slice keeps the successful cadence
 work and closes only that contact-visibility gap.
 
-- **📊 Model:** gpt-5.6-sol · high · runtime fairness correction
+- **📊 Model:** gpt-5.6-sol · high · runtime bugfix

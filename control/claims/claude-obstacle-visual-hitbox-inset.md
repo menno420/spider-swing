@@ -1,1 +1,0 @@
-- `claude/obstacle-visual-hitbox-inset` · **obstacle contacts sit visibly inside rendered hazards** · game/domain + game/simulation + Bramble geometry + presentation debug overlay + tests + build/docs · 2026-08-02
