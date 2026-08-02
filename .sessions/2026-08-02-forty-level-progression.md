@@ -1,6 +1,6 @@
 # Forty-level upgrade progression
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 
@@ -55,8 +55,8 @@ cost curve, an L20 `MAX` quick selector, the reserve Burst at L10, and a stale
 
 - Exact Godot `4.7.1.stable.official.a13da4feb`: 197/197 contracts passed.
 - The L0/bird-off `@4` fixture reproduces exactly at 2,894.978 m and 49.733 s.
-- `git diff --check` passes. `python3 bootstrap.py check --strict` is rerun
-  after the final lifecycle flip; advisory capability notices are non-blocking.
+- `git diff --check` and `python3 bootstrap.py check --strict` pass after the
+  final lifecycle flip; advisory capability notices remain non-blocking.
 
 ## 💡 Session idea
 
