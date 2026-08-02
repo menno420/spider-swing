@@ -22,8 +22,9 @@ endpoints; it does not drive physics (GDD § 17.2).
 
 - `front_end.tscn` + `front_end.gd` — responsive Home, Garage, mobile-scrollable
   seven-track Shop, Tutorial, Campaign, Course Lab, Region Practice, Field Guide,
-  and Settings surfaces bound to application-owned state. The forest-web
-  background and all selectors use presentation state only.
+  Settings, compact Debug Test Run, and Advanced Test Lab surfaces bound to
+  application-owned state. The forest-web background and all selectors use
+  presentation state only.
 - `spider_ui_theme.gd` — one Ancient-Forest-aligned theme for panels, buttons,
   focus/disabled states, touch scroll configuration, descendant gesture
   bubbling, and silk-like scrollbars.

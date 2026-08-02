@@ -729,3 +729,12 @@ never edit.
   retain the base-tree blob unchanged; never reconstruct it from either read
   response. A task that must combine binary tails needs a byte-preserving blob
   download capability not exposed in this venue.
+- 2026-08-02 · capability · `owner-live` · **An explicitly approved one-file
+  control claim can land directly on `main` through the GitHub Contents API.** ·
+  evidence: `github_create_file` added only
+  `control/claims/claude-restore-quick-debug-run.md` at commit
+  `257377f5b7b95e72de5e7528019246c043549005`; a follow-up fetch reproduced the
+  generator's exact single-line claim while game code remained unchanged. ·
+  workaround: reserve this bypass for the repository-mandated claim-first
+  control lane after explicit owner approval; implementation still belongs on a
+  born-red PR.

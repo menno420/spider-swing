@@ -942,3 +942,23 @@
   access to the actions used on nearly every session.
 - provenance: Menno, 2026-08-02 — the main menu still looks crowded and is not
   easy to navigate
+
+## [D-0048] Keep quick debug launch separate from persistent advanced tuning
+
+- status: decided
+- date: 2026-08-02
+- verdict: Home's subordinate debug route opens a compact Debug Test Run
+  launcher with only distance, one temporary all-track upgrade level, pursuing-
+  bird controls, and immediate start. Advanced Test Lab remains one tap deeper
+  with the complete catalogue, auto-saved working set, A/B/C profiles, and trace
+  review. A quick request applies only its visible fields; sparse advanced
+  overrides remain saved but cannot silently affect it. Both routes use the same
+  state-owned values, progression overlay, composition-root guard, and
+  noncompetitive practice settlement path.
+- why: Replacing the former launch form with the complete Test Lab preserved
+  capability but removed the fast comparison workflow. Restoring the compact
+  form as a separate route avoids forcing routine distance/upgrade tests through
+  eight categories, while explicit override isolation prevents the simpler UI
+  from hiding a materially different run configuration.
+- provenance: Menno, 2026-08-02 — restore the missing easy Debug Test Run screen
+  from the supplied screenshot and defer all menu-style work to another session

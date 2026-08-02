@@ -7,8 +7,9 @@ Coordinates the run. Owns lifecycle and sequencing; does not own physics truth.
 ## What belongs here
 
 - **Front-end State** — owns
-  Home/Garage/Shop/Tutorial/Campaign/Course Lab/Region Practice/Field Guide/Settings navigation,
-  tutorial progression, validated player settings, and run requests.
+  Home/Garage/Shop/Tutorial/Campaign/Course Lab/Region Practice/Field Guide/Settings
+  navigation, compact and advanced debug-launch intent, tutorial progression,
+  validated player settings, and run requests.
 - **Run State Machine** — countdown, active run, dying, settlement, results,
   restart. Requests exactly one `RunSettlement` after death (GDD § 19.1).
 - **Difficulty Director** — selects curated chunks from speed, entry-state

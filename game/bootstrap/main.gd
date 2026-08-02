@@ -249,7 +249,9 @@ func _start_debug_game(
 		),
 	) or upgrade_level != _progression_service.debug_upgrade_overlay_level() or \
 			bird_overrides != _front_end_state.debug_bird_overrides() or \
-			tuning_overrides != _front_end_state.debug_tuning_overrides():
+			not _front_end_state.debug_tuning_request_is_valid(
+				tuning_overrides,
+			):
 		return
 	_active_run_is_debug_test = true
 	_unmount_front_end()

@@ -18,7 +18,7 @@ region with no guaranteed recovery, early thresholds are 1/2/3.5 km not 10/20/35
 and warning time shrinks as skill rises — live in
 [`upgrade-and-difficulty research`](product/upgrade-and-difficulty-research-2026-08-02.md).
 
-Build `0.32.0-menu-navigation-playtest` is current. Continuous drive is
+Build `0.33.0-quick-debug-run-playtest` is current. Continuous drive is
 zero; release, swing control, Reel, and pull timing earn speed; the former left
 kill line is a visible pursuing bird. `target_speed_at` remains a named
 reference. The non-pumping bot cannot tune the bird, so Test Run owns its three
@@ -41,8 +41,8 @@ without a reported regression.
   catch-up steps. No gameplay autoload singleton exists.
 - The app opens on Home. `FrontEndState` owns Home plus focused Spider, Play
   Modes, and Guide hubs; Garage, Shop, Tutorial, Course Lab, Region Practice,
-  Campaign, Field Guide, Settings, and the debug-only Test Run setup remain
-  state-owned destinations. The bootstrap root alone wires and mounts
+  Campaign, Field Guide, Settings, the compact debug-run launcher, and Advanced
+  Test Lab remain state-owned destinations. The bootstrap root alone wires and mounts
   presentation, input, persistence, progression, and the application session.
 - Layering is enforced in both directions: domain imports no Godot-facing layer;
   simulation imports domain; application imports inward; adapters and
@@ -62,7 +62,7 @@ without a reported regression.
 - A separately versioned `DebugTestProfile` auto-saves the Test Lab working set
   and A/B/C comparison slots. Its resolved display values and sparse explicit
   overrides never enter `PlayerSettings` or `PlayerProgress`.
-- Build `0.32.0-menu-navigation-playtest` (Android version code 52, package
+- Build `0.33.0-quick-debug-run-playtest` (Android version code 53, package
   `com.menno420.spiderswing.dev`) retains the stable conventional public debug
   identity introduced by `0.19.0-depth-testing` in
   `.github/android/debug.keystore`. The workflow pins its file and certificate
@@ -130,35 +130,40 @@ without a reported regression.
 
 **Depth-testing access**
 
-- When Debug Tools are enabled, Home exposes `DEBUG TEST RUN`. This pre-run
-  screen stages an exact typed distance, 0/5000/10000/25000 m shortcuts, and
+- When Debug Tools are enabled, Home exposes `DEBUG TEST RUN`. Its compact
+  launcher stages an exact typed distance, 0/5000/10000/25000 m shortcuts, and
   large 100 m `−`/`+` controls before one explicit `START TEST RUN`. The run
   reuses `SwingLabSession.RUN_PRACTICE` and therefore inherits the complete
   no-awards/no-records policy. A contract compares an off-grid debug start
   against the same seed streamed sequentially from zero and requires exact
   geometry equality.
-- The same screen stages one temporary 0–40 level across all seven selected-
-  spider tracks, with large `−`/`+` controls plus `OWNED`, L0, L20, and `MAX`.
+- The compact launcher also stages one temporary 0–40 level across all seven
+  selected-spider tracks, with large `−`/`+` controls plus `OWNED`, L0, L20,
+  and `MAX`.
   `ProgressionService` applies this session-only resolution overlay only when
   the test starts; the purchase cost check and real `PlayerProgress` remain
   unchanged. Ordinary Play, Course Lab, or Region Practice clears the overlay
   first, and `OWNED` restores the exact saved level dictionary. Garage and Shop
   label displayed overlay levels `NOT OWNED`, Shop pauses purchases, and an
   overlay run is noncompetitive.
-- The pre-run screen is a full Test Lab with eight catalogue-backed categories:
+- `ADVANCED TEST LAB` is one tap from the compact launcher and retains all eight
+  catalogue-backed categories:
   Movement, Pacing, Rope, Pulls, Course, Routes, Run, and Abilities. Each owns a
   native touch scroller, while the working-set/A/B/C strip and 62 px
-  `START TEST RUN` action remain pinned. Measured 1280×720 and 1280×600 layouts
-  enclose the complete shell and launch action. It also stages bird speed,
-  distance gain and start gap with
-  mobile `−`/`+` controls and OFF/SLOW/BASE/FAST presets. These values never
-  enter settings or progression. OFF is a true isolation switch even if the
+  `START TEST RUN` action remain pinned. Both surfaces stage bird speed,
+  distance gain, and start gap with OFF/SLOW/BASE/FAST presets.
+  Its 914 px three-card row, Advanced route, and pinned start are enclosed at
+  1280×720, 1280×600, and strict unscaled 1040×480; only the shortest layout
+  needs 85 px of conditions scroll. These values never enter settings or
+  progression. OFF is a true isolation switch even if the
   acceleration field is nonzero; SLOW/BASE/FAST are explicitly `assumed` until
   the owner answers OQ-15 on device.
-- The working set saves automatically through `SaveRepository`; A/B/C store
-  whole comparisons. Fully resolved values remain readable, while only manual
-  axes are applied after spider/difficulty/upgrade resolution. Returning from a
-  debug run saves live tuning differences against that same baseline.
+- The Advanced working set saves automatically through `SaveRepository`; A/B/C
+  store whole comparisons. Fully resolved values remain readable, while only manual
+  axes are applied after spider/difficulty/upgrade resolution. Quick starts
+  intentionally ignore hidden advanced overrides while preserving them for the
+  next advanced comparison. Returning from a debug run saves live tuning
+  differences against that same baseline.
 - DEBUG → RUN retains its live distance and upgrade controls for adjustments
   during a test, including typed `GO`, Enter/Done, focus loss, presets, and
   `−`/`+`. The pre-run screen is the primary setup path. Both surfaces are
@@ -199,8 +204,9 @@ without a reported regression.
   card, difficulty, a dominant Endless Play action, and four intention-level
   choices instead of indexing every feature. Spider groups Garage and Upgrades;
   Play Modes groups Campaign, Region Practice, and Course Lab; Guide groups the
-  Tutorial and Field Guide. Settings stays direct, while debug-only Test Lab is
-  a subordinate direct utility. All existing destinations remain within two
+  Tutorial and Field Guide. Settings stays direct, while debug-only Debug Test
+  Run is a subordinate direct utility and Advanced Test Lab sits behind it. All
+  existing destinations remain within two
   taps and each destination returns through the hub that opened it.
   Garage and Shop inherit the selected spider's accent. Settings and Shop use
   a single native vertical scroller whose descendants pass drag input.

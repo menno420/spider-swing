@@ -18,8 +18,9 @@ The first visible screen presents intentions rather than indexing every feature:
 - **Play Modes** — opens Campaign, Region Practice, and Course Lab together;
 - **Guide** — opens How to Swing and Field Guide together;
 - **Settings** — edits real persisted options directly;
-- **Test Lab** *(when Debug Tools is enabled)* — remains a subordinate direct
-  utility for saved, noncompetitive run comparisons.
+- **Debug Test Run** *(when Debug Tools is enabled)* — remains a subordinate
+  direct utility for quick noncompetitive launches; Advanced Test Lab is one
+  more tap from there.
 
 Home uses a full landscape dashboard rather than a feature grid. The selected
 production spider, role, difficulty, and best distance form one identity card;
@@ -137,11 +138,19 @@ The current options all affect runtime behavior:
 | Haunted background music | Saved 0–100% slider for both persistent stems; 0% is silent, 50% preserves the original mix, and 100% adds 6.02 dB |
 | Gameplay sound effects | Enables or mutes the presentation-owned SFX layer |
 | Handheld haptics | Enables or suppresses Android vibration feedback independently |
-| Debug tools | Shows or removes the Home Test Lab route plus in-run diagnostic controls |
+| Debug tools | Shows or removes the Home Debug Test Run route plus in-run diagnostic controls |
 
-### Test Lab
+### Debug Test Run and Advanced Test Lab
 
-The pre-run Test Lab exposes the eight configuration categories that can
+The Home route opens a compact launcher first. It exposes only start distance,
+one temporary all-track upgrade level, and the three pursuing-bird values, with
+0/5k/10k/25k, OWNED/L0/L20/MAX, and OFF/SLOW/BASE/FAST shortcuts. Its conditions
+scroll independently while the start action stays pinned. A quick launch applies
+only those visible fields; a hidden saved advanced override cannot affect a run
+whose launcher did not disclose it.
+
+Advanced Test Lab is one explicit tap from that launcher and exposes the eight
+configuration categories that can
 meaningfully exist before a run: Movement, Pacing, Rope, Pulls, Course, Routes,
 Run, and Abilities. All entries come from `TuningCatalog`; presentation does not
 duplicate bounds, steps, descriptions, or quick values. Pacing includes the
@@ -187,8 +196,8 @@ recording and on taller aspect ratios.
 ## Ownership
 
 - `FrontEndState` owns navigation, tutorial progress, settings validation,
-  Garage/Shop/Course Lab/Region Practice intent, Field Guide selection, the
-  Test Lab working set, and run requests.
+  Garage/Shop/Course Lab/Region Practice intent, Field Guide selection, compact
+  versus advanced debug launch intent, the Test Lab working set, and run requests.
 - `FrontEndView` renders state and forwards button intent.
 - `TutorialPreview` renders illustration only.
 - `ProgressionService` applies each run settlement once and owns fly-funded
@@ -206,7 +215,7 @@ No global manager or autoload is introduced.
 `python3 tools/verify.py --require-godot` verifies:
 
 - startup mounts Home without creating gameplay;
-- Play, Spider, Play Modes, Guide, Settings, and Test Lab are real
+- Play, Spider, Play Modes, Guide, Settings, and Debug Test Run are real
   event-consuming Home buttons; each hub's destination buttons consume their
   own events and return through the same state-owned route;
 - the tutorial has exactly six steps and covers the live mechanics;
@@ -227,10 +236,12 @@ No global manager or autoload is introduced.
 - effects and haptics migrate on for older settings, persist independently, and
   cannot alter gameplay events;
 - Home keeps one dominant Play action, a four-choice semantic map, and a
-  subordinate debug-only Test Lab action; the three hubs remain enclosed in
+  subordinate debug-only quick-run action; the three hubs remain enclosed in
   short landscape layouts and preserve two-tap reachability;
 - Field Guide retains its index plus four separate glance-readable sections;
-- the Test Lab exposes all eight pre-run catalogue categories, auto-saves its
-  working set, round-trips A/B/C, preserves unedited progression, reaches the
-  real session before its first tick, and remains noncompetitive;
+- the compact launcher exposes all and only its visible start conditions, stays
+  enclosed at the reference, short, and strict 1040×480 layouts, and cannot leak
+  hidden tuning; Advanced Test Lab exposes all eight pre-run catalogue categories,
+  auto-saves its working set, round-trips A/B/C, preserves unedited progression,
+  reaches the real session before its first tick, and remains noncompetitive;
 - disabling debug tools removes its Home and in-run touch surfaces.
