@@ -342,9 +342,11 @@ product decisions.
   input-router/session contract applies typed distance, `MAX`, and `OWNED` to the
   live run; DEBUG-off hides every depth control.
 - a real Front End instantiated in a 1280×720 headless `SubViewport` encloses
-  the 1088×533 pre-run card, 64-pixel `−` / `+`, and 68-pixel start action; a
-  joined contract stages an off-grid distance and upgrade level, starts the
-  authoritative practice session, and proves ordinary Play clears the overlay.
+  the 1088×533 pre-run card and its 64-pixel `−` / `+`; one native vertical
+  scroller owns the staged conditions while the 68-pixel start action stays
+  pinned below it. A joined contract stages an off-grid distance and upgrade
+  level, starts the authoritative practice session, and proves ordinary Play
+  clears the overlay.
 
 ## Owner device playtest
 
@@ -354,7 +356,7 @@ current mechanics continuation, use
 and its earned-speed specification. No new recording is expected; device-only
 questions require a playtest verdict.
 
-Install `0.26.0-earned-speed-bird-playtest` over `0.19.0-depth-testing` or any later
+Install `0.26.1-debug-scroll-playtest` over `0.19.0-depth-testing` or any later
 stable-key build without uninstalling; both use the stable signer and the update
 should preserve the save.
 Only a device that never installed `0.19.0` or later needs the one final

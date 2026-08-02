@@ -10,7 +10,7 @@
 [`next-session-brief-2026-08-01-mechanics.md`](planning/next-session-brief-2026-08-01-mechanics.md)
 and the spec it points at,
 [`earned-speed-and-the-bird.md`](game-design/earned-speed-and-the-bird.md).
-Build `0.26.0-earned-speed-bird-playtest` removes the continuous forward drive,
+Build `0.26.1-debug-scroll-playtest` removes the continuous forward drive,
 keeps `target_speed_at` as a named reference, and makes the former invisible
 left kill line a deterministic pursuing bird. Release, swing control, Reel and
 pull timing now supply forward speed; the bird supplies visible pressure. Its
@@ -53,7 +53,7 @@ without a reported regression.
   pattern, reached checkpoints, and bounded idempotent-settlement history.
   Older settings default audio/haptics on; every progression migration remains
   one-way and explicit.
-- Build `0.26.0-earned-speed-bird-playtest` (Android version code 45, package
+- Build `0.26.1-debug-scroll-playtest` (Android version code 46, package
   `com.menno420.spiderswing.dev`) retains the stable conventional public debug
   identity introduced by `0.19.0-depth-testing` in
   `.github/android/debug.keystore`. The workflow pins its file and certificate
@@ -145,7 +145,10 @@ without a reported regression.
   first, and `OWNED` restores the exact saved level dictionary. Garage and Shop
   label displayed overlay levels `NOT OWNED`, Shop pauses purchases, and an
   overlay run is noncompetitive.
-- The pre-run screen also stages bird speed, distance gain and start gap with
+- The pre-run screen uses one native touch scroller for every staged condition
+  and keeps its 68 px `START TEST RUN` action pinned below that scrolling body,
+  so shorter phone viewports cannot clip the only launch path. It also stages
+  bird speed, distance gain and start gap with
   mobile `−`/`+` controls and OFF/SLOW/BASE/FAST presets. These values never
   enter settings or progression. OFF is a true isolation switch even if the
   acceleration field is nonzero; SLOW/BASE/FAST are explicitly `assumed` until

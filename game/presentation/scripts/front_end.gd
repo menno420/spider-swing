@@ -820,10 +820,23 @@ func _build_debug_run_setup() -> void:
 	var card := _panel(PANEL)
 	card.name = "DebugRunSetupCard"
 	_place(card, _debug_run_setup, 0.075, 0.215, 0.925, 0.955)
+	var shell := VBoxContainer.new()
+	shell.name = "DebugRunSetupShell"
+	shell.add_theme_constant_override("separation", 10)
+	_fill_with_margin(shell, card, 20.0)
+
+	var scroll := ScrollContainer.new()
+	scroll.name = "DebugRunSetupScroll"
+	SpiderUiTheme.configure_touch_scroll(scroll)
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	shell.add_child(scroll)
+
 	var content := VBoxContainer.new()
 	content.name = "DebugRunSetupContent"
 	content.add_theme_constant_override("separation", 10)
-	_fill_with_margin(content, card, 20.0)
+	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(content)
 	content.add_child(_section_label("CHOOSE THE TEST CONDITIONS, THEN START ONCE"))
 
 	var columns := HBoxContainer.new()
@@ -853,7 +866,8 @@ func _build_debug_run_setup() -> void:
 		68.0,
 	)
 	start.pressed.connect(_on_debug_run_start)
-	content.add_child(start)
+	shell.add_child(start)
+	SpiderUiTheme.enable_descendant_drag_bubbling(scroll)
 
 
 ## One row for watching a recorded lab run, under the two setup cards.
