@@ -1,6 +1,6 @@
 # Complete front-end and persistent Test Lab
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 
@@ -59,6 +59,14 @@ were the correct seams to extend rather than replacing the front end.
   simulation tick and live changes re-enter the saved working set on Menu.
 - Build identity is `0.30.0-menu-system-playtest`, Android code 50.
 
+## Shipped
+
+- Remote implementation commit `7f7136d76b239d2d9999148de27db7c1b84c7e0a`
+  carries all 21 changed files on PR #109. GitHub and the locally verified Git
+  commit both resolve to tree `7b5b4a6bb7420f50a6e5c812451b2f348ec0ae33`.
+- This closeout flip withdraws `claude/menu-system-overhaul`; required GitHub
+  checks and Android export decide the PR's terminal merge/build state.
+
 ## Layout and visual boundary
 
 - Headless Godot layout audits at 1280×720 and 1280×600 found no visible
@@ -82,9 +90,9 @@ action. Every mutation was restored before the final gates.
 - Exact Godot `4.7.1.stable.official.a13da4feb`: 203/203 contracts pass.
 - `python3 tools/verify.py`: all seven stages pass, including exact regeneration
   of 27 audio assets, import, boot, architecture, and the engine runner.
-- `python3 bootstrap.py check --strict`: content checks pass; pre-close reports
-  only the deliberate `in-progress` card hold plus nonblocking repository
-  advisories. The boot ledger retains 199 words of enforced headroom.
+- `python3 bootstrap.py check --strict`: the completed card and withdrawn claim
+  pass every content check. Only nonblocking repository advisories remain, and
+  the boot ledger retains 199 words of enforced headroom.
 
 ## Owner questions
 
