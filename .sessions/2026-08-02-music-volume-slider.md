@@ -67,6 +67,8 @@ path in this venue.
   verified tree both resolve to `4231d65beadea119df8ded1ada46c7ee07842f5e`.
 - This closeout removes only `agent/music-volume-slider`'s claim. Required
   GitHub checks and Android export decide the terminal merge/build state.
+- Connector closeout commit `8555bb7f5c00c23c482eadae26a7fa1415fa3d23`
+  carries the complete card/claim flip on exact tree `895cf97a…`.
 
 ## Verification evidence
 
