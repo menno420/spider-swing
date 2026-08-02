@@ -86,7 +86,7 @@ extends SceneTree
 ## trusting any run. An input rate far outside that means the model is not
 ## playing the same game, whatever its distance says.
 
-const BOT_MODEL_VERSION := 3
+const BOT_MODEL_VERSION := 4
 const FIXED_DELTA := 1.0 / 60.0
 const PIXELS_PER_METRE := 10.0
 const DISTANCE_BANDS_M := [500.0, 1000.0, 2000.0, 3500.0]
@@ -132,6 +132,7 @@ const SKILL_PROFILES := {
 		"dive_floor_y": 520.0,
 		"reel_reserve_scale": 1.0,
 		"reel_floor_scale": 1.0,
+		"pump_window_deg": 25.0,
 	},
 	&"intermediate": {
 		"decision_period_ticks": 7,
@@ -154,6 +155,7 @@ const SKILL_PROFILES := {
 		"dive_floor_y": 520.0,
 		"reel_reserve_scale": 1.0,
 		"reel_floor_scale": 1.0,
+		"pump_window_deg": 15.0,
 	},
 	&"expert": {
 		"decision_period_ticks": 4,
@@ -176,6 +178,7 @@ const SKILL_PROFILES := {
 		"dive_floor_y": 520.0,
 		"reel_reserve_scale": 1.0,
 		"reel_floor_scale": 1.0,
+		"pump_window_deg": 12.0,
 	},
 }
 
@@ -202,6 +205,7 @@ const FITTABLE_PROFILE_KEYS := [
 	"attach_fan_top_deg", "attach_fan_bottom_deg", "attach_reach_frac",
 	"dive_fan_top_deg", "dive_fan_bottom_deg", "dive_reach_frac",
 	"dive_floor_y", "reel_reserve_scale", "reel_floor_scale",
+	"pump_window_deg",
 	"decision_period_ticks", "reaction_delay_ticks",
 ]
 
@@ -1683,12 +1687,61 @@ class RunDriver:
 			float(profile["reel_band_px"]) * reel_band_scale
 		var reel_seconds_left := world.web.reel_energy / \
 			maxf(0.001, config.reel_drain_rate)
+		var pumping := _in_pump_window()
 		if wants_reel:
-			if world.position.y <= target_y or \
+			# Height correction stops at the target; a pump stops when the
+			# swing leaves the efficient part of its arc. Either reason on its
+			# own is enough to keep reeling, so a pump begun at the bottom is
+			# not cut short by having reached route height.
+			var height_done := world.position.y <= target_y
+			if (height_done and not pumping) or \
 					reel_seconds_left <= reel_stop_floor_s or near_ceiling:
 				_set_reel(false)
-		elif too_low and reel_seconds_left > reel_reserve_s:
+		elif (too_low or pumping) and reel_seconds_left > reel_reserve_s:
 			_set_reel(true)
+
+	## True while the web is near enough to straight-down that shortening it
+	## buys height efficiently — the model's stand-in for pumping a pendulum.
+	##
+	## **Reeling makes you faster.** That is `measured` — ablating Reel on the
+	## endorsed policy costs 79.2 → 74.5 m/s mean speed and 1 908 → 1 252 m
+	## (`docs/measurements/2026-08-01-upgrade-playstyle-sweep.md`), and the
+	## owner reports reeling partly to gain speed. The design's
+	## "speed-neutral" is narrower than it reads and must not be repeated as
+	## "reeling does not make you faster".
+	##
+	## What is narrow is only the *retraction step*: `advance_resource` moves
+	## `rope_length` and writes no velocity, and the constraint that follows
+	## removes outward radial velocity while preserving tangential. The speed
+	## therefore arrives one step later, through the pendulum, by two routes —
+	## the rope going taut converts a radial fall into tangential travel, and
+	## shortening while below the anchor **lifts the spider for free**, adding
+	## `m*g*dr` of energy that returns as speed on the next descent.
+	##
+	## Both routes are strongest at the bottom of the arc, which is what makes
+	## this the pump window: the lift bought by shortening `dr` is
+	## `dr * cos(theta)` for `theta` off straight down, so the bottom is worth
+	## `1 / cos(theta)` times anywhere else, and tangential speed — the
+	## component the constraint preserves — peaks there too.
+	##
+	## The old policy reeled purely on being below the route. Being low
+	## correlates with the bottom of a swing but does not imply it: low and far
+	## out to the side is the worst place to spend the meter, and it was spent
+	## there routinely. This is the "height-based, not swing-phase-based" gap
+	## named in `docs/measurements/2026-08-01-owner-play-calibration.md`.
+	func _in_pump_window() -> bool:
+		if not world.web.attached:
+			return false
+		var window := float(profile.get("pump_window_deg", 0.0))
+		if window <= 0.0:
+			return false
+		# At minimum rope there is nothing left to shorten, so a "pump" would
+		# only burn meter the player will want for a real correction.
+		if world.web.rope_length <= config.web_minimum_length + 1.0:
+			return false
+		var offset := world.position - world.web.anchor
+		var angle := absf(rad_to_deg(atan2(offset.x, maxf(0.001, offset.y))))
+		return angle <= window
 
 	## True once a rotten or collapsing span is close enough to failing that a
 	## player reading the cue would already have let go. The remaining life

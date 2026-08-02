@@ -116,6 +116,9 @@ restored overspeed correction, 10 km pace curve, bird ceiling-share invariant,
 two added contracts, research note, and repaired opaque guard ledger. Its
 speed/bird decision remains D-0048; this launcher's non-overlapping decision is
 renumbered D-0049. No quick-launch production value changed during the merge.
+PR #113 and its telemetry-only follow-up #116 then advanced `main` again; the
+final tree also retains the pumping bot model, measurement, simulation-lab
+documentation, engine capability evidence, and latest byte-preserved ledger.
 
 ## Owner questions
 
