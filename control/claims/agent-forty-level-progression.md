@@ -1,0 +1,1 @@
+- `agent/forty-level-progression` · **40-level upgrade progression** — double every spider track to 40 levels with smaller per-step gains, stronger totals, proportional save migration, longer costs, replay compatibility, and mobile UI coverage · game/domain, game/application, game/presentation, game/adapters, assets/runtime/traces, tests, docs, build identity · 2026-08-02
