@@ -48,7 +48,7 @@ env:
   GODOT_VERSION: 4.7.1
   APK_PATH: build/spider-swing-debug.apk
   ARTIFACT_NAME: spider-swing-android-debug
-  BUILD_VERSION: 0.33.0-quick-debug-run-playtest
+  BUILD_VERSION: 0.34.0-speed-cap-playtest
   APP_NAME: Spider Swing Quick Debug Run Playtest (dev)
   DEBUG_KEYSTORE_PATH: .github/android/debug.keystore
   DEBUG_KEYSTORE_SHA256: e9104672477e0238b6cc2f7d6b994c459e37f130cae06a37aff05001f101bbda
@@ -112,7 +112,7 @@ jobs:
           set -euo pipefail
           grep -F "config/version=\"${BUILD_VERSION}\"" project.godot
           grep -F "version/name=\"${BUILD_VERSION}\"" export_presets.cfg
-          grep -F 'version/code=53' export_presets.cfg
+          grep -F 'version/code=54' export_presets.cfg
           grep -F "package/name=\"${APP_NAME}\"" export_presets.cfg
           echo "build identity: ${BUILD_VERSION} @ ${SOURCE_SHA}"
 

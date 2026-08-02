@@ -18,7 +18,7 @@ region with no guaranteed recovery, early thresholds are 1/2/3.5 km not 10/20/35
 and warning time shrinks as skill rises — live in
 [`upgrade-and-difficulty research`](product/upgrade-and-difficulty-research-2026-08-02.md).
 
-Build `0.33.0-quick-debug-run-playtest` is current. Continuous drive is
+Build `0.34.0-speed-cap-playtest` is current. Continuous drive is
 zero; release, swing control, Reel, and pull timing earn speed; the former left
 kill line is a visible pursuing bird. `target_speed_at` remains a named
 reference. The non-pumping bot cannot tune the bird, so Test Run owns its three
@@ -62,7 +62,7 @@ without a reported regression.
 - A separately versioned `DebugTestProfile` auto-saves the Test Lab working set
   and A/B/C comparison slots. Its resolved display values and sparse explicit
   overrides never enter `PlayerSettings` or `PlayerProgress`.
-- Build `0.33.0-quick-debug-run-playtest` (Android version code 53, package
+- Build `0.34.0-speed-cap-playtest` (Android version code 54, package
   `com.menno420.spiderswing.dev`) retains the stable conventional public debug
   identity introduced by `0.19.0-depth-testing` in
   `.github/android/debug.keystore`. The workflow pins its file and certificate
