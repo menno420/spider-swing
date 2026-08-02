@@ -34,7 +34,7 @@ Player settings value and backward-compatible migration; Settings presentation; 
 - `AudioDirector` applies one gain after adaptive pressure mixing to both bed
   and chase stems. 50% is 0 dB relative, 0% stops playback, and 100% doubles
   amplitude (+6.02 dB) without changing SFX or Haptics.
-- Build identity is `0.31.0-music-volume-playtest`, Android code 51. D-0045 and
+- Build identity is `0.31.0-music-volume-playtest`, Android code 51. D-0046 and
   the current settings/audio/testing contracts record the new boundary.
 
 ## Layout and interaction evidence
@@ -59,6 +59,13 @@ No new capability or wall. The requested `app_block` name is still absent from
 the callable registry, matching the dated repository finding recorded by the
 soundtrack session; the direct GitHub connector remains the working publication
 path in this venue.
+
+## Concurrent-main reconciliation
+
+PR #110 merged during closeout. Its leaderboard decision keeps D-0045; this
+Music decision moved to D-0046. Its research pointer is preserved beside the
+new build/settings state, and its repaired binary guard ledger is the merge
+base for this session's unique append records. No source or balance value moved.
 
 ## Shipped
 

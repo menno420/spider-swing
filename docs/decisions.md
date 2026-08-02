@@ -856,7 +856,50 @@
   complete grey textured UI, glance-readable Field Guide, main-menu debug
   access, and saved test-run edits
 
-## [D-0045] Replace binary Music with one bounded persistent volume
+## [D-0045] One general leaderboard, with seed and upgrade levels on every entry
+
+- status: decided
+- date: 2026-08-02
+- verdict: There is **one general leaderboard, not segmented by upgrade level**.
+  Permanent upgrades apply normally to leaderboard runs; the board does not
+  split into baseline/upgraded classes and does not normalise standing against
+  ownership. Instead **every entry records the values needed to reproduce the
+  run** — at minimum its course seed, the upgrade levels in effect, the selected
+  spider, the difficulty mode, and the build/trace identity — so any player can
+  replay the exact conditions another player's run was set on. This supersedes
+  GDD § 12.3's "standard mode uses fixed Classic stats" for the leaderboard's
+  eligibility rule; it does **not** touch § 12.1 (distance is the authoritative
+  score, and nothing adds fake metres) or the D-0033/economy rule that
+  leaderboard standing cannot be bought.
+- why: Menno's direct answer to the open fork surfaced by the 2026-08-02 upgrade
+  and difficulty research. Segmenting the board by upgrade class was the
+  external recommendation and the GDD's own reading, but it splits a small
+  population across several thin boards and makes the headline number ambiguous
+  — nobody can say who is actually furthest. Transparency was chosen over
+  segmentation: publishing the seed and the upgrade snapshot makes any entry
+  checkable and repeatable rather than merely believable, and it turns the board
+  into a reproducible challenge ("here is the exact course and loadout, beat
+  it") instead of a bare number.
+  Two consequences are recorded deliberately rather than discovered later.
+  **Disclosure makes the difference visible, not absent**: two entries at
+  different upgrade levels are still not like-for-like, and the board's fairness
+  therefore rests on upgrades staying in a bounded band and remaining earnable
+  only through play — both already required by the economy model. **Entries are
+  only reproducible within one physics generation**: the trace format already
+  refuses input from a different generation (`spider-swing-input-trace@4`), so
+  any change that moves upgrade-bearing authoritative outcomes invalidates
+  reproduction of older entries unless the identity is stored with them.
+  Most of the machinery exists: production already draws a fresh course seed per
+  run, `SwingLabSession` already records human input, `export_diagnostic()`
+  already writes seed plus resolved config plus commands, and `--replay` /
+  `load_input_trace` already reproduce a recorded run within a contract-enforced
+  one metre.
+- provenance: Menno, 2026-08-02 — "The leaderboards should just be general
+  upgrade independent, but I think each leaderboard entry should have it's game
+  seed and upgrade levels included so people can reproduce the exact run",
+  answering the fork in `docs/product/upgrade-and-difficulty-research-2026-08-02.md` § 4.4
+
+## [D-0046] Replace binary Music with one bounded persistent volume
 
 - status: decided
 - date: 2026-08-02
