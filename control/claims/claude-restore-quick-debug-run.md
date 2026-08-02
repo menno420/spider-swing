@@ -1,0 +1,1 @@
+- `claude/restore-quick-debug-run` · **Restore compact Debug Test Run launch screen while preserving Advanced Test Lab** · front-end routing and debug-run presentation/contracts · 2026-08-02

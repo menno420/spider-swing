@@ -111,6 +111,15 @@ Format: `- YYYY-MM-DD · capability|wall · <venue> · finding · evidence · wo
 `any`; older five-field lines without a venue token stay valid — read them
 as venue `any`.)
 
+- 2026-08-02 · wall · `owner-live` · **Exact Godot headless can measure GUI
+  geometry but cannot capture menu pixels in this seat.** · evidence:
+  `4.7.1.stable.official.a13da4feb` laid out Home and three hubs in a real
+  `SubViewport`, but `viewport.get_texture().get_image()` emitted
+  `dummy/storage/texture_storage.h:110: Parameter "t" is null` and returned an
+  empty image. · workaround: use headless rectangle/enclosure contracts for
+  deterministic layout and the exported Android artifact for raster/device
+  judgment; do not claim screenshot evidence from the dummy renderer.
+
 - 2026-08-02 · wall · `owner-live` · **The requested `app_block` and a music-
   generation tool are not exposed in this seat.** · evidence: the exact
   callable registry was filtered twice by name and description for

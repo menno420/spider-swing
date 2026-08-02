@@ -919,3 +919,26 @@
   loudest SFX, and one shared gain preserves the authored bed/tension balance.
 - provenance: Menno, 2026-08-02 — background audio is very soft compared with
   other sounds; replace the on/off choice with adjustable intensity
+
+## [D-0047] Make Home an intention map, not a feature index
+
+- status: decided
+- date: 2026-08-02
+- verdict: Home keeps selected-spider identity, difficulty, Settings, and one
+  direct Endless Play action. The former nine equal-weight destination grid is
+  replaced by four intention-level choices: Spider owns Garage and Upgrades;
+  Play Modes owns Campaign, Region Practice, and Course Lab; Guide owns How to
+  Swing and Field Guide; Settings remains direct. Debug-only Test Lab remains a
+  direct but visually subordinate utility because repeatable device comparisons
+  must stay quick. Each hub and return path is authoritative `FrontEndState`,
+  not presentation-local history. This supersedes only D-0044's three-column
+  Home topology; its slate material, Field Guide, and saved Test Lab decisions
+  remain in force.
+- why: The owner's 36.8-second device recording of build 0.30 showed that the
+  completed material treatment had not solved navigation: nine destinations,
+  three difficulty choices, and Play all competed in one dense panel. Grouping
+  by player intention keeps every feature within two taps, makes future modes
+  additive inside a hub rather than additive on Home, and preserves direct
+  access to the actions used on nearly every session.
+- provenance: Menno, 2026-08-02 — the main menu still looks crowded and is not
+  easy to navigate
