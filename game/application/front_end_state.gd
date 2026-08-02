@@ -559,6 +559,13 @@ func set_reduced_motion(enabled: bool) -> void:
 	_publish_settings()
 
 
+func set_music_enabled(enabled: bool) -> void:
+	if settings.music_enabled == enabled:
+		return
+	settings.music_enabled = enabled
+	_publish_settings()
+
+
 func set_effects_enabled(enabled: bool) -> void:
 	if settings.effects_enabled == enabled:
 		return

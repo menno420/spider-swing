@@ -3,19 +3,30 @@ class_name AudioDirector
 ## Presentation-owned event-to-sound orchestration.
 ##
 ## It consumes snapshots and SimulationEvents, round-robins high-frequency
-## variants, and caps repeated cues. It never emits a gameplay command or
-## mutates simulation/application state.
+## variants, caps repeated cues, and eases a two-stem music mix. It never emits
+## a gameplay command or mutates simulation/application state.
 
 const VOICE_COUNT := 6
+const MUSIC_BED_VOLUME_DB := -3.0
+const MUSIC_TENSION_SILENT_DB := -60.0
+const MUSIC_TENSION_MAX_DB := -7.0
+const MUSIC_ATTACK_PER_SECOND := 0.72
+const MUSIC_RELEASE_PER_SECOND := 0.34
 
 var _effects_enabled: bool = true
+var _music_enabled: bool = true
 var _streams: Dictionary = {}
 var _voices: Array[AudioStreamPlayer] = []
 var _voice_cursor: int = 0
 var _loop_player: AudioStreamPlayer
+var _music_bed_player: AudioStreamPlayer
+var _music_tension_player: AudioStreamPlayer
 var _variant_cursors: Dictionary = {}
 var _cooldowns: Dictionary = {}
 var _reel_active: bool = false
+var _music_tension: float = 0.0
+var _music_tension_target: float = 0.0
+var _music_playback_requested: bool = false
 
 
 func _ready() -> void:
@@ -32,28 +43,37 @@ func _ready() -> void:
 	_loop_player = AudioStreamPlayer.new()
 	_loop_player.bus = &"Master"
 	add_child(_loop_player)
-	var loop_source := _streams.get(AudioAssetCatalog.REEL_LOOP) as AudioStream
-	if loop_source is AudioStreamWAV:
-		var loop_stream := loop_source.duplicate() as AudioStreamWAV
-		loop_stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
-		loop_stream.loop_begin = 0
-		loop_stream.loop_end = roundi(
-			loop_stream.get_length() * float(loop_stream.mix_rate)
-		)
-		_loop_player.stream = loop_stream
-	else:
-		_loop_player.stream = loop_source
+	_loop_player.stream = _looping_stream(
+		_streams.get(AudioAssetCatalog.REEL_LOOP) as AudioStream)
+	_music_bed_player = _music_player(
+		AudioAssetCatalog.MUSIC_BED, MUSIC_BED_VOLUME_DB)
+	_music_tension_player = _music_player(
+		AudioAssetCatalog.MUSIC_TENSION, MUSIC_TENSION_SILENT_DB)
 	set_process(true)
+	_apply_music_playback()
 
 
 func configure_effects(enabled: bool) -> void:
 	_effects_enabled = enabled
 	if not enabled:
-		stop_all()
+		_stop_effects()
 
 
 func effects_enabled() -> bool:
 	return _effects_enabled
+
+
+func configure_music(enabled: bool) -> void:
+	_music_enabled = enabled
+	_apply_music_playback()
+
+
+func music_enabled() -> bool:
+	return _music_enabled
+
+
+func music_playback_requested() -> bool:
+	return _music_playback_requested
 
 
 func present_event(event: SimulationEvent) -> void:
@@ -88,6 +108,7 @@ func present_snapshot(snapshot: SimulationSnapshot) -> void:
 		_start_reel_loop()
 	elif not next_reel_active and _reel_active:
 		_stop_reel_loop()
+	_music_tension_target = music_tension_for_snapshot(snapshot)
 
 
 func choose_path(event: SimulationEvent) -> String:
@@ -109,7 +130,21 @@ func advance_cooldowns(delta: float) -> void:
 			_cooldowns[key] = remaining
 
 
+func leave_run() -> void:
+	_music_tension_target = 0.0
+	_stop_effects()
+
+
 func stop_all() -> void:
+	_stop_effects()
+	_music_playback_requested = false
+	if _music_bed_player != null:
+		_music_bed_player.stop()
+	if _music_tension_player != null:
+		_music_tension_player.stop()
+
+
+func _stop_effects() -> void:
 	for voice: AudioStreamPlayer in _voices:
 		voice.stop()
 	_stop_reel_loop()
@@ -117,6 +152,19 @@ func stop_all() -> void:
 
 func _process(delta: float) -> void:
 	advance_cooldowns(delta)
+	var response := (
+		MUSIC_ATTACK_PER_SECOND
+		if _music_tension_target > _music_tension
+		else MUSIC_RELEASE_PER_SECOND
+	)
+	_music_tension = move_toward(
+		_music_tension, _music_tension_target, response * delta)
+	if _music_tension_player != null:
+		_music_tension_player.volume_db = lerpf(
+			MUSIC_TENSION_SILENT_DB,
+			MUSIC_TENSION_MAX_DB,
+			smoothstep(0.0, 1.0, _music_tension),
+		)
 
 
 func _play_one_shot(path: String) -> void:
@@ -143,3 +191,54 @@ func _stop_reel_loop() -> void:
 	_reel_active = false
 	if _loop_player != null:
 		_loop_player.stop()
+
+
+func _music_player(path: String, volume_db: float) -> AudioStreamPlayer:
+	var player := AudioStreamPlayer.new()
+	player.bus = &"Master"
+	player.volume_db = volume_db
+	player.stream = _looping_stream(_streams.get(path) as AudioStream)
+	add_child(player)
+	return player
+
+
+func _looping_stream(source: AudioStream) -> AudioStream:
+	if source is AudioStreamWAV:
+		var loop_stream := source.duplicate() as AudioStreamWAV
+		loop_stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		loop_stream.loop_begin = 0
+		loop_stream.loop_end = roundi(
+			loop_stream.get_length() * float(loop_stream.mix_rate)
+		)
+		return loop_stream
+	return source
+
+
+func _apply_music_playback() -> void:
+	if _music_bed_player == null or _music_tension_player == null:
+		return
+	if not _music_enabled:
+		_music_playback_requested = false
+		_music_bed_player.stop()
+		_music_tension_player.stop()
+		return
+	if not _music_bed_player.playing:
+		_music_bed_player.play()
+	if not _music_tension_player.playing:
+		_music_tension_player.play(_music_bed_player.get_playback_position())
+	_music_playback_requested = true
+
+
+static func music_tension_for_snapshot(snapshot: SimulationSnapshot) -> float:
+	if snapshot == null or snapshot.run_state != &"active":
+		return 0.0
+	var pace := clampf(inverse_lerp(480.0, 900.0, absf(snapshot.velocity.x)), 0.0, 1.0)
+	pace *= 0.18
+	if not snapshot.bird_enabled or not is_finite(snapshot.bird_gap):
+		return pace
+	var gap_signal := clampf(
+		inverse_lerp(900.0, 250.0, snapshot.bird_gap), 0.0, 1.0)
+	var bird_pressure := pow(gap_signal, 1.7)
+	if snapshot.bird_closing:
+		bird_pressure += 0.12
+	return clampf(maxf(pace, bird_pressure), 0.0, 1.0)

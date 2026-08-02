@@ -806,3 +806,27 @@
   contract.
 - provenance: Menno, 2026-08-02 — menus should have a more spider-like theme,
   with more webs and texture
+
+## [D-0043] Make the first soundtrack original, persistent, and presentation-adaptive
+
+- status: decided
+- date: 2026-08-02
+- verdict: The first background score is original deterministic procedural
+  audio rather than a sourced CC0 track, superseding D-0033 only for this
+  soundtrack. A 32-second haunted silk/forest bed and synchronized chase stem
+  share one generator, manifest, and exact-regeneration boundary with the SFX.
+  The bed persists across Home and gameplay. `AudioDirector` derives a bounded
+  tension target from read-only pace and bird gap/closing snapshots, then eases
+  the chase stem without emitting commands or changing simulation. Schema-3
+  Music defaults on for older saves and remains independent from Effects and
+  Haptics. Zone ambience is still absent; any later sourced ambience retains
+  D-0033's per-file CC0 verification rule.
+- why: The owner explicitly asked to create a haunted background soundtrack and
+  then selected audio as the next isolated work slice. Original synthesis avoids
+  licence and attribution drift, keeps the build reproducible, and lets the two
+  stems loop and react as one coherent score. A persistent director prevents
+  menu/run restarts, while the separate tension layer adds chase pressure
+  without turning music into a gameplay clock or masking warning cues. The
+  maximum combined stem mix is -10.3 dBFS, about 7 dB below the loudest SFX.
+- provenance: Menno, 2026-08-02 — create a background soundtrack with a haunted
+  feel, then “You can work on the audio now”

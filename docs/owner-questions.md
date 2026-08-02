@@ -181,7 +181,10 @@ guess. Reasoning and constraints live in the decision ledger.
 - **Audio: generated SFX, CC0 ambience and music.** Generate the spider and web
   sounds where set consistency matters most; source ambience and music where
   quality is harder to synthesise. Every CC0 file's licence is verified per file
-  and recorded in the manifest.
+  and recorded in the manifest. **Superseded for the first soundtrack on
+  2026-08-02:** the owner's direct request to create the haunted score is
+  implemented as original deterministic synthesis under D-0043; future sourced
+  ambience still requires per-file CC0 verification.
 
 ### OQ-7 · Who merges — *answered 2026-07-31*
 

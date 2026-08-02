@@ -127,16 +127,18 @@ static func _test_settings_are_validated_and_emitted(
 	state.set_swing_preset(SwingConfig.PRESET_AGILE)
 	state.set_control_hints(false)
 	state.set_reduced_motion(true)
+	state.set_music_enabled(false)
 	state.set_effects_enabled(false)
 	state.set_haptics_enabled(false)
 	state.set_debug_tools(false)
 	state.set_swing_preset(&"not_a_real_preset")
-	if published.size() != 6:
+	if published.size() != 7:
 		failures.append("settings changes were not emitted exactly once each")
 		return 0
 	if state.settings.swing_preset != SwingConfig.PRESET_AGILE or \
 			state.settings.show_control_hints or \
 			not state.settings.reduced_motion or \
+			state.settings.music_enabled or \
 			state.settings.effects_enabled or \
 			state.settings.haptics_enabled or \
 			state.settings.show_debug_tools:
@@ -161,6 +163,7 @@ static func _test_settings_are_scrollable_and_mobile_readable(
 	) as HBoxContainer
 	var reset := view.front_end_button(&"ResetSettings")
 	var play := view.front_end_button(&"SettingsPlay")
+	var music := view.find_child("MusicToggle", true, false) as CheckButton
 	var effects := view.find_child("EffectsToggle", true, false) as CheckButton
 	var haptics := view.find_child("HapticsToggle", true, false) as CheckButton
 	if scroll == null or content == null:
@@ -200,7 +203,8 @@ static func _test_settings_are_scrollable_and_mobile_readable(
 		failures.append("Settings action buttons remain too small for mobile")
 		view.free()
 		return 0
-	if effects == null or haptics == null or \
+	if music == null or effects == null or haptics == null or \
+			music.custom_minimum_size.y < 52.0 or \
 			effects.custom_minimum_size.y < 52.0 or \
 			haptics.custom_minimum_size.y < 52.0:
 		failures.append("audio and haptic controls are missing or too small")
@@ -221,6 +225,7 @@ static func _test_settings_codec_round_trip(
 	expected.swing_preset = SwingConfig.PRESET_WEIGHTY
 	expected.show_control_hints = false
 	expected.reduced_motion = true
+	expected.music_enabled = false
 	expected.effects_enabled = false
 	expected.haptics_enabled = false
 	expected.show_debug_tools = false
@@ -234,9 +239,10 @@ static func _test_settings_codec_round_trip(
 	if invalid.swing_preset != SwingConfig.PRESET_BALANCED:
 		failures.append("invalid persisted preset did not fall back safely")
 		return 0
-	var legacy := PlayerSettings.from_dictionary({"schema_version": 1})
-	if not legacy.effects_enabled or not legacy.haptics_enabled:
-		failures.append("pre-audio settings did not migrate to audible defaults")
+	var legacy := PlayerSettings.from_dictionary({"schema_version": 2})
+	if not legacy.music_enabled or not legacy.effects_enabled or \
+			not legacy.haptics_enabled:
+		failures.append("older settings did not migrate to audible defaults")
 		return 0
 	return 1
 
@@ -253,6 +259,7 @@ static func _test_settings_repository_round_trip(
 	expected.swing_preset = SwingConfig.PRESET_AGILE
 	expected.show_control_hints = false
 	expected.reduced_motion = true
+	expected.music_enabled = false
 	expected.effects_enabled = false
 	expected.haptics_enabled = false
 	if not repository.save_settings(expected):

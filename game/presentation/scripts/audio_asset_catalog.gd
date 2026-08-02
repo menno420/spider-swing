@@ -38,6 +38,8 @@ const RESCUE := [ROOT + "rescue-silk.wav"]
 const DEATH := [ROOT + "death-impact.wav"]
 const BOOST := [ROOT + "boost-catch.wav"]
 const SURFACE_BOUNCE := [ROOT + "surface-bounce.wav"]
+const MUSIC_BED := ROOT + "haunted-silk-bed.wav"
+const MUSIC_TENSION := ROOT + "haunted-chase-pulse.wav"
 
 const HAZARD_CUES := {
 	&"mist_echo": ROOT + "mist-echo.wav",
@@ -118,4 +120,10 @@ static func all_paths() -> PackedStringArray:
 	result.append(REEL_LOOP)
 	for cue: StringName in HAZARD_CUES:
 		result.append(str(HAZARD_CUES[cue]))
+	result.append(MUSIC_BED)
+	result.append(MUSIC_TENSION)
 	return result
+
+
+static func music_paths() -> PackedStringArray:
+	return PackedStringArray([MUSIC_BED, MUSIC_TENSION])

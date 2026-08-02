@@ -2,6 +2,7 @@
   "assets": [
     {
       "bits_per_sample": 16,
+      "category": "sfx",
       "channels": 1,
       "duration_seconds": 0.208,
       "event": "ATTACHED",
@@ -15,6 +16,7 @@
     },
     {
       "bits_per_sample": 16,
+      "category": "sfx",
       "channels": 1,
       "duration_seconds": 0.208,
       "event": "ATTACHED",
@@ -28,6 +30,7 @@
     },
     {
       "bits_per_sample": 16,
+      "category": "sfx",
       "channels": 1,
       "duration_seconds": 0.208,
       "event": "ATTACHED",
@@ -41,6 +44,7 @@
     },
     {
       "bits_per_sample": 16,
+      "category": "sfx",
       "channels": 1,
       "duration_seconds": 0.134,
       "event": "RELEASED",
@@ -54,6 +58,7 @@
     },
     {
       "bits_per_sample": 16,
+      "category": "sfx",
       "channels": 1,
       "duration_seconds": 0.134,
       "event": "RELEASED",
@@ -67,6 +72,7 @@
     },
     {
       "bits_per_sample": 16,
+      "category": "sfx",
       "channels": 1,
       "duration_seconds": 0.16,
       "event": "REEL_STARTED",
@@ -80,6 +86,7 @@
     },
     {
       "bits_per_sample": 16,
+      "category": "sfx",
       "channels": 1,
       "duration_seconds": 0.5,
       "event": "REEL_ACTIVE_LOOP",
@@ -93,6 +100,7 @@
     },
     {
       "bits_per_sample": 16,
+      "category": "sfx",
       "channels": 1,
       "duration_seconds": 0.17,
       "event": "REEL_EMPTY",
@@ -106,6 +114,7 @@
     },
     {
       "bits_per_sample": 16,
+      "category": "sfx",
       "channels": 1,
       "duration_seconds": 0.255,
       "event": "BURST_STARTED",
@@ -119,6 +128,7 @@
     },
     {
       "bits_per_sample": 16,
+      "category": "sfx",
       "channels": 1,
       "duration_seconds": 0.255,
       "event": "BURST_STARTED",
@@ -132,6 +142,7 @@
     },
     {
       "bits_per_sample": 16,
+      "category": "sfx",
       "channels": 1,
       "duration_seconds": 0.23,
       "event": "DIVE_STARTED",
@@ -145,6 +156,7 @@
     },
     {
       "bits_per_sample": 16,
+      "category": "sfx",
       "channels": 1,
       "duration_seconds": 0.23,
       "event": "DIVE_STARTED",
@@ -158,6 +170,7 @@
     },
     {
       "bits_per_sample": 16,
+      "category": "sfx",
       "channels": 1,
       "duration_seconds": 0.13,
       "event": "FLY_COLLECTED",
@@ -171,6 +184,7 @@
     },
     {
       "bits_per_sample": 16,
+      "category": "sfx",
       "channels": 1,
       "duration_seconds": 0.13,
       "event": "FLY_COLLECTED",
@@ -184,6 +198,7 @@
     },
     {
       "bits_per_sample": 16,
+      "category": "sfx",
       "channels": 1,
       "duration_seconds": 0.13,
       "event": "FLY_COLLECTED",
@@ -197,6 +212,7 @@
     },
     {
       "bits_per_sample": 16,
+      "category": "sfx",
       "channels": 1,
       "duration_seconds": 0.09,
       "event": "INVALID_OR_UNAVAILABLE",
@@ -210,6 +226,7 @@
     },
     {
       "bits_per_sample": 16,
+      "category": "sfx",
       "channels": 1,
       "duration_seconds": 0.37,
       "event": "RESCUE_USED",
@@ -223,6 +240,7 @@
     },
     {
       "bits_per_sample": 16,
+      "category": "sfx",
       "channels": 1,
       "duration_seconds": 0.38,
       "event": "DEATH_REQUESTED",
@@ -236,6 +254,7 @@
     },
     {
       "bits_per_sample": 16,
+      "category": "sfx",
       "channels": 1,
       "duration_seconds": 0.32,
       "event": "BOOST_COLLECTED",
@@ -249,6 +268,7 @@
     },
     {
       "bits_per_sample": 16,
+      "category": "sfx",
       "channels": 1,
       "duration_seconds": 0.24,
       "event": "SURFACE_BOUNCED",
@@ -262,6 +282,7 @@
     },
     {
       "bits_per_sample": 16,
+      "category": "sfx",
       "channels": 1,
       "duration_seconds": 0.35,
       "event": "HAZARD_CUE:mist_echo",
@@ -275,6 +296,7 @@
     },
     {
       "bits_per_sample": 16,
+      "category": "sfx",
       "channels": 1,
       "duration_seconds": 0.222,
       "event": "HAZARD_CUE:glass_phase",
@@ -288,6 +310,7 @@
     },
     {
       "bits_per_sample": 16,
+      "category": "sfx",
       "channels": 1,
       "duration_seconds": 0.2,
       "event": "HAZARD_CUE:rotten_crack",
@@ -301,6 +324,7 @@
     },
     {
       "bits_per_sample": 16,
+      "category": "sfx",
       "channels": 1,
       "duration_seconds": 0.32,
       "event": "HAZARD_CUE:storm_gust",
@@ -314,6 +338,7 @@
     },
     {
       "bits_per_sample": 16,
+      "category": "sfx",
       "channels": 1,
       "duration_seconds": 0.27,
       "event": "HAZARD_CUE:storm_charge",
@@ -324,12 +349,40 @@
       "rms_dbfs": -13.05,
       "sample_rate_hz": 44100,
       "sha256": "a7d8cfdd6ad45534f69be88389377cc95ea56154d1d53a84aa3f3f74c8a31a6b"
+    },
+    {
+      "bits_per_sample": 16,
+      "category": "music",
+      "channels": 1,
+      "duration_seconds": 32.0,
+      "event": "MUSIC_BED",
+      "file": "haunted-silk-bed.wav",
+      "loop": true,
+      "loop_seam_ratio": 0.248,
+      "peak_dbfs": -10.0,
+      "rms_dbfs": -20.28,
+      "sample_rate_hz": 44100,
+      "sha256": "e250553caa2baae4fd2f3641b5addf5196fcf07a3f5e04448cf3e026a742ed8d"
+    },
+    {
+      "bits_per_sample": 16,
+      "category": "music",
+      "channels": 1,
+      "duration_seconds": 32.0,
+      "event": "MUSIC_TENSION",
+      "file": "haunted-chase-pulse.wav",
+      "loop": true,
+      "loop_seam_ratio": 0.127,
+      "peak_dbfs": -11.0,
+      "rms_dbfs": -25.64,
+      "sample_rate_hz": 44100,
+      "sha256": "aa3267514d69798578050d4d17feac67baf4c21f8bd8fa7fdff5d48ebe3979cd"
     }
   ],
-  "generated_on": "2026-08-01",
+  "generated_on": "2026-08-02",
   "generator": "tools/generate_audio_samples.py",
-  "generator_sha256": "f28cba7a9a4aeb2050a8c33c6fa8d92b85f7efcde104fd066c5a503f192b2c0b",
+  "generator_sha256": "e3404faf6ac38f445bd317b47f03381c3abd4dc1e2eeebb13a687c7986e02c68",
   "runtime_format": "PCM WAV \u00b7 mono \u00b7 44.1 kHz \u00b7 16-bit",
-  "schema_version": 1,
+  "schema_version": 2,
   "source_policy": "Original procedural synthesis only; no recorded, sampled, or third-party source material."
 }

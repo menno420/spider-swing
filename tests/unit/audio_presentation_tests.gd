@@ -1,11 +1,14 @@
 extends RefCounted
 class_name AudioPresentationTests
-## Contracts for original generated SFX and presentation-only playback wiring.
+## Contracts for original generated audio and presentation-only playback wiring.
 
 const MANIFEST_PATH := "res://assets/runtime/audio/audio-sample-manifest.json"
 const GENERATOR_PATH := "res://tools/generate_audio_samples.py"
-const EXPECTED_ASSET_COUNT := 25
-const MAX_RUNTIME_BYTES := 600 * 1024
+const EXPECTED_SFX_COUNT := 25
+const EXPECTED_MUSIC_COUNT := 2
+const EXPECTED_ASSET_COUNT := EXPECTED_SFX_COUNT + EXPECTED_MUSIC_COUNT
+const MAX_SFX_BYTES := 600 * 1024
+const MAX_MUSIC_BYTES := 6 * 1024 * 1024
 
 
 static func run() -> Dictionary:
@@ -16,6 +19,8 @@ static func run() -> Dictionary:
 	passed += _test_catalog_and_manifest_have_exact_asset_parity(failures)
 	passed += _test_core_events_have_audible_treatments(failures)
 	passed += _test_variants_and_cooldowns_bound_audio_fatigue(failures)
+	passed += _test_music_stems_are_loop_safe_and_mobile_bounded(failures)
+	passed += _test_music_mix_is_independent_and_pressure_driven(failures)
 	passed += _test_composition_keeps_audio_and_haptics_optional(failures)
 	return {"passed": passed, "failures": failures}
 
@@ -40,7 +45,7 @@ static func _test_manifest_proves_original_reproducible_sources(
 		return 0
 	var assets: Array = manifest.get("assets", [])
 	var policy := str(manifest.get("source_policy", ""))
-	if int(manifest.get("schema_version", 0)) != 1 or \
+	if int(manifest.get("schema_version", 0)) != 2 or \
 			assets.size() != EXPECTED_ASSET_COUNT or \
 			not policy.contains("no recorded, sampled, or third-party") or \
 			str(manifest.get("generator", "")) != \
@@ -59,15 +64,20 @@ static func _test_pcm_assets_are_mobile_sized_and_headroom_safe(
 	var manifest := _manifest(failures)
 	if manifest.is_empty():
 		return 0
-	var total_bytes := 0
+	var sfx_bytes := 0
 	for raw_asset: Variant in manifest.get("assets", []):
 		var asset: Dictionary = raw_asset
 		var path := "res://assets/runtime/audio/%s" % str(asset.get("file", ""))
+		var category := str(asset.get("category", ""))
+		if category not in ["sfx", "music"]:
+			failures.append("generated audio asset has no owned category: %s" % path)
+			return 0
 		if not FileAccess.file_exists(path):
 			failures.append("generated audio asset is missing: %s" % path)
 			return 0
 		var bytes := FileAccess.get_file_as_bytes(path)
-		total_bytes += bytes.size()
+		if category == "sfx":
+			sfx_bytes += bytes.size()
 		if FileAccess.get_sha256(path) != str(asset.get("sha256", "")):
 			failures.append("generated audio hash drifted: %s" % path)
 			return 0
@@ -75,10 +85,13 @@ static func _test_pcm_assets_are_mobile_sized_and_headroom_safe(
 				int(asset.get("channels", 0)) != 1 or \
 				int(asset.get("bits_per_sample", 0)) != 16 or \
 				float(asset.get("duration_seconds", 0.0)) <= 0.05 or \
-				float(asset.get("duration_seconds", 0.0)) > 0.55 or \
-				float(asset.get("peak_dbfs", 0.0)) > -2.9 or \
-				float(asset.get("rms_dbfs", -100.0)) < -30.0:
+				float(asset.get("peak_dbfs", 0.0)) > -2.9:
 			failures.append("generated audio format or level is unsafe: %s" % path)
+			return 0
+		if category == "sfx" and (
+				float(asset.get("duration_seconds", 0.0)) > 0.55 or \
+				float(asset.get("rms_dbfs", -100.0)) < -30.0):
+			failures.append("generated SFX duration or level is unsafe: %s" % path)
 			return 0
 		if bool(asset.get("loop", false)) and \
 				float(asset.get("loop_seam_ratio", 999.0)) > 1.5:
@@ -87,7 +100,7 @@ static func _test_pcm_assets_are_mobile_sized_and_headroom_safe(
 		if not ResourceLoader.exists(path) or not load(path) is AudioStreamWAV:
 			failures.append("Godot cannot load generated PCM WAV: %s" % path)
 			return 0
-	if total_bytes > MAX_RUNTIME_BYTES:
+	if sfx_bytes > MAX_SFX_BYTES:
 		failures.append("generated SFX exceed the 600 KiB Android budget")
 		return 0
 	return 1
@@ -183,10 +196,87 @@ static func _test_variants_and_cooldowns_bound_audio_fatigue(
 	return 1
 
 
+static func _test_music_stems_are_loop_safe_and_mobile_bounded(
+	failures: PackedStringArray,
+) -> int:
+	var manifest := _manifest(failures)
+	if manifest.is_empty():
+		return 0
+	var music_assets: Array[Dictionary] = []
+	var music_bytes := 0
+	for raw_asset: Variant in manifest.get("assets", []):
+		var asset: Dictionary = raw_asset
+		if str(asset.get("category", "")) != "music":
+			continue
+		music_assets.append(asset)
+		var path := "res://assets/runtime/audio/%s" % str(asset.get("file", ""))
+		music_bytes += FileAccess.get_file_as_bytes(path).size()
+		if not bool(asset.get("loop", false)) or \
+				not is_equal_approx(float(asset.get("duration_seconds", 0.0)), 32.0) or \
+				float(asset.get("loop_seam_ratio", 999.0)) > 1.5 or \
+				float(asset.get("peak_dbfs", 0.0)) > -9.9 or \
+				float(asset.get("rms_dbfs", -100.0)) < -32.0:
+			failures.append("music stem lost its seamless mobile-safe mix contract")
+			return 0
+	var catalogued := AudioAssetCatalog.music_paths()
+	if music_assets.size() != EXPECTED_MUSIC_COUNT or catalogued.size() != 2 or \
+			catalogued[0] == catalogued[1] or music_bytes > MAX_MUSIC_BYTES:
+		failures.append("haunted soundtrack does not own two bounded unique stems")
+		return 0
+	return 1
+
+
+static func _test_music_mix_is_independent_and_pressure_driven(
+	failures: PackedStringArray,
+) -> int:
+	var director := AudioDirector.new()
+	director.configure_effects(false)
+	director.configure_music(true)
+	var quiet := SimulationSnapshot.new()
+	quiet.velocity = Vector2(200.0, 0.0)
+	var normal := SimulationSnapshot.new()
+	normal.velocity = Vector2(650.0, 0.0)
+	normal.bird_enabled = true
+	normal.bird_gap = 760.0
+	normal.bird_closing = true
+	var danger := SimulationSnapshot.new()
+	danger.velocity = Vector2(850.0, 0.0)
+	danger.bird_enabled = true
+	danger.bird_gap = 280.0
+	danger.bird_closing = true
+	var ended := SimulationSnapshot.new()
+	ended.run_state = &"dead"
+	ended.bird_enabled = true
+	ended.bird_gap = 260.0
+	var quiet_mix := AudioDirector.music_tension_for_snapshot(quiet)
+	var normal_mix := AudioDirector.music_tension_for_snapshot(normal)
+	var danger_mix := AudioDirector.music_tension_for_snapshot(danger)
+	var ended_mix := AudioDirector.music_tension_for_snapshot(ended)
+	if director.effects_enabled() or not director.music_enabled() or \
+			quiet_mix != 0.0 or normal_mix < 0.1 or normal_mix > 0.5 or \
+			danger_mix < 0.85 or ended_mix != 0.0:
+		failures.append(
+			("music is not independent or its pressure mix is unbounded "
+			+ "(quiet=%.3f normal=%.3f danger=%.3f ended=%.3f)") % [
+				quiet_mix, normal_mix, danger_mix, ended_mix,
+			])
+		director.free()
+		return 0
+	director.configure_effects(true)
+	director.configure_music(false)
+	if director.music_enabled() or not director.effects_enabled():
+		failures.append("music toggle does not stop independently from effects")
+		director.free()
+		return 0
+	director.free()
+	return 1
+
+
 static func _test_composition_keeps_audio_and_haptics_optional(
 	failures: PackedStringArray,
 ) -> int:
 	var settings := PlayerSettings.defaults()
+	settings.music_enabled = false
 	settings.effects_enabled = false
 	settings.haptics_enabled = false
 	var decoded := PlayerSettings.from_dictionary(settings.to_dictionary())
@@ -195,13 +285,18 @@ static func _test_composition_keeps_audio_and_haptics_optional(
 		failures.append("composition root cannot be read for audio wiring")
 		return 0
 	var source := main_file.get_as_text()
-	if decoded.effects_enabled or decoded.haptics_enabled or \
+	if decoded.music_enabled or decoded.effects_enabled or decoded.haptics_enabled or \
 			not source.contains(
 				"snapshot_published.connect(_audio_director.present_snapshot)") or \
 			not source.contains(
 				"event_published.connect(_audio_director.present_event)") or \
 			not source.contains(
-				"_input_router.configure_haptics(settings.haptics_enabled)"):
-		failures.append("audio or haptics bypass optional presentation wiring")
+				"_input_router.configure_haptics(settings.haptics_enabled)") or \
+			not source.contains(
+				"_audio_director.configure_music(settings.music_enabled)") or \
+			source.count("add_child(_audio_director)") != 1 or \
+			source.find("add_child(_audio_director)") > \
+				source.find("var failures := _mount_front_end()"):
+		failures.append("music, effects, or haptics bypass optional presentation wiring")
 		return 0
 	return 1

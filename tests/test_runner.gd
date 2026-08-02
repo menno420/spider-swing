@@ -9,13 +9,13 @@ const AudioPresentationSuite = preload(
 const MAIN_SCENE_PATH := "res://game/bootstrap/main.tscn"
 const EXPORT_PRESETS_PATH := "res://export_presets.cfg"
 const ANDROID_WORKFLOW_PATH := "res://.github/workflows/android-debug.yml"
-const BUILD_VERSION := "0.28.0-spider-menu-theme-playtest"
-const ANDROID_VERSION_CODE := 48
-const ANDROID_APP_NAME := "Spider Swing Menu Theme Playtest (dev)"
+const BUILD_VERSION := "0.29.0-haunted-soundtrack-playtest"
+const ANDROID_VERSION_CODE := 49
+const ANDROID_APP_NAME := "Spider Swing Haunted Soundtrack Playtest (dev)"
 const DEBUG_KEYSTORE_PATH := "res://.github/android/debug.keystore"
 const DEBUG_KEYSTORE_SHA256 := \
 	"e9104672477e0238b6cc2f7d6b994c459e37f130cae06a37aff05001f101bbda"
-const EXPECTED_CHECK_COUNT := 198
+const EXPECTED_CHECK_COUNT := 200
 const REQUIRED_INPUT_ACTIONS := [
 	"web_action", "reel_in", "burst_action", "pause", "restart_run",
 	"toggle_debug"]
@@ -367,11 +367,11 @@ func _check_audio_presentation() -> void:
 	var failures: PackedStringArray = result["failures"]
 	if failures.is_empty():
 		_passed += int(result["passed"])
-		print("  ✓ Generated SFX: %d source, asset, and wiring contracts" %
+		print("  ✓ Generated audio: %d source, asset, and wiring contracts" %
 			int(result["passed"]))
 		return
 	for failure: String in failures:
-		_fail("Generated SFX — %s" % failure)
+		_fail("Generated audio — %s" % failure)
 
 
 func _check_mobile_hud_layout() -> void:

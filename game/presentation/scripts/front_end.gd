@@ -42,6 +42,7 @@ var _tutorial_next: Button
 var _preset_buttons: Dictionary = {}
 var _hints_toggle: CheckButton
 var _motion_toggle: CheckButton
+var _music_toggle: CheckButton
 var _effects_toggle: CheckButton
 var _haptics_toggle: CheckButton
 var _debug_toggle: CheckButton
@@ -419,6 +420,14 @@ func _build_settings() -> void:
 		+ "camera easing during play."))
 
 	content.add_child(_setting_heading("AUDIO & FEEDBACK"))
+	_music_toggle = _toggle("Haunted background music")
+	_music_toggle.name = "MusicToggle"
+	_music_toggle.toggled.connect(_on_music_toggled)
+	content.add_child(_music_toggle)
+	content.add_child(_setting_description(
+		"Plays the original silk-and-forest score. Its quiet chase layer rises "
+		+ "with pressure without changing gameplay."))
+
 	_effects_toggle = _toggle("Gameplay sound effects")
 	_effects_toggle.name = "EffectsToggle"
 	_effects_toggle.toggled.connect(_on_effects_toggled)
@@ -1282,6 +1291,7 @@ func _render() -> void:
 		)
 	_hints_toggle.button_pressed = _state.settings.show_control_hints
 	_motion_toggle.button_pressed = _state.settings.reduced_motion
+	_music_toggle.button_pressed = _state.settings.music_enabled
 	_effects_toggle.button_pressed = _state.settings.effects_enabled
 	_haptics_toggle.button_pressed = _state.settings.haptics_enabled
 	_debug_toggle.button_pressed = _state.settings.show_debug_tools
@@ -1781,6 +1791,11 @@ func _on_motion_toggled(enabled: bool) -> void:
 func _on_effects_toggled(enabled: bool) -> void:
 	if _state != null and not _syncing_settings:
 		_state.set_effects_enabled(enabled)
+
+
+func _on_music_toggled(enabled: bool) -> void:
+	if _state != null and not _syncing_settings:
+		_state.set_music_enabled(enabled)
 
 
 func _on_haptics_toggled(enabled: bool) -> void:

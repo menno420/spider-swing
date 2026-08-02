@@ -111,6 +111,15 @@ Format: `- YYYY-MM-DD · capability|wall · <venue> · finding · evidence · wo
 `any`; older five-field lines without a venue token stay valid — read them
 as venue `any`.)
 
+- 2026-08-02 · wall · `owner-live` · **The requested `app_block` and a music-
+  generation tool are not exposed in this seat.** · evidence: the exact
+  callable registry was filtered twice by name and description for
+  `app_block`, audio generation, music generation, composition, and soundtrack;
+  both result sets were empty while the GitHub connector tools were present. ·
+  workaround: keep the asset original and reproducible through the repository's
+  existing deterministic PCM generator, manifest, and exact-byte gate; do not
+  substitute or install an unrelated plugin.
+
 - 2026-07-31 · capability · `owner-live` · **A domain-distinct generated
   obstacle vocabulary survives the full Android path.** · PR #69 exact source
   `4fb5cce4ff7b1abdf39f27593a317bca5b756101` passed 124 contracts in
