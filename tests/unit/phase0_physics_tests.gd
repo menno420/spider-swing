@@ -14,8 +14,10 @@ static func run() -> Dictionary:
 	passed += _test_forward_drive_is_zero_in_every_preset(failures)
 	passed += _test_baseline_preset_id_and_legacy_migration(failures)
 	passed += _test_reel_resource_baseline_and_resolution(failures)
-	passed += _test_gradual_speed_curve_reaches_full_pace_at_five_kilometres(
+	passed += _test_gradual_speed_curve_reaches_full_pace_at_ten_kilometres(
 		failures)
+	passed += _test_bird_can_never_outrun_the_spider_ceiling(failures)
+	passed += _test_overspeed_is_corrected_independently_of_drive(failures)
 	passed += _test_bird_x_uses_its_own_world_law(failures)
 	passed += _test_bird_world_rate_rises_with_distance(failures)
 	passed += _test_bird_y_follows_with_damped_lag(failures)
@@ -102,7 +104,10 @@ static func _test_presets(failures: PackedStringArray) -> int:
 			not is_equal_approx(balanced.burst_distance_fraction, 0.40) or \
 			not is_equal_approx(balanced.burst_minimum_distance, 80.0) or \
 			not is_equal_approx(balanced.release_momentum_bonus_speed, 100.0) or \
-			not is_equal_approx(balanced.speed_curve_distance, 50000.0) or \
+			not is_equal_approx(balanced.speed_curve_distance, 100000.0) or \
+			not is_equal_approx(
+				balanced.overspeed_correction_acceleration, 117.5) or \
+			not is_equal_approx(balanced.bird_ceiling_share, 0.62) or \
 			not is_equal_approx(
 				balanced.tight_corridor_start_distance, 20000.0) or \
 			not balanced.course_boundaries_lethal:
@@ -239,28 +244,120 @@ static func _test_reel_resource_baseline_and_resolution(
 	return 1
 
 
-static func _test_gradual_speed_curve_reaches_full_pace_at_five_kilometres(
+## Owner directive 2026-08-02: pace rises more gradually and reaches its
+## maximum at 10 km, not 5 km. The midpoint assertion is what makes this a
+## curve test rather than an endpoint test — a linear ramp would pass the ends.
+static func _test_gradual_speed_curve_reaches_full_pace_at_ten_kilometres(
 	failures: PackedStringArray,
 ) -> int:
 	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 	var speeds := [
 		config.target_speed_at(0.0),
-		config.target_speed_at(10000.0),
-		config.target_speed_at(30000.0),
-		config.target_speed_at(50000.0),
-		config.target_speed_at(80000.0),
+		config.target_speed_at(20000.0),
+		config.target_speed_at(60000.0),
+		config.target_speed_at(100000.0),
+		config.target_speed_at(160000.0),
 	]
 	if not is_equal_approx(float(speeds[0]), config.starting_target_speed) or \
 			float(speeds[1]) >= 440.0 or \
 			float(speeds[2]) >= config.maximum_target_speed or \
 			not is_equal_approx(float(speeds[3]), config.maximum_target_speed) or \
 			not is_equal_approx(float(speeds[4]), config.maximum_target_speed):
-		failures.append("target speed no longer grows gradually to full pace at 5,000 m")
+		failures.append("target speed no longer grows gradually to full pace at 10,000 m")
 		return 0
 	for index in range(speeds.size() - 1):
 		if float(speeds[index]) > float(speeds[index + 1]):
 			failures.append("target speed curve is not monotonic")
 			return 0
+	return 1
+
+
+## The invariant the owner asked for, proved rather than tuned.
+##
+## A linear pursuer against a spider whose pace curve flattens is a guaranteed
+## wall: before this bound the bird overtook the spider ceiling at roughly
+## 68 km, so a good enough run ended on arithmetic. The bird exists to make
+## dangling and ceiling-hauling non-viable, never to outrun a spider that is
+## swinging well.
+##
+## Swept far past the authored 35 km precisely because the old failure was
+## invisible inside the authored range.
+static func _test_bird_can_never_outrun_the_spider_ceiling(
+	failures: PackedStringArray,
+) -> int:
+	for preset: String in SwingConfig.preset_names():
+		var config := SwingConfig.from_preset(StringName(preset))
+		var distance := 0.0
+		while distance <= 2000000.0:
+			var bird := config.bird_speed_at(distance)
+			var cap := config.spider_speed_cap_at(distance)
+			if bird >= cap:
+				failures.append(
+					("pursuer reaches %.1f px/s against a spider ceiling of "
+						+ "%.1f px/s at %.0f m on preset %s — a well-swung run "
+						+ "would become unwinnable by arithmetic")
+						% [bird, cap, distance / 10.0, preset])
+				return 0
+			distance += 5000.0
+	# The bound must be structural, not a coincidence of the shipped numbers:
+	# a pursuer configured absurdly fast still may not pass the ceiling.
+	var extreme := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	extreme.bird_speed = 900.0
+	extreme.bird_acceleration = 100.0
+	for sample in [0.0, 50000.0, 250000.0, 1000000.0]:
+		if extreme.bird_speed_at(float(sample)) >= \
+				extreme.spider_speed_cap_at(float(sample)):
+			failures.append(
+				"an extreme pursuer configuration escaped the spider ceiling")
+			return 0
+	# And a share at or above 1.0 must be rejected outright rather than clamped.
+	var invalid := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	invalid.bird_ceiling_share = 1.0
+	if invalid.validate().is_empty():
+		failures.append("a bird ceiling share of 1.0 was accepted as valid")
+		return 0
+	return 1
+
+
+## The ceiling is independent of the floor, which is the repair this contract
+## exists to hold. Both branches of `SpiderMotor.apply_forces` were scaled by
+## `horizontal_drive_acceleration` until 2026-08-02, so zeroing the drive to
+## remove the free forward push silently removed the speed limit too. Drive
+## must stay zero AND overspeed must still be corrected.
+static func _test_overspeed_is_corrected_independently_of_drive(
+	failures: PackedStringArray,
+) -> int:
+	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	if not is_equal_approx(config.horizontal_drive_acceleration, 0.0):
+		failures.append("the free forward drive is no longer zero")
+		return 0
+	var cap := config.spider_speed_cap_at(0.0)
+	# Well above the cap: the correction must pull it down.
+	var fast := SpiderMotor.apply_forces(
+		Vector2(cap + 300.0, 0.0), 0.0, 1.0 / 60.0, config)
+	var fast_x := float(Vector2(fast["velocity"]).x)
+	if fast_x >= cap + 300.0:
+		failures.append(
+			"speed above the cap was not corrected downward (%.1f px/s)"
+				% fast_x)
+		return 0
+	# Comfortably below the cap: nothing may push it up, because the floor is
+	# deliberately gone. Drag alone may still bleed it.
+	var slow_start := cap - 200.0
+	var slow := SpiderMotor.apply_forces(
+		Vector2(slow_start, 0.0), 0.0, 1.0 / 60.0, config)
+	if float(Vector2(slow["velocity"]).x) > slow_start:
+		failures.append("a free forward push has returned below the cap")
+		return 0
+	# Zero disables the limiter, reproducing the accidental post-#102 world.
+	var unlimited := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	unlimited.overspeed_correction_acceleration = 0.0
+	unlimited.air_drag = 0.0
+	var runaway := SpiderMotor.apply_forces(
+		Vector2(cap + 300.0, 0.0), 0.0, 1.0 / 60.0, unlimited)
+	if not is_equal_approx(float(Vector2(runaway["velocity"]).x), cap + 300.0):
+		failures.append("zero pull-back no longer disables the speed limiter")
+		return 0
 	return 1
 
 

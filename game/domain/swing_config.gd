@@ -23,7 +23,7 @@ class_name SwingConfig
 ## UI and recommended hiding them behind a debug flag; the disclosure already
 ## exists, which is why they stay visible.
 
-const SCHEMA_VERSION := 11
+const SCHEMA_VERSION := 12
 const PRESET_BALANCED := &"balanced_baseline"
 const PRESET_WEIGHTY := &"weighty_candidate"
 const PRESET_AGILE := &"agile_candidate"
@@ -46,11 +46,31 @@ const DEFAULT_RELEASE_MOMENTUM_BONUS_SPEED := 100.0
 ## `assumed`: bounded debug/schema guardrail, not a recommended tuning target.
 const MAX_RELEASE_MOMENTUM_BONUS_SPEED := 300.0
 ## `assumed`: the bot cannot pump, so it cannot tune the pursuing bird. These
-## three placeholders exist to produce a device-testable baseline; the Test Run
+## placeholders exist to produce a device-testable baseline; the Test Run
 ## screen exposes every one and speed zero disables the bird completely.
 const DEFAULT_BIRD_SPEED := 300.0
 const DEFAULT_BIRD_ACCELERATION := 12.0
 const DEFAULT_BIRD_START_OFFSET := 760.0
+## The pursuer may never be able to outrun a spider that is swinging well.
+## Expressed as a share of the spider's own distance-scaled ceiling rather than
+## an absolute speed, so the invariant survives any retune of either curve —
+## `validate()` rejects a share at or above 1.0. `assumed`: the share itself is
+## a device verdict, the *existence* of the bound is not.
+const DEFAULT_BIRD_CEILING_SHARE := 0.62
+## Restores the overspeed correction that PR #102 switched off by accident.
+##
+## `SpiderMotor.apply_forces` has always had two branches — a floor that pushed
+## a slow spider up to the reference speed, and a ceiling that pulled a fast one
+## back toward `reference + maximum_horizontal_overspeed`. Both were scaled by
+## `horizontal_drive_acceleration`, so zeroing the drive to remove the free
+## forward push silently removed the speed limit as well. The earned-speed spec
+## enumerated six `target_speed_at` couplings that had to survive drive removal;
+## the motor's own overspeed branch was not among them.
+##
+## This default is the exact pre-#102 effective value — the old drive of 470
+## times the branch's own 0.25 — so restoring the limiter is a repair rather
+## than a new tuning claim.
+const DEFAULT_OVERSPEED_CORRECTION := 117.5
 
 @export var schema_version: int = SCHEMA_VERSION
 @export var preset_name: StringName = PRESET_BALANCED
@@ -62,8 +82,16 @@ const DEFAULT_BIRD_START_OFFSET := 760.0
 @export var horizontal_drive_acceleration: float = 0.0
 @export var starting_target_speed: float = 360.0
 @export var maximum_target_speed: float = 760.0
-@export var speed_curve_distance: float = 50000.0
+## Owner directive 2026-08-02: pace should rise more gradually and reach its
+## maximum at 10 km rather than 5 km.
+@export var speed_curve_distance: float = 100000.0
 @export var maximum_horizontal_overspeed: float = 360.0
+## Pull-back applied only above `target_speed_at + maximum_horizontal_overspeed`.
+## Independent of `horizontal_drive_acceleration` on purpose: the floor is
+## deliberately zero and the ceiling deliberately is not. Zero disables the
+## limiter and reproduces the accidental post-#102 behaviour exactly.
+@export var overspeed_correction_acceleration: float = \
+	DEFAULT_OVERSPEED_CORRECTION
 ## `assumed`: maximum horizontal award from one fully qualified release.
 ## Zero disables the slice completely. Device feel, not the bot, decides whether
 ## 100 px/s is the right strength; the deterministic contracts only prove the
@@ -76,6 +104,8 @@ const DEFAULT_BIRD_START_OFFSET := 760.0
 ## Extra px/s per 1,000 m of furthest progress. It reads position, never player
 ## velocity, so banked distance remains a real buffer.
 @export var bird_acceleration: float = DEFAULT_BIRD_ACCELERATION
+## Hard share of the spider's own ceiling that the pursuer may never exceed.
+@export var bird_ceiling_share: float = DEFAULT_BIRD_CEILING_SHARE
 ## Initial distance from the spider to the bird's contact line, in pixels.
 @export var bird_start_offset: float = DEFAULT_BIRD_START_OFFSET
 @export var air_drag: float = 0.055
@@ -177,6 +207,8 @@ func apply_preset(name: StringName) -> void:
 	bird_speed = DEFAULT_BIRD_SPEED
 	bird_acceleration = DEFAULT_BIRD_ACCELERATION
 	bird_start_offset = DEFAULT_BIRD_START_OFFSET
+	bird_ceiling_share = DEFAULT_BIRD_CEILING_SHARE
+	overspeed_correction_acceleration = DEFAULT_OVERSPEED_CORRECTION
 	burst_distance_fraction = 0.40
 	burst_minimum_distance = 80.0
 	burst_pull_duration = 0.20
@@ -211,7 +243,7 @@ func apply_preset(name: StringName) -> void:
 	surface_bounce_retention = 0.42
 	surface_bounce_minimum_speed = 220.0
 	surface_bounce_tangent_retention = 0.88
-	speed_curve_distance = 50000.0
+	speed_curve_distance = 100000.0
 	match name:
 		PRESET_WEIGHTY:
 			gravity = 1320.0
@@ -261,13 +293,35 @@ func target_speed_at(distance_pixels: float) -> float:
 	return lerpf(starting_target_speed, maximum_target_speed, smooth_progress)
 
 
-## Position-based pursuer law. `bird_acceleration` is deliberately a gain per
-## 1,000 m rather than an acceleration toward player speed.
+## The fastest the spider may travel at this distance. Rises with the reference
+## curve, so late play is legitimately quicker, and is the value
+## `SpiderMotor.apply_forces` corrects back toward.
+func spider_speed_cap_at(distance_pixels: float) -> float:
+	return target_speed_at(distance_pixels) + maximum_horizontal_overspeed
+
+
+## Position-based pursuer law, hard-bounded below the spider's own ceiling.
+##
+## `bird_acceleration` is deliberately a gain per 1,000 m rather than an
+## acceleration toward player speed, so banked distance stays a real buffer.
+##
+## **The bound is the point.** A linear pursuer against a spider whose pace
+## curve flattens is a guaranteed wall: with the shipped 2026-08-02 values the
+## bird overtook the spider's ceiling at roughly 68 km, so a good enough run
+## ended on arithmetic rather than on a mistake. The bird exists to make
+## dangling and ceiling-hauling non-viable — the exploit measured in
+## `docs/measurements/2026-08-01-hauling-loophole.md` — **not** to be the
+## difficulty ramp and never to outrun a spider that is swinging well.
+## Expressing its ceiling as a share of `spider_speed_cap_at` keeps that true
+## under any retune of either curve, rather than leaving it to a coincidence
+## between two independently authored constants.
 func bird_speed_at(distance_pixels: float) -> float:
 	if bird_speed <= 0.0:
 		return 0.0
 	var kilometres := maxf(distance_pixels, 0.0) / 10000.0
-	return bird_speed + bird_acceleration * kilometres
+	var rising := bird_speed + bird_acceleration * kilometres
+	var ceiling := spider_speed_cap_at(distance_pixels) * bird_ceiling_share
+	return minf(rising, ceiling)
 
 
 func adjust(parameter: StringName, direction: float) -> float:
@@ -304,6 +358,12 @@ func set_tuning_value(parameter: StringName, value: float) -> float:
 		&"bird_acceleration":
 			bird_acceleration = safe_value
 			return bird_acceleration
+		&"bird_ceiling_share":
+			bird_ceiling_share = safe_value
+			return bird_ceiling_share
+		&"overspeed_pullback":
+			overspeed_correction_acceleration = safe_value
+			return overspeed_correction_acceleration
 		&"bird_start_offset":
 			bird_start_offset = safe_value
 			return bird_start_offset
@@ -422,6 +482,10 @@ func value_for(parameter: StringName) -> float:
 			return bird_speed
 		&"bird_acceleration":
 			return bird_acceleration
+		&"bird_ceiling_share":
+			return bird_ceiling_share
+		&"overspeed_pullback":
+			return overspeed_correction_acceleration
 		&"bird_start_offset":
 			return bird_start_offset
 		&"web_range":
@@ -507,6 +571,13 @@ func validate() -> PackedStringArray:
 	if bird_speed < 0.0 or bird_acceleration < 0.0 or \
 			bird_start_offset <= 0.0:
 		failures.append("pursuing bird values are invalid")
+	# Strictly below 1.0, never merely at it: a pursuer that can exactly match
+	# the spider's ceiling turns a well-played run into a stalemate it cannot
+	# win, which is the failure this bound exists to prevent.
+	if bird_ceiling_share <= 0.0 or bird_ceiling_share >= 1.0:
+		failures.append("bird ceiling share must sit strictly inside 0..1")
+	if overspeed_correction_acceleration < 0.0:
+		failures.append("overspeed correction must not be negative")
 	if web_minimum_length <= 0.0 or web_maximum_length <= web_minimum_length:
 		failures.append("web length range is invalid")
 	if reel_energy_capacity <= 0.0 or reel_drain_rate <= 0.0 or \

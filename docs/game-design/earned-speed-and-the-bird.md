@@ -139,6 +139,24 @@ This is the single highest-value addition in Part 1, because it is what makes
 
 ## The couplings that break if the drive is simply deleted
 
+> **⚠ This list was incomplete, and the omission shipped. Corrected 2026-08-02
+> under [D-0048].** A **seventh** coupling was missed: the motor's *own*
+> overspeed branch. `SpiderMotor.apply_forces` has always had two branches — a
+> floor that pushed a slow spider up to the reference, and a ceiling that pulled
+> a fast one back toward `reference + maximum_horizontal_overspeed` — and
+> **both were scaled by `horizontal_drive_acceleration`**. Zeroing the drive to
+> remove the free forward push therefore removed the speed limit as well, after
+> which only air drag acted on overspeed: proportional, so never a ceiling at
+> all. The owner found it on device as speed that "increases to an amount that
+> is nearly impossible to correct yourself from". The ceiling now has its own
+> coefficient, `overspeed_correction_acceleration`, defaulting to the exact
+> pre-#102 effective value.
+>
+> The lesson is the one this table was written to teach, turned on the table
+> itself: the couplings that break are not only the ones that *read*
+> `target_speed_at` from elsewhere. The function being modified had a second
+> caller inside itself.
+
 **Do not delete `target_speed_at` — it is load-bearing in five other places.**
 Each needs an explicit decision, and this list is the main reason a session
 should not start by editing `spider_motor.gd`:
@@ -202,6 +220,16 @@ and the player's own speed becomes the variable they control against it.
 
 That is the owner's sentence — *"the game still increases in difficulty through
 speed just in a different way"* — expressed mechanically.
+
+> **Superseded 2026-08-02 by the owner, under [D-0048].** *"The main purpose of
+> the bird is to prevent the players from using strategies that don't involve
+> actually swinging."* The bird is an **anti-degeneracy enforcer, not the
+> difficulty ramp** — its job is to make dangling and ceiling-hauling
+> non-viable, and it must never end a run that is being swung well. It is
+> therefore hard-bounded below the spider's own ceiling, and difficulty
+> escalation past that point has to come from the course rather than from the
+> chase. The curve above also changed: the reference now reaches full pace at
+> **10 km**, not 5 km.
 
 ---
 
