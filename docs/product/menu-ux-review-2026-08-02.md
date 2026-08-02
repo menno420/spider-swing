@@ -1,5 +1,7 @@
 # Menu review — the universal-menu research report against what ships
 
+> **Status:** `audit`
+>
 > **Provenance vocabulary (PL-013):** `measured` = read off source or off a
 > headless layout run · `inferred` = arithmetic on measured values · `assumed` =
 > design hypothesis awaiting the owner's device verdict.

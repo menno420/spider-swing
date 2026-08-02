@@ -97,4 +97,4 @@ this without doing something unrelated?" would have caught this at review time,
 costs one assertion, and generalises past this bug — the Test Lab, the debug
 start distance and the bird overrides all have the same shape.
 
-- **📊 Model:** opus-5 · high · UI/UX review + runtime bugfix
+- **📊 Model:** opus-5 · high · runtime bugfix — menus reviewed and resized
