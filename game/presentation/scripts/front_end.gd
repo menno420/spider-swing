@@ -50,6 +50,7 @@ var _creator: Control
 var _practice: Control
 var _campaign: Control
 var _debug_run_setup: Control
+var _debug_test_lab: Control
 var _field_guide: Control
 var _field_guide_back: Button
 var _field_guide_buttons: Dictionary = {}
@@ -104,11 +105,13 @@ var _campaign_buttons: Dictionary = {}
 var _difficulty_buttons: Dictionary = {}
 var _debug_run_route: Button
 var _debug_run_distance_entry: LineEdit
-var _debug_run_distance_value: Label
+var _quick_debug_run_distance_entry: LineEdit
+var _quick_debug_run_distance_value: Label
 var _debug_trace_label: Label
 var _debug_trace_watch: Button
 var _debug_run_upgrade_value: Label
-var _debug_bird_values: Dictionary = {}
+var _quick_debug_run_upgrade_value: Label
+var _quick_debug_bird_values: Dictionary = {}
 var _debug_category_buttons: Dictionary = {}
 var _debug_category_panels: Dictionary = {}
 var _debug_tuning_values: Dictionary = {}
@@ -156,6 +159,7 @@ func ensure_interface() -> void:
 	_build_practice()
 	_build_campaign()
 	_build_debug_run_setup()
+	_build_debug_test_lab()
 	_build_field_guide()
 
 
@@ -368,7 +372,7 @@ func _build_home() -> void:
 	routes.add_child(settings)
 	_debug_run_route = _button(
 		&"DebugRunSetup",
-		"TEST LAB  ·  SAVED COMPARISONS  ·  AWARDS NOTHING",
+		"DEBUG TEST RUN  ·  QUICK SETUP  ·  AWARDS NOTHING",
 		ORANGE,
 		48.0,
 	)
@@ -1077,8 +1081,82 @@ func _build_debug_run_setup() -> void:
 	back.pressed.connect(_on_home)
 	_place(back, _debug_run_setup, 0.025, 0.035, 0.16, 0.11)
 
+	var heading := _label("DEBUG TEST RUN", 38, INK)
+	_place(heading, _debug_run_setup, 0.19, 0.035, 0.58, 0.12)
+	var explanation := _label(
+		"Choose only the conditions needed for a quick comparison, then start. "
+			+ "Advanced tuning stays separate and saved.",
+		16,
+		MUTED,
+	)
+	explanation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_place(explanation, _debug_run_setup, 0.19, 0.105, 0.68, 0.19)
+	var advanced := _button(
+		&"DebugTestLab",
+		"ADVANCED TEST LAB\nSAVED A / B / C",
+		ORANGE,
+		58.0,
+	)
+	advanced.add_theme_font_size_override("font_size", 15)
+	advanced.pressed.connect(_on_debug_test_lab)
+	_place(advanced, _debug_run_setup, 0.70, 0.045, 0.955, 0.155)
+
+	var card := _panel(PANEL)
+	card.name = "DebugRunSetupCard"
+	_place(card, _debug_run_setup, 0.045, 0.205, 0.955, 0.965)
+	var shell := VBoxContainer.new()
+	shell.name = "DebugRunSetupShell"
+	shell.add_theme_constant_override("separation", 8)
+	_fill_with_margin(shell, card, 16.0)
+
+	var scroll := ScrollContainer.new()
+	scroll.name = "DebugRunSetupScroll"
+	SpiderUiTheme.configure_touch_scroll(scroll)
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	shell.add_child(scroll)
+	var content := VBoxContainer.new()
+	content.name = "DebugRunSetupContent"
+	content.add_theme_constant_override("separation", 8)
+	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(content)
+	content.add_child(_section_label("QUICK CONDITIONS"))
+	var columns := HBoxContainer.new()
+	columns.name = "DebugRunSetupColumns"
+	columns.add_theme_constant_override("separation", 12)
+	columns.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	content.add_child(columns)
+	columns.add_child(_build_debug_distance_card())
+	columns.add_child(_build_debug_upgrade_card())
+	columns.add_child(_build_debug_bird_card())
+	var warning := _label(
+		"TEST RUN · NO FLIES · NO RECORDS · NO CHECKPOINTS · NO LEADERBOARD",
+		14,
+		YELLOW,
+	)
+	warning.name = "DebugRunAwardsWarning"
+	warning.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	warning.custom_minimum_size.y = 24.0
+	content.add_child(warning)
+	var start := _button(
+		&"DebugRunStart",
+		"START QUICK TEST RUN  ·  AWARDS NOTHING",
+		GREEN,
+		64.0,
+	)
+	start.pressed.connect(_on_quick_debug_run_start)
+	shell.add_child(start)
+	SpiderUiTheme.enable_descendant_drag_bubbling(scroll)
+
+
+func _build_debug_test_lab() -> void:
+	_debug_test_lab = _full_screen(&"DebugTestLabScreen")
+	var back := _button(&"DebugTestLabBack", "‹  QUICK TEST", CYAN, 50.0)
+	back.pressed.connect(_on_debug_run_setup)
+	_place(back, _debug_test_lab, 0.025, 0.035, 0.16, 0.11)
+
 	var heading := _label("TEST LAB", 38, INK)
-	_place(heading, _debug_run_setup, 0.19, 0.03, 0.48, 0.105)
+	_place(heading, _debug_test_lab, 0.19, 0.03, 0.48, 0.105)
 	var explanation := _label(
 		"Configure the same tuning catalogue available during a run. The working "
 		+ "set auto-saves; A/B/C keep whole comparisons for later.",
@@ -1086,13 +1164,13 @@ func _build_debug_run_setup() -> void:
 		MUTED,
 	)
 	explanation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_place(explanation, _debug_run_setup, 0.19, 0.10, 0.95, 0.17)
+	_place(explanation, _debug_test_lab, 0.19, 0.10, 0.95, 0.17)
 
 	var card := _panel(PANEL)
-	card.name = "DebugRunSetupCard"
-	_place(card, _debug_run_setup, 0.035, 0.18, 0.965, 0.965)
+	card.name = "DebugTestLabCard"
+	_place(card, _debug_test_lab, 0.035, 0.18, 0.965, 0.965)
 	var shell := VBoxContainer.new()
-	shell.name = "DebugRunSetupShell"
+	shell.name = "DebugTestLabShell"
 	shell.add_theme_constant_override("separation", 8)
 	_fill_with_margin(shell, card, 16.0)
 	shell.add_child(_build_debug_profile_strip())
@@ -1110,7 +1188,7 @@ func _build_debug_run_setup() -> void:
 		_debug_category_panels[category_id] = category_panel
 
 	var footer := HBoxContainer.new()
-	footer.name = "DebugRunFooter"
+	footer.name = "DebugTestLabFooter"
 	footer.add_theme_constant_override("separation", 10)
 	shell.add_child(footer)
 	var warning := _label(
@@ -1118,12 +1196,12 @@ func _build_debug_run_setup() -> void:
 		14,
 		YELLOW,
 	)
-	warning.name = "DebugRunAwardsWarning"
+	warning.name = "DebugTestLabAwardsWarning"
 	warning.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	warning.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	footer.add_child(warning)
 	var start := _button(
-		&"DebugRunStart",
+		&"DebugTestLabStart",
 		"START TEST RUN  ·  AWARDS NOTHING",
 		GREEN,
 		62.0,
@@ -1216,7 +1294,7 @@ func _build_debug_category_panel(category_id: StringName) -> Control:
 	if category_id == TuningCatalog.CATEGORY_RUN:
 		body.add_child(_build_trace_watch_row())
 	var scroll := ScrollContainer.new()
-	scroll.name = "DebugRunSetupScroll_%s" % category_id
+	scroll.name = "DebugTestLabScroll_%s" % category_id
 	SpiderUiTheme.configure_touch_scroll(scroll)
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -1378,26 +1456,27 @@ func _build_debug_distance_card() -> PanelContainer:
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var body := VBoxContainer.new()
 	body.add_theme_constant_override("separation", 8)
-	_fill_with_margin(body, card, 16.0)
+	_fill_with_margin(body, card, 12.0)
 	body.add_child(_setting_heading("START DISTANCE"))
 	var description := _setting_description(
-		"Type an exact distance in metres, or move in 100 m steps.")
-	description.add_theme_font_size_override("font_size", 16)
+		"Type metres, use 100 m steps, or choose a preset.")
+	description.add_theme_font_size_override("font_size", 14)
 	body.add_child(description)
 
 	var adjustment := HBoxContainer.new()
 	adjustment.add_theme_constant_override("separation", 10)
 	body.add_child(adjustment)
 	var minus := _button(&"DebugDistanceMinus", "−", CYAN, 64.0)
-	minus.custom_minimum_size.x = 72.0
+	minus.custom_minimum_size.x = 60.0
 	minus.add_theme_font_size_override("font_size", 34)
 	minus.pressed.connect(_on_debug_distance_adjust.bind(-1))
 	adjustment.add_child(minus)
-	_debug_run_distance_entry = _debug_distance_entry()
-	_debug_run_distance_entry.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	adjustment.add_child(_debug_run_distance_entry)
+	_quick_debug_run_distance_entry = _debug_distance_entry(
+		&"DebugRunDistanceEntry")
+	_quick_debug_run_distance_entry.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	adjustment.add_child(_quick_debug_run_distance_entry)
 	var plus := _button(&"DebugDistancePlus", "+", CYAN, 64.0)
-	plus.custom_minimum_size.x = 72.0
+	plus.custom_minimum_size.x = 60.0
 	plus.add_theme_font_size_override("font_size", 32)
 	plus.pressed.connect(_on_debug_distance_adjust.bind(1))
 	adjustment.add_child(plus)
@@ -1406,7 +1485,7 @@ func _build_debug_distance_card() -> PanelContainer:
 	presets.add_theme_constant_override("separation", 8)
 	body.add_child(presets)
 	var quick_values: Array[float] = [0.0, 50000.0, 100000.0, 250000.0]
-	var quick_labels := ["0 m", "5,000", "10,000", "25,000"]
+	var quick_labels := ["0", "5k", "10k", "25k"]
 	for index in range(quick_values.size()):
 		var button := _button(
 			StringName("DebugDistanceQuick%d" % index),
@@ -1418,11 +1497,11 @@ func _build_debug_distance_card() -> PanelContainer:
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.pressed.connect(_on_debug_distance_set.bind(quick_values[index]))
 		presets.add_child(button)
-	_debug_run_distance_value = _label("", 16, CYAN)
-	_debug_run_distance_value.name = "DebugRunDistanceValue"
-	_debug_run_distance_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_debug_run_distance_value.custom_minimum_size.y = 26.0
-	body.add_child(_debug_run_distance_value)
+	_quick_debug_run_distance_value = _label("", 16, CYAN)
+	_quick_debug_run_distance_value.name = "DebugRunDistanceValue"
+	_quick_debug_run_distance_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_quick_debug_run_distance_value.custom_minimum_size.y = 26.0
+	body.add_child(_quick_debug_run_distance_value)
 	return card
 
 
@@ -1432,18 +1511,18 @@ func _build_debug_upgrade_card() -> PanelContainer:
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var body := VBoxContainer.new()
 	body.add_theme_constant_override("separation", 8)
-	_fill_with_margin(body, card, 16.0)
+	_fill_with_margin(body, card, 12.0)
 	body.add_child(_setting_heading("TEMPORARY UPGRADES"))
 	var description := _setting_description(
-		"Set one test level across all seven tracks. Nothing is bought or saved.")
-	description.add_theme_font_size_override("font_size", 16)
+		"Use one temporary level across every track. Nothing is purchased.")
+	description.add_theme_font_size_override("font_size", 14)
 	body.add_child(description)
 
 	var adjustment := HBoxContainer.new()
 	adjustment.add_theme_constant_override("separation", 10)
 	body.add_child(adjustment)
 	var minus := _button(&"DebugUpgradeMinus", "−", ORANGE, 64.0)
-	minus.custom_minimum_size.x = 72.0
+	minus.custom_minimum_size.x = 60.0
 	minus.add_theme_font_size_override("font_size", 34)
 	minus.pressed.connect(_on_debug_upgrade_adjust.bind(-1))
 	adjustment.add_child(minus)
@@ -1451,12 +1530,12 @@ func _build_debug_upgrade_card() -> PanelContainer:
 	value_panel.custom_minimum_size.y = 64.0
 	value_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	adjustment.add_child(value_panel)
-	_debug_run_upgrade_value = _label("", 21, YELLOW)
-	_debug_run_upgrade_value.name = "DebugRunUpgradeValue"
-	_debug_run_upgrade_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_fill_with_margin(_debug_run_upgrade_value, value_panel, 6.0)
+	_quick_debug_run_upgrade_value = _label("", 21, YELLOW)
+	_quick_debug_run_upgrade_value.name = "DebugRunUpgradeValue"
+	_quick_debug_run_upgrade_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_fill_with_margin(_quick_debug_run_upgrade_value, value_panel, 6.0)
 	var plus := _button(&"DebugUpgradePlus", "+", ORANGE, 64.0)
-	plus.custom_minimum_size.x = 72.0
+	plus.custom_minimum_size.x = 60.0
 	plus.add_theme_font_size_override("font_size", 32)
 	plus.pressed.connect(_on_debug_upgrade_adjust.bind(1))
 	adjustment.add_child(plus)
@@ -1483,10 +1562,11 @@ func _build_debug_upgrade_card() -> PanelContainer:
 		button.pressed.connect(_on_debug_upgrade_set.bind(levels[index]))
 		presets.add_child(button)
 	var note := _label(
-		"− from L0 returns to OWNED · + from OWNED begins at L0",
-		15,
+		"− from L0 = OWNED · + from OWNED = L0",
+		13,
 		ORANGE,
 	)
+	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	note.custom_minimum_size.y = 26.0
 	body.add_child(note)
@@ -1499,10 +1579,10 @@ func _build_debug_bird_card() -> PanelContainer:
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var body := VBoxContainer.new()
 	body.add_theme_constant_override("separation", 6)
-	_fill_with_margin(body, card, 14.0)
+	_fill_with_margin(body, card, 10.0)
 	body.add_child(_setting_heading("PURSUING BIRD · ASSUMED"))
 	var description := _setting_description(
-		"Tune the chase without changing the no-drive world. Speed 0 is bird-off.")
+		"Choose a chase preset or tune its three values. Speed 0 is off.")
 	description.add_theme_font_size_override("font_size", 14)
 	body.add_child(description)
 	for parameter_id: StringName in [
@@ -1511,12 +1591,12 @@ func _build_debug_bird_card() -> PanelContainer:
 		body.add_child(_build_debug_bird_row(parameter_id))
 
 	var presets := HBoxContainer.new()
-	presets.name = "DebugBirdPresets"
+	presets.name = "DebugQuickBirdPresets"
 	presets.add_theme_constant_override("separation", 5)
 	body.add_child(presets)
 	for preset_id: StringName in [&"off", &"slow", &"base", &"fast"]:
 		var button := _button(
-			StringName("DebugBirdPreset_%s" % preset_id),
+			StringName("DebugQuickBirdPreset_%s" % preset_id),
 			str(preset_id).to_upper(),
 			GREEN,
 			48.0,
@@ -1534,26 +1614,27 @@ func _build_debug_bird_row(parameter_id: StringName) -> HBoxContainer:
 	row.add_theme_constant_override("separation", 5)
 	var descriptor := TuningCatalog.descriptor(parameter_id)
 	var label := _label(str(descriptor.get("label", parameter_id)), 13, MUTED)
-	label.custom_minimum_size.x = 96.0
+	label.name = "DebugQuickBirdLabel_%s" % parameter_id
+	label.custom_minimum_size.x = 78.0
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(label)
 	var minus := _button(
-		StringName("DebugBirdMinus_%s" % parameter_id), "−", GREEN, 48.0)
-	minus.custom_minimum_size.x = 48.0
+		StringName("DebugQuickBirdMinus_%s" % parameter_id), "−", GREEN, 48.0)
+	minus.custom_minimum_size.x = 44.0
 	minus.add_theme_font_size_override("font_size", 25)
 	minus.pressed.connect(_on_debug_bird_adjust.bind(parameter_id, -1))
 	row.add_child(minus)
 	var value := _label("", 14, YELLOW)
-	value.name = "DebugBirdValue_%s" % parameter_id
-	value.custom_minimum_size = Vector2(90.0, 48.0)
+	value.name = "DebugQuickBirdValue_%s" % parameter_id
+	value.custom_minimum_size = Vector2(76.0, 48.0)
 	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	value.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	row.add_child(value)
-	_debug_bird_values[parameter_id] = value
+	_quick_debug_bird_values[parameter_id] = value
 	var plus := _button(
-		StringName("DebugBirdPlus_%s" % parameter_id), "+", GREEN, 48.0)
-	plus.custom_minimum_size.x = 48.0
+		StringName("DebugQuickBirdPlus_%s" % parameter_id), "+", GREEN, 48.0)
+	plus.custom_minimum_size.x = 44.0
 	plus.add_theme_font_size_override("font_size", 23)
 	plus.pressed.connect(_on_debug_bird_adjust.bind(parameter_id, 1))
 	row.add_child(plus)
@@ -1727,6 +1808,9 @@ func _render() -> void:
 		_refresh_campaign_buttons()
 	_debug_run_setup.visible = \
 		_state.screen == FrontEndState.Screen.DEBUG_RUN_SETUP and \
+		_state.settings.show_debug_tools
+	_debug_test_lab.visible = \
+		_state.screen == FrontEndState.Screen.DEBUG_TEST_LAB and \
 		_state.settings.show_debug_tools
 	_field_guide.visible = _state.screen == FrontEndState.Screen.FIELD_GUIDE
 	_debug_run_route.visible = _state.settings.show_debug_tools
@@ -2032,13 +2116,29 @@ func _render_practice() -> void:
 
 
 func _render_debug_run_setup() -> void:
-	if _debug_run_distance_entry != null and \
-			not _debug_run_distance_entry.has_focus():
+	for entry: LineEdit in [
+		_quick_debug_run_distance_entry,
+		_debug_run_distance_entry,
+	]:
+		if entry == null or entry.has_focus():
+			continue
 		_syncing_debug_run_setup = true
-		_debug_run_distance_entry.text = _format_debug_distance_metres(
+		entry.text = _format_debug_distance_metres(
 			_state.debug_run_distance_pixels,
 		)
 		_syncing_debug_run_setup = false
+	_quick_debug_run_distance_value.text = "STARTING AT %s m" % \
+		_format_debug_distance_metres(_state.debug_run_distance_pixels)
+	_quick_debug_run_upgrade_value.text = _format_debug_tuning_value(
+		TuningCatalog.DEBUG_UPGRADE_LEVEL,
+		float(_state.debug_run_upgrade_level),
+	)
+	for parameter_id: StringName in _quick_debug_bird_values:
+		(_quick_debug_bird_values[parameter_id] as Label).text = \
+			_format_debug_tuning_value(
+				parameter_id,
+				float(_state.debug_bird_overrides()[str(parameter_id)]),
+			)
 	for parameter_id: StringName in _debug_tuning_values:
 		(_debug_tuning_values[parameter_id] as Label).text = \
 			_format_debug_tuning_value(
@@ -2209,6 +2309,11 @@ func _on_debug_run_setup() -> void:
 		_state.show_debug_run_setup()
 
 
+func _on_debug_test_lab() -> void:
+	if _state != null:
+		_state.show_debug_test_lab()
+
+
 func _on_debug_category(category_index: int) -> void:
 	if _state != null:
 		_state.select_debug_category(category_index)
@@ -2300,10 +2405,22 @@ func _on_debug_run_start() -> void:
 	_state.request_debug_play()
 
 
+func _on_quick_debug_run_start() -> void:
+	if _state == null:
+		return
+	_commit_debug_run_distance()
+	_state.request_quick_debug_play()
+
+
 func _commit_debug_run_distance() -> void:
 	if _state == null:
 		return
-	var normalized := _debug_run_distance_entry.text.strip_edges().replace(
+	var entry := _debug_run_distance_entry
+	if _state.screen == FrontEndState.Screen.DEBUG_RUN_SETUP:
+		entry = _quick_debug_run_distance_entry
+	if entry == null:
+		return
+	var normalized := entry.text.strip_edges().replace(
 		",",
 		".",
 	)
@@ -2312,7 +2429,7 @@ func _commit_debug_run_distance() -> void:
 			float(normalized) * CourseRegionCatalog.PIXELS_PER_METRE,
 		)
 	_syncing_debug_run_setup = true
-	_debug_run_distance_entry.text = _format_debug_distance_metres(
+	entry.text = _format_debug_distance_metres(
 		_state.debug_run_distance_pixels,
 	)
 	_syncing_debug_run_setup = false
@@ -2654,9 +2771,11 @@ func _button_style(
 	return SpiderUiTheme.button_style(fill, border, width)
 
 
-func _debug_distance_entry() -> LineEdit:
+func _debug_distance_entry(
+	node_name: StringName = &"DebugTestLabDistanceEntry",
+) -> LineEdit:
 	var entry := LineEdit.new()
-	entry.name = "DebugRunDistanceEntry"
+	entry.name = str(node_name)
 	entry.placeholder_text = "METRES"
 	entry.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	entry.virtual_keyboard_type = LineEdit.KEYBOARD_TYPE_NUMBER_DECIMAL

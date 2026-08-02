@@ -543,8 +543,10 @@ static func _test_composition_root_mounts_front_end_first(
 		"_front_end_state.debug_play_requested.connect(_start_debug_game)"
 	) or not source.contains(
 		"run_mode, start_distance_pixels, -1, debug_start, campaign_level_id)"
+	) or not source.contains(
+		"_front_end_state.debug_tuning_request_is_valid("
 	):
-		failures.append("debug pre-run setup bypasses the composition root")
+		failures.append("debug pre-run setup bypasses its composition-root guard")
 		return 0
 	if not source.contains(
 		"_front_end_state.campaign_play_requested.connect(_start_campaign_game)"
@@ -1323,16 +1325,130 @@ static func _test_debug_run_setup_stages_and_starts_before_play(
 		return 0
 
 	state.set_debug_tools(true)
-	if not route.visible:
-		failures.append("Test Lab did not appear after enabling debug tools")
+	if not route.visible or not route.text.contains("QUICK SETUP"):
+		failures.append("quick Debug Test Run did not appear after enabling debug tools")
 		viewport.free()
 		return 0
 	route.pressed.emit()
-	var screen := view.find_child(
+	var quick_screen := view.find_child(
 		"DebugRunSetupScreen", true, false) as Control
 	var card := view.find_child("DebugRunSetupCard", true, false) as Control
 	var shell := view.find_child(
 		"DebugRunSetupShell", true, false) as VBoxContainer
+	var scroll := view.find_child(
+		"DebugRunSetupScroll", true, false) as ScrollContainer
+	var columns := view.find_child(
+		"DebugRunSetupColumns", true, false) as HBoxContainer
+	var entry := view.find_child(
+		"DebugRunDistanceEntry", true, false) as LineEdit
+	var warning := view.find_child(
+		"DebugRunAwardsWarning", true, false) as Label
+	var start := view.front_end_button(&"DebugRunStart")
+	var advanced := view.front_end_button(&"DebugTestLab")
+	var quick_bird_label := view.find_child(
+		"DebugQuickBirdLabel_bird_speed", true, false) as Label
+	if state.screen != FrontEndState.Screen.DEBUG_RUN_SETUP or \
+			quick_screen == null or not quick_screen.visible or card == null or \
+			shell == null or scroll == null or columns == null or entry == null or \
+			warning == null or start == null or advanced == null or \
+			quick_bird_label == null or \
+			not warning.text.contains("NO RECORDS") or columns.get_child_count() != 3:
+		failures.append("debug route did not restore the compact launch form")
+		viewport.free()
+		return 0
+	if card.anchor_left < 0.0 or card.anchor_top < 0.0 or \
+			card.anchor_right > 1.0 or card.anchor_bottom > 1.0:
+		failures.append("quick debug setup card is not enclosed by the view")
+		viewport.free()
+		return 0
+	if start.get_parent() != shell or start.get_index() <= scroll.get_index() or \
+			scroll.vertical_scroll_mode != ScrollContainer.SCROLL_MODE_AUTO or \
+			scroll.horizontal_scroll_mode != ScrollContainer.SCROLL_MODE_DISABLED or \
+			quick_bird_label.custom_minimum_size.x > 78.0 or \
+			start.mouse_filter != Control.MOUSE_FILTER_STOP or \
+			start.custom_minimum_size.y < 60.0 or \
+			advanced.custom_minimum_size.y < 56.0:
+		failures.append("quick setup lost its phone-width row, pinned start, or Advanced route")
+		viewport.free()
+		return 0
+	for button_name: StringName in [
+		&"DebugDistanceQuick0", &"DebugDistanceQuick1",
+		&"DebugDistanceQuick2", &"DebugDistanceQuick3",
+		&"DebugUpgradeQuick0", &"DebugUpgradeQuick1",
+		&"DebugUpgradeQuick2", &"DebugUpgradeQuick3",
+		&"DebugQuickBirdPreset_off", &"DebugQuickBirdPreset_slow",
+		&"DebugQuickBirdPreset_base", &"DebugQuickBirdPreset_fast",
+	]:
+		if view.front_end_button(button_name) == null:
+			failures.append("quick setup is missing %s" % button_name)
+			viewport.free()
+			return 0
+
+	# A hidden advanced override must remain saved without leaking into a quick
+	# launch whose screen does not disclose it.
+	state.set_debug_tuning_value(&"reel_rate", 440.0)
+	state.set_debug_run_upgrade_level(6)
+	view.front_end_button(&"DebugQuickBirdPreset_slow").pressed.emit()
+	entry.text = "12345,7"
+	entry.text_changed.emit(entry.text)
+	var debug_requests: Array[Dictionary] = []
+	state.debug_play_requested.connect(func(
+		requested_settings: PlayerSettings,
+		distance_pixels: float,
+		upgrade_level: int,
+		bird_overrides: Dictionary,
+		tuning_overrides: Dictionary,
+	) -> void:
+		debug_requests.append({
+			"debug": requested_settings.show_debug_tools,
+			"distance": distance_pixels,
+			"level": upgrade_level,
+			"bird": bird_overrides.duplicate(true),
+			"tuning": tuning_overrides.duplicate(true),
+		}))
+	start.pressed.emit()
+	if debug_requests.size() != 1 or not bool(debug_requests[0]["debug"]) or \
+			not is_equal_approx(float(debug_requests[0]["distance"]), 123457.0) or \
+			int(debug_requests[0]["level"]) != 6 or \
+			debug_requests[0]["bird"] != \
+				FrontEndState.BIRD_DEBUG_PRESETS[&"slow"] or \
+			not (debug_requests[0]["tuning"] as Dictionary).is_empty() or \
+			not state.debug_tuning_request_is_valid({}) or \
+			service.debug_upgrade_overlay_level() != 6 or \
+			progress.to_dictionary() != exact_saved:
+		failures.append("quick launch leaked hidden tuning or changed ownership")
+		viewport.free()
+		return 0
+
+	var session := SwingLabSession.new()
+	session.configure_progress(progress, service)
+	session.configure_bird_debug_overrides(debug_requests[0]["bird"])
+	session.configure_run(
+		SwingLabSession.RUN_PRACTICE,
+		123457.0,
+		913,
+		true,
+	)
+	session._reset_run()
+	session.apply_debug_tuning_profile(debug_requests[0]["tuning"])
+	var snapshot := session.current_snapshot()
+	if not snapshot.debug_start_active or snapshot.records_eligible or \
+			not is_equal_approx(snapshot.distance_pixels, 123457.0) or \
+			snapshot.debug_upgrade_overlay_level != 6 or \
+			not is_equal_approx(
+				float(snapshot.tuning_values[&"bird_speed"]), 240.0) or \
+			is_equal_approx(float(snapshot.tuning_values[&"reel_rate"]), 440.0):
+		failures.append("quick launch did not apply only its visible conditions")
+		session.free()
+		viewport.free()
+		return 0
+	session.free()
+
+	advanced.pressed.emit()
+	var lab_screen := view.find_child(
+		"DebugTestLabScreen", true, false) as Control
+	var lab_shell := view.find_child(
+		"DebugTestLabShell", true, false) as VBoxContainer
 	var profile_strip := view.find_child(
 		"DebugProfileStrip", true, false) as PanelContainer
 	var category_rail := view.find_child(
@@ -1340,32 +1456,20 @@ static func _test_debug_run_setup_stages_and_starts_before_play(
 	var category_stack := view.find_child(
 		"DebugCategoryStack", true, false) as Control
 	var footer := view.find_child(
-		"DebugRunFooter", true, false) as HBoxContainer
-	var entry := view.find_child(
-		"DebugRunDistanceEntry", true, false) as LineEdit
-	var warning := view.find_child(
-		"DebugRunAwardsWarning", true, false) as Label
-	if state.screen != FrontEndState.Screen.DEBUG_RUN_SETUP or \
-			screen == null or not screen.visible or card == null or \
-			shell == null or profile_strip == null or category_rail == null or \
-			category_stack == null or footer == null or entry == null or \
-			warning == null or not warning.text.contains("NO RECORD"):
-		failures.append("debug route did not open the complete pre-run Test Lab")
+		"DebugTestLabFooter", true, false) as HBoxContainer
+	var lab_start := view.front_end_button(&"DebugTestLabStart")
+	if state.screen != FrontEndState.Screen.DEBUG_TEST_LAB or \
+			lab_screen == null or not lab_screen.visible or lab_shell == null or \
+			profile_strip == null or category_rail == null or category_stack == null or \
+			footer == null or lab_start == null or category_rail.columns != 8 or \
+			category_rail.get_child_count() != 8 or \
+			state.debug_tuning_request_is_valid({}):
+		failures.append("Advanced Test Lab is not distinct from the quick launcher")
 		viewport.free()
 		return 0
-	if card.anchor_left < 0.0 or card.anchor_top < 0.0 or \
-			card.anchor_right > 1.0 or card.anchor_bottom > 1.0:
-		failures.append("debug setup card is not enclosed by the 1280×720 view")
-		viewport.free()
-		return 0
-	var start := view.front_end_button(&"DebugRunStart")
-	if start == null or start.get_parent() != footer or \
-			footer.get_parent() != shell or \
-			footer.get_index() <= category_stack.get_index() or \
-			start.mouse_filter != Control.MOUSE_FILTER_STOP or \
-			start.custom_minimum_size.y < 60.0:
-		failures.append(
-			"Test Lab does not keep a pinned, mobile-sized start action")
+	if lab_start.get_parent() != footer or footer.get_parent() != lab_shell or \
+			footer.get_index() <= category_stack.get_index():
+		failures.append("Advanced Test Lab lost its pinned launch action")
 		viewport.free()
 		return 0
 	if category_rail.columns != 8 or category_rail.get_child_count() != 8:
@@ -1378,14 +1482,16 @@ static func _test_debug_run_setup_stages_and_starts_before_play(
 			StringName("DebugCategory_%s" % category_id))
 		var category_panel := view.find_child(
 			"DebugCategoryPanel_%s" % category_id, true, false) as Control
-		var scroll := view.find_child(
-			"DebugRunSetupScroll_%s" % category_id,
+		var category_scroll := view.find_child(
+			"DebugTestLabScroll_%s" % category_id,
 			true,
 			false,
 		) as ScrollContainer
-		if category_button == null or category_panel == null or scroll == null or \
-				scroll.vertical_scroll_mode != ScrollContainer.SCROLL_MODE_AUTO or \
-				scroll.horizontal_scroll_mode != ScrollContainer.SCROLL_MODE_DISABLED:
+		if category_button == null or category_panel == null or \
+				category_scroll == null or \
+				category_scroll.vertical_scroll_mode != ScrollContainer.SCROLL_MODE_AUTO or \
+				category_scroll.horizontal_scroll_mode != \
+					ScrollContainer.SCROLL_MODE_DISABLED:
 			failures.append("%s is not a mobile Test Lab category" % category_id)
 			viewport.free()
 			return 0
@@ -1410,15 +1516,6 @@ static func _test_debug_run_setup_stages_and_starts_before_play(
 				viewport.free()
 				return 0
 
-	# OWNED -> L0 -> L1 -> L0 proves the catalogue crosses the overlay edge.
-	view.front_end_button(&"DebugTuningPlus_debug_upgrade_level").pressed.emit()
-	view.front_end_button(&"DebugTuningPlus_debug_upgrade_level").pressed.emit()
-	view.front_end_button(&"DebugTuningMinus_debug_upgrade_level").pressed.emit()
-	if state.debug_run_upgrade_level != 0:
-		failures.append("pre-run upgrade −/+ does not switch levels directly")
-		viewport.free()
-		return 0
-
 	# The working set saves immediately; A captures the whole catalogue and can
 	# later restore it after multiple values diverge.
 	var profile_events: Array[DebugTestProfile] = []
@@ -1440,65 +1537,15 @@ static func _test_debug_run_setup_stages_and_starts_before_play(
 		viewport.free()
 		return 0
 
-	state.set_debug_run_upgrade_level(6)
-	state.apply_debug_bird_preset(&"slow")
-	entry.text = "12345,7"
-	entry.text_changed.emit(entry.text)
-	var debug_requests: Array[Dictionary] = []
-	state.debug_play_requested.connect(func(
-		requested_settings: PlayerSettings,
-		distance_pixels: float,
-		upgrade_level: int,
-		bird_overrides: Dictionary,
-		tuning_overrides: Dictionary,
-	) -> void:
-		debug_requests.append({
-			"debug": requested_settings.show_debug_tools,
-			"distance": distance_pixels,
-			"level": upgrade_level,
-			"bird": bird_overrides.duplicate(true),
-			"tuning": tuning_overrides.duplicate(true),
-		}))
-	view.front_end_button(&"DebugRunStart").pressed.emit()
-	if debug_requests.size() != 1 or not bool(debug_requests[0]["debug"]) or \
-			not is_equal_approx(float(debug_requests[0]["distance"]), 123457.0) or \
-			int(debug_requests[0]["level"]) != 6 or \
-			debug_requests[0]["bird"] != \
-				FrontEndState.BIRD_DEBUG_PRESETS[&"slow"] or \
+	lab_start.pressed.emit()
+	if debug_requests.size() != 2 or \
 			not is_equal_approx(float(
-				(debug_requests[0]["tuning"] as Dictionary)[&"reel_rate"]), 440.0) or \
-			service.debug_upgrade_overlay_level() != 6 or \
-			progress.to_dictionary() != exact_saved:
-		failures.append("pre-run choices did not start one exact temporary test")
+				(debug_requests[1]["tuning"] as Dictionary)[&"reel_rate"]), 440.0) or \
+			not state.debug_tuning_request_is_valid(
+				debug_requests[1]["tuning"] as Dictionary):
+		failures.append("Advanced Test Lab did not apply its saved sparse overrides")
 		viewport.free()
 		return 0
-
-	var session := SwingLabSession.new()
-	session.configure_progress(progress, service)
-	session.configure_bird_debug_overrides(debug_requests[0]["bird"])
-	session.configure_run(
-		SwingLabSession.RUN_PRACTICE,
-		123457.0,
-		913,
-		true,
-	)
-	session._reset_run()
-	session.apply_debug_tuning_profile(debug_requests[0]["tuning"])
-	var snapshot := session.current_snapshot()
-	if not snapshot.debug_start_active or \
-			snapshot.run_mode != SwingLabSession.RUN_PRACTICE or \
-			snapshot.records_eligible or \
-		not is_equal_approx(snapshot.distance_pixels, 123457.0) or \
-		snapshot.debug_upgrade_overlay_level != 6 or \
-		not is_equal_approx(
-			float(snapshot.tuning_values[&"bird_speed"]), 240.0) or \
-		not is_equal_approx(
-			float(snapshot.tuning_values[&"reel_rate"]), 440.0):
-		failures.append("pre-run setup did not inherit debug practice ownership")
-		session.free()
-		viewport.free()
-		return 0
-	session.free()
 
 	var standard_requests: Array[PlayerSettings] = []
 	state.play_requested.connect(func(value: PlayerSettings) -> void:
@@ -1510,11 +1557,10 @@ static func _test_debug_run_setup_stages_and_starts_before_play(
 		viewport.free()
 		return 0
 	state.set_debug_tools(false)
-	state.show_home()
 	route.pressed.emit()
 	state.request_debug_play()
 	if route.visible or state.screen != FrontEndState.Screen.HOME or \
-			debug_requests.size() != 1:
+			debug_requests.size() != 2:
 		failures.append("pre-run debug controls bypassed show_debug_tools gating")
 		viewport.free()
 		return 0
@@ -1560,7 +1606,7 @@ static func _test_debug_bird_controls_are_visible_and_labeled(
 	settings.show_debug_tools = true
 	var state := FrontEndState.new()
 	state.configure(settings)
-	state.show_debug_run_setup()
+	state.show_debug_test_lab()
 	var viewport := SubViewport.new()
 	viewport.size = Vector2i(1280, 720)
 	var view := FrontEndView.new()
@@ -1690,8 +1736,8 @@ static func _remove_test_file(path: String) -> void:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 
-## The Test Run screen must offer the bundled lab runs, and only when Debug
-## Tools are on.
+## The Advanced Test Lab must offer the bundled lab runs, and only when Debug
+## Tools are on. The quick launcher stays deliberately free of replay controls.
 ##
 ## The review loop is the whole point of recording traces: a search rewarded
 ## for distance will use whatever the physics allows, and no statistic
@@ -1718,7 +1764,7 @@ static func _test_trace_watch_is_reachable_and_debug_only(
 	if traces.is_empty():
 		failures.append("no bundled traces are offered on the Test Run screen")
 		return 0
-	state.show_debug_run_setup()
+	state.show_debug_test_lab()
 	var view := FrontEndView.new()
 	view.bind_state(state)
 	var watch := view.find_child("DebugTraceWatch", true, false)

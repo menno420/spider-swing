@@ -51,6 +51,7 @@ enum Screen {
 	CAMPAIGN,
 	FIELD_GUIDE,
 	DEBUG_RUN_SETUP,
+	DEBUG_TEST_LAB,
 }
 
 const TUTORIAL_STEPS := [
@@ -319,6 +320,13 @@ func show_debug_run_setup() -> void:
 	changed.emit()
 
 
+func show_debug_test_lab() -> void:
+	if not settings.show_debug_tools:
+		return
+	screen = Screen.DEBUG_TEST_LAB
+	changed.emit()
+
+
 func configure_progress(updated_progress: PlayerProgress) -> void:
 	progress = updated_progress.copy()
 	if _refresh_debug_test_baseline(false):
@@ -550,15 +558,26 @@ func reset_debug_test_profile() -> void:
 		_publish_debug_test_profile()
 
 
+## The compact launcher intentionally applies only controls the tester can see.
+## Saved Test Lab overrides stay intact for later comparisons, but do not leak
+## into a quick run whose screen cannot disclose them.
+func request_quick_debug_play() -> void:
+	if not settings.show_debug_tools:
+		return
+	_apply_debug_upgrade_overlay()
+	debug_play_requested.emit(
+		settings.copy(),
+		debug_run_distance_pixels,
+		debug_run_upgrade_level,
+		debug_bird_overrides(),
+		{},
+	)
+
+
 func request_debug_play() -> void:
 	if not settings.show_debug_tools:
 		return
-	if debug_run_upgrade_level >= 0:
-		_progression_service.set_debug_upgrade_overlay_level(
-			debug_run_upgrade_level,
-		)
-	else:
-		_progression_service.clear_debug_upgrade_overlay()
+	_apply_debug_upgrade_overlay()
 	debug_play_requested.emit(
 		settings.copy(),
 		debug_run_distance_pixels,
@@ -566,6 +585,26 @@ func request_debug_play() -> void:
 		debug_bird_overrides(),
 		debug_tuning_overrides(),
 	)
+
+
+func _apply_debug_upgrade_overlay() -> void:
+	if debug_run_upgrade_level >= 0:
+		_progression_service.set_debug_upgrade_overlay_level(
+			debug_run_upgrade_level,
+		)
+	else:
+		_progression_service.clear_debug_upgrade_overlay()
+
+
+## Synchronous composition-root guard for the two intentional launch paths.
+## The current screen is still authoritative while the request signal runs.
+func debug_tuning_request_is_valid(tuning_overrides: Dictionary) -> bool:
+	match screen:
+		Screen.DEBUG_RUN_SETUP:
+			return tuning_overrides.is_empty()
+		Screen.DEBUG_TEST_LAB:
+			return tuning_overrides == debug_tuning_overrides()
+	return false
 
 
 func sync_debug_run_setup(
@@ -705,7 +744,7 @@ func set_debug_tools(enabled: bool) -> void:
 	settings.show_debug_tools = enabled
 	if not enabled:
 		_progression_service.clear_debug_upgrade_overlay()
-		if screen == Screen.DEBUG_RUN_SETUP:
+		if screen in [Screen.DEBUG_RUN_SETUP, Screen.DEBUG_TEST_LAB]:
 			screen = Screen.HOME
 	_publish_settings()
 
@@ -715,7 +754,7 @@ func reset_settings() -> void:
 	var profile_changed := _refresh_debug_test_baseline(false)
 	if not settings.show_debug_tools:
 		_progression_service.clear_debug_upgrade_overlay()
-		if screen == Screen.DEBUG_RUN_SETUP:
+		if screen in [Screen.DEBUG_RUN_SETUP, Screen.DEBUG_TEST_LAB]:
 			screen = Screen.HOME
 	settings_changed.emit(settings.copy())
 	if profile_changed:

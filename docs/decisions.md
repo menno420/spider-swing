@@ -989,3 +989,24 @@
   reach its maximum speed at 10K, and the bird should never be able to have a
   higher max speed than the spider, the main purpose of the bird is to prevent
   the players from using strategies that don't involve actually swinging"
+
+## [D-0049] Keep quick debug launch separate from persistent advanced tuning
+
+- status: decided
+- date: 2026-08-02
+- verdict: Home's debug-only action opens a compact Debug Test Run launcher for
+  distance, one temporary all-track upgrade level, bird controls, and an
+  immediate noncompetitive start. The persistent eight-category editor remains
+  available one tap deeper as Advanced Test Lab. A quick launch applies only
+  the controls visible on the compact screen and carries no saved sparse tuning
+  overrides; an advanced launch applies the saved working profile. Both routes
+  retain the existing no-awards practice boundary and never mutate owned
+  progression.
+- why: Replacing the former launch form with the complete Test Lab preserved
+  capability but made common distance/upgrade comparisons slow and allowed
+  hidden saved parameters to become ambiguous. Separating the two intentions
+  restores the fast setup shown in the owner's reference while keeping detailed
+  reproducible tuning intact and explicit.
+- provenance: Menno, 2026-08-02 — restore the easy debug test-run entry for
+  quickly selecting distance and upgrades; defer menu styling to another
+  session
