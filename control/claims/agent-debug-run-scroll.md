@@ -1,0 +1,1 @@
+- `agent/debug-run-scroll` · **mobile Test Run scrolling** — make the full Test Run setup reachable on phone viewports without obscuring its primary action · game/presentation/scripts/front_end.gd, tests/integration/front_end_flow_tests.gd, tests/unit/mobile_hud_layout_tests.gd · 2026-08-02
