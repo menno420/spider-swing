@@ -64,7 +64,27 @@ would have saved Clash Royale, already built and already proven in another repo.
 >    exclusives, no vaulting, no retired content.
 > 4. **Every event returns.** An event is the convenient time to get something,
 >    never the only time.
-> 5. **No ads. No energy timers. No pay-to-win.**
+> 5. **Death stays meaningful.** No paid continues, no restarts that erase a
+>    death, no item that undoes failure. Extra lives are hard-capped at 3.
+> 6. **No ads. No energy timers. No pay-to-win.**
+
+### Rule 5 was added 2026-08-02, and it closes a real gap
+
+The original rule 2 — *purchases buy time, never access* — **does not by itself
+forbid a paid continue.** A continue sells neither time nor access; it sells an
+**outcome**. The owner's own formulation is sharper than the draft was:
+
+> *"Strong rejection of the Subway Surfers model… accelerating progression is
+> more acceptable than buying your way out of failure, especially because this
+> game has a high skill ceiling."*
+
+So the principle in full: **purchases buy time, never access, and never
+outcomes.** That is what protects the skill ceiling, which is this game's rarest
+property — the owner sustains 73–78 m/s where a policy search reached 48. A game
+that sells its way past death does not have a skill ceiling; it has a price
+list.
+
+Source: [`../product/player-preference-research-2026-08-02.md`](../product/player-preference-research-2026-08-02.md) §3.
 
 ## Where it goes and why that matters
 

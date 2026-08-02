@@ -149,6 +149,16 @@ layer up.
 
 ## 4 — Per-spider campaign levels
 
+> **⚠ Parked 2026-08-02 — timing only, reasoning intact.** The owner's north-star
+> directive defers expanded Campaign work until the core loop is tuned. Two
+> additions from the preference research when it is revived: Campaign's recorded
+> failure mode is *"feels like a tutorial you rush through to get to the real
+> game"* — a showcase level that reads as a tutorial gets skipped, and skipped
+> content sells no spiders. And the **forced-max-upgrade** variant is the same
+> per-run effective-level seam as downgradeable upgrades, running the opposite
+> direction. See
+> [`../product/player-preference-research-2026-08-02.md`](../product/player-preference-research-2026-08-02.md).
+
 > *"Extensive campaign levels where each spider is playable in a specific
 > [purpose-]built level that's the same for everyone."*
 

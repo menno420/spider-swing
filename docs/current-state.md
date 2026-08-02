@@ -6,6 +6,14 @@
 > work always win over this file. Read it second (right after the working
 > agreement) and keep it current as the project moves.
 
+**North star (owner directive, 2026-08-02): tune core feel, difficulty and
+upgrade impact until excellent play can meaningfully reach 25 k+.** The game is
+still "too difficult and moves too quickly" for that to feel achievable. Unlock
+systems, expanded Campaign trees and deeper monetisation are **deferred** until
+the core loop is right. Target, corroborating evidence, the hard monetisation
+boundaries (death stays meaningful; lives capped at 3) and the parked list live
+in [`player-preference research`](product/player-preference-research-2026-08-02.md).
+
 Build `0.29.0-haunted-soundtrack-playtest` is current. Continuous drive is
 zero; release, swing control, Reel, and pull timing earn speed; the former left
 kill line is a visible pursuing bird. `target_speed_at` remains a named
