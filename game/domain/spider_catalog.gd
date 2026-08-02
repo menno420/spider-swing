@@ -290,6 +290,60 @@ static func upgrades_for(profile_id: StringName) -> Array[Dictionary]:
 	return result
 
 
+## The three systems a run is actually made of, grouped by the catalogue's own
+## structure rather than by a derived score. Three of the five shared core tracks
+## feed Reel and two feed Anchor Burst; a spider's two unique tracks are its
+## third system. Nothing here invents a "power" or "control" number — every group
+## is a real set of track ids whose levels the save already holds.
+static func loadout_groups(profile_id: StringName) -> Array[Dictionary]:
+	var groups: Array[Dictionary] = []
+	if profile_id not in ALL_IDS:
+		return groups
+	var reel: Array[StringName] = []
+	var burst: Array[StringName] = []
+	var identity: Array[StringName] = []
+	var identity_names := PackedStringArray()
+	for item: Dictionary in upgrades_for(profile_id):
+		var upgrade_id := StringName(item["id"])
+		if StringName(item["scope"]) == SCOPE_IDENTITY:
+			identity.append(upgrade_id)
+			identity_names.append(str(item["name"]))
+		elif StringName(item["kind"]) in [BURST_REACH, BURST_FLOOR]:
+			burst.append(upgrade_id)
+		else:
+			reel.append(upgrade_id)
+	groups.append({
+		"id": &"reel", "label": "REEL", "tracks": reel, "detail": "",
+	})
+	groups.append({
+		"id": &"burst", "label": "BURST", "tracks": burst, "detail": "",
+	})
+	groups.append({
+		"id": &"identity",
+		"label": str(profile(profile_id).get("name", "")).to_upper(),
+		"tracks": identity,
+		"detail": " · ".join(identity_names),
+	})
+	return groups
+
+
+## Levels owned in a group and the ceiling it could reach, so a caller never has
+## to know how many tracks the group happens to contain.
+static func loadout_group_progress(
+	group: Dictionary,
+	upgrade_levels: Dictionary,
+) -> Dictionary:
+	var owned := 0
+	var tracks: Array = group.get("tracks", [])
+	for upgrade_id: StringName in tracks:
+		owned += maxi(0, int(upgrade_levels.get(str(upgrade_id), 0)))
+	return {
+		"owned": owned,
+		"maximum": tracks.size() * MAX_UPGRADE_LEVEL,
+		"tracks": tracks.size(),
+	}
+
+
 static func all_upgrades() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for profile_id: StringName in ALL_IDS:
