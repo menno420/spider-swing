@@ -18,7 +18,7 @@ region with no guaranteed recovery, early thresholds are 1/2/3.5 km not 10/20/35
 and warning time shrinks as skill rises — live in
 [`upgrade-and-difficulty research`](product/upgrade-and-difficulty-research-2026-08-02.md).
 
-Build `0.31.0-music-volume-playtest` is current. Continuous drive is
+Build `0.32.0-menu-navigation-playtest` is current. Continuous drive is
 zero; release, swing control, Reel, and pull timing earn speed; the former left
 kill line is a visible pursuing bird. `target_speed_at` remains a named
 reference. The non-pumping bot cannot tune the bird, so Test Run owns its three
@@ -39,10 +39,11 @@ without a reported regression.
 - Compatibility renderer, landscape, 1280×720 reference viewport with
   `canvas_items`/`expand` stretch, 60 Hz fixed simulation, and four maximum
   catch-up steps. No gameplay autoload singleton exists.
-- The app opens on Home. `FrontEndState` owns Home, Garage, Shop, Tutorial,
-  Course Lab, Region Practice, Field Guide, Settings, and the debug-only Test
-  Run setup. The bootstrap root alone wires and mounts presentation, input,
-  persistence, progression, and the application session.
+- The app opens on Home. `FrontEndState` owns Home plus focused Spider, Play
+  Modes, and Guide hubs; Garage, Shop, Tutorial, Course Lab, Region Practice,
+  Campaign, Field Guide, Settings, and the debug-only Test Run setup remain
+  state-owned destinations. The bootstrap root alone wires and mounts
+  presentation, input, persistence, progression, and the application session.
 - Layering is enforced in both directions: domain imports no Godot-facing layer;
   simulation imports domain; application imports inward; adapters and
   presentation are outer peers; presentation never mutates simulation state.
@@ -61,7 +62,7 @@ without a reported regression.
 - A separately versioned `DebugTestProfile` auto-saves the Test Lab working set
   and A/B/C comparison slots. Its resolved display values and sparse explicit
   overrides never enter `PlayerSettings` or `PlayerProgress`.
-- Build `0.31.0-music-volume-playtest` (Android version code 51, package
+- Build `0.32.0-menu-navigation-playtest` (Android version code 52, package
   `com.menno420.spiderswing.dev`) retains the stable conventional public debug
   identity introduced by `0.19.0-depth-testing` in
   `.github/android/debug.keystore`. The workflow pins its file and certificate
@@ -194,8 +195,13 @@ without a reported regression.
 - One shared spider-built UI theme covers the front end. Every card uses a
   neutral graphite/slate surface with deterministic grain and pits plus passive
   low-alpha fibres, corner webs, silk knots, and cocoon forms; buttons use an
-  asymmetric cocoon silhouette. Home now fills the landscape with one identity
-  card and one primary-action dashboard instead of a narrow menu column.
+  asymmetric cocoon silhouette. Home fills the landscape with one identity
+  card, difficulty, a dominant Endless Play action, and four intention-level
+  choices instead of indexing every feature. Spider groups Garage and Upgrades;
+  Play Modes groups Campaign, Region Practice, and Course Lab; Guide groups the
+  Tutorial and Field Guide. Settings stays direct, while debug-only Test Lab is
+  a subordinate direct utility. All existing destinations remain within two
+  taps and each destination returns through the hub that opened it.
   Garage and Shop inherit the selected spider's accent. Settings and Shop use
   a single native vertical scroller whose descendants pass drag input.
   The finished five-spider roster, flies, Ancient Forest pack, and eight-asset
@@ -222,11 +228,11 @@ without a reported regression.
 
 **Verification**
 
-- Local source passes the 204-contract engine runner with the exact
+- Local source passes the 205-contract engine runner with the exact
   `4.7.1.stable.official.a13da4feb` Standard binary. The declared suite contains
   11 bootstrap/build, 68 deterministic physics, 15 zone, 11 spider-biology,
   10 Campaign, 9 difficulty, 4 upgrade-wiring, 10 simulation-lab/replay,
-  2 economy, 9 generated-audio, 27 mobile GUI/layout, and 28 front-end/settings/
+  2 economy, 9 generated-audio, 27 mobile GUI/layout, and 29 front-end/settings/
   progression checks. The full
   required `python3 tools/verify.py --require-godot` result is recorded at
   session close.

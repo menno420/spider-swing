@@ -10,27 +10,24 @@ cannot start or persist a run by itself.
 
 ### Home
 
-The first visible screen presents these real routes:
+The first visible screen presents intentions rather than indexing every feature:
 
-- **Play** — creates a new Swing Laboratory session with the saved options;
-- **Garage** — compares spider profiles, palettes, and web treatments;
-- **Shop** — spends laboratory flies on shared core and profile-identity tracks;
-- **Tutorial** — opens the six-step animated mechanics guide;
-- **Campaign** — opens three verb-gated teaching runs that award one star each;
-- **Course Lab** — edits and playtests a six-piece local deterministic pattern;
-- **Region Practice** — starts at a reached 5000 m checkpoint without rewards
-  or record eligibility;
-- **Field Guide** — browses one spider at a time, separating biology from game
-  fiction and citations;
-- **Settings** — edits real, persisted player options.
-- **Test Lab** *(when Debug Tools is enabled)* — edits and compares complete
-  noncompetitive run configurations before gameplay is mounted.
+- **Play** — starts Endless immediately with the selected difficulty, spider,
+  owned upgrades, and saved options;
+- **Spider** — opens Garage and Upgrades together;
+- **Play Modes** — opens Campaign, Region Practice, and Course Lab together;
+- **Guide** — opens How to Swing and Field Guide together;
+- **Settings** — edits real persisted options directly;
+- **Test Lab** *(when Debug Tools is enabled)* — remains a subordinate direct
+  utility for saved, noncompetitive run comparisons.
 
-Home uses a full landscape dashboard rather than a narrow button strip. The
-selected production spider, role, difficulty and best distance form one
-identity card; the dominant Play action, difficulty selector, and a three-column
-map of two-line route buttons form the other. Every route says what it does
-before the player taps it.
+Home uses a full landscape dashboard rather than a feature grid. The selected
+production spider, role, difficulty, and best distance form one identity card;
+the other reserves its strongest weight for one Endless Play action. The four
+normal secondary choices are a two-column semantic map. Every previous
+destination remains reachable within two taps, and its back action names and
+returns to the hub that opened it. This topology is state-owned by
+`FrontEndState`; presentation does not maintain a second overlay history.
 
 The simulation, input router, and gameplay view are not mounted until Play is
 requested. Returning through the in-game **Menu** control releases held Reel
@@ -53,7 +50,7 @@ The detail scroller then presents four separately bordered sections: **Real
 Animal**, **In Spider Swing**, **Field Note**, and **Sources**. Real scientific
 claims, invented abilities, myth corrections, and provenance therefore cannot
 blend into one green text wall. Back names and follows the route that opened the
-guide (Home or Garage).
+guide (Guide hub or Garage).
 
 ### Tutorial
 
@@ -209,9 +206,9 @@ No global manager or autoload is introduced.
 `python3 tools/verify.py --require-godot` verifies:
 
 - startup mounts Home without creating gameplay;
-- Play, Garage, Shop, Tutorial, Campaign, Course Lab, Region Practice, Field
-  Guide, Settings, and Test Lab are real
-  event-consuming Buttons;
+- Play, Spider, Play Modes, Guide, Settings, and Test Lab are real
+  event-consuming Home buttons; each hub's destination buttons consume their
+  own events and return through the same state-owned route;
 - the tutorial has exactly six steps and covers the live mechanics;
 - Settings owns a vertical scroll surface with readable type and mobile-sized
   three-card preset/action controls, a touch deadzone, no focus snapping, and
@@ -229,7 +226,9 @@ No global manager or autoload is introduced.
 - Menu emits one return request without leaking into a web action;
 - effects and haptics migrate on for older settings, persist independently, and
   cannot alter gameplay events;
-- Home keeps one dominant Play action and a three-column explanatory route map;
+- Home keeps one dominant Play action, a four-choice semantic map, and a
+  subordinate debug-only Test Lab action; the three hubs remain enclosed in
+  short landscape layouts and preserve two-tap reachability;
 - Field Guide retains its index plus four separate glance-readable sections;
 - the Test Lab exposes all eight pre-run catalogue categories, auto-saves its
   working set, round-trips A/B/C, preserves unedited progression, reaches the

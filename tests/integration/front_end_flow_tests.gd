@@ -12,6 +12,7 @@ static func run() -> Dictionary:
 	passed += _test_startup_is_home_not_gameplay(failures)
 	passed += _test_primary_routes_are_real_buttons(failures)
 	passed += _test_home_has_primary_action_hierarchy(failures)
+	passed += _test_focused_hubs_are_enclosed_and_shallow(failures)
 	passed += _test_tutorial_covers_current_mechanics(failures)
 	passed += _test_settings_are_validated_and_emitted(failures)
 	passed += _test_settings_are_scrollable_and_mobile_readable(failures)
@@ -63,20 +64,31 @@ static func _test_primary_routes_are_real_buttons(
 	var view := FrontEndView.new()
 	view.bind_state(state)
 	for button_name: StringName in [
-		&"Play", &"Garage", &"Shop", &"Tutorial", &"Campaign", &"Creator",
-		&"Practice", &"Settings", &"FieldGuide",
+		&"Play", &"SpiderHub", &"PlayModesHub", &"GuideHub", &"Settings",
+		&"Garage", &"Shop", &"Tutorial", &"Campaign", &"Creator", &"Practice",
+		&"FieldGuide",
 	]:
 		var button := view.front_end_button(button_name)
 		if button == null or button.mouse_filter != Control.MOUSE_FILTER_STOP:
 			failures.append("%s is not an event-consuming Button" % button_name)
 			view.free()
 			return 0
+	view.front_end_button(&"GuideHub").pressed.emit()
+	if state.screen != FrontEndState.Screen.GUIDE_HUB:
+		failures.append("Guide choice does not open its focused hub")
+		view.free()
+		return 0
 	view.front_end_button(&"Tutorial").pressed.emit()
 	if state.screen != FrontEndState.Screen.TUTORIAL:
-		failures.append("Tutorial button does not route to tutorial")
+		failures.append("Guide hub does not route to Tutorial")
 		view.free()
 		return 0
 	view.front_end_button(&"TutorialBack").pressed.emit()
+	if state.screen != FrontEndState.Screen.GUIDE_HUB:
+		failures.append("Tutorial does not return to its Guide hub")
+		view.free()
+		return 0
+	view.front_end_button(&"GuideHubBack").pressed.emit()
 	view.front_end_button(&"Settings").pressed.emit()
 	if state.screen != FrontEndState.Screen.SETTINGS:
 		failures.append("Settings button does not route to settings")
@@ -100,21 +112,95 @@ static func _test_home_has_primary_action_hierarchy(
 	var preview := view.find_child("HomeSpiderPreview", true, false) as TextureRect
 	var routes := view.find_child("HomeRouteGrid", true, false) as GridContainer
 	var play := view.front_end_button(&"Play")
+	var debug_route := view.front_end_button(&"DebugRunSetup")
 	if identity == null or dashboard == null or preview == null or \
 			routes == null or play == null or preview.texture == null or \
 			dashboard.anchor_left > 0.4 or dashboard.anchor_right < 0.95 or \
-			routes.columns != 3 or routes.get_child_count() != 9 or \
-			play.custom_minimum_size.y < 72.0 or \
-			play.get_theme_font_size("font_size") < 24:
-		failures.append("Home lost its identity, dominant PLAY, or three-column map")
+			routes.columns != 2 or routes.get_child_count() != 4 or \
+			play.custom_minimum_size.y < 68.0 or \
+			play.get_theme_font_size("font_size") < 20 or \
+			debug_route == null or debug_route.get_parent() == routes or \
+			debug_route.custom_minimum_size.y < 48.0 or \
+			debug_route.custom_minimum_size.y > 50.0:
+		failures.append("Home lost its identity, dominant Play, or focused route map")
 		view.free()
 		return 0
+	var expected_routes := ["SpiderHub", "PlayModesHub", "GuideHub", "Settings"]
+	var actual_routes: Array[String] = []
 	for route: Control in routes.get_children():
+		if route is Button:
+			actual_routes.append(route.name)
 		if route is Button and not (route as Button).text.contains("\n"):
 			failures.append("Home route does not explain its purpose at a glance")
 			view.free()
 			return 0
+	if actual_routes != expected_routes:
+		failures.append("Home exposes feature buttons instead of four semantic choices")
+		view.free()
+		return 0
 	view.free()
+	return 1
+
+
+static func _test_focused_hubs_are_enclosed_and_shallow(
+	failures: PackedStringArray,
+) -> int:
+	var settings := PlayerSettings.defaults()
+	settings.show_debug_tools = true
+	var state := FrontEndState.new()
+	state.configure(settings, PlayerProgress.defaults())
+	var viewport := SubViewport.new()
+	viewport.size = Vector2i(1280, 600)
+	var view := FrontEndView.new()
+	view.size = Vector2(viewport.size)
+	viewport.add_child(view)
+	view.bind_state(state)
+	for panel_name in [
+		"HomeWebPanel", "SpiderHubIdentity", "SpiderHubRoutes",
+		"PlayModesHubRoutes", "GuideHubRoutes",
+	]:
+		var panel := view.find_child(panel_name, true, false) as Control
+		if panel == null or panel.anchor_left < 0.0 or panel.anchor_top < 0.0 or \
+				panel.anchor_right > 1.0 or panel.anchor_bottom > 1.0 or \
+				panel.anchor_left >= panel.anchor_right or \
+				panel.anchor_top >= panel.anchor_bottom:
+			failures.append("%s escapes the short landscape shell" % panel_name)
+			viewport.free()
+			return 0
+
+	view.front_end_button(&"SpiderHub").pressed.emit()
+	if state.screen != FrontEndState.Screen.SPIDER_HUB:
+		failures.append("Spider choice does not open its focused hub")
+		viewport.free()
+		return 0
+	view.front_end_button(&"Garage").pressed.emit()
+	view.front_end_button(&"GarageBack").pressed.emit()
+	if state.screen != FrontEndState.Screen.SPIDER_HUB:
+		failures.append("Garage does not return to Spider hub")
+		viewport.free()
+		return 0
+	view.front_end_button(&"SpiderHubBack").pressed.emit()
+	view.front_end_button(&"PlayModesHub").pressed.emit()
+	view.front_end_button(&"Campaign").pressed.emit()
+	view.front_end_button(&"CampaignBack").pressed.emit()
+	if state.screen != FrontEndState.Screen.PLAY_MODES_HUB:
+		failures.append("Campaign does not return to Play Modes hub")
+		viewport.free()
+		return 0
+	view.front_end_button(&"PlayModesHubBack").pressed.emit()
+	view.front_end_button(&"GuideHub").pressed.emit()
+	view.front_end_button(&"FieldGuide").pressed.emit()
+	if state.screen != FrontEndState.Screen.FIELD_GUIDE or \
+			state.field_guide_return_screen != FrontEndState.Screen.GUIDE_HUB:
+		failures.append("Guide hub does not own the Field Guide return path")
+		viewport.free()
+		return 0
+	view.front_end_button(&"FieldGuideBack").pressed.emit()
+	if state.screen != FrontEndState.Screen.GUIDE_HUB:
+		failures.append("Field Guide does not return to Guide hub")
+		viewport.free()
+		return 0
+	viewport.free()
 	return 1
 
 
@@ -582,6 +668,7 @@ static func _test_checkpoint_migration_and_practice_are_noncompetitive(
 		requests.append(region_id))
 	var view := FrontEndView.new()
 	view.bind_state(state)
+	view.front_end_button(&"PlayModesHub").pressed.emit()
 	view.front_end_button(&"Practice").pressed.emit()
 	var bramble := view.front_end_button(&"PracticeBrambleCanopy")
 	var hollow := view.front_end_button(&"PracticeSilkHollow")
@@ -608,25 +695,28 @@ static func _test_garage_shop_and_creator_are_real_routes(
 	state.configure(PlayerSettings.defaults(), PlayerProgress.defaults())
 	var view := FrontEndView.new()
 	view.bind_state(state)
+	view.front_end_button(&"SpiderHub").pressed.emit()
 	view.front_end_button(&"Garage").pressed.emit()
 	if state.screen != FrontEndState.Screen.GARAGE or \
 			view.front_end_button(&"GaragePlay") == null:
-		failures.append("Garage is not a functional Home route")
+		failures.append("Garage is not a functional Spider-hub route")
 		view.free()
 		return 0
 	view.front_end_button(&"GarageBack").pressed.emit()
 	view.front_end_button(&"Shop").pressed.emit()
 	if state.screen != FrontEndState.Screen.SHOP or \
 			view.front_end_button(&"ShopGarage") == null:
-		failures.append("Shop is not a functional Home route")
+		failures.append("Shop is not a functional Spider-hub route")
 		view.free()
 		return 0
 	view.front_end_button(&"ShopBack").pressed.emit()
+	view.front_end_button(&"SpiderHubBack").pressed.emit()
+	view.front_end_button(&"PlayModesHub").pressed.emit()
 	view.front_end_button(&"Creator").pressed.emit()
 	if state.screen != FrontEndState.Screen.CREATOR or \
 			view.front_end_button(&"CreatorPlay") == null or \
 			view.front_end_button(&"CourseSlot0") == null:
-		failures.append("Course Lab is not a functional editable Home route")
+		failures.append("Course Lab is not a functional Play-Modes route")
 		view.free()
 		return 0
 	view.free()
@@ -640,6 +730,7 @@ static func _test_field_guide_separates_biology_from_game(
 	state.configure(PlayerSettings.defaults(), PlayerProgress.defaults())
 	var view := FrontEndView.new()
 	view.bind_state(state)
+	view.front_end_button(&"SpiderHub").pressed.emit()
 	view.front_end_button(&"Garage").pressed.emit()
 	var strip := view.find_child("GarageInspiration", true, false) as Label
 	if strip == null or not strip.text.begins_with("INSPIRED BY"):
@@ -697,8 +788,8 @@ static func _test_field_guide_separates_biology_from_game(
 			failures.append("Field Guide lacks glance-readable section %s" % section_name)
 			view.free()
 			return 0
-	# The guide is entered from two places, so back must follow the route the
-	# player actually took rather than always landing in the Garage.
+	# The guide is entered from the Guide hub and Garage, so back must follow
+	# the route the player actually took rather than guessing.
 	var guide_back := view.front_end_button(&"FieldGuideBack")
 	if not guide_back.text.contains("GARAGE"):
 		failures.append("the Field Guide back route does not name the Garage")
@@ -710,20 +801,23 @@ static func _test_field_guide_separates_biology_from_game(
 		view.free()
 		return 0
 	state.show_home()
+	view.front_end_button(&"GuideHub").pressed.emit()
 	view.front_end_button(&"FieldGuide").pressed.emit()
 	if state.screen != FrontEndState.Screen.FIELD_GUIDE:
-		failures.append("Home does not route to the Field Guide")
+		failures.append("Guide hub does not route to the Field Guide")
 		view.free()
 		return 0
-	if not guide_back.text.contains("HOME"):
+	if not guide_back.text.contains("GUIDE"):
 		failures.append("the Field Guide back route does not follow its origin")
 		view.free()
 		return 0
 	guide_back.pressed.emit()
-	if state.screen != FrontEndState.Screen.HOME:
-		failures.append("the Field Guide does not return to Home")
+	if state.screen != FrontEndState.Screen.GUIDE_HUB:
+		failures.append("the Field Guide does not return to Guide hub")
 		view.free()
 		return 0
+	view.front_end_button(&"GuideHubBack").pressed.emit()
+	view.front_end_button(&"SpiderHub").pressed.emit()
 	view.front_end_button(&"Garage").pressed.emit()
 	view.front_end_button(&"GarageBack").pressed.emit()
 	view.front_end_button(&"Shop").pressed.emit()
