@@ -106,7 +106,7 @@ discipline about *amount*.
 
 ---
 
-## 3 · Five structural findings
+## 3 · Six structural findings
 
 ### F1 · The `difficulty` label is dead metadata
 
@@ -180,6 +180,29 @@ contain more than one difficulty**.
 > **52% of the corridor height**.
 
 The practical consequence is in §6.1.
+
+### F6 · No pattern is ever reused between sections
+
+| section | pool | new to the run | reused |
+| --- | ---: | ---: | ---: |
+| Ancient Forest | 20 | 20 | 0 |
+| Bramble Canopy | 8 | 8 | 0 |
+| Silk Hollow | 9 | 9 | 0 |
+| Ruined Arboretum | 18 | 18 | 0 |
+| Storm Ridge · Web City · Ashen Hollow | 11 each | 11 each | 0 |
+| Deep Mist | 9 | 9 | 0 |
+
+**97 distinct patterns, and every one belongs to exactly one section.**
+`measured`.
+
+This decides the shape of R12. "Vocabulary the player has already met is free to
+reuse" sounds like a useful economy and currently saves **nothing** — every
+section is 100% new. So a rule that demonstrates each new *pattern* once, spaced
+to be legible, would spend 20 demonstrations on Ancient Forest: at two chunks
+each that is **40 of its 52 chunks**, an entire section spent teaching.
+
+Per-pattern introduction is therefore too expensive at the top end, and the unit
+of introduction has to be coarser. See R12.
 
 ---
 
@@ -277,31 +300,62 @@ problem to dilute.
 measured geometry, or it is deleted. A number nothing reads is a lie waiting to
 happen (F1).
 
-**R12 · Every section opens with an introduction ramp.** Owner-specified,
-2026-08-02. On entering any section, measured from the section boundary:
+**R12 · Every section shows its new patterns once, gently, before it uses them
+for real.** Owner-specified 2026-08-02, revised the same day. This is a
+**promise to the player**, not a difficulty concession — once players learn the
+promise holds, the introduction reads as legibility rather than charity. The
+owner's phrasing: *"players will know that each section will show them the
+patterns once in a more forgiving way, and the next one will be the real deal."*
 
-| phase | distance | chunks | behaviour |
-| --- | --- | ---: | --- |
-| Gate | 0–150 m | 1–1.5 | no lethal obstacle |
-| Introduction | 150 m–1 km | ~9 | pool widens from the section's simplest toward its full vocabulary; density and obstacle size ramp with it |
-| Full vocabulary | from ~1500 m | 15.6 | every pattern in the section's pool is drawable |
-| Plateau | to section end | ~36 | held at the section's ceiling, with scheduled recovery chunks |
+Two ramps stack, and they are driven by different things.
 
-One chunk is **96 m**, so the owner's figures land on the grid almost exactly:
-150 m ≈ 1.5 chunks, 1 km ≈ 10.4, 1500 m ≈ 15.6, a 5 km section ≈ 52. The ramp
-occupies **30% of every section**.
+**The gate — driven by distance.** A stretch of no lethal obstacle at each
+section entry, whose job is the visual and audio transition, not teaching:
 
-Its purpose is vocabulary introduction, not skill training — each section has
-genuinely new obstacle types, and the ramp is the player's chance to find routes
-around them without dying to a type they have not seen. That is why its length
-does not shrink with section index.
+| section | gate | why |
+| --- | --- | --- |
+| 1st | ~500 m | also the game's onboarding; loose single obstacles alternating top and bottom with short open gaps between, *before* any multi-obstacle pattern |
+| 2nd | ~100 m or less | patterns may start immediately, merely spread wider for the first few |
+| ≥ 15 km | shorter still | "keep the pace high" — bounded below by the spacing floor, never by zero |
 
-**R13 · Bounded spread, not bounded steps.** Within the ramp and at plateau, the
-drawable pool is centred on the current level with a bounded spread — a chunk
-may be easier than the current level, never much harder. The constraint is on
-the *distribution*, not on the chunk-to-chunk sequence, because scheduled
-recovery chunks are deliberate dips and a sequence rule would forbid them.
-Owner's phrasing: *"not so random that it suddenly goes from 0 to 100 difficulty"*.
+**The introduction — driven by novelty, not by distance.** Each *family* of
+patterns new to the run gets one forgiving showing — open chunks either side,
+reduced obstacle scale — before that family joins the section's normal pool.
+Ramp length therefore **emerges** from how much is genuinely new rather than
+being a number per section.
+
+Why family and not pattern: F6 measures 97 patterns with **zero reuse between
+sections**, so a per-pattern schedule would spend 20 demonstrations on Ancient
+Forest — 40 of its 52 chunks. Grouping into roughly five families per section
+gives ~5 demonstrations at ~3 chunks each ≈ 15 chunks ≈ **1440 m**, which
+recovers the owner's own "over the first 1 km … full vocabulary around 1500 m"
+almost exactly. That convergence is the argument for the family unit.
+
+**This needs one thing that does not exist:** patterns carry no `family` tag.
+Adding one to 97 entries is cheap, mechanical, and is the prerequisite for R12.
+
+**Novelty, not ordinal, must set the length.** A rule that shrinks the ramp
+purely with section index would give the *most alien* mechanics the *shortest*
+teaching — Deep Mist at 35 km changes what the player can see, and Ashen Hollow
+makes anchors fail. Those deserve a full introduction however deep they sit. The
+gate shrinks with distance; the introduction does not.
+
+**R13 · Bounded spread, and a spacing floor that does not bend.** Within the
+ramp and at plateau, the drawable pool is centred on the current level with a
+bounded spread — a chunk may be easier than the current level, never much
+harder. The constraint is on the *distribution*, not the chunk-to-chunk
+sequence, because scheduled recovery chunks are deliberate dips and a sequence
+rule would forbid them. Owner's phrasing: *"not so random that it suddenly goes
+from 0 to 100 difficulty"*.
+
+Separately and unconditionally: **consecutive opposite-lane commitments are
+separated by at least T seconds at the speed cap for that distance.** The
+owner's constraint — *"not so small that someone sees an obstacle at the top and
+then immediately has one at the bottom before having the time to figure out what
+happened"* — is the same quantity as R8's preview time, and it binds at every
+pressure including the plateau. For scale: one chunk is 1.37 s at 70 m/s, and
+the weave patterns place their two commitments 420 px apart, which is **0.60 s**
+at that speed.
 
 **R11 · Declared identity must match generated behaviour.** A region's `focus`
 and `quirk` are assertions about its output, and a contract checks them. F3 is
@@ -530,13 +584,18 @@ that need his answer, with what evidence would settle each.
    20 km; Bramble Canopy would repeat 52×.
 8. **Do region-endless runs award anything?** §9 recommends nothing, following
    Region Practice, to avoid both farming and a second leaderboard.
-9. **Does R12's ramp restart from zero in every section, or from a floor that
-   rises with section index?** The gate is genuinely empty either way. But
-   entering section 6 and dropping to zero difficulty for 150 m, then climbing
-   from nothing, is a deeper dip than entering section 2. A rising floor keeps
-   the dip shallow late; a zero floor keeps every section's introduction equally
-   generous. *This is the one number the owner's 2026-08-02 spec did not pin,
-   and R12 cannot be implemented without it.*
+9. ~~Does R12's ramp restart from zero, or from a rising floor?~~ **Answered
+   2026-08-02: a rising floor.** *"The sections should scale based on their
+   distance in the game / the difficulty of the previous section."* Folded into
+   R12's gate table.
+11. **What are the pattern families, and who names them?** R12 cannot be built
+    without a `family` tag on all 97 patterns, and the grouping is a design
+    judgement — "ceiling hazard" and "floor hazard" may be one family or two,
+    and the answer changes every ramp length in the game.
+12. **What is T, the spacing floor in R13?** One chunk is 1.37 s at 70 m/s; a
+    weave's two commitments are 0.60 s apart. The floor lies somewhere between,
+    and it is the single value that decides whether "keep the pace high" past
+    15 km stays fair. *Device-only.*
 10. **Is a 0.45 obstacle-size floor acceptable to the art?** §6.1 lever 2 is the
     cheapest source of ramp rungs and the only one that changes how the game
     looks. *Evidence: one build with the size ramp, judged on device.*
