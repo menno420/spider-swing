@@ -398,6 +398,17 @@ more than ~10% harder than another on the measured terms.
 **R6 · Warm-up is sacred.** 0–500 m carries no lethal obstacle. A contract, so
 it cannot erode.
 
+> **⚠ Measured 2026-08-02: this is not what ships, and it conflicts with R12.**
+> Chunks 1 and 4 (96 m and 384 m) each carry one obstacle contact polygon,
+> identically across every seed — the opening is authored, not seeded. That is
+> exactly what R12's first-gate row describes (*"loose single obstacles
+> alternating top and bottom with short open gaps"*), so **R6's "no lethal
+> obstacle" is stricter than both the shipped generator and this document's own
+> other rule.** One of the two must be reworded before either is implemented,
+> and the owner's requirement was *"the first 500m should remain as it is"* —
+> which favours rewording R6, not the generator. See **N5** in
+> [`../measurements/2026-08-02-course-audit-baseline.md`](../measurements/2026-08-02-course-audit-baseline.md).
+
 **R7 · Recovery cadence is a curve, not a per-region constant.** Maximum
 consecutive challenge chunks rises with pressure. Every region obeys it,
 including Ancient Forest.
@@ -638,10 +649,19 @@ evaluate individual patterns on device, it has failed.
 
 ## 8 · Staged plan
 
-**Phase 0 — instrumentation only.** Land both measuring instruments as a
-`tools/` command plus a contract that records today's profile as a baseline.
-**No gameplay change**, so it can land while the design is still being argued,
-and everything after becomes comparable rather than remembered.
+**Phase 0 — instrumentation only. ✅ LANDED 2026-08-02.**
+`tools/course_audit.gd` walks the generator and reports the axis vector per
+chunk; `tools/course_audit_probe.gd` holds the measurement, so the CLI and the
+contracts can never measure differently. Five contracts in
+`tests/unit/course_audit_tests.gd` pin the *instrument* — not the difficulty —
+and each was falsified before being trusted. **No gameplay value changed.**
+First output and its six new findings:
+[`../measurements/2026-08-02-course-audit-baseline.md`](../measurements/2026-08-02-course-audit-baseline.md).
+
+> **It confirmed all four of the owner's felt boundaries from geometry alone**,
+> and it moved two things in this document: **N1** (the tightest content is not
+> the weave — the real floor is 180 px, not 420) and **N5** (the warm-up already
+> carries obstacles, so R6 contradicts R12). Both are folded in below.
 
 **Phase 1 — doctrine.** These rules, argued and cut down, become a decision
 ledger entry. Owner signs off before generator code moves.
@@ -881,6 +901,17 @@ still device-only.**
 >
 > **What remains open is now narrower:** not *whether* T varies with
 > predictability, but what the constants are on the owner's device and hands.
+>
+> **⚠ And the question was framed against the wrong number.** Measured
+> 2026-08-02: `high_low_weave`'s 420 px is **not** the tightest content. Three
+> `centre`-lane patterns are tighter — `hollow_spindle_gate` at **180 px
+> (0.20 s)**, `staggered_s` at 233 px, `stump_and_vine` at 252 px. So **the real
+> floor is 2.3× tighter than the figure this question was built on**, and any T
+> chosen against 0.60 s would leave three patterns beneath it untouched.
+> Worse for R14's framing: **every `weave`-lane pattern is looser than all three
+> tightest `centre`-lane ones**, so the lane label does not predict timing
+> pressure at all. See **N1** and **N3** in
+> [`../measurements/2026-08-02-course-audit-baseline.md`](../measurements/2026-08-02-course-audit-baseline.md).
 
 The original derivation, kept because the convergence is the evidence:
 
@@ -921,9 +952,16 @@ owner's reaction time on his own device.
 
 ## Appendix · Reproducing the measurements
 
-Both instruments were temporary scripts under `tools/`, removed after use;
-Phase 0 exists to make them permanent. Sketch, so the numbers can be checked
-before then:
+**Superseded 2026-08-02 — both instruments are now permanent.** Run:
+
+```bash
+godot --headless --path . --script res://tools/course_audit.gd -- \
+  --to-metres=15000 --seeds=3 --json=/tmp/course-audit.json
+```
+
+Measurement lives in `tools/course_audit_probe.gd` and is pinned by five
+contracts. The original sketch is kept below because the *error* it records is
+the reason those contracts exist:
 
 - **Label curve** — call `CoursePatternCatalog.pattern_for_chunk(chunk, chunk *
   960.0, seed)` for chunks 0…160 across several seeds; bucket
