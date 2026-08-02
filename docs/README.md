@@ -13,9 +13,10 @@
 | 1 | [`AGENT_ORIENTATION.md`](AGENT_ORIENTATION.md) | How to work in this repository. |
 | 2 | [`current-state.md`](current-state.md) | What is true right now — the stability baseline, what is in flight, what shipped. |
 | 3 | [`game-design/difficulty-and-obstacle-doctrine.md`](game-design/difficulty-and-obstacle-doctrine.md) | **The live open proposal — the owner is analysing it.** The measured difficulty baseline, eight structural findings, and fourteen proposed rules for how difficulty and obstacle placement are decided, scoped to the first 15 km. **Nothing in it is implemented and no ledger entry records it.** |
-| 4 | [`game-design/earned-speed-and-the-bird.md`](game-design/earned-speed-and-the-bird.md) | **Binding mechanics spec.** How speed became earned, every seam with a file:line, and what cannot be tuned from the lab. |
-| 5 | [`owner-questions.md`](owner-questions.md) | Open owner-only forks (OQ-13 … OQ-16), each with the default the work proceeds under. |
-| 6 | [`CAPABILITIES.md`](CAPABILITIES.md) | What sessions in this environment can and cannot do, with verified evidence. |
+| 4 | [`game-design/difficulty-research-2026-08-02.md`](game-design/difficulty-research-2026-08-02.md) | The external evidence behind the doctrine — reaction-window bounds, why pressure is not additive, the hazard-telemetry spec, and the blinded single-tester protocol. **All `inferred`; measurement outranks it.** |
+| 5 | [`game-design/earned-speed-and-the-bird.md`](game-design/earned-speed-and-the-bird.md) | **Binding mechanics spec.** How speed became earned, every seam with a file:line, and what cannot be tuned from the lab. |
+| 6 | [`owner-questions.md`](owner-questions.md) | Open owner-only forks (OQ-13 … OQ-16), each with the default the work proceeds under. |
+| 7 | [`CAPABILITIES.md`](CAPABILITIES.md) | What sessions in this environment can and cannot do, with verified evidence. |
 | — | [`planning/fresh-session-handoff-2026-08-01.md`](planning/fresh-session-handoff-2026-08-01.md) | **Not a plan — the evidence boundary and the device-verification queue.** What the owner has actually accepted versus what is only repository-proven. |
 
 ## Product

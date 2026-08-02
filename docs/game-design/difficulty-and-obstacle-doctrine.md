@@ -19,6 +19,14 @@
 > generator run · `inferred` = arithmetic on measured values · `assumed` =
 > design hypothesis awaiting a device verdict.
 >
+> **External evidence, added 2026-08-02.** An owner-commissioned deep research
+> report is written up in
+> [`difficulty-research-2026-08-02.md`](difficulty-research-2026-08-02.md). It
+> corroborates F8 and the O3 coupling from independent instruments, and proposes
+> three changes — marked inline as quoted blocks in §4, R12 and R13. **All of it
+> is `inferred` external practice, none of it is measurement**, so where it and a
+> measured finding here disagree, **the measurement wins**.
+>
 > **Measurement method.** Course generation is a pure function of
 > `(chunk_index, distance_at_chunk, course_seed)`, so it can be walked exactly.
 > Two independent instruments were used on the pinned
@@ -115,6 +123,14 @@ discipline about *amount*.
 ---
 
 ## 3 · Eight structural findings
+
+*Two of these were later corroborated from outside this repository — F7 by the
+prescription "give every recognisable beat two to four legal continuations", and
+F8 by "treat corridor width as a protected error margin, spend extra pressure on
+decision density and timing". Both in
+[`difficulty-research-2026-08-02.md`](difficulty-research-2026-08-02.md)
+§ 1.1 and § 2.6. Neither finding depends on that agreement — they are `measured`
+and it is not.*
 
 ### F1 · The `difficulty` label is dead metadata
 
@@ -315,6 +331,36 @@ A region declares an **axis budget** — how it spends the pressure it is given.
 At the plateau every region spends the *same total* on *different axes*. That
 is requirement 5, expressed as a number rather than a hope.
 
+> ### ⚠ Proposed correction — budget becomes *envelope*
+>
+> From [`difficulty-research-2026-08-02.md`](difficulty-research-2026-08-02.md)
+> § 2.2, and it is the most substantive external challenge to this model.
+> **Pressure is very unlikely to be additive:**
+>
+> `pressure ≠ density + narrowness + timing + unpredictability`
+>
+> A point of narrowing is not equivalent to a point of density. Narrowing is mild
+> at low speed on a known pattern and severe when it coincides with a new required
+> verb, a vertical reversal and short telegraphing. Multidimensional level metrics
+> are well-established prior art; **a validated conserved difficulty budget is
+> not** — the report searched and found none.
+>
+> **What to use instead.** Keep the monotone scalar, but as an **admission
+> envelope**: it decides which *profiles* are legal at a distance. Each axis then
+> carries its **own cap, slope limit and cooldown**, and a small set of
+> **explicitly forbidden combinations** — maximum narrowness must not coincide
+> with maximum novelty and minimum reaction time. The scalar stays an
+> orchestration instrument without pretending the axes are interchangeable
+> currency.
+>
+> This costs nothing we are not already building: every chunk still gets a vector,
+> every region a target profile, every kilometre an allowed range. It changes what
+> the comparison looks at — **maxima, consecutive exposure, and interaction terms
+> like `density × narrowness` and `novelty × required_verbs`**, not means alone.
+>
+> Nothing else in this section changes; requirement 5 is still expressible, as
+> "equal envelopes, different profiles" rather than "equal totals".
+
 It also answers requirement 4 directly: "more Dives and Bursts" is the **Verb**
 axis rising with pressure, and it is the one axis currently at zero everywhere.
 
@@ -416,6 +462,28 @@ teaching — Deep Mist at 35 km changes what the player can see, and Ashen Hollo
 makes anchors fail. Those deserve a full introduction however deep they sit. The
 gate shrinks with distance; the introduction does not.
 
+> **Two amendments proposed by
+> [`difficulty-research-2026-08-02.md`](difficulty-research-2026-08-02.md)
+> § 2.3–2.5**, both `inferred` from external practice:
+>
+> 1. **Make the ramp an axis-local reset, not a global drop.** Valve's shipped
+>    rule for deliberate oscillation is *"amplitude (difficulty) is not changed,
+>    frequency (pacing) is"* — local waves should not lower the underlying floor.
+>    That is in tension with a 100–150 m gate only if the gate drops *everything*.
+>    Both hold together if the entry lowers **novelty and width pressure for the
+>    mechanic being introduced** while the monotone base pressure keeps rising
+>    underneath. This is the sharpest single change the report suggests.
+> 2. **A safe introduction that still kills teaches distrust, not the mechanic.**
+>    The first encounter must use the same perceptual language, the same collision
+>    rules and the same required movement as later variants, with exactly **one**
+>    generous margin — and it must survive **bird pressure**, which is an
+>    independent source that does not know a teaching chunk is in progress.
+>
+> A third caution, against over-applying R12: the largest relevant tutorial study
+> (> 45 000 players) found tutorial value depends heavily on game complexity, with
+> **no significant gain** in the simpler games. Spend the teach treatment where a
+> mechanic needs new interpretation or new input — not on every new silhouette.
+
 **R13 · Bounded spread, and a spacing floor that does not bend.** Within the
 ramp and at plateau, the drawable pool is centred on the current level with a
 bounded spread — a chunk may be easier than the current level, never much
@@ -435,6 +503,26 @@ happened"* — is the same quantity as R8's preview time, and it binds at every
 pressure including the plateau. For scale: one chunk is 1.37 s at 70 m/s, and
 the weave patterns place their two commitments 420 px apart, which is **0.60 s**
 at that speed.
+
+> **External bounds on T** — from
+> [`difficulty-research-2026-08-02.md`](difficulty-research-2026-08-02.md) § 2.1,
+> `inferred` and **not** measurement. Published choice-reaction time is ≈ 369 ms
+> for a four-way choice against ≈ 253 ms for a simple one, a second choice costs
+> ~+50% and three choices roughly double it. Subtracting ≈ 0.37 s from a 0.60 s
+> window leaves ≈ 0.23 s for screen and touch latency, pattern interpretation,
+> pendulum dynamics and actual displacement.
+>
+> | situation | proposed floor |
+> | --- | --- |
+> | pre-learned **and** well-telegraphed expert beat | **0.60 s** |
+> | unknown opposite-side choice | **0.8–1.0 s** |
+> | unknown, **and** significant swing correction needed | **1.2–1.4 s** |
+>
+> Our 1.37 s chunk is explicitly called *substantial room*. **So the weave's
+> 0.60 s is defensible only where R14 has already made that beat predictable** —
+> which is the coupling above, reached independently by a second instrument. The
+> 0.8–1.0 s figure is the report's own conservative extrapolation, not a
+> published mobile standard, so it bounds T rather than setting it.
 
 **R14 · Predictability is scheduled, not accidental.** F7 shows it currently
 ranges from a near-deterministic four-beat loop to a fully seeded five-lane
@@ -778,9 +866,23 @@ Three things fall out, and the third is the most useful.
 *Remaining unknown, and it is now narrow: whether 20% is already too much.*
 One build answers it and it is one line of code.
 
-**O3 · What is T, the spacing floor in R13?**
-Bounded better than before, but still device-only — and the reason is
-interesting.
+**O3 · What is T, the spacing floor in R13? — STRUCTURE CONFIRMED, constants
+still device-only.**
+
+> **Update, 2026-08-02.** The deep research report reaches this same coupling
+> from reaction-time literature, without having seen the derivation below: a
+> known beat lets anticipation start *before* the window opens, so 0.60 s can
+> work as an expert **execution** window, while an unlearned choice cannot use
+> anticipation at all. **Two instruments, one conclusion.** It also bounds the
+> constants — 0.8–1.0 s for an unknown opposite-side choice, 1.2–1.4 s where
+> swing correction is also needed — as its own conservative extrapolation. See
+> R13 and
+> [`difficulty-research-2026-08-02.md`](difficulty-research-2026-08-02.md) § 2.1.
+>
+> **What remains open is now narrower:** not *whether* T varies with
+> predictability, but what the constants are on the owner's device and hands.
+
+The original derivation, kept because the convergence is the evidence:
 
 A *read* commitment needs choice-reaction time plus execution: roughly 400–600
 ms to decide which way to go, then the time to fire a web or commit a Dive. The
