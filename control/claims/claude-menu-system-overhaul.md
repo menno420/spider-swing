@@ -1,0 +1,1 @@
+- `claude/menu-system-overhaul` · **complete front-end hierarchy, Field Guide browser, and persistent pre-run Test Lab** · front-end presentation/state, debug configuration persistence/application, tests, build/docs · 2026-08-02
