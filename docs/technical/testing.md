@@ -255,7 +255,11 @@ a second animation or physics authority.
 
 **Falsify every new contract before trusting it.** Break the code it guards,
 confirm the suite fails, restore, confirm it passes. A test that has never
-failed is a claim, not a check.
+failed is a claim, not a check. *Falsify with the **real** failure, not a
+convenient one:* the course-audit corridor contract was first "falsified" with
+an injected bug whose wrong value happened to be smaller than the right one, so
+the suite stayed green and the contract looked worthless. The genuine error —
+measuring from above the ceiling — tripped it instantly.
 
 **`EXPECTED_CHECK_COUNT` is the one merge hazard that leaves no marker.** Two
 branches that each add a contract each write the *same* new total, so git merges

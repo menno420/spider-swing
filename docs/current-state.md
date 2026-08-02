@@ -451,6 +451,13 @@ so the Dive stays always available, which is its whole purpose.
 
 ## Recently shipped (newest first)
 
+- **2026-08-02 — Phase 0 course instrumentation.** `tools/course_audit.gd` walks
+  the deterministic generator and reports the axis vector per chunk — corridor
+  width, sequential opposite-commitment spacing, simultaneous gates, density,
+  novelty and route family. **No gameplay value changed.** Five contracts pin
+  the instrument rather than the difficulty. Its first output reproduces all
+  four of the owner's felt difficulty boundaries from geometry alone:
+  [`course-audit baseline`](measurements/2026-08-02-course-audit-baseline.md).
 - **2026-08-02 — Difficulty and obstacle doctrine (PRs #124–#129).** A measured
   baseline and a proposed rule set for how difficulty and obstacle placement are
   decided, scoped to the first 15 km. **Nothing in it is implemented and no
