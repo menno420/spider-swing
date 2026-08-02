@@ -106,7 +106,7 @@ discipline about *amount*.
 
 ---
 
-## 3 · Four structural findings
+## 3 · Five structural findings
 
 ### F1 · The `difficulty` label is dead metadata
 
@@ -152,6 +152,34 @@ Density (Ancient Forest, 2.5–5 km) and corridor width (Silk Hollow, 10 km+).
 Silk Hollow stacks a narrow corridor *on top of* a high hard-pattern share, and
 it is the only region that uses the width axis at all. That is why 10 km reads
 as a wall rather than a step. `inferred` from §2.1 + §2.2.
+
+### F5 · Three pools have no internal difficulty gradient at all
+
+Distinct `difficulty` values present in each pool:
+
+| pool | values | gradient? |
+| --- | --- | --- |
+| Ancient Forest · control | 1, 2 | yes |
+| Ancient Forest · mastery | 2, 3 | yes |
+| Ancient Forest · deep | 3, 4 | yes |
+| **Bramble Canopy** (single + pair) | **4** | **none** |
+| **Silk Hollow** | **4** | **none** |
+| Ruined Arboretum | 4, 5 | yes |
+| Storm Ridge · Web City | 4, 5, 6 | yes |
+| Ashen Hollow | 5, 6 | yes |
+| **Deep Mist** | **6** | **none** |
+
+`measured`. This restates F2 from the other side. Ancient Forest is the only
+early region that can ramp **because it is the only early region whose pools
+contain more than one difficulty**.
+
+> **Bramble Canopy is binary: 50% empty chunks and 50% difficulty-4 chunks.**
+> Its measured mean of 2.0 in §2.1 is the average of two extremes, not a
+> moderate setting. It reads as gentle because of the spacing, not because the
+> obstacles are small — its smallest is a 300 px hook in a 572 px corridor,
+> **52% of the corridor height**.
+
+The practical consequence is in §6.1.
 
 ---
 
@@ -202,8 +230,13 @@ machine-checkable or explicitly marked device-only.
 **R1 · One curve.** `pressure(d)` is the single source of difficulty amount.
 Nothing else may read `distance_at_chunk` to decide how hard a chunk is.
 
-**R2 · Monotone envelope.** For `b > a`, `pressure(b) ≥ pressure(a)`. This is
-the rule that kills the saw-tooth, and it is a contract.
+**R2 · Monotone envelope — of ceilings, not of the instantaneous signal.**
+Section ceilings never decrease: `ceiling(n) ≥ ceiling(n-1)`. The instantaneous
+difficulty *may* dip, but only at a section entry and only within the bounds of
+R12. This distinction is load-bearing: the naive reading — that difficulty never
+decreases anywhere — forbids both the section-entry ramp the owner asked for and
+the recovery chunks he asked for. **Monotonicity is a property of the envelope,
+not of the signal.**
 
 **R3 · Bounded slope.** No kilometre may raise pressure by more than a set
 maximum. This is the rule that kills the 1750 → 2000 m cliff.
@@ -244,6 +277,32 @@ problem to dilute.
 measured geometry, or it is deleted. A number nothing reads is a lie waiting to
 happen (F1).
 
+**R12 · Every section opens with an introduction ramp.** Owner-specified,
+2026-08-02. On entering any section, measured from the section boundary:
+
+| phase | distance | chunks | behaviour |
+| --- | --- | ---: | --- |
+| Gate | 0–150 m | 1–1.5 | no lethal obstacle |
+| Introduction | 150 m–1 km | ~9 | pool widens from the section's simplest toward its full vocabulary; density and obstacle size ramp with it |
+| Full vocabulary | from ~1500 m | 15.6 | every pattern in the section's pool is drawable |
+| Plateau | to section end | ~36 | held at the section's ceiling, with scheduled recovery chunks |
+
+One chunk is **96 m**, so the owner's figures land on the grid almost exactly:
+150 m ≈ 1.5 chunks, 1 km ≈ 10.4, 1500 m ≈ 15.6, a 5 km section ≈ 52. The ramp
+occupies **30% of every section**.
+
+Its purpose is vocabulary introduction, not skill training — each section has
+genuinely new obstacle types, and the ramp is the player's chance to find routes
+around them without dying to a type they have not seen. That is why its length
+does not shrink with section index.
+
+**R13 · Bounded spread, not bounded steps.** Within the ramp and at plateau, the
+drawable pool is centred on the current level with a bounded spread — a chunk
+may be easier than the current level, never much harder. The constraint is on
+the *distribution*, not on the chunk-to-chunk sequence, because scheduled
+recovery chunks are deliberate dips and a sequence rule would forbid them.
+Owner's phrasing: *"not so random that it suddenly goes from 0 to 100 difficulty"*.
+
 **R11 · Declared identity must match generated behaviour.** A region's `focus`
 and `quirk` are assertions about its output, and a contract checks them. F3 is
 what happens without this rule.
@@ -251,6 +310,38 @@ what happens without this rule.
 ---
 
 ## 6 · The region swap, and what it needs alongside
+
+### 6.1 · Bramble has no rungs to climb — and three ways to build them
+
+R12 asks Bramble to ramp from near-empty to its current state over 1.5 km.
+**F5 says it cannot: all eight of its patterns are difficulty 4, and its
+smallest obstacle covers 52% of the corridor.** There is nothing between empty
+and full-on to put in the middle of the ramp.
+
+Three levers manufacture the missing rungs from the eight patterns that already
+exist, with **no new content**:
+
+1. **Cadence** — obstacle spacing ramps 1-in-4 → 1-in-3 → 1-in-2 (its current
+   value). Free; the cadence rule already exists per region.
+2. **Size** — the owner's own instinct — *"possibly with a very small reduction
+   on obstacle size"* — is the ramp if it is a *curve* rather than a constant. A
+   300 px hook at 0.45 scale is 135 px, 24% of the corridor: plausibly "an
+   occasional obstacle at the top". Plumbing exists
+   (`_floating_obstacle_scale`, `_obstacle_growth_scale`), though today's whole
+   range is 0.76–1.06 across difficulty modes, so 0.45 is a larger stretch than
+   the art has been asked for.
+3. **Singles before pairs** — the pool is already split 4 singles / 4 pairs, and
+   the pairs are the commitment. Introducing pairs at ~1 km is free and uses the
+   existing structure.
+
+Together these give a genuine three-lever ramp. **Only lever 2 risks looking
+wrong**, because the art is authored at a size; levers 1 and 3 are pure
+scheduling.
+
+The same gap applies to Silk Hollow (all 4) and Deep Mist (all 6). Every other
+region has at least two rungs of its own.
+
+
 
 The owner's idea — Bramble Canopy first, Ancient Forest second — is **better
 than the retune this document originally proposed**, because it achieves
@@ -439,6 +530,16 @@ that need his answer, with what evidence would settle each.
    20 km; Bramble Canopy would repeat 52×.
 8. **Do region-endless runs award anything?** §9 recommends nothing, following
    Region Practice, to avoid both farming and a second leaderboard.
+9. **Does R12's ramp restart from zero in every section, or from a floor that
+   rises with section index?** The gate is genuinely empty either way. But
+   entering section 6 and dropping to zero difficulty for 150 m, then climbing
+   from nothing, is a deeper dip than entering section 2. A rising floor keeps
+   the dip shallow late; a zero floor keeps every section's introduction equally
+   generous. *This is the one number the owner's 2026-08-02 spec did not pin,
+   and R12 cannot be implemented without it.*
+10. **Is a 0.45 obstacle-size floor acceptable to the art?** §6.1 lever 2 is the
+    cheapest source of ramp rungs and the only one that changes how the game
+    looks. *Evidence: one build with the size ramp, judged on device.*
 
 ---
 
