@@ -1,1 +1,0 @@
-- `agent/music-volume-slider` · **persistent Music volume control** — replace the binary Music setting with a saved slider and apply it independently to soundtrack stems · settings/audio/front-end/tests/build/docs · 2026-08-02

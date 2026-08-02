@@ -1,6 +1,6 @@
 # Persistent Music volume control
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 
@@ -59,6 +59,26 @@ No new capability or wall. The requested `app_block` name is still absent from
 the callable registry, matching the dated repository finding recorded by the
 soundtrack session; the direct GitHub connector remains the working publication
 path in this venue.
+
+## Shipped
+
+- Remote implementation commit `cad5f0cca4a4966bb2fdaa617ee1ab8cb0806c13`
+  carries the complete feature batch on PR #111. Its GitHub tree and local
+  verified tree both resolve to `4231d65beadea119df8ded1ada46c7ee07842f5e`.
+- This closeout removes only `agent/music-volume-slider`'s claim. Required
+  GitHub checks and Android export decide the terminal merge/build state.
+
+## Verification evidence
+
+- Exact Godot `4.7.1.stable.official.a13da4feb`: 204/204 contracts passed on
+  the restored implementation after every mutation.
+- `python3 tools/verify.py --require-godot`: all seven stages passed, including
+  exact regeneration of 27 audio assets, import, boot, architecture, and the
+  engine runner.
+- Pre-flip `python3 bootstrap.py check --strict` reported only this card's
+  deliberate born-red hold; the boot ledger retains 313 words of headroom.
+- Closeout `python3 bootstrap.py check --strict` exited 0 with every content
+  check passed after the status flip and claim withdrawal.
 
 ## Owner questions
 
