@@ -110,6 +110,35 @@ func configure_bird_debug_overrides(overrides: Dictionary) -> void:
 			parameter, value)
 
 
+## Apply the pre-run laboratory profile's explicit overrides after the selected
+## base preset and owned/debug upgrade resolution. The resolved values shown in
+## the editor are deliberately not all passed here: doing so would flatten the
+## selected spider and progression curve. The caller may only use this for a
+## debug-start practice run, and the batch is complete before its first tick.
+func apply_debug_tuning_profile(values: Dictionary) -> void:
+	if not _debug_start_active:
+		return
+	for parameter: StringName in TUNING_PARAMETERS:
+		if parameter in [
+			TuningCatalog.DEBUG_START_DISTANCE,
+			TuningCatalog.DEBUG_UPGRADE_LEVEL,
+		]:
+			continue
+		if not values.has(parameter) and not values.has(str(parameter)):
+			continue
+		var requested := float(values.get(
+			parameter,
+			values.get(str(parameter), _config.value_for(parameter)),
+		))
+		var safe_value := TuningCatalog.clamp_value(parameter, requested)
+		_config.set_tuning_value(parameter, safe_value)
+		if parameter in BIRD_DEBUG_PARAMETERS:
+			_debug_bird_overrides[parameter] = safe_value
+	_world.config = _config
+	_world.surface_bounce_ready = _config.surface_bounce_enabled
+	_reset_run(true, false)
+
+
 func configure_run(
 	mode: StringName = RUN_STANDARD,
 	start_distance_pixels: float = 0.0,

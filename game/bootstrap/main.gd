@@ -35,6 +35,8 @@ func _ready() -> void:
 	_progression_service = PROGRESSION_SERVICE_SCRIPT.new() as ProgressionService
 	_progress = _save_repository.load_progress()
 	var settings := _save_repository.load_settings()
+	var debug_test_profile := _save_repository.load_debug_test_profile(
+		settings.swing_preset)
 	_audio_director = AUDIO_DIRECTOR.new() as AudioDirector
 	_audio_director.configure_effects(settings.effects_enabled)
 	_audio_director.configure_music(settings.music_enabled)
@@ -48,6 +50,8 @@ func _ready() -> void:
 	_front_end_state.trace_watch_requested.connect(_start_trace_watch)
 	_front_end_state.creator_play_requested.connect(_start_creator_game)
 	_front_end_state.settings_changed.connect(_save_settings)
+	_front_end_state.debug_test_profile_changed.connect(
+		_save_debug_test_profile)
 	_front_end_state.spider_profile_requested.connect(_select_spider_profile)
 	_front_end_state.spider_style_requested.connect(_select_spider_style)
 	_front_end_state.web_variant_requested.connect(_select_web_variant)
@@ -58,6 +62,7 @@ func _ready() -> void:
 		settings,
 		_progress,
 		_progression_service,
+		debug_test_profile,
 	)
 	var failures := _mount_front_end()
 	if is_smoke_test():
@@ -234,6 +239,7 @@ func _start_debug_game(
 	start_distance_pixels: float,
 	upgrade_level: int,
 	bird_overrides: Dictionary,
+	tuning_overrides: Dictionary,
 ) -> void:
 	if not settings.show_debug_tools or not is_equal_approx(
 		start_distance_pixels,
@@ -242,7 +248,8 @@ func _start_debug_game(
 			start_distance_pixels,
 		),
 	) or upgrade_level != _progression_service.debug_upgrade_overlay_level() or \
-			bird_overrides != _front_end_state.debug_bird_overrides():
+			bird_overrides != _front_end_state.debug_bird_overrides() or \
+			tuning_overrides != _front_end_state.debug_tuning_overrides():
 		return
 	_active_run_is_debug_test = true
 	_unmount_front_end()
@@ -254,6 +261,7 @@ func _start_debug_game(
 		true,
 		&"",
 		bird_overrides,
+		tuning_overrides,
 	)
 	if failures.is_empty():
 		return
@@ -272,6 +280,7 @@ func _mount_swing_lab(
 	debug_start: bool = false,
 	campaign_level_id: StringName = &"",
 	bird_debug_overrides: Dictionary = {},
+	debug_tuning_overrides: Dictionary = {},
 ) -> PackedStringArray:
 	var failures := PackedStringArray()
 	if not ResourceLoader.exists(SWING_LAB_SCENE_PATH):
@@ -352,6 +361,8 @@ func _mount_swing_lab(
 	)
 	_input_router.configure_debug_controls(settings.show_debug_tools)
 	_session.apply_preset(settings.swing_preset)
+	if debug_start:
+		_session.apply_debug_tuning_profile(debug_tuning_overrides)
 	return failures
 
 
@@ -375,6 +386,7 @@ func _show_front_end() -> void:
 					"bird_start_offset": snapshot.tuning_values.get(
 						&"bird_start_offset", SwingConfig.DEFAULT_BIRD_START_OFFSET),
 				},
+				snapshot.tuning_values,
 			)
 	_unmount_swing_lab()
 	_active_run_is_debug_test = false
@@ -414,6 +426,12 @@ func _save_settings(settings: PlayerSettings) -> void:
 		_audio_director.configure_music(settings.music_enabled)
 	if not _save_repository.save_settings(settings):
 		printerr("[spider-swing] settings write failed; current session continues")
+
+
+func _save_debug_test_profile(profile: DebugTestProfile) -> void:
+	if not _save_repository.save_debug_test_profile(profile):
+		printerr(
+			"[spider-swing] Test Lab profile write failed; current session continues")
 
 
 func _apply_settlement(settlement: RunSettlement) -> void:

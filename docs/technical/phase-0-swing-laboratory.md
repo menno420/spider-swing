@@ -306,7 +306,7 @@ product decisions.
   tick;
 - one authoritative rescue followed by normal death on the next lethal contact;
 - five catalogued spider profiles, five shared core plus two identity upgrade
-  paths each, 20-level bounds, deterministic breakthroughs, level-zero
+  paths each, 40-level bounds, deterministic breakthroughs, level-zero
   preservation, a real bounded glide state, and Buckler's one-charge
   moderate rail bounce using the same central configuration;
 - independently safe/lethal course rails, swept pickups that do not respawn,

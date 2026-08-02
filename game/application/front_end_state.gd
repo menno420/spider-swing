@@ -22,12 +22,14 @@ signal debug_play_requested(
 	start_distance_pixels: float,
 	upgrade_level: int,
 	bird_overrides: Dictionary,
+	tuning_overrides: Dictionary,
 )
 ## A bundled lab trace the owner chose to watch. Carries the path rather than
 ## the document so the state layer never holds a whole run in memory.
 signal trace_watch_requested(settings: PlayerSettings, trace_path: String)
 signal creator_play_requested(settings: PlayerSettings, pattern: Array[StringName])
 signal settings_changed(settings: PlayerSettings)
+signal debug_test_profile_changed(profile: DebugTestProfile)
 signal spider_profile_requested(spider_id: StringName)
 signal spider_style_requested(style: StringName)
 signal web_variant_requested(web_variant: StringName)
@@ -139,9 +141,12 @@ const BIRD_DEBUG_PRESETS := {
 
 var screen: int = Screen.HOME
 var field_guide_return_screen: int = Screen.HOME
+var field_guide_spider_id: StringName = SpiderCatalog.CLASSIC
 var tutorial_index: int = 0
 var settings: PlayerSettings = PlayerSettings.defaults()
 var progress: PlayerProgress = PlayerProgress.defaults()
+var debug_test_profile: DebugTestProfile = DebugTestProfile.defaults()
+var debug_category_index: int = 0
 var debug_run_distance_pixels: float = 0.0
 var debug_run_upgrade_level: int = \
 	ProgressionService.DEBUG_UPGRADE_OVERLAY_DISABLED
@@ -155,6 +160,7 @@ func configure(
 	initial_settings: PlayerSettings,
 	initial_progress: PlayerProgress = null,
 	progression_service: ProgressionService = null,
+	initial_debug_test_profile: DebugTestProfile = null,
 ) -> void:
 	if progression_service != null:
 		_progression_service = progression_service
@@ -164,6 +170,15 @@ func configure(
 		if initial_progress != null
 		else PlayerProgress.defaults()
 	)
+	debug_test_profile = (
+		initial_debug_test_profile.copy()
+		if initial_debug_test_profile != null
+		else DebugTestProfile.defaults(settings.swing_preset)
+	)
+	_sync_debug_fields_from_profile()
+	_refresh_debug_test_baseline(false)
+	_sync_debug_fields_from_profile()
+	field_guide_spider_id = progress.selected_spider_id
 	if not settings.show_debug_tools:
 		_progression_service.clear_debug_upgrade_overlay()
 	screen = Screen.HOME
@@ -204,7 +219,16 @@ func show_field_guide(return_to: int = Screen.HOME) -> void:
 	field_guide_return_screen = (
 		return_to if return_to in [Screen.HOME, Screen.GARAGE] else Screen.HOME
 	)
+	field_guide_spider_id = progress.selected_spider_id
 	screen = Screen.FIELD_GUIDE
+	changed.emit()
+
+
+func select_field_guide_spider(spider_id: StringName) -> void:
+	if spider_id not in SpiderCatalog.ALL_IDS or \
+			field_guide_spider_id == spider_id:
+		return
+	field_guide_spider_id = spider_id
 	changed.emit()
 
 
@@ -277,7 +301,10 @@ func show_debug_run_setup() -> void:
 
 func configure_progress(updated_progress: PlayerProgress) -> void:
 	progress = updated_progress.copy()
-	changed.emit()
+	if _refresh_debug_test_baseline(false):
+		_publish_debug_test_profile()
+	else:
+		changed.emit()
 
 
 func resolved_progress() -> PlayerProgress:
@@ -378,16 +405,7 @@ func request_practice(region_id: StringName) -> void:
 
 
 func set_debug_run_distance_pixels(value: float) -> void:
-	if not settings.show_debug_tools:
-		return
-	var safe_value := TuningCatalog.clamp_value(
-		TuningCatalog.DEBUG_START_DISTANCE,
-		value,
-	)
-	if is_equal_approx(debug_run_distance_pixels, safe_value):
-		return
-	debug_run_distance_pixels = safe_value
-	changed.emit()
+	set_debug_tuning_value(TuningCatalog.DEBUG_START_DISTANCE, value)
 
 
 func adjust_debug_run_distance(direction: int) -> void:
@@ -398,16 +416,7 @@ func adjust_debug_run_distance(direction: int) -> void:
 
 
 func set_debug_run_upgrade_level(level: int) -> void:
-	if not settings.show_debug_tools:
-		return
-	var safe_level := roundi(TuningCatalog.clamp_value(
-		TuningCatalog.DEBUG_UPGRADE_LEVEL,
-		float(level),
-	))
-	if debug_run_upgrade_level == safe_level:
-		return
-	debug_run_upgrade_level = safe_level
-	changed.emit()
+	set_debug_tuning_value(TuningCatalog.DEBUG_UPGRADE_LEVEL, float(level))
 
 
 func adjust_debug_run_upgrade_level(direction: int) -> void:
@@ -419,18 +428,7 @@ func set_debug_bird_value(parameter_id: StringName, value: float) -> void:
 		&"bird_speed", &"bird_acceleration", &"bird_start_offset",
 	]:
 		return
-	var safe_value := TuningCatalog.clamp_value(parameter_id, value)
-	var current := float(debug_bird_overrides()[str(parameter_id)])
-	if is_equal_approx(current, safe_value):
-		return
-	match parameter_id:
-		&"bird_speed":
-			debug_bird_speed = safe_value
-		&"bird_acceleration":
-			debug_bird_acceleration = safe_value
-		&"bird_start_offset":
-			debug_bird_start_offset = safe_value
-	changed.emit()
+	set_debug_tuning_value(parameter_id, value)
 
 
 func adjust_debug_bird_value(parameter_id: StringName, direction: int) -> void:
@@ -449,13 +447,16 @@ func apply_debug_bird_preset(preset_id: StringName) -> void:
 	if not settings.show_debug_tools or not BIRD_DEBUG_PRESETS.has(preset_id):
 		return
 	var preset: Dictionary = BIRD_DEBUG_PRESETS[preset_id]
-	debug_bird_speed = TuningCatalog.clamp_value(
-		&"bird_speed", float(preset["bird_speed"]))
-	debug_bird_acceleration = TuningCatalog.clamp_value(
-		&"bird_acceleration", float(preset["bird_acceleration"]))
-	debug_bird_start_offset = TuningCatalog.clamp_value(
-		&"bird_start_offset", float(preset["bird_start_offset"]))
-	changed.emit()
+	var did_change := false
+	for parameter_id: StringName in [
+		&"bird_speed", &"bird_acceleration", &"bird_start_offset",
+	]:
+		did_change = debug_test_profile.set_value(
+			parameter_id,
+			float(preset[str(parameter_id)]),
+		) or did_change
+	if did_change:
+		_publish_debug_test_profile()
 
 
 func debug_bird_overrides() -> Dictionary:
@@ -464,6 +465,69 @@ func debug_bird_overrides() -> Dictionary:
 		"bird_acceleration": debug_bird_acceleration,
 		"bird_start_offset": debug_bird_start_offset,
 	}
+
+
+func debug_tuning_value(parameter_id: StringName) -> float:
+	return debug_test_profile.value(parameter_id)
+
+
+func debug_tuning_overrides() -> Dictionary:
+	return debug_test_profile.tuning_overrides()
+
+
+func set_debug_tuning_value(
+	parameter_id: StringName,
+	value: float,
+) -> void:
+	if not settings.show_debug_tools:
+		return
+	if not debug_test_profile.set_value(parameter_id, value):
+		return
+	if parameter_id == TuningCatalog.DEBUG_UPGRADE_LEVEL:
+		_refresh_debug_test_baseline(false)
+	_publish_debug_test_profile()
+
+
+func adjust_debug_tuning_value(
+	parameter_id: StringName,
+	direction: int,
+) -> void:
+	if parameter_id not in TuningCatalog.parameter_ids():
+		return
+	set_debug_tuning_value(
+		parameter_id,
+		debug_tuning_value(parameter_id) +
+			TuningCatalog.step_for(parameter_id) * direction,
+	)
+
+
+func select_debug_category(index: int) -> void:
+	var maximum_index := TuningCatalog.category_index(
+		TuningCatalog.CATEGORY_ABILITIES)
+	var safe_index := clampi(index, 0, maximum_index)
+	if debug_category_index == safe_index:
+		return
+	debug_category_index = safe_index
+	changed.emit()
+
+
+func save_debug_test_slot(slot_id: StringName) -> void:
+	if settings.show_debug_tools and debug_test_profile.save_slot(slot_id):
+		_publish_debug_test_profile()
+
+
+func load_debug_test_slot(slot_id: StringName) -> void:
+	if settings.show_debug_tools and debug_test_profile.load_slot(slot_id):
+		_refresh_debug_test_baseline(false)
+		_publish_debug_test_profile()
+
+
+func reset_debug_test_profile() -> void:
+	if settings.show_debug_tools and debug_test_profile.reset_working(
+		settings.swing_preset,
+	):
+		_refresh_debug_test_baseline(false)
+		_publish_debug_test_profile()
 
 
 func request_debug_play() -> void:
@@ -480,6 +544,7 @@ func request_debug_play() -> void:
 		debug_run_distance_pixels,
 		debug_run_upgrade_level,
 		debug_bird_overrides(),
+		debug_tuning_overrides(),
 	)
 
 
@@ -487,25 +552,47 @@ func sync_debug_run_setup(
 	distance_pixels: float,
 	upgrade_level: int,
 	bird_overrides: Dictionary = {},
+	tuning_overrides: Dictionary = {},
 ) -> void:
 	if not settings.show_debug_tools:
 		return
-	debug_run_distance_pixels = TuningCatalog.clamp_value(
-		TuningCatalog.DEBUG_START_DISTANCE,
-		distance_pixels,
-	)
-	debug_run_upgrade_level = roundi(TuningCatalog.clamp_value(
-		TuningCatalog.DEBUG_UPGRADE_LEVEL,
-		float(upgrade_level),
-	))
+	# A live session reports the complete resolved catalogue. Compare it with
+	# the same owned/profile/difficulty baseline used to start the run so only
+	# values actually changed in the pause lab become persistent overrides.
+	# Otherwise merely opening a test run at L40 would save every L40 result as
+	# a hard override and erase later progression comparisons.
+	var next := debug_test_profile.resolved_values()
+	for parameter_id: StringName in TuningCatalog.parameter_ids():
+		if tuning_overrides.has(parameter_id) or \
+				tuning_overrides.has(str(parameter_id)):
+			next[parameter_id] = float(tuning_overrides.get(
+				parameter_id,
+				tuning_overrides.get(
+					str(parameter_id),
+					next.get(parameter_id, 0.0),
+				),
+			))
+	next[TuningCatalog.DEBUG_START_DISTANCE] = distance_pixels
+	next[TuningCatalog.DEBUG_UPGRADE_LEVEL] = float(upgrade_level)
 	for parameter_id: StringName in [
 		&"bird_speed", &"bird_acceleration", &"bird_start_offset",
 	]:
-		if bird_overrides.has(str(parameter_id)):
-			set_debug_bird_value(
+		if bird_overrides.has(parameter_id) or bird_overrides.has(str(parameter_id)):
+			next[parameter_id] = float(bird_overrides.get(
 				parameter_id,
-				float(bird_overrides[str(parameter_id)]),
-			)
+				bird_overrides.get(
+					str(parameter_id),
+					next.get(parameter_id, 0.0),
+				),
+			))
+	var baseline := _debug_test_baseline_values(
+		upgrade_level,
+		distance_pixels,
+	)
+	if debug_test_profile.replace_resolved_values(next, baseline):
+		_publish_debug_test_profile()
+	else:
+		_sync_debug_fields_from_profile()
 
 
 func request_spider_profile(spider_id: StringName) -> void:
@@ -542,7 +629,12 @@ func set_swing_preset(preset: StringName) -> void:
 	if preset not in SwingConfig.preset_names() or settings.swing_preset == preset:
 		return
 	settings.swing_preset = preset
-	_publish_settings()
+	var profile_changed := _refresh_debug_test_baseline(false)
+	settings_changed.emit(settings.copy())
+	if profile_changed:
+		_sync_debug_fields_from_profile()
+		debug_test_profile_changed.emit(debug_test_profile.copy())
+	changed.emit()
 
 
 func set_control_hints(enabled: bool) -> void:
@@ -593,15 +685,76 @@ func set_debug_tools(enabled: bool) -> void:
 
 func reset_settings() -> void:
 	settings = PlayerSettings.defaults()
+	var profile_changed := _refresh_debug_test_baseline(false)
 	if not settings.show_debug_tools:
 		_progression_service.clear_debug_upgrade_overlay()
 		if screen == Screen.DEBUG_RUN_SETUP:
 			screen = Screen.HOME
-	_publish_settings()
+	settings_changed.emit(settings.copy())
+	if profile_changed:
+		_sync_debug_fields_from_profile()
+		debug_test_profile_changed.emit(debug_test_profile.copy())
+	changed.emit()
 
 
 func current_tutorial_step() -> Dictionary:
 	return TUTORIAL_STEPS[tutorial_index]
+
+
+func _publish_debug_test_profile() -> void:
+	_sync_debug_fields_from_profile()
+	debug_test_profile_changed.emit(debug_test_profile.copy())
+	changed.emit()
+
+
+func _sync_debug_fields_from_profile() -> void:
+	debug_run_distance_pixels = debug_test_profile.value(
+		TuningCatalog.DEBUG_START_DISTANCE)
+	debug_run_upgrade_level = roundi(debug_test_profile.value(
+		TuningCatalog.DEBUG_UPGRADE_LEVEL))
+	debug_bird_speed = debug_test_profile.value(&"bird_speed")
+	debug_bird_acceleration = debug_test_profile.value(&"bird_acceleration")
+	debug_bird_start_offset = debug_test_profile.value(&"bird_start_offset")
+
+
+## Re-resolve values the tester has not explicitly changed. Displaying a
+## complete working set makes the lab readable; keeping only manual changes in
+## `override_ids` preserves the selected spider, difficulty, and upgrade math.
+func _refresh_debug_test_baseline(publish: bool = false) -> bool:
+	var changed_profile := debug_test_profile.rebase(
+		_debug_test_baseline_values(
+			roundi(debug_test_profile.value(
+				TuningCatalog.DEBUG_UPGRADE_LEVEL)),
+			debug_test_profile.value(TuningCatalog.DEBUG_START_DISTANCE),
+		),
+	)
+	if changed_profile and publish:
+		_publish_debug_test_profile()
+	return changed_profile
+
+
+func _debug_test_baseline_values(
+	upgrade_level: int,
+	distance_pixels: float,
+) -> Dictionary:
+	var comparison_service := ProgressionService.new()
+	if upgrade_level >= 0:
+		comparison_service.set_debug_upgrade_overlay_level(upgrade_level)
+	var config := SpiderCatalog.resolved_config(
+		settings.swing_preset,
+		comparison_service.resolved_progress(progress),
+	)
+	DifficultyCatalog.apply_to_config(config, selected_difficulty())
+	var values := DebugTestProfile.defaults_from_config(config).resolved_values()
+	values[TuningCatalog.DEBUG_START_DISTANCE] = TuningCatalog.clamp_value(
+		TuningCatalog.DEBUG_START_DISTANCE,
+		distance_pixels,
+	)
+	values[TuningCatalog.DEBUG_UPGRADE_LEVEL] = TuningCatalog.clamp_value(
+		TuningCatalog.DEBUG_UPGRADE_LEVEL,
+		float(upgrade_level),
+	)
+	return values
 
 
 func _publish_settings() -> void:

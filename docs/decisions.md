@@ -830,3 +830,28 @@
   maximum combined stem mix is -10.3 dBFS, about 7 dB below the loudest SFX.
 - provenance: Menno, 2026-08-02 — create a background soundtrack with a haunted
   feel, then “You can work on the audio now”
+
+## [D-0044] Treat menus as a slate field system and Test Lab profiles as separate state
+
+- status: decided
+- date: 2026-08-02
+- verdict: Home becomes a full landscape dashboard with one dominant Play
+  action, selected-spider identity, difficulty, and three-column explanatory
+  routes. Every `SpiderWebPanel` gains deterministic neutral slate grain and
+  pits beneath its existing passive silk ornaments. Field Guide becomes a
+  five-spider master/detail browser with independent Real Animal, In Spider
+  Swing, Field Note, and Sources sections. The Home Test Lab exposes all eight
+  meaningful pre-run `TuningCatalog` categories, auto-saves a separate
+  `DebugTestProfile`, and stores A/B/C comparison slots. It displays resolved
+  values but applies only sparse explicit overrides after spider, difficulty,
+  and upgrade resolution; all runs remain noncompetitive. Live-only pause,
+  frame-step, recording, overlays, and diagnostics stay in gameplay.
+- why: The owner recording showed a narrow Home card surrounded by dead space,
+  visually equal buttons, a Field Guide wall of small green copy, and a dense
+  debug setup that was difficult to compare. Neutral material improves legible
+  hierarchy without removing the spider identity, sectioning makes real biology
+  and game fiction scannable, and saved comparison profiles make device test
+  runs repeatable without contaminating ordinary saves or flattening L40 math.
+- provenance: Menno's 2026-08-02 menu playtest recording and request for a
+  complete grey textured UI, glance-readable Field Guide, main-menu debug
+  access, and saved test-run edits
