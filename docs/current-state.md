@@ -13,6 +13,10 @@ systems, expanded Campaign trees and deeper monetisation are **deferred** until
 the core loop is right. Target, corroborating evidence, the hard monetisation
 boundaries (death stays meaningful; lives capped at 3) and the parked list live
 in [`player-preference research`](product/player-preference-research-2026-08-02.md).
+External benchmarks plus a verified source audit — Ancient Forest is the one
+region with no guaranteed recovery, early thresholds are 1/2/3.5 km not 10/20/35,
+and warning time shrinks as skill rises — live in
+[`upgrade-and-difficulty research`](product/upgrade-and-difficulty-research-2026-08-02.md).
 
 Build `0.30.0-menu-system-playtest` is current. Continuous drive is
 zero; release, swing control, Reel, and pull timing earn speed; the former left
