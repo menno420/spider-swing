@@ -729,3 +729,32 @@ never edit.
   retain the base-tree blob unchanged; never reconstruct it from either read
   response. A task that must combine binary tails needs a byte-preserving blob
   download capability not exposed in this venue.
+
+- 2026-08-02 · capability · `autonomous-project` · **This Claude Code seat can
+  fetch and run the pinned Godot engine, so the full 204-contract suite and the
+  simulation lab both execute here** · the seat starts with no engine
+  (`which godot` empty, `GODOT_BIN` unset, `timeout: failed to run command
+  'godot': No such file or directory`), and `tools/verify.py` correctly reports
+  the four engine steps as SKIPPED rather than failing. Downloading
+  `Godot_v4.7.1-stable_linux.x86_64.zip` from the official GitHub release over
+  the agent proxy returned **HTTP 200, 76 056 717 bytes**; the extracted binary
+  reports the exactly-pinned `4.7.1.stable.official.a13da4feb`. With the
+  task-local XDG roots the 2026-07-31 Codex entry prescribes, `python3
+  tools/verify.py --require-godot` passed **204/204** and `tools/simulate.gd`
+  ran 24-run batches in seconds · this **re-verifies the 2026-07-31 in-container
+  Godot entry for a second seat** — that entry was `owner-live` in a Codex
+  workspace and the staleness warning was pointing at it. Recipe:
+
+  ```bash
+  curl -sSL -o godot.zip https://github.com/godotengine/godot/releases/download/\
+4.7.1-stable/Godot_v4.7.1-stable_linux.x86_64.zip
+  unzip -q godot.zip && chmod +x Godot_v4.7.1-stable_linux.x86_64
+  mkdir -p /tmp/ss-godot-{data,config,cache}
+  export XDG_DATA_HOME=/tmp/ss-godot-data XDG_CONFIG_HOME=/tmp/ss-godot-config \
+         XDG_CACHE_HOME=/tmp/ss-godot-cache
+  export GODOT_BIN="$PWD/Godot_v4.7.1-stable_linux.x86_64"
+  python3 tools/verify.py --require-godot
+  ```
+
+  Do this before claiming an engine-backed result cannot be produced in this
+  seat: a SKIPPED engine step is a missing download, not a wall.
