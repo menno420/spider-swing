@@ -1051,7 +1051,58 @@
 - provenance: Menno, 2026-08-02 — "I updated to v0.33 but I think the speed cap
   is still missing or too high"
 
-## [D-0051] Separate visible obstacle envelopes from forgiving lethal contact
+## [D-0051] Menu controls are sized in dp, and a debug overlay ends with its run
+
+- status: decided
+- date: 2026-08-02
+- verdict: Front-end control sizes are judged in **dp on the target phone**, not
+  in reference pixels. `canvas_items`/`expand` maps the 1280×720 reference onto
+  a 2340×1080 device at 1.5×, and xxhdpi is 2.5 device pixels per dp, so **one
+  reference pixel is 0.6 dp and the 48 dp touch minimum is 80 reference
+  pixels**. Home routes, difficulty, hub routes, Garage palette/silk chips and
+  every back button are raised toward that floor, and the recovered heights are
+  pinned per control so they cannot shrink again. The **selected** difficulty is
+  the strongest state on Home — heavier border, accent fill, `▸` prefix — and is
+  never drawn with Godot's `disabled` styling. Each of the three hubs ends in a
+  live status line read from `PlayerProgress`, so its unused panel height
+  answers "is it worth going in there?" instead of growing the route cards into
+  slabs. Separately, a **debug upgrade overlay belongs to the run it was
+  launched for**: returning to the menu releases it, rather than the next normal
+  run doing so. This extends D-0044's material and D-0047's intention map; it
+  supersedes neither.
+- why: The owner asked for menus that look better and navigate more easily, and
+  supplied a universal-menu research report. Laying the real `FrontEndView` out
+  headlessly against that report's criteria produced three findings that reading
+  could not. **Touch targets measured 25–41 dp against a 48 dp guideline** —
+  Garage worst at 25 dp, Test Lab at 20 dp — and the gap was invisible in review
+  because 44 px looks adequate in a 1280-wide mockup while being 26 dp on the
+  phone. **The current difficulty was the dimmest control on Home**: setting
+  `disabled` on the selected button painted it with `font_disabled_color` at
+  2.60:1 while the two unselected options kept 14.7:1, so the mode being played
+  read as the one unavailable — a hierarchy inversion, not a style preference.
+  **Hub panels measured 48–57% empty**, the direct cost of replacing a nine-item
+  grid with two- and three-item hubs; the first fix attempt let route cards
+  absorb the slack and produced 400 px slabs, which is dead space wearing a
+  border, so live state fills it instead.
+  The overlay rule was a missing edge rather than a wrong one. Applying the
+  overlay at launch and pausing purchases while it is on are both correct — you
+  should not spend flies against levels you do not own. Releasing it only when
+  the *next* normal run starts made the state enterable and not leavable, so
+  owned upgrades stayed unspendable until the player happened to press Play or
+  found the DEBUG toggle. Saved levels were never touched; only the menu's view
+  of them was.
+  Not taken, and recorded as owner choices rather than omissions: progressive
+  disclosure in the Shop (still only 3.5 of 7 tracks visible), the Field Guide
+  detail panel at 69% empty, a Test Lab search, raising Test Lab targets against
+  its measured six-card grid, and panel borders at 2.25:1 against the report's
+  3:1 — that last one trades the slate identity D-0044 chose.
+- provenance: Menno, 2026-08-02 — "compare it to the current menu layout, I want
+  to improve how it looks and feels to make it more visually appealing and
+  easier to navigate, one bug I found aswell is that when I play a debug run,
+  the upgrades for my spider are not available anymore until I play a normal run
+  first"; full analysis in `docs/product/menu-ux-review-2026-08-02.md`
+
+## [D-0052] Separate visible obstacle envelopes from forgiving lethal contact
 
 - status: decided
 - date: 2026-08-02

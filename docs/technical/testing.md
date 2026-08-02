@@ -89,7 +89,7 @@ Run directly:
 godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-208 checks, grouped so one subsystem failure never hides the rest:
+210 checks, grouped so one subsystem failure never hides the rest:
 
 - engine, main-scene, input-action, 60 Hz, renderer/viewport, Android preset,
   inward-dependency, and no-autoload bootstrap contracts;
@@ -162,7 +162,7 @@ godot --headless --path . --script res://tests/test_runner.gd
   interpolation, mipmapped moving art, restrained/reduced-motion-safe action
   poses, region ambience and persistent practice status remain presentation-only,
   and world input waits for Godot GUI handling;
-- twenty-nine front-end contracts proving Home starts before gameplay,
+- thirty-one front-end contracts proving Home starts before gameplay,
   Play/Garage/Shop/Tutorial/Campaign/Course Lab/Region Practice/Field Guide/
   Settings route correctly,
   the six tutorial
