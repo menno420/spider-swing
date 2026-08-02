@@ -64,7 +64,8 @@ var _tutorial_next: Button
 var _preset_buttons: Dictionary = {}
 var _hints_toggle: CheckButton
 var _motion_toggle: CheckButton
-var _music_toggle: CheckButton
+var _music_volume_slider: HSlider
+var _music_volume_value: Label
 var _effects_toggle: CheckButton
 var _haptics_toggle: CheckButton
 var _debug_toggle: CheckButton
@@ -509,13 +510,31 @@ func _build_settings() -> void:
 		+ "camera easing during play."))
 
 	content.add_child(_setting_heading("AUDIO & FEEDBACK"))
-	_music_toggle = _toggle("Haunted background music")
-	_music_toggle.name = "MusicToggle"
-	_music_toggle.toggled.connect(_on_music_toggled)
-	content.add_child(_music_toggle)
+	var music_header := HBoxContainer.new()
+	music_header.name = "MusicVolumeHeader"
+	music_header.add_theme_constant_override("separation", 16)
+	content.add_child(music_header)
+	var music_title := _label("Haunted background music", 23, INK)
+	music_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	music_header.add_child(music_title)
+	_music_volume_value = _label("50%", 23, CYAN)
+	_music_volume_value.name = "MusicVolumeValue"
+	_music_volume_value.custom_minimum_size.x = 82.0
+	_music_volume_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	music_header.add_child(_music_volume_value)
+	_music_volume_slider = HSlider.new()
+	_music_volume_slider.name = "MusicVolumeSlider"
+	_music_volume_slider.min_value = 0.0
+	_music_volume_slider.max_value = 100.0
+	_music_volume_slider.step = 5.0
+	_music_volume_slider.custom_minimum_size.y = 64.0
+	_music_volume_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_music_volume_slider.focus_mode = Control.FOCUS_ALL
+	_music_volume_slider.value_changed.connect(_on_music_volume_changed)
+	content.add_child(_music_volume_slider)
 	content.add_child(_setting_description(
-		"Plays the original silk-and-forest score. Its quiet chase layer rises "
-		+ "with pressure without changing gameplay."))
+		"50% matches the original mix. 0% is silent; 100% is about twice as "
+		+ "strong. The chase layer still rises with pressure."))
 
 	_effects_toggle = _toggle("Gameplay sound effects")
 	_effects_toggle.name = "EffectsToggle"
@@ -1604,7 +1623,12 @@ func _render() -> void:
 		)
 	_hints_toggle.button_pressed = _state.settings.show_control_hints
 	_motion_toggle.button_pressed = _state.settings.reduced_motion
-	_music_toggle.button_pressed = _state.settings.music_enabled
+	_music_volume_slider.value = _state.settings.music_volume * 100.0
+	_music_volume_value.text = (
+		"OFF"
+		if _state.settings.music_volume <= PlayerSettings.MIN_MUSIC_VOLUME
+		else "%d%%" % roundi(_state.settings.music_volume * 100.0)
+	)
 	_effects_toggle.button_pressed = _state.settings.effects_enabled
 	_haptics_toggle.button_pressed = _state.settings.haptics_enabled
 	_debug_toggle.button_pressed = _state.settings.show_debug_tools
@@ -2218,9 +2242,9 @@ func _on_effects_toggled(enabled: bool) -> void:
 		_state.set_effects_enabled(enabled)
 
 
-func _on_music_toggled(enabled: bool) -> void:
+func _on_music_volume_changed(value: float) -> void:
 	if _state != null and not _syncing_settings:
-		_state.set_music_enabled(enabled)
+		_state.set_music_volume(value / 100.0)
 
 
 func _on_haptics_toggled(enabled: bool) -> void:

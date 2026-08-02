@@ -10,11 +10,12 @@ const VOICE_COUNT := 6
 const MUSIC_BED_VOLUME_DB := -3.0
 const MUSIC_TENSION_SILENT_DB := -60.0
 const MUSIC_TENSION_MAX_DB := -7.0
+const MUSIC_REFERENCE_VOLUME := PlayerSettings.DEFAULT_MUSIC_VOLUME
 const MUSIC_ATTACK_PER_SECOND := 0.72
 const MUSIC_RELEASE_PER_SECOND := 0.34
 
 var _effects_enabled: bool = true
-var _music_enabled: bool = true
+var _music_volume: float = MUSIC_REFERENCE_VOLUME
 var _streams: Dictionary = {}
 var _voices: Array[AudioStreamPlayer] = []
 var _voice_cursor: int = 0
@@ -50,6 +51,7 @@ func _ready() -> void:
 	_music_tension_player = _music_player(
 		AudioAssetCatalog.MUSIC_TENSION, MUSIC_TENSION_SILENT_DB)
 	set_process(true)
+	_apply_music_levels()
 	_apply_music_playback()
 
 
@@ -63,13 +65,20 @@ func effects_enabled() -> bool:
 	return _effects_enabled
 
 
-func configure_music(enabled: bool) -> void:
-	_music_enabled = enabled
+func configure_music_volume(volume: float) -> void:
+	_music_volume = clampf(
+		volume,
+		PlayerSettings.MIN_MUSIC_VOLUME,
+		PlayerSettings.MAX_MUSIC_VOLUME,
+	)
+	if not is_finite(_music_volume):
+		_music_volume = MUSIC_REFERENCE_VOLUME
+	_apply_music_levels()
 	_apply_music_playback()
 
 
-func music_enabled() -> bool:
-	return _music_enabled
+func music_volume() -> float:
+	return _music_volume
 
 
 func music_playback_requested() -> bool:
@@ -159,12 +168,7 @@ func _process(delta: float) -> void:
 	)
 	_music_tension = move_toward(
 		_music_tension, _music_tension_target, response * delta)
-	if _music_tension_player != null:
-		_music_tension_player.volume_db = lerpf(
-			MUSIC_TENSION_SILENT_DB,
-			MUSIC_TENSION_MAX_DB,
-			smoothstep(0.0, 1.0, _music_tension),
-		)
+	_apply_music_levels()
 
 
 func _play_one_shot(path: String) -> void:
@@ -217,7 +221,7 @@ func _looping_stream(source: AudioStream) -> AudioStream:
 func _apply_music_playback() -> void:
 	if _music_bed_player == null or _music_tension_player == null:
 		return
-	if not _music_enabled:
+	if _music_volume <= PlayerSettings.MIN_MUSIC_VOLUME:
 		_music_playback_requested = false
 		_music_bed_player.stop()
 		_music_tension_player.stop()
@@ -227,6 +231,37 @@ func _apply_music_playback() -> void:
 	if not _music_tension_player.playing:
 		_music_tension_player.play(_music_bed_player.get_playback_position())
 	_music_playback_requested = true
+
+
+func _apply_music_levels() -> void:
+	if _music_bed_player == null or _music_tension_player == null:
+		return
+	var levels := music_levels_for(_music_volume, _music_tension)
+	_music_bed_player.volume_db = levels.x
+	_music_tension_player.volume_db = levels.y
+
+
+static func music_gain_db(volume: float) -> float:
+	var validated := clampf(
+		volume,
+		PlayerSettings.MIN_MUSIC_VOLUME,
+		PlayerSettings.MAX_MUSIC_VOLUME,
+	)
+	if not is_finite(validated) or validated <= PlayerSettings.MIN_MUSIC_VOLUME:
+		return MUSIC_TENSION_SILENT_DB
+	return linear_to_db(validated / MUSIC_REFERENCE_VOLUME)
+
+
+static func music_levels_for(volume: float, tension: float) -> Vector2:
+	var gain_db := music_gain_db(volume)
+	return Vector2(
+		MUSIC_BED_VOLUME_DB + gain_db,
+		lerpf(
+			MUSIC_TENSION_SILENT_DB,
+			MUSIC_TENSION_MAX_DB + gain_db,
+			smoothstep(0.0, 1.0, clampf(tension, 0.0, 1.0)),
+		),
+	)
 
 
 static func music_tension_for_snapshot(snapshot: SimulationSnapshot) -> float:

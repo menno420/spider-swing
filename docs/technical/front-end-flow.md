@@ -137,7 +137,7 @@ The current options all affect runtime behavior:
 | Swing feel | Applies Balanced, Weighty, or Agile before the run starts |
 | Control hints | Shows or hides run guidance and feedback text |
 | Reduced motion | Stops decorative front-end/tutorial motion and removes camera easing/parallax |
-| Haunted background music | Enables or mutes the persistent two-stem score independently |
+| Haunted background music | Saved 0–100% slider for both persistent stems; 0% is silent, 50% preserves the original mix, and 100% adds 6.02 dB |
 | Gameplay sound effects | Enables or mutes the presentation-owned SFX layer |
 | Handheld haptics | Enables or suppresses Android vibration feedback independently |
 | Debug tools | Shows or removes the Home Test Lab route plus in-run diagnostic controls |

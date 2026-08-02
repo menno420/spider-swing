@@ -87,6 +87,22 @@ static func create_theme() -> Theme:
 		scroll_grabber_style(MOSS),
 	)
 	theme.set_constant(&"minimum_grab_thickness", &"VScrollBar", 42)
+	theme.set_stylebox(
+		&"slider",
+		&"HSlider",
+		slider_style(Color(SILK, 0.14), 8.0),
+	)
+	theme.set_stylebox(
+		&"grabber_area",
+		&"HSlider",
+		slider_style(Color(MOSS, 0.78), 8.0),
+	)
+	theme.set_stylebox(
+		&"grabber_area_highlight",
+		&"HSlider",
+		slider_style(DEW, 10.0),
+	)
+	theme.set_constant(&"center_grabber", &"HSlider", 1)
 	return theme
 
 
@@ -170,6 +186,15 @@ static func scroll_grabber_style(color: Color) -> StyleBoxFlat:
 	style.set_corner_radius_all(5)
 	style.content_margin_left = 4.0
 	style.content_margin_right = 4.0
+	return style
+
+
+static func slider_style(color: Color, thickness: float) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = color
+	style.set_corner_radius_all(roundi(thickness * 0.5))
+	style.content_margin_top = thickness * 0.5
+	style.content_margin_bottom = thickness * 0.5
 	return style
 
 

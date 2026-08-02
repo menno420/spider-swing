@@ -39,7 +39,7 @@ func _ready() -> void:
 		settings.swing_preset)
 	_audio_director = AUDIO_DIRECTOR.new() as AudioDirector
 	_audio_director.configure_effects(settings.effects_enabled)
-	_audio_director.configure_music(settings.music_enabled)
+	_audio_director.configure_music_volume(settings.music_volume)
 	add_child(_audio_director)
 	_front_end_state = FRONT_END_STATE_SCRIPT.new() as FrontEndState
 	_front_end_state.play_requested.connect(_start_game)
@@ -82,7 +82,7 @@ func _mount_front_end() -> PackedStringArray:
 	if not failures.is_empty():
 		return failures
 	_front_end_view.bind_state(_front_end_state)
-	if _front_end_state.settings.music_enabled and (
+	if _front_end_state.settings.music_volume > 0.0 and (
 			_audio_director == null or \
 			not _audio_director.music_playback_requested()
 	):
@@ -349,7 +349,7 @@ func _mount_swing_lab(
 	_input_router.diagnostic_export_requested.connect(_session.export_diagnostic)
 
 	_audio_director.configure_effects(settings.effects_enabled)
-	_audio_director.configure_music(settings.music_enabled)
+	_audio_director.configure_music_volume(settings.music_volume)
 	_input_router.configure_haptics(settings.haptics_enabled)
 	add_child(_view)
 	add_child(_session)
@@ -423,7 +423,7 @@ func _unmount_swing_lab() -> void:
 func _save_settings(settings: PlayerSettings) -> void:
 	if _audio_director != null:
 		_audio_director.configure_effects(settings.effects_enabled)
-		_audio_director.configure_music(settings.music_enabled)
+		_audio_director.configure_music_volume(settings.music_volume)
 	if not _save_repository.save_settings(settings):
 		printerr("[spider-swing] settings write failed; current session continues")
 
