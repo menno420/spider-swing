@@ -1,0 +1,1 @@
+- `claude/tutorial-lesson-practice` · **Let players practise each tutorial lesson directly** · game/application/tutorial practice, SwingLabSession objectives, bootstrap navigation, HUD, tests and docs · 2026-08-03
