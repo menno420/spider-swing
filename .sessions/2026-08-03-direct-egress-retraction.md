@@ -85,6 +85,15 @@ mechanism I gave — *"the request never reaches GitHub, so no token can satisfy
 it"* — was a good explanation of a real 403 and a wrong explanation of the wall,
 and its plausibility is exactly what made it dangerous.
 
+**And then did it a third time, in the document written to prevent it.** The
+video-review doc listed *"the spider hits a laboratory obstacle"* as an invented
+hazard name. It is the game's own death-cause string, on screen, at
+`simulation_world.gd:1497`. The reviewer read the HUD correctly; I called it a
+hallucination without running one grep, and wrote an instruction that would have
+taught it to suppress a correct reading. **Three wrong confident claims in one
+session, each one caught by the owner rather than by me**, and each one costing
+a grep to check. That is the finding, not the individual slips.
+
 **I then asserted a mechanism about the digest without measuring it either**,
 inside the entry about not measuring things — I wrote that it "reads the fence
 and not the append log". Regenerating it disproved that in one diff. Fixed before

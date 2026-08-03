@@ -43,6 +43,7 @@
 | [`technical/testing.md`](technical/testing.md) | The two gates, how to run them locally, what CI enforces. |
 | [`technical/substrate-kit-provenance.md`](technical/substrate-kit-provenance.md) | How the vendored Substrate Kit got here; how to re-verify the pin. |
 | [`technical/replay-review-loop.md`](technical/replay-review-loop.md) | How a run the lab found gets in front of a person to be judged — the trace format, the two independent replays that prove it reproduces, and what to look for while watching. |
+| [`technical/gameplay-video-review.md`](technical/gameplay-video-review.md) | How owner and tester screen recordings get read, what a video is allowed to establish, and the grounding block for an external visual reviewer. |
 | [`technical/simulation-lab.md`](technical/simulation-lab.md) | The headless batch-run lab — what it can and cannot answer, and the standing ban on using it to settle difficulty, upgrades or the economy. |
 | [`technical/phase-0-swing-laboratory.md`](technical/phase-0-swing-laboratory.md) | The Swing Laboratory reference — traversal response contract, the depth-access gate, and the device traversal checklist. |
 | [`technical/front-end-flow.md`](technical/front-end-flow.md) | How the front end is wired: states, hubs, and which surface owns each write path. |

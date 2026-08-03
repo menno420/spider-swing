@@ -63,13 +63,26 @@ Measured against ground truth from the 2026-08-03 recordings
 | --- | --- | --- |
 | **attribution across a batch** | a run's correct distance filed under the wrong clip, with an impossible start point | **one clip per message** |
 | **attention thinning down a batch** | five clips collapsed into one vague sentence | one clip per message |
-| **invented vocabulary** | *"the spider hits a laboratory obstacle"* — there is no laboratory in this game | the grounding block below |
 | **restart frames read as runs** | a reported run ending at 53.1 m | the grounding block below |
 
-The first two are protocol. The last two are grounding. **A batch of nine clips
+The first two are protocol; the third is grounding. **A batch of nine clips
 answered in five seconds is not evidence of comprehension failure** — it is
 evidence that attention was spread across nine files, which is a property to
 design around rather than a flaw to complain about.
+
+> **A fourth entry belongs here and does not, and the reason is the useful
+> part.** *"The spider hits a laboratory obstacle"* was written up as an invented
+> hazard name. **It is not invented — it is the game's own death-cause string**,
+> `"Hit a laboratory obstacle"`, rendered on the run-ended screen
+> (`game/simulation/simulation_world.gd:1497`). The reviewer read the HUD
+> correctly and this document called it a hallucination without grepping for the
+> word, then wrote an instruction telling the reviewer that string does not
+> exist — which would have taught it to suppress a correct reading.
+>
+> Kept visible rather than deleted, because it is the sharpest available example
+> of the rule this whole document exists to enforce: **an unverified claim about
+> a recording is not made safer by being made confidently, and the direction of
+> the error is not predictable.** The check is a grep, and it costs seconds.
 
 ## The grounding block
 
@@ -108,14 +121,20 @@ They are not a separate short run and must not be reported as one. The giveaway
 is that there is no spider on screen. One recording contains one run plus the
 first seconds of the next, unless the recording plainly shows several deaths.
 
+DEATH CAUSE. The run-ended screen states the cause in the game's own words, at
+the top left under the region name. "Hit a laboratory obstacle" and "Fell below
+the laboratory" are REAL strings — "laboratory" is what this game calls its own
+test environment, not a hazard type. Quote the on-screen line verbatim when you
+report a death; do not paraphrase it into a hazard name.
+
 HAZARD VOCABULARY. Obstacles have real names. Bramble Canopy: canopy hooks
 (high, low, and paired), canopy leaves, canopy pods, canopy shutters, bramble
 curves, bramble steps. Silk Hollow: cocoon chutes, droplet needles, lattices,
 orb clusters, spindle gates, suspended bridges, thread eyes, twin sacs. Shared:
 alternating thorns, ceiling stumps, rooted gates. Ancient Forest uses a wide
 mixed ladder of the above families.
-IF YOU DO NOT RECOGNISE A HAZARD, WRITE "unnamed hazard at <timestamp>".
-NEVER INVENT A NAME. There is no laboratory, no machine, no enemy character.
+IF YOU DO NOT RECOGNISE A HAZARD, WRITE "unnamed hazard at <timestamp>", and
+say what it looked like. Do not guess a name from this list to fill the gap.
 
 WHAT TO REPORT. Timestamps and judgements about legibility, pacing and fairness:
 where a hazard and an anchor were hard to tell apart at speed; where a death
@@ -153,5 +172,8 @@ as the thing that breaks at ten testers.
   the evidence (correct numbers, wrong files, tail clips collapsed) and **not yet
   falsified**: the test is to re-send two clips individually and check whether
   distance, region and upgrade state all come back correct.
-- **`assumed`** — that the grounding block fixes the invented-vocabulary class.
-  Untested until a review runs with it in place.
+- **`assumed`** — that the grounding block reduces misreadings at all. Untested
+  until a review runs with it in place.
+- **`retracted`** — the "invented vocabulary" failure class. It was one example,
+  the example was wrong, and the class had no other members. See the note under
+  the failure table.
