@@ -136,18 +136,23 @@ func _print_summary(report: Dictionary) -> void:
 	print("  regressions and to stratify a playtest, never to rank chunks.")
 	print("")
 	print("  minGap  = tightest INTERIOR corridor, in player diameters.")
+	print("  pinch   = longest constriction inside a chunk — the run of samples")
+	print("            within 10% of that chunk's own minimum, in spider widths.")
+	print("            Width x LENGTH: a pinch crossed in 8 ms is not a tube.")
 	print("  minOpp  = tightest SEQUENTIAL opposite-side pair, seconds at the")
 	print("            speed cap for that distance (R13's own metric, and the")
 	print("            worst case). Speed-independent px are in the JSON.")
 	print("  gates   = simultaneous ceiling+floor pairs sharing an x-range.")
 	print("            A width challenge, not a timing one — counted, not timed.")
 	print("  new     = chunks introducing a pattern not yet seen in that run.")
-	print("  press   = CoursePressure at the kilometre mark. NOTHING READS IT YET —")
-	print("            it is printed beside the axes it will eventually schedule so")
-	print("            the curve can be judged against what the game builds today.")
+	print("  press   = CoursePressure at the kilometre mark. IT DRIVES SELECTION —")
+	print("            recovery cadence, obstacle size, and which authored rungs are")
+	print("            admissible all derive from it and from nothing else (R1).")
+	print("  size    = obstacle scale the curve asks for: the opening ramp times")
+	print("            the late growth term.")
 	print("")
-	print("    km  region               press  label  dens%  minGap(radii)  minOpp(s)  gates  new")
-	print("  ---- ------------------- ------ ------ ------ -------------- ---------- ------ ----")
+	print("    km  region               press   size  label  dens%  minGap(radii)  pinch  minOpp(s)  gates  new")
+	print("  ---- ------------------- ------ ------ ------ ------ -------------- ------ ---------- ------ ----")
 
 	var buckets := {}
 	for run: Dictionary in report["runs"]:
@@ -157,21 +162,29 @@ func _print_summary(report: Dictionary) -> void:
 				buckets[km] = {
 					"region": chunk["region"],
 					"label_total": 0.0,
+					"size_total": 0.0,
 					"count": 0,
+					"scheduled": 0,
 					"challenge": 0,
 					"min_radii": INF,
+					"pinch": 0.0,
 					"min_opp": INF,
 					"gates": 0,
 					"new": 0,
 				}
 			var bucket: Dictionary = buckets[km]
 			bucket["label_total"] += float(chunk["label_difficulty"])
+			bucket["size_total"] += float(chunk["obstacle_scale"])
 			bucket["count"] += 1
-			if not bool(chunk["is_recovery"]):
-				bucket["challenge"] += 1
+			if not bool(chunk["is_warm_up"]):
+				bucket["scheduled"] += 1
+				if not bool(chunk["is_recovery"]):
+					bucket["challenge"] += 1
 			if float(chunk["min_corridor_radii"]) >= 0.0:
 				bucket["min_radii"] = minf(
 					bucket["min_radii"], float(chunk["min_corridor_radii"]))
+			bucket["pinch"] = maxf(
+				bucket["pinch"], float(chunk["constriction_spider_widths"]))
 			if float(chunk["min_opposite_gap_s"]) >= 0.0:
 				bucket["min_opp"] = minf(
 					bucket["min_opp"], float(chunk["min_opposite_gap_s"]))
@@ -184,19 +197,72 @@ func _print_summary(report: Dictionary) -> void:
 	for km: int in keys:
 		var bucket: Dictionary = buckets[km]
 		var count := maxi(1, int(bucket["count"]))
-		print("  %4d  %-19s %6.3f %6.2f %5.0f%% %14s %10s %6d %4d" % [
+		print("  %4d  %-19s %6.3f %6.2f %6.2f %5.0f%% %14s %6.1f %10s %6d %4d" % [
 			km,
 			bucket["region"],
 			CoursePressure.at(float(km) * CoursePressure.PIXELS_PER_KILOMETRE),
+			float(bucket["size_total"]) / float(count),
 			float(bucket["label_total"]) / float(count),
-			100.0 * float(bucket["challenge"]) / float(count),
+			100.0 * float(bucket["challenge"])
+				/ float(maxi(1, int(bucket["scheduled"]))),
 			("%.2f" % bucket["min_radii"]) if not is_inf(bucket["min_radii"]) else "-",
+			bucket["pinch"],
 			("%.2f" % bucket["min_opp"]) if not is_inf(bucket["min_opp"]) else "-",
 			bucket["gates"],
 			bucket["new"],
 		])
 	print("")
+	_print_width_envelope(report)
 	_print_curve_profile(report)
+
+
+## The corridor-width envelope, as a distribution rather than a floor — the shape
+## D-0056 records, and the two terms the instrument could not report until now.
+func _print_width_envelope(report: Dictionary) -> void:
+	var all_records: Array = []
+	var swing_minimum := INF
+	var swing_pattern := ""
+	var absolute_minimum := INF
+	for run: Dictionary in report["runs"]:
+		for chunk: Dictionary in run["chunks"]:
+			all_records.append(chunk)
+			var radii := float(chunk["min_corridor_radii"])
+			if radii < 0.0:
+				continue
+			absolute_minimum = minf(absolute_minimum, radii)
+			if str(chunk["width_class"]) == "swing" and radii < swing_minimum:
+				swing_minimum = radii
+				swing_pattern = str(chunk["pattern"])
+
+	print("  Corridor width, per region — a DISTRIBUTION, not a floor. A minimum is")
+	print("  not a target: if a scheduler can drive every chunk to the floor and")
+	print("  still pass, the rule was written wrong.")
+	print("")
+	print("  region               chunks    min  median  med/min  near-min%  longest run near min")
+	print("  ------------------- ------- ------ ------- -------- ---------- ---------------------")
+	var distribution := Probe.region_width_distribution(all_records)
+	var regions := distribution.keys()
+	regions.sort()
+	for region: String in regions:
+		var entry: Dictionary = distribution[region]
+		print("  %-19s %7d %6.2f %7.2f %8.2f %9.0f%% %10d chunk(s) / %.0f m" % [
+			region,
+			int(entry["chunks"]),
+			float(entry["min_radii"]),
+			float(entry["median_radii"]),
+			float(entry["median_radii"]) / maxf(0.001, float(entry["min_radii"])),
+			100.0 * float(entry["share_near_min"]),
+			int(entry["longest_run_near_min"]),
+			float(entry["longest_run_near_min"]) * Probe.CHUNK_WIDTH
+				/ Probe.PIXELS_PER_METRE,
+		])
+	print("")
+	print("    swing-class minimum: %.2f d (%s) · absolute minimum: %.2f d" % [
+		swing_minimum if not is_inf(swing_minimum) else -1.0,
+		swing_pattern,
+		absolute_minimum if not is_inf(absolute_minimum) else -1.0,
+	])
+	print("")
 
 
 ## The curve's own numbers, so the slope can be argued with directly rather than

@@ -53,9 +53,21 @@ func _capture_zone(metres: float) -> Dictionary:
 	var distance_pixels := metres * CourseRegionCatalog.PIXELS_PER_METRE
 	var spider_x := SimulationWorld.START_POSITION.x + distance_pixels
 	var stream := CourseStream.new()
+	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 	stream.reset(
-		10000.0, 0.94, 0.90, 1.12, [], true, 1.0, 1.0,
-		20000.0, COURSE_SEED, spider_x)
+		config.middle_hazard_start_distance,
+		config.edge_obstacle_scale,
+		config.floating_obstacle_scale,
+		config.gate_opening_scale,
+		[],
+		config.corridor_contours_enabled,
+		config.corridor_clearance_scale,
+		config.corridor_tight_gap_scale,
+		config.tight_corridor_start_distance,
+		COURSE_SEED,
+		spider_x,
+		config.opening_obstacle_scale_floor,
+	)
 	var geometry := stream.geometry()
 	var world_left := maxf(0.0, spider_x - CAMERA_LEFT_OFFSET)
 	var region := CourseRegionCatalog.region_for_distance(distance_pixels)

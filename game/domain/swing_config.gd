@@ -167,9 +167,23 @@ const DEFAULT_OBSTACLE_CONTACT_INSET := 4.0
 @export var corridor_clearance_scale: float = 1.0
 @export var corridor_tight_gap_scale: float = 1.0
 @export var tight_corridor_start_distance: float = 20000.0
-@export var middle_hazard_start_distance: float = 10000.0
+## Where the warm-up ends and authored patterns begin.
+##
+## 5 000 px = 500 m, and that number is the owner's, not an agent's: *"the first
+## 500m should remain as it is."* It was 10 000 px, which put a second, silent
+## boundary 500 m past the one `CoursePressure.WARM_UP_END_PIXELS` declares —
+## and the stretch between them is exactly the one the attrition data blames for
+## the 41% spike at 2 km, via *"I rushed through the first 2km … reeling
+## excessively to speed it up."* Now there is one boundary: pressure is zero
+## through the warm-up and non-zero the moment content starts.
+@export var middle_hazard_start_distance: float = 5000.0
 @export var edge_obstacle_scale: float = 0.94
 @export var floating_obstacle_scale: float = 0.90
+## How small an obstacle may be drawn at the end of the warm-up, as a multiplier
+## on `floating_obstacle_scale`. The owner's Bramble opening lever, and the one
+## number in this slice that can look wrong rather than play wrong — which is
+## why it is a Test Lab dial and not only a source constant.
+@export var opening_obstacle_scale_floor: float = 0.60
 @export var gate_opening_scale: float = 1.12
 @export var guided_start_enabled: bool = true
 @export var rescue_life_enabled: bool = true
@@ -245,9 +259,10 @@ func apply_preset(name: StringName) -> void:
 	corridor_clearance_scale = 1.0
 	corridor_tight_gap_scale = 1.0
 	tight_corridor_start_distance = 20000.0
-	middle_hazard_start_distance = 10000.0
+	middle_hazard_start_distance = 5000.0
 	edge_obstacle_scale = 0.94
 	floating_obstacle_scale = 0.90
+	opening_obstacle_scale_floor = 0.60
 	gate_opening_scale = 1.12
 	guided_start_enabled = true
 	rescue_life_enabled = true
@@ -474,6 +489,9 @@ func set_tuning_value(parameter: StringName, value: float) -> float:
 		&"floating_obstacle_size":
 			floating_obstacle_scale = safe_value
 			return floating_obstacle_scale
+		&"opening_obstacle_floor":
+			opening_obstacle_scale_floor = safe_value
+			return opening_obstacle_scale_floor
 		&"gate_opening_size":
 			gate_opening_scale = safe_value
 			return gate_opening_scale
@@ -577,6 +595,8 @@ func value_for(parameter: StringName) -> float:
 			return edge_obstacle_scale
 		&"floating_obstacle_size":
 			return floating_obstacle_scale
+		&"opening_obstacle_floor":
+			return opening_obstacle_scale_floor
 		&"gate_opening_size":
 			return gate_opening_scale
 		&"obstacle_contact_inset":
@@ -661,6 +681,8 @@ func validate() -> PackedStringArray:
 		failures.append("obstacle contact inset must sit inside the player radius")
 	if middle_hazard_start_distance < 0.0:
 		failures.append("middle hazard start distance must not be negative")
+	if opening_obstacle_scale_floor <= 0.0 or opening_obstacle_scale_floor > 1.0:
+		failures.append("opening obstacle scale floor must be in (0, 1]")
 	if tight_corridor_start_distance < 0.0:
 		failures.append("tight corridor start distance must not be negative")
 	if edge_obstacle_scale < 0.5 or edge_obstacle_scale > 1.3 or \

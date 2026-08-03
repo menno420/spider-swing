@@ -28,23 +28,41 @@ const VISUAL_WEB_CITY := &"web_city"
 const VISUAL_ASHEN := &"ashen"
 const VISUAL_MIST := &"mist"
 
+## **The first two slots are swapped from the order that shipped through 0.38.0.**
+## Owner idea, 2026-08-02, recorded as requirement 7 in the doctrine and taken up
+## in Phase 4: Bramble Canopy opens the game and Ancient Forest follows.
+##
+## The reasoning is measured rather than aesthetic. Requirement 3 is *"the 5–10 km
+## band as it is today is roughly the right difficulty for the first 5 km"*, and
+## requirement 6 is *"Ancient Forest's density … must not be diluted"*. Retuning
+## Ancient Forest to satisfy the first would have violated the second; moving
+## Bramble to the front satisfies the first and leaves the second alone. The
+## measured saw-tooth it removes is the authored label falling 3.48 → 2.00 across
+## the old boundary while pressure rose 0.309 → 0.412.
+##
+## `start_distance` did not move — the *slots* are unchanged and the *ids* in
+## them swapped, which is why the checkpoint flags below had to move with them.
 const REGIONS := [
-	{
-		"id": ANCIENT_FOREST,
-		"name": "ANCIENT FOREST",
-		"start_distance": 0.0,
-		"focus": "Mixed fundamentals · learn every route",
-		"quirk": "Wide recovery rhythm",
-		"visual_profile": VISUAL_OLD_GROWTH,
-		"checkpoint": false,
-	},
 	{
 		"id": BRAMBLE_CANOPY,
 		"name": "BRAMBLE CANOPY",
-		"start_distance": REGION_LENGTH_PIXELS,
+		"start_distance": 0.0,
 		"focus": "Height control · rapid high↔low choices",
 		"quirk": "Alternating weave cues",
 		"visual_profile": VISUAL_CANOPY,
+		# The front slot starts at 0 m, so a checkpoint on it would resolve to
+		# "start the run at the start", which is not a checkpoint. Ancient Forest
+		# inherits the one that used to sit here; `PlayerProgress` schema 9
+		# migrates saves that hold the old id.
+		"checkpoint": false,
+	},
+	{
+		"id": ANCIENT_FOREST,
+		"name": "ANCIENT FOREST",
+		"start_distance": REGION_LENGTH_PIXELS,
+		"focus": "Mixed fundamentals · learn every route",
+		"quirk": "Wide recovery rhythm",
+		"visual_profile": VISUAL_OLD_GROWTH,
 		"checkpoint": true,
 	},
 	{

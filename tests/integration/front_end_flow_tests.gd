@@ -933,8 +933,10 @@ static func _test_checkpoint_migration_and_practice_are_noncompetitive(
 		"spendable_flies": 12,
 		"upgrade_levels": {"classic_reel": 5},
 	})
+	# 5 km + 10 px, i.e. one region length: that unlocks whichever region starts
+	# at 5 km, which after the 0.39.0 swap is Ancient Forest.
 	if not migrated.has_region_checkpoint(
-		CourseRegionCatalog.BRAMBLE_CANOPY) or \
+		CourseRegionCatalog.ANCIENT_FOREST) or \
 			migrated.has_region_checkpoint(CourseRegionCatalog.SILK_HOLLOW) or \
 			migrated.upgrade_level(&"classic_reel") != 10:
 		failures.append(
@@ -980,17 +982,17 @@ static func _test_checkpoint_migration_and_practice_are_noncompetitive(
 	view.bind_state(state)
 	view.front_end_button(&"PlayModesHub").pressed.emit()
 	view.front_end_button(&"Practice").pressed.emit()
-	var bramble := view.front_end_button(&"PracticeBrambleCanopy")
+	var forest := view.front_end_button(&"PracticeAncientForest")
 	var hollow := view.front_end_button(&"PracticeSilkHollow")
 	if state.screen != FrontEndState.Screen.PRACTICE or \
-			bramble == null or hollow == null or \
-			bramble.disabled or not hollow.disabled:
+			forest == null or hollow == null or \
+			forest.disabled or not hollow.disabled:
 		failures.append("practice route does not expose reached and locked regions")
 		view.free()
 		return 0
-	bramble.pressed.emit()
+	forest.pressed.emit()
 	hollow.pressed.emit()
-	if requests != [CourseRegionCatalog.BRAMBLE_CANOPY]:
+	if requests != [CourseRegionCatalog.ANCIENT_FOREST]:
 		failures.append("locked checkpoint emitted a practice start")
 		view.free()
 		return 0

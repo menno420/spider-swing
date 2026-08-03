@@ -2772,13 +2772,14 @@ func _on_spider_profile(spider_id: StringName) -> void:
 		_state.request_spider_profile(spider_id)
 
 
+## Derived from the region id rather than matched against a hard-coded pair.
+## The 0.39.0 region swap changed which regions carry checkpoints, and a match
+## statement would have silently produced `PracticeRegion` for the new one.
 func _practice_button_name(region_id: StringName) -> StringName:
-	match region_id:
-		CourseRegionCatalog.BRAMBLE_CANOPY:
-			return &"PracticeBrambleCanopy"
-		CourseRegionCatalog.SILK_HOLLOW:
-			return &"PracticeSilkHollow"
-	return &"PracticeRegion"
+	var suffix := String(region_id).capitalize().replace(" ", "")
+	if suffix.is_empty():
+		return &"PracticeRegion"
+	return StringName("Practice%s" % suffix)
 
 
 func _on_style_selected(index: int) -> void:

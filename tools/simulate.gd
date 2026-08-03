@@ -1397,6 +1397,7 @@ class RunDriver:
 			config.tight_corridor_start_distance,
 			course_seed,
 			SimulationWorld.START_POSITION.x + start_offset_px,
+			config.opening_obstacle_scale_floor,
 		)
 		world.reset(config, stream.geometry(), start_offset_px)
 		# Late-game warp uses the same checkpoint-safe world reset and ordinary

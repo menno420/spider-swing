@@ -974,10 +974,13 @@ static func _test_bramble_canopy_uses_world_anchored_art_pack(
 		Vector2(boundary_x + 80.0, 140.0),
 		Vector2(boundary_x + 20.0, 140.0),
 	])
+	# Slots swapped in 0.39.0: the canopy is now before the 5 km boundary and the
+	# old growth after it. The polygons keep their names — what is being checked
+	# is that the profile follows *world position*, not a global toggle.
 	if view._visual_profile_for_world_polygon(old_growth_polygon) != \
-			CourseRegionCatalog.VISUAL_OLD_GROWTH or \
+			CourseRegionCatalog.VISUAL_CANOPY or \
 			view._visual_profile_for_world_polygon(canopy_polygon) != \
-				CourseRegionCatalog.VISUAL_CANOPY:
+				CourseRegionCatalog.VISUAL_OLD_GROWTH:
 		failures.append(
 			"Bramble foreground art switches globally instead of by world position")
 		view.free()

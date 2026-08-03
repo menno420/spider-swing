@@ -411,8 +411,20 @@ const PARAMETERS := [
 		"quick": [0.80, 0.90, 1.0, 1.08],
 	},
 	{
-		"id": &"gate_opening_size",
+		"id": &"opening_obstacle_floor",
 		"category": CATEGORY_COURSE,
+		"label": "Opening obstacle size floor",
+		"help": "How small obstacles start just after the warm-up, before they "
+			+ "grow to full size by about 1500 m.",
+		"format": &"percent",
+		"minimum": 0.35,
+		"maximum": 1.0,
+		"step": 0.05,
+		"quick": [0.45, 0.60, 0.75, 1.0],
+	},
+	{
+		"id": &"gate_opening_size",
+		"category": CATEGORY_ROUTES,
 		"label": "Gate opening size",
 		"help": "Extra clear space between the upper and lower root-gate arcs.",
 		"format": &"percent",
