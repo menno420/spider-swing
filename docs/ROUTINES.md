@@ -93,6 +93,29 @@ rider's seat mechanics — cite it, don't copy it):
   re-reading its inbox at HEAD. Ending a turn with zero armed wakes is a
   seat-killing bug.
 
+## One-shot PR check-ins — do not arm what a webhook already covers
+
+**Owner-stated, 2026-08-03: deleting a trigger prompts the owner and stalls
+the session.** So an unnecessary `send_later` is not free — it costs him an
+interaction later, and it costs one every time.
+
+Before arming a check-in on a PR you just opened, ask what the timer would
+tell you that an event would not:
+
+- **Auto-merge armed and CI measured in minutes → arm nothing.** The merge
+  webhook is the signal. The timer will fire long after the outcome and its
+  only real effect is a deletion prompt. This repository enables auto-merge
+  on PRs automatically, so this is the *default* case, not the exception.
+- **Arm a check-in only when the PR will genuinely sit** — blocked on a human
+  review, or CI known to be slow or flaky — i.e. when a missed webhook would
+  leave the PR unattended for a long time.
+- **If you did arm one and the PR resolves first, that deletion is a cost you
+  created.** Prefer not creating it.
+
+Webhooks are unreliable for CI *success* and for merge-conflict transitions,
+which is the real argument for a check-in — but that argument only bites when
+nothing else will wake you. A merged/closed event ends the watch on its own.
+
 ## Boundaries
 
 The working agreement (`.claude/CLAUDE.md`) governs when to act vs ask;
