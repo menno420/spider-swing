@@ -69,6 +69,17 @@ func _initialize() -> void:
 		"runs": runs,
 	}
 
+	report["course_digest"] = Probe.course_digest(
+		range(seed_base, seed_base + seed_count), first_chunk, last_chunk)
+
+	# One number for "the generator built exactly the same course". It changes
+	# when — and only when — pattern selection or geometry changes, so a slice
+	# that claims to leave behaviour alone can be checked rather than believed.
+	# Printed outside the summary because `--quiet` suppresses the table, not the
+	# proof.
+	print("[course-audit] course digest (patterns + polygons, chunks %d..%d, %d seed(s)): %s" % [
+		first_chunk, last_chunk, seed_count, report["course_digest"]])
+
 	if not quiet:
 		_print_summary(report)
 

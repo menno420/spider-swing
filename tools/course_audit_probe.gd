@@ -97,6 +97,80 @@ static func audit_chunk(
 	}
 
 
+## One hash over everything the generator builds across a fixed window.
+##
+## **This is the before/after instrument for the pressure curve.** Phase 2
+## computes `CoursePressure` and deliberately gives it no consumer, so the course
+## must come out unchanged — and a claim of "byte-identical" is worth exactly as
+## much as the check standing behind it. Pinning the digest turns that claim into
+## something a merge, a refactor or an accidental early wiring cannot quietly
+## break.
+##
+## It reads the generator's own output — pattern identity plus the real polygons
+## — and **never a derived pressure value**. Hashing pressure here would make the
+## digest move the moment the curve landed, which is the one thing it exists to
+## rule out.
+##
+## When Phase 3 deliberately moves selection onto the curve, this digest is
+## *supposed* to change. Updating the pinned constant is then the visible record
+## that behaviour moved, which is the point: no generator change can land looking
+## like a no-op.
+static func course_digest(
+	seeds: Array,
+	first_chunk: int,
+	last_chunk: int,
+) -> String:
+	var hashing := HashingContext.new()
+	hashing.start(HashingContext.HASH_SHA256)
+	for course_seed: int in seeds:
+		var stream := stream_at(int(course_seed), first_chunk)
+		for chunk_index in range(first_chunk, last_chunk + 1):
+			var distance_px := float(chunk_index) * CHUNK_WIDTH
+			stream.update_for_position(distance_px + CHUNK_WIDTH * 0.5)
+			var pattern := CoursePatternCatalog.pattern_for_chunk(
+				chunk_index, distance_px, int(course_seed)
+			)
+			hashing.update(("seed %d chunk %d %s %s %d\n" % [
+				int(course_seed),
+				chunk_index,
+				str(pattern.get("id", &"")),
+				str(pattern.get("lane", &"")),
+				int(pattern.get("difficulty", 0)),
+			]).to_utf8_buffer())
+			var geometry := stream.geometry()
+			hashing.update(_polygon_digest_text(
+				"boundary", geometry.boundary_surfaces).to_utf8_buffer())
+			hashing.update(_polygon_digest_text(
+				"obstacle", geometry.obstacles).to_utf8_buffer())
+			hashing.update(_polygon_digest_text(
+				"contact", geometry.obstacle_contact_polygons).to_utf8_buffer())
+			hashing.update(_polygon_digest_text(
+				"surface", geometry.surfaces).to_utf8_buffer())
+	return hashing.finish().hex_encode()
+
+
+## Stable text for one polygon list.
+##
+## Four decimals is far finer than any real change to authored geometry and
+## coarse enough that last-bit float noise cannot flip the digest on its own.
+##
+## The leading `label count` line is always present, so an *empty* list still
+## contributes — "no obstacles here" is a fact about the course and a digest that
+## dropped it could not tell an emptied chunk from an absent one. It also keeps
+## the buffer non-empty, which `HashingContext.update` requires.
+static func _polygon_digest_text(
+	label: String,
+	polygons: Array[PackedVector2Array],
+) -> String:
+	var text := "%s %d\n" % [label, polygons.size()]
+	for polygon: PackedVector2Array in polygons:
+		text += label
+		for point: Vector2 in polygon:
+			text += " %.4f,%.4f" % [point.x, point.y]
+		text += "\n"
+	return text
+
+
 ## Largest INTERIOR free vertical span, sampled across one chunk.
 static func corridor_width_across(
 	geometry: CourseGeometry,
