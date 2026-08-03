@@ -106,6 +106,13 @@ static func _test_every_mode_resolves_to_a_valid_config(
 ## D-0033: separate best per mode, only Standard leaderboard-eligible.
 ## Relaxed is additionally excluded from records because non-lethal rails
 ## would unlock every checkpoint on a first attempt.
+##
+## **Scheduled to change.** The 2026-08-03 ledger entry gives every
+## records-eligible mode a board and makes Relaxed's rails lethal. This contract
+## keeps enforcing the shipped rule until that lands, so the two cannot drift
+## apart silently — and its own invariant below (a mode that cannot set a record
+## must not claim a board) is what forced the rails question to be answered
+## rather than assumed.
 static func _test_record_and_leaderboard_rules(
 	failures: PackedStringArray,
 ) -> int:

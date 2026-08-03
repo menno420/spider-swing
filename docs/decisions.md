@@ -1314,3 +1314,58 @@
   (`CONTENT_FIELDS` carries no selection input) and `course_pattern_catalog.gd`
   (never reads a mode). The width caution is F8 and his own 2026-08-02 verdict
   that room is what makes density fair.
+
+## [D-0056] Corridor width is a distribution with two classes, not a single floor
+
+- status: decided
+- date: 2026-08-03
+- verdict: **Width is governed by four terms, not one.** A floor alone is worse
+  than useless: written as "the minimum is X", a scheduler may drive every chunk
+  to X and pass. The rule is therefore a distribution, and its values are taken
+  from Ancient Forest, which the owner has played and endorsed — **minimum 7.39
+  player diameters, median ≈ 12.3 (1.7× the minimum), no more than ~6% of chunks
+  near the minimum, and never two such chunks in a row.**
+  **Two classes, separated by `lane`.** *Swing* obstacles (`high`/`low`/`weave`,
+  where the route requires a direction change) may never go below **7.39
+  diameters**. *Threading gates* (`lane = centre`, obstacles sharing an x-range,
+  flown straight through) may go below it **as their constriction shortens
+  toward roughly one spider width** — because a narrow gap costs width × length,
+  and a pinch you cross in 50 ms demands far less positional accuracy than a tube
+  you must thread. `hollow_spindle_gate` is the exemplar at 7.85 diameters with a
+  0.17-spider-width constriction (8 ms). `rooted_gate` is the endorsed reference
+  at 7.39 diameters and 2.83 spider widths (144 ms).
+  **The absolute fairness backstop is 3.0 diameters (108 px)** — R8's constant K,
+  owner-stated, and a value nothing should ever approach rather than a target.
+  **Two patterns violate this today**, and they are not the ones previously
+  blamed: `hollow_lattice_high` and `hollow_lattice_low`, both `swing` class, at
+  **6.69 diameters with a 1.94-spider-width constriction**. The fix is to widen
+  them. Silk Hollow's difficulty is to come from its 0.20 s spacing, not from
+  corridor width.
+- why: Menno, 2026-08-03, from an annotated frame of his own 10 605 m run and a
+  singled-out swing: *"this doesn't mean every obstacle should be at the minimum
+  amount, but that the most difficult parts should not be smaller than that ever,
+  and preferably that there is some more margin of error, these are just the
+  absolute minimum of possible passing at high skill play."*
+  The distribution terms are not decoration. They are what separates content he
+  enjoys from content he calls a wall, and the separation is measured: Ancient
+  Forest and Silk Hollow differ by only 8% at their minima, but Silk sits near
+  its minimum **three times as often** (18% vs 6%) and **sustains it twice as
+  long** (192 m vs 96 m). The frequency and duration diverge far more than the
+  width does, which is why a floor could never have expressed the difference.
+  The class split follows the owner's own distinction between threading a gap and
+  swinging around an obstacle, and it lands on `lane` — which N3 established does
+  **not** predict timing pressure, but which does correctly encode swing versus
+  thread. So `lane` is the right classifier for width and the wrong one for
+  timing, and that is worth stating because the opposite assumption is what O3
+  got wrong.
+  **Provenance limit, recorded beside the numbers deliberately.** These are the
+  limits of *expert play by the only tester*. The geometry is `measured`; the
+  claim that 7.39 diameters is passable *for anyone else* is `assumed`, and the
+  external research is explicit that no median or population curve can be derived
+  from a single very experienced player. Read 7.39 as "what Menno can do", never
+  as "what players can do".
+- provenance: Menno, 2026-08-03 — annotated frames at 1110.7 m and 3972.2 m, the
+  10 605 m run recording, and the stated rules across four messages. Measured
+  with `tools/course_audit_probe.gd` at 2 px horizontal resolution on the pinned
+  `4.7.1.stable.official.a13da4feb`; region distributions from the 0–15 km audit
+  across three seeds.

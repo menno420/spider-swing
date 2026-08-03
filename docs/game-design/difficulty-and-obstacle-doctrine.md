@@ -101,12 +101,29 @@ Widest free vertical span, label-free, seed 4242. Player collision radius is
 | **10–15 km** | **93 px** | **~320 px** | **Silk Hollow** |
 | 15–16 km | 294 px | 350 px | Ruined Arboretum |
 
+> ### ⚠ SUPERSEDED 2026-08-03 — this table is not reproducible
+>
+> Re-measured on **the same seed** with the contracted instrument, Silk Hollow's
+> tightest corridor over 10–15 km is **244.5 px**, not 93, and its median is
+> **374.1 px**, not ~320. Ancient Forest's median is 442 px and Bramble's 370 px
+> against a 572 px full corridor — so the claim that the median chunk does not
+> narrow the corridor below 10 km is also wrong.
+>
+> **Likely cause, and it is not carelessness:** the forgiving-lethal-contact
+> decision landed the same day and shrank every lethal contact polygon. This table almost certainly measured the
+> geometry as it stood before that inset landed.
+>
+> **What it changes: crossing into Silk Hollow narrows the tightest corridor by
+> 1.25×, not 5.4×, and barely moves the median. The 10 km wall is a TIMING wall**
+> — spacing collapses 0.84 s → 0.20 s, 4.2× — **not a width wall.** Numbers and
+> method: [`../measurements/2026-08-03-corridor-and-constriction.md`](../measurements/2026-08-03-corridor-and-constriction.md).
+
+The original reading, kept because the error is instructive:
+
 `measured`. For the first ten kilometres the **median** chunk does not narrow
 the corridor at all. At 10 km the median halves and the tightest gate tightens
 **5.4×**, to about 2.6 body widths, crossed in roughly 0.28 s at the owner's
 measured 70 m/s.
-
-> **The owner's "Silk Hollow gets a lot smaller" is literal and measurable.**
 
 ### 2.3 The eight regions already declare eight different axes
 
@@ -182,8 +199,19 @@ Forest gets **none** — while its catalogue entry declares its quirk to be
 
 Density (Ancient Forest, 2.5–5 km) and corridor width (Silk Hollow, 10 km+).
 Silk Hollow stacks a narrow corridor *on top of* a high hard-pattern share, and
-it is the only region that uses the width axis at all. That is why 10 km reads
-as a wall rather than a step. `inferred` from §2.1 + §2.2.
+it is the only region that uses the width axis at all. `inferred` from §2.1 +
+§2.2.
+
+> **⚠ CORRECTED 2026-08-03. The original sentence continued "that is why 10 km
+> reads as a wall rather than a step", and the measurement does not support it.**
+> Silk Hollow's corridor is only 8% tighter than Ancient Forest's at minimum, and
+> its median is *wider* than Bramble's. What collapses at 10 km is **spacing —
+> 0.84 s → 0.20 s, 4.2×**. The wall is timing.
+>
+> The finding survives in a better form: the two axes are still uncoordinated,
+> and Silk Hollow still spends width and timing at once — which is exactly the
+> combination [D-0054]'s envelope forbids. But the width contribution is small,
+> and a fix aimed at it would have missed.
 
 ### F5 · Three pools have no internal difficulty gradient at all
 
@@ -284,7 +312,8 @@ The owner's two verdicts, side by side with what each section measures:
 | | Ancient Forest 2.5–5 km | Silk Hollow 10–15 km |
 | --- | --- | --- |
 | encounter density | **highest in the game** (100% hard, 0% recovery) | high (80% hard, 20% recovery) |
-| corridor | **full 572 px, tightest 498** | **median ~320 px, tightest 93** |
+| corridor (as originally measured) | **full 572 px, tightest 498** | **median ~320 px, tightest 93** |
+| corridor (re-measured 2026-08-03) | median 442 px, tightest 266 | median **374 px**, tightest **244** |
 | owner's verdict | *"very hard … but very fun to play through"* | *"at least 2× more difficult with no gradual increase"* |
 
 His stated reason for the first is explicitly about room:
@@ -451,7 +480,11 @@ including Ancient Forest.
 **R8 · The fairness floor is independent of pressure.** Every generated chunk,
 at every distance, must satisfy:
 
-- tightest gate ≥ K × player collision radius at **base** upgrades;
+- tightest gate ≥ K × player collision radius at **base** upgrades, where
+  **K = 6 radii = 3.0 player diameters = 108 px** — owner-stated 2026-08-03 as
+  the absolute limit of possible passing, and therefore a backstop nothing should
+  approach rather than a target. The *governing* width rule is the distribution
+  in [D-0056], not this floor;
 - preview time ≥ T seconds, computed as free horizontal distance before the
   next constriction ÷ the **speed cap at that distance** (D-0050's curve);
 - a passable line exists using only verbs the player has been taught by then.
@@ -579,7 +612,21 @@ at that speed.
 > `lane = centre`**, and **every `weave`-lane pattern is looser than all three**.
 > The real floor is 2.3× tighter than the figure the question was built on, so a
 > T chosen against 0.60 s would leave the three tightest patterns beneath it
-> untouched. Whatever schedules T must read measured geometry; **the lane label
+> untouched.
+>
+> **⚠ Read that as a SPACING claim only — 2026-08-03.** Those figures are
+> centre-to-centre distances between obstacles, i.e. timing. They say nothing
+> about corridor width, and `hollow_spindle_gate` — named there as the tightest
+> content in the game — has a **7.85-diameter corridor with an 8 ms
+> constriction**, making it the most generous tight pattern measured. Width is
+> governed by [D-0056], not by these numbers.
+>
+> **And the owner plays at 0.29–0.31 s.** Ancient Forest 2–5 km runs sequential
+> opposite pairs at that spacing and he clears it. The report's conservative
+> 0.8–1.0 s floor for an *unlearned* choice is roughly **3× looser than measured
+> expert reality**. Both can hold — that is the predictability coupling — but the
+> constants must be re-derived from the run, not from the extrapolation. The
+> measurement wins. Whatever schedules T must read measured geometry; **the lane label
 > does not predict timing pressure and may not stand in for it.** See **N1** and
 > **N3** in
 > [`../measurements/2026-08-02-course-audit-baseline.md`](../measurements/2026-08-02-course-audit-baseline.md).
@@ -729,6 +776,26 @@ load-bearing. Profile and the before-picture:
 slope exposed in the Test Lab.
 
 **Phase 4 — the swap and the retune**, once the curve can express the result.
+Bramble opens the game, and the owner chose its opening ramp on 2026-08-03:
+
+| stretch | what carries it |
+| --- | --- |
+| 0 – 500 m | the warm-up, untouched — **it moves with the front slot, not with Ancient Forest** |
+| 500 m – ~1500 m | **obstacle size** ramping up to full — *"decrease the obstacle size of it for the first 1000m or something like that"* |
+| ~1500 m – 5 km | **loose obstacles filling a rising share of the open chunks** — *"add some loose obstacles in between certain wide spaces instead of just repeating the same pattern"* |
+
+Two levers, no new patterns authored, and a continuous rise instead of a flat
+3.5 km. The fill is governed by the **measured spacing and corridor floors**, not
+by a blanket every-other-chunk rule — which is available precisely because
+Bramble's open chunks turned out not to be what made it passable (see C3 in
+[`../measurements/2026-08-03-corridor-and-constriction.md`](../measurements/2026-08-03-corridor-and-constriction.md)).
+The ~1500 m endpoint is not arbitrary: R12's family-introduction arithmetic
+independently landed on ~1440 m for Bramble's vocabulary to be fully shown.
+
+**The one open risk is art, and only the owner can judge it.** Today's entire
+obstacle-scale range across all difficulty modes is 0.76–1.06; a meaningful
+opening ramp wants to go well below that, and how small an obstacle can be drawn
+before it looks wrong is a device call, not a measurable one.
 
 **Phase 5 — per-region endless (§9)**, deepest pool first, as a non-records
 mode. Deliberately last: it is nearly free once Phase 2 lands and impossible
@@ -882,7 +949,14 @@ must also be non-zero or regions lose their character entirely. **±15%** is a
 value inside a derived bound rather than a guess, but the exact figure inside
 `(0, 20%]` remains `assumed`.
 
-**S8 · The obstacle-size ramp is optional, not required.**
+**S8 · The obstacle-size ramp is optional, not required. — RETIRED 2026-08-03.**
+The owner has since chosen it as Bramble's **primary** opening lever: *"we should
+just decrease the obstacle size of it for the first 1000m or something like that,
+and keep the rest mainly the same."* So the 0.45-size-floor question this
+settlement retired is **re-opened**, and it is a device judgement — how small an
+obstacle can be drawn before it looks wrong. The reasoning below is kept because
+the alternative levers it names are still the ones that carry 1.5–5 km.
+
 §6.1 listed it as one of three levers for Bramble's missing rungs, and F7 has
 since supplied a fourth: the lane loop itself. Cadence, singles-before-pairs and
 a legible lane cadence give three rungs without touching obstacle scale, so the

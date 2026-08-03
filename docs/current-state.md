@@ -331,7 +331,10 @@ without a reported regression.
   approved preset with an empty override set. Each mode keeps its own best
   distance (schema 7); only records-eligible modes move the authoritative best
   that region checkpoints unlock from, which excludes Relaxed because its rails
-  are not lethal; only Standard is leaderboard-eligible. Measured ordering is
+  are not lethal; only Standard is leaderboard-eligible. **Both of those change
+  under the decision ledger's 2026-08-03 entry** — Relaxed's rails become lethal
+  and every records-eligible mode gets its own board — but the code still ships
+  the older rule, because that change lands with the boards. Measured ordering is
   monotone — Relaxed 3 096 m, Standard 1 714 m, Harsh 1 133 m at intermediate.
 - Rewards beyond Campaign stars still have approved direction in D-0033 but no
   implementation. Generated SFX and the original haunted score now exist;
@@ -473,6 +476,19 @@ so the Dive stays always available, which is its whole purpose.
   the instrument rather than the difficulty. Its first output reproduces all
   four of the owner's felt difficulty boundaries from geometry alone:
   [`course-audit baseline`](measurements/2026-08-02-course-audit-baseline.md).
+- **2026-08-03 — Corridor width becomes a distribution, and the first play data
+  lands.** Owner rulings on what a passable gap actually is turned into a
+  four-term width rule (minimum, median, share-near-minimum, consecutive
+  exposure) with two classes split by `lane`, plus an absolute 3.0-diameter
+  backstop. Measuring it retired three claims the repository had been reasoning
+  from: the doctrine's § 2.2 corridor table is not reproducible (superseded by
+  D-0052 the same day), N1's "tightest content" is a spacing finding rather than
+  a width one, and Bramble's open recovery chunks are not what made it passable.
+  **The 10 km wall is a timing wall, not a width wall.** Separately, 35 recorded
+  attempts gave the repository its first death data: hazard peaks at
+  **2 000–2 500 m**, independently confirming the cliff R3 was written to forbid.
+  [`attrition`](measurements/2026-08-03-owner-run-attrition.md) ·
+  [`corridor`](measurements/2026-08-03-corridor-and-constriction.md).
 - **2026-08-03 — The doctrine is approved, and the curve is computed.**
   The doctrine moved from `plan` to `binding` for 0–15 km, settling
   three questions that blocked implementation: R6 is reworded rather than the

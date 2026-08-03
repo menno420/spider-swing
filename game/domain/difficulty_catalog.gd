@@ -64,7 +64,14 @@ const CONTENT_FIELDS := [
 
 ## `records_eligible` drives the authoritative best distance and the region
 ## checkpoints it unlocks. `leaderboards_eligible` is the future competitive
-## surface, and D-0033 reserves it for Standard alone.
+## surface, and D-0033 reserved it for Standard alone.
+##
+## **That rule is superseded and this file has not caught up yet.** The decision
+## ledger's 2026-08-03 entry gives every records-eligible mode its own board and
+## makes Relaxed's rails lethal so it qualifies. The values below deliberately
+## still encode the older rule: they change in the slice that builds the boards,
+## because a mode flagged leaderboard-eligible with no board to appear on is a
+## claim with no consumer — exactly the dead metadata F1 warns about.
 ##
 ## Relaxed is excluded from records because its rails are not lethal — a run
 ## that cannot fall off the course would unlock every checkpoint on its first

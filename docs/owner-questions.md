@@ -197,6 +197,9 @@ guess. Reasoning and constraints live in the decision ledger.
 - **Difficulty and records: separate best per mode; only Standard competes.**
   Relaxed and Harsh each keep their own best distance so progress still feels
   real, but only Standard is eligible for a future leaderboard.
+  **Superseded 2026-08-03:** every records-eligible mode now gets its own board,
+  and Relaxed's rails become lethal so it qualifies. The separate-best-per-mode
+  half of this answer stands unchanged.
 - **Campaign rewards: cosmetics and stars only, no flies.** Campaign levels are
   fixed-seed and repeatable, so paying currency would make them the optimal
   farm and force an endless-economy rebalance.
