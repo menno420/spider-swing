@@ -81,6 +81,10 @@ static func audit_chunk(
 		"lane": str(pattern.get("lane", &"")),
 		"label_difficulty": int(pattern.get("difficulty", 0)),
 		"is_recovery": pattern_id == RECOVERY_PATTERN_ID,
+		# Reported beside the axes it will eventually schedule, and read by
+		# nothing in the generator. This column is how the curve gets judged
+		# against what the game currently builds, before it moves anything.
+		"pressure": CoursePressure.at(distance_px),
 		"min_corridor_px": width["min_px"],
 		"min_corridor_radii": width["min_radii"],
 		"mean_corridor_px": width["mean_px"],

@@ -15,7 +15,7 @@ const ANDROID_APP_NAME := "Spider Swing Campaign Combination Playtest (dev)"
 const DEBUG_KEYSTORE_PATH := "res://.github/android/debug.keystore"
 const DEBUG_KEYSTORE_SHA256 := \
 	"e9104672477e0238b6cc2f7d6b994c459e37f130cae06a37aff05001f101bbda"
-const EXPECTED_CHECK_COUNT := 221
+const EXPECTED_CHECK_COUNT := 226
 const REQUIRED_INPUT_ACTIONS := [
 	"web_action", "reel_in", "burst_action", "pause", "restart_run",
 	"toggle_debug"]
@@ -42,6 +42,7 @@ func _initialize() -> void:
 	_check_upgrade_audit()
 	_check_simulation_lab()
 	_check_course_audit()
+	_check_course_pressure()
 	_check_economy()
 	_check_audio_presentation()
 	_check_mobile_hud_layout()
@@ -337,6 +338,17 @@ func _check_course_audit() -> void:
 		return
 	for failure: String in failures:
 		_fail("Course audit instrument — %s" % failure)
+
+
+func _check_course_pressure() -> void:
+	var result := CoursePressureTests.run()
+	var failures: PackedStringArray = result["failures"]
+	if failures.is_empty():
+		_passed += int(result["passed"])
+		print("  ✓ Course pressure curve: %d contracts" % int(result["passed"]))
+		return
+	for failure: String in failures:
+		_fail("Course pressure curve — %s" % failure)
 
 
 func _check_difficulty() -> void:
