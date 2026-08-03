@@ -1,11 +1,18 @@
-# Difficulty and obstacle placement — measured baseline and a proposed doctrine
+# Difficulty and obstacle placement — measured baseline and the doctrine
 
-> **Status:** `plan`
+> **Status:** `binding` for 0–15 km · [D-0054]
 >
-> **This is a proposal, not a decision.** Nothing here is implemented and no
-> ledger entry records it. The owner asked for a plan to analyse across several
-> sessions before any generator code moves. Every section is written to be
-> argued with.
+> **Approved 2026-08-03 by [D-0054].** This was a proposal for five days and is
+> now the governing plan for the first 15 km; generator work may proceed against
+> it. Three questions that blocked implementation were settled by that entry and
+> are folded in below — **R6** is reworded rather than the generator, the axis
+> **budget** is an axis **envelope**, and **R13's T** is a function of local
+> predictability rather than a constant. Each was recorded as an agent default
+> open to owner veto.
+>
+> **Still not decided: where the plateau goes.** O1 remains deferred, so
+> `pressure(d)` clamps at the top of the owner-scoped range instead of placing
+> one. Sections beyond 15 km are outside this document's authority.
 >
 > **Scope — the first 15 km only.** Owner decision, 2026-08-02: *"let's focus on
 > the first 15K because that's actually something that's proven to be reachable;
@@ -305,11 +312,20 @@ Silk Hollow currently spends both at once.
 One monotone curve, `pressure(d) ∈ [0, 1]`:
 
 - `0` below 500 m
-- rises to `1.0` at the plateau distance (owner's figure: ~15 km)
-- constant above it, forever
+- rises to `1.0` at the top of the scoped range
+- constant above it
 
 Every difficulty term derives from pressure. No region, pool or pattern reads
 distance directly.
+
+**Implemented 2026-08-03 as `CoursePressure` (`game/domain/course_pressure.gd`),
+with no consumer yet.** The top of the curve is **15 km because that is where
+the owner's scope ends, not because a plateau was placed there** — O1 is
+deferred, and a curve that clamps is honest about having no authority past its
+evidence, where one that kept rising would be extrapolating onto ground nobody
+has stood on. When the scope extends, the curve extends with it; the constant is
+named for what it is. Numbers:
+[`../measurements/2026-08-03-pressure-curve-profile.md`](../measurements/2026-08-03-pressure-curve-profile.md).
 
 ### Axes — what kind
 
@@ -327,14 +343,17 @@ Pressure is *spent* across named axes. Each is separately measurable:
 | **Verb** | share of chunks whose best line needs a Dive or Burst | — |
 | **Predictability** | how well the next route can be inferred from the current one | Bramble (very high) → Ancient Forest (none) |
 
-A region declares an **axis budget** — how it spends the pressure it is given.
-At the plateau every region spends the *same total* on *different axes*. That
-is requirement 5, expressed as a number rather than a hope.
+A region declares an **axis envelope** — which profiles it may legally present
+at the pressure it is given. At the plateau every region carries the *same
+envelope* and fills it with a *different profile*. That is requirement 5,
+expressed as a constraint rather than a hope.
 
-> ### ⚠ Proposed correction — budget becomes *envelope*
+> ### Budget became *envelope* — ruled by [D-0054], 2026-08-03
 >
-> From [`difficulty-research-2026-08-02.md`](difficulty-research-2026-08-02.md)
-> § 2.2, and it is the most substantive external challenge to this model.
+> **This section originally said "axis budget", and that every region spends the
+> *same total* on different axes.** That framing is retired. The correction came
+> from [`difficulty-research-2026-08-02.md`](difficulty-research-2026-08-02.md)
+> § 2.2 and was the most substantive external challenge to the model.
 > **Pressure is very unlikely to be additive:**
 >
 > `pressure ≠ density + narrowness + timing + unpredictability`
@@ -345,7 +364,7 @@ is requirement 5, expressed as a number rather than a hope.
 > are well-established prior art; **a validated conserved difficulty budget is
 > not** — the report searched and found none.
 >
-> **What to use instead.** Keep the monotone scalar, but as an **admission
+> **What replaced it.** The monotone scalar stays, but as an **admission
 > envelope**: it decides which *profiles* are legal at a distance. Each axis then
 > carries its **own cap, slope limit and cooldown**, and a small set of
 > **explicitly forbidden combinations** — maximum narrowness must not coincide
@@ -360,6 +379,14 @@ is requirement 5, expressed as a number rather than a hope.
 >
 > Nothing else in this section changes; requirement 5 is still expressible, as
 > "equal envelopes, different profiles" rather than "equal totals".
+>
+> **Where the per-axis numbers come from, and when.** [D-0054] deliberately did
+> **not** fix the caps, slope limits or cooldowns. A cap with no consumer is
+> exactly the shape of the `difficulty` label F1 calls dead metadata —
+> unfalsifiable and free to drift — so each axis gets its numbers in the phase
+> that gives it a consumer, region by region. The scalar and its own slope limit
+> are the only parts that exist before then, because they are the only parts the
+> whole game shares.
 
 It also answers requirement 4 directly: "more Dives and Bursts" is the **Verb**
 axis rising with pressure, and it is the one axis currently at zero everywhere.
@@ -395,19 +422,26 @@ exists to prevent is a 41% drop, so any bound at or above ~20% re-permits it.
 constant. Variation comes from rotating axis budgets, bounded so no rotation is
 more than ~10% harder than another on the measured terms.
 
-**R6 · Warm-up is sacred.** 0–500 m carries no lethal obstacle. A contract, so
-it cannot erode.
+**R6 · Warm-up is sacred.** 0–500 m carries **no multi-obstacle pattern and no
+opposite-side pair**. Loose single obstacles alternating top and bottom are the
+warm-up, not a violation of it. A contract, so it cannot erode.
 
-> **⚠ Measured 2026-08-02: this is not what ships, and it conflicts with R12.**
-> Chunks 1 and 4 (96 m and 384 m) each carry one obstacle contact polygon,
-> identically across every seed — the opening is authored, not seeded. That is
-> exactly what R12's first-gate row describes (*"loose single obstacles
-> alternating top and bottom with short open gaps"*), so **R6's "no lethal
-> obstacle" is stricter than both the shipped generator and this document's own
-> other rule.** One of the two must be reworded before either is implemented,
-> and the owner's requirement was *"the first 500m should remain as it is"* —
-> which favours rewording R6, not the generator. See **N5** in
-> [`../measurements/2026-08-02-course-audit-baseline.md`](../measurements/2026-08-02-course-audit-baseline.md).
+> **Reworded by [D-0054], 2026-08-03. The previous wording was "no lethal
+> obstacle", and it described a game that has never shipped.** Measured
+> 2026-08-02: chunks 1 and 4 (96 m and 384 m) each carry one obstacle contact
+> polygon, identically across every seed — the opening is authored, not seeded.
+> That is exactly what R12's first-gate row describes (*"loose single obstacles
+> alternating top and bottom with short open gaps"*), so the old R6 was stricter
+> than both the shipped generator and this document's own other rule. The
+> owner's requirement was *"the first 500m should remain as it is"*, which
+> settles which of the two had to move: **the rule, not the content.** See **N5**
+> in [`../measurements/2026-08-02-course-audit-baseline.md`](../measurements/2026-08-02-course-audit-baseline.md).
+>
+> What the new wording still forbids is real: the warm-up may not acquire a
+> second simultaneous hazard, and it may not acquire the sequential opposite
+> commitment whose *first* appearance the audit locates at km 2 — which is the
+> mechanism behind the owner's "at about 2500m the difficulty suddenly
+> increases".
 
 **R7 · Recovery cadence is a curve, not a per-region constant.** Maximum
 consecutive challenge chunks rises with pressure. Every region obeys it,
@@ -515,25 +549,39 @@ pressure including the plateau. For scale: one chunk is 1.37 s at 70 m/s, and
 the weave patterns place their two commitments 420 px apart, which is **0.60 s**
 at that speed.
 
-> **External bounds on T** — from
+> **T's shape is ruled by [D-0054]; its constants are still device-only.**
+> T is a **function of local predictability**, not a constant, and it ships with
+> these three values as `assumed` defaults pending the owner's verdict on his own
+> device and hands:
+>
+> | situation | floor |
+> | --- | --- |
+> | pre-learned **and** well-telegraphed expert beat — i.e. where R14 has already made that beat predictable | **0.60 s** |
+> | unlearned opposite-side choice | **0.8–1.0 s** |
+> | unlearned, **and** significant swing correction needed | **1.2–1.4 s** |
+>
+> The bounds come from
 > [`difficulty-research-2026-08-02.md`](difficulty-research-2026-08-02.md) § 2.1,
 > `inferred` and **not** measurement. Published choice-reaction time is ≈ 369 ms
 > for a four-way choice against ≈ 253 ms for a simple one, a second choice costs
 > ~+50% and three choices roughly double it. Subtracting ≈ 0.37 s from a 0.60 s
 > window leaves ≈ 0.23 s for screen and touch latency, pattern interpretation,
-> pendulum dynamics and actual displacement.
+> pendulum dynamics and actual displacement. Our 1.37 s chunk is explicitly
+> called *substantial room*. The 0.8–1.0 s figure is the report's own
+> conservative extrapolation, not a published mobile standard, so it **bounds** T
+> rather than setting it.
 >
-> | situation | proposed floor |
-> | --- | --- |
-> | pre-learned **and** well-telegraphed expert beat | **0.60 s** |
-> | unknown opposite-side choice | **0.8–1.0 s** |
-> | unknown, **and** significant swing correction needed | **1.2–1.4 s** |
->
-> Our 1.37 s chunk is explicitly called *substantial room*. **So the weave's
-> 0.60 s is defensible only where R14 has already made that beat predictable** —
-> which is the coupling above, reached independently by a second instrument. The
-> 0.8–1.0 s figure is the report's own conservative extrapolation, not a
-> published mobile standard, so it bounds T rather than setting it.
+> **⚠ The tightest content is not the weave, and `lane` is not a proxy for T.**
+> This rule was originally framed around `high_low_weave` at 420 px / 0.60 s.
+> Measured 2026-08-02, tightest first: `hollow_spindle_gate` **180 px (0.20 s at
+> the cap)**, `staggered_s` 233 px, `stump_and_vine` 252 px — **all
+> `lane = centre`**, and **every `weave`-lane pattern is looser than all three**.
+> The real floor is 2.3× tighter than the figure the question was built on, so a
+> T chosen against 0.60 s would leave the three tightest patterns beneath it
+> untouched. Whatever schedules T must read measured geometry; **the lane label
+> does not predict timing pressure and may not stand in for it.** See **N1** and
+> **N3** in
+> [`../measurements/2026-08-02-course-audit-baseline.md`](../measurements/2026-08-02-course-audit-baseline.md).
 
 **R14 · Predictability is scheduled, not accidental.** F7 shows it currently
 ranges from a near-deterministic four-beat loop to a fully seeded five-lane
@@ -663,12 +711,18 @@ First output and its six new findings:
 > the weave — the real floor is 180 px, not 420) and **N5** (the warm-up already
 > carries obstacles, so R6 contradicts R12). Both are folded in below.
 
-**Phase 1 — doctrine.** These rules, argued and cut down, become a decision
-ledger entry. Owner signs off before generator code moves.
+**Phase 1 — doctrine. ✅ LANDED 2026-08-03.** These rules, argued and cut down,
+became [D-0054], which approved the doctrine for 0–15 km and settled the three
+questions that blocked implementation (R6's wording, budget → envelope, T's
+shape). The plateau's position was **not** settled and stays deferred.
 
-**Phase 2 — compute the curve without using it.** `pressure(d)` exists,
-contracts measure and report the profile, behaviour is byte-identical. Proves
-the numbers before they are load-bearing.
+**Phase 2 — compute the curve without using it. ✅ LANDED 2026-08-03.**
+`CoursePressure` exists in `game/domain/`, contracts pin its shape, the audit
+instrument reports the profile per kilometre, and **nothing consumes it** — the
+generated course is unchanged, proven by a pinned digest over patterns and
+polygons across the scoped range. Proves the numbers before they are
+load-bearing. Profile and the before-picture:
+[`../measurements/2026-08-03-pressure-curve-profile.md`](../measurements/2026-08-03-pressure-curve-profile.md).
 
 **Phase 3 — switch selection onto the curve, one region at a time**, with the
 slope exposed in the Test Lab.
@@ -886,8 +940,8 @@ Three things fall out, and the third is the most useful.
 *Remaining unknown, and it is now narrow: whether 20% is already too much.*
 One build answers it and it is one line of code.
 
-**O3 · What is T, the spacing floor in R13? — STRUCTURE CONFIRMED, constants
-still device-only.**
+**O3 · What is T, the spacing floor in R13? — STRUCTURE RULED by [D-0054],
+constants still device-only.**
 
 > **Update, 2026-08-02.** The deep research report reaches this same coupling
 > from reaction-time literature, without having seen the derivation below: a
