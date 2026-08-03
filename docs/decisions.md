@@ -1369,3 +1369,130 @@
   with `tools/course_audit_probe.gd` at 2 px horizontal resolution on the pinned
   `4.7.1.stable.official.a13da4feb`; region distributions from the 0–15 km audit
   across three seeds.
+
+## [D-0057] Pressure spends four named axes, and the region swap lands with it
+
+- status: decided
+- date: 2026-08-03
+- verdict: **`CoursePressure` becomes the single source of difficulty amount and
+  gets its first consumer, `CourseAxisEnvelope` (`game/domain/`).** Four axis
+  terms derive from the scalar and nothing else derives from distance: the
+  **recovery cadence** (an integer interval widening 2 → 5, so R7's ceiling on
+  consecutive exposure falls out of it rather than being asserted beside it), the
+  **obstacle size** ramp (a floor-to-full opening ramp plus the late growth term
+  that replaces `_obstacle_growth_scale`'s four distance steps), the **admissible
+  authored rungs** (R13's bounded spread, which is also what finally gives the
+  `difficulty` label a consumer under R10), and **whether a multi-obstacle
+  pattern may appear** (R6 plus §6.1's "singles before pairs").
+  Three distance laws were deleted to make room, all of them F2's *"the game's
+  entire distance-driven progression belongs to Ancient Forest"*: the
+  control → mastery → deep pool ladder at 1/2/3.5 km, `MASTERY_START_DISTANCE`
+  gating the tight corridor, and `CONTROL_START_DISTANCE` deciding whether any
+  pattern exists at all. **Region identity still chooses character; it no longer
+  chooses amount.**
+  **The first two regions swap slots in the same change**, because S4 already
+  derived that they cannot land apart: Bramble Canopy opens the game at 0–5 km,
+  Ancient Forest follows at 5–10 km, Silk Hollow is unchanged at 10–15 km.
+  **Three agent defaults are recorded here for owner veto**, each a number the
+  decision deliberately did not fix beforehand. **(a)** Recovery share
+  interpolates between two *shipped* endpoints — 50%, Bramble's own cadence and
+  O2's stated upper bound, and 20%, just above Silk Hollow's measured 21% — with
+  a front-loaded shape. Measured result: 28.3% / 23.1% / 21.2%, every region
+  strictly inside O2's (2%, 50%). **(b)** The obstacle-size floor is **0.60 as a
+  multiplier on the mode's own scale**, not an absolute, so the ramp composes
+  with difficulty modes instead of overriding them; at Standard that is 0.54
+  effective, a 300 px hook drawn at 162 px. **(c)** The warm-up ends at **500 m**
+  for Standard rather than 1 000 m, which is the owner's own figure and was never
+  what the code did.
+  **Two consequences accepted rather than discovered.** Bramble's four singles
+  now carry `difficulty` 3 against its four pairs' 4 — F5's missing rung, stated
+  where the admission filter can read it. And Ancient Forest's checkpoint moves
+  with the swap: Bramble's start distance is 0 m, which is not a checkpoint
+  anyone can be sent back to, so `PlayerProgress` schema 9 rewrites a saved
+  `bramble_canopy` unlock to `ancient_forest` — the region now at the distance
+  that unlock was earned at.
+- why: The doctrine's Phase 3 and Phase 4 both blocked on the same missing piece
+  and S4 says they land together or not at all: *"Bramble's pool is region-keyed
+  and distance-invariant, so a swapped opening would be flat across its whole
+  5 km — which contradicts requirement 2."*
+  [D-0054] deliberately left the per-axis numbers unfixed on the grounds that
+  *"a cap with no consumer is exactly the shape of the `difficulty` label F1
+  calls dead metadata"*, and said each axis gets its numbers in the phase that
+  gives it a consumer. This is that phase for four of them, so the numbers are
+  set here and nowhere earlier.
+  **Both of the doctrine's headline defects are measured gone.** The 2 km cliff
+  had no threshold left to step at, and the steepest kilometre of pressure is
+  0.1032 against the 0.15 bound. The saw-tooth is inverted: region means run
+  2.28 → 2.88 → 3.15 in play order where they ran 2.81 → 2.00 → 3.15, and the
+  worst three-kilometre rolling dip falls from 17.4% to 4.1%.
+  **What got worse is recorded beside it.** Ancient Forest's tightest sequential
+  pair reads 0.288 s → 0.261 s on unchanged geometry, because spacing is measured
+  at the speed cap and 5–10 km is a faster band of D-0050's curve than 2–5 km
+  was. The owner clears 0.29–0.31 s on this exact content today, and he now meets
+  it at 5 km rather than 2 km. **It is a device question and the sharpest one in
+  the slice.** Separately, the swap puts the thinnest pool in the game (eight
+  patterns, F6) in the front slot; sequence variety rises as vocabulary variety
+  falls, because F7's memorisable four-beat loop is gone.
+  **One thing this deliberately does not do.** `ONSET_SHAPE` stays a source
+  constant rather than becoming the Test Lab dial the pressure-curve profile
+  asked for, because pattern selection must remain a pure function of
+  `(chunk, distance, seed)` or no trace reproduces. The obstacle-size floor is
+  exposed instead, as `opening_obstacle_scale_floor` — it is a geometry scale,
+  which the lab already tunes, and it is the number the doctrine says can look
+  wrong rather than play wrong.
+- provenance: Menno, 2026-08-02 device session — requirement 7 (the swap) and the
+  2026-08-03 opening ramp (*"decrease the obstacle size of it for the first 1000m
+  or something like that"*, *"add some loose obstacles in between certain wide
+  spaces instead of just repeating the same pattern"*). Derived from [D-0054]
+  R1/R7/R10/R13 and S4, [D-0055]'s ordering requirement that Standard reach the
+  curve before either other mode is profiled, and [D-0056]'s width envelope.
+  Measured in
+  [`curve-driven-course`](measurements/2026-08-03-curve-driven-course.md); the
+  before-picture is
+  [`pressure-curve-profile`](measurements/2026-08-03-pressure-curve-profile.md).
+
+## [D-0058] Corridor width is watched as a duration, not only as a minimum
+
+- status: decided
+- date: 2026-08-03
+- verdict: **Two width × duration terms enter `tools/course_audit_probe.gd`, the
+  audit report, and the contract suite: constriction length within a chunk, and
+  the longest run of consecutive chunks near a region's own minimum.** Both are
+  pinned as **measurements with regression headroom**, not as difficulty targets
+  — the Phase 0 pattern. The width envelope itself is contracted at the same
+  time: swing-class chunks never below 7.39 player diameters, nothing anywhere
+  below R8's 3.0-diameter backstop, and no region holding within 10% of its own
+  minimum for more than three consecutive chunks.
+  **The two patterns [D-0056] named are fixed in the same change.**
+  `hollow_lattice_high` and `hollow_lattice_low` were the only content in the
+  first 15 km below the floor their class may never cross, at 6.69 diameters;
+  their lattice height goes 292 → 258 px and the swing-class minimum across the
+  whole scoped range becomes **7.75**.
+  **One reading caveat is recorded with the numbers rather than learned later.**
+  *Share near own minimum* is relative to each region's own floor, so raising a
+  floor mechanically raises the share: Silk Hollow's went 18% → 24% **because**
+  its minimum improved 6.79 → 7.75. `median ÷ min` is reported beside it so the
+  shape can be read separately from the floor.
+- why: [D-0056] is written as a distribution precisely because a floor cannot see
+  the difference between the content the owner enjoys and the content he calls a
+  wall — Ancient Forest and Silk Hollow differ by 8% at their minima, by 3× in
+  how often they sit there and by 2× in how long they sustain it. Both of those
+  terms were computed by hand for that entry and **nothing in the suite watched
+  either**, so an obstacle could have been reshaped into a 400 px tube at an
+  unchanged minimum with every contract green.
+  Measuring them immediately paid for itself with a finding that inverts the
+  width table read alone: **Silk Hollow's corridor is the tightest in the game
+  and its pinches are the shortest, by 3.4×** — 120 px against 408 px in Bramble
+  and Ancient Forest. That generalises C1's `hollow_spindle_gate` result to the
+  whole region and supports [D-0056]'s own instruction that Silk Hollow's
+  difficulty comes from its 0.20 s spacing rather than from width.
+  Each new contract was falsified with its real failure, in isolation, from a
+  byte-for-byte backup rather than `git checkout --` — which is a no-op on an
+  untracked file and has already contaminated a falsification run in this
+  repository.
+- provenance: the two open items at the end of
+  [`corridor-and-constriction`](measurements/2026-08-03-corridor-and-constriction.md)
+  (*"Both were computed ad hoc for this document. They belong in the probe."*),
+  [D-0056]'s distribution terms, and R8's owner-stated backstop. Measured in
+  [`curve-driven-course`](measurements/2026-08-03-curve-driven-course.md) on the
+  pinned `4.7.1.stable.official.a13da4feb`.

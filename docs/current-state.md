@@ -15,7 +15,7 @@ live in [`player-preference research`](product/player-preference-research-2026-0
 External benchmarks and the verified zone audit live in
 [`upgrade-and-difficulty research`](product/upgrade-and-difficulty-research-2026-08-02.md).
 
-Build `0.38.0-campaign-combination-playtest` is current. Continuous drive is
+Build `0.39.0-pressure-curve-region-swap` is current. Continuous drive is
 zero; release, swing control, Reel, and pull timing earn speed; the former left
 kill line is a visible pursuing bird. `target_speed_at` remains a named
 reference. The bot still cannot tune the bird — model v4 pumps, but it sustains
@@ -52,9 +52,11 @@ without a reported regression.
   continuous Music volume plus independent Effects and Haptics toggles alongside
   control, motion, and diagnostic choices. Schema-1–3 Music-on migrates to the
   original 50% mix and Music-off migrates to 0%.
-  Schema-8 progression includes fly and star balances, per-difficulty bests,
+  Schema-9 progression includes fly and star balances, per-difficulty bests,
   Campaign clears, selected profile and cosmetics, upgrade ownership, creator
   pattern, reached checkpoints, and bounded idempotent-settlement history.
+  Schema 9 rewrites a saved `bramble_canopy` checkpoint to `ancient_forest` —
+  the region now at the 5 km the unlock was earned at.
   Older settings default Music to its original mix and Effects/Haptics on; every
   migration remains one-way and explicit.
 - A separately versioned `DebugTestProfile` auto-saves the Test Lab working set
@@ -110,16 +112,21 @@ without a reported regression.
 - `CourseStream` keeps a bounded seven-chunk window and derives every polygon,
   guide, fly, and boost from chunk index plus course seed. Curated pattern order
   varies by seed; geometry does not depend on the route taken to reach a chunk.
-  A 1000 m middle-hazard runway and independent 2000 m no-inward-rail period
+  A **500 m** middle-hazard runway and independent 2000 m no-inward-rail period
   protect onboarding before deterministic contoured routes, root passages,
-  weaves, and small silk burrs appear.
-- The authored endless-course schedule enters Ancient Forest at 0 m, Bramble
-  Canopy at 5000 m, Silk Hollow at 10000 m, Ruined Arboretum at 15000 m, Storm
+  weaves, and small silk burrs appear. The runway is the owner's own warm-up
+  figure and now coincides exactly with where `CoursePressure` leaves zero, so
+  there is one boundary rather than two.
+- The authored endless-course schedule enters **Bramble Canopy at 0 m, Ancient
+  Forest at 5000 m**, Silk Hollow at 10000 m, Ruined Arboretum at 15000 m, Storm
   Ridge at 20000 m, Web City at 25000 m, Ashen Hollow at 30000 m, and Deep Mist
   at 35000 m. The appended zones have safe entries but deliberately add no
-  campaign/checkpoint ownership. Existing 5000 m and 10000 m Region Practice
-  remains authoritatively noncompetitive: no flies, best distance, later
-  checkpoint, record, or future leaderboard eligibility.
+  campaign/checkpoint ownership. The first two slots swapped in 0.39.0;
+  the boundaries did not move, so Region Practice still starts at 5000 m and
+  10000 m — but 5000 m is Ancient Forest now, and Bramble stopped carrying a
+  checkpoint because its start distance is 0 m. Practice remains authoritatively
+  noncompetitive: no flies, best distance, later checkpoint, record, or future
+  leaderboard eligibility.
 - Bramble Canopy replaces Ancient Forest's presentation and obstacles with a
   lime-lit backdrop, thorn rails, hook vines, and leaf shutters. Eight exclusive
   patterns alternate commitments with open recovery chunks and keep authored
@@ -395,8 +402,16 @@ document disagree, the measurement document wins.
   structural findings and the rule set built on them — **approved 2026-08-03 in
   the decision ledger and scoped to the first 15 km** — are in
   [`difficulty-and-obstacle-doctrine`](game-design/difficulty-and-obstacle-doctrine.md).
-  `CoursePressure` now computes the amount curve and **nothing reads it yet**, so
-  the generated course is still exactly the measured one:
+  **Both headline defects are now measured gone**: the 2 km cliff has no
+  distance threshold left to step at, and the region means rise 2.28 → 2.88 →
+  3.15 in play order where they ran 2.81 → 2.00 → 3.15. Recovery share is inside
+  O2's (2%, 50%) in every region, at 28.3% / 23.1% / 21.2%.
+  **Two things got worse and are recorded**: Ancient Forest's tightest sequential
+  pair reads 0.261 s against 0.288 s, because 5–10 km is a faster band of the
+  pace curve than 2–5 km, and the swap puts the game's thinnest pool in the front
+  slot. Both are device questions.
+  [`curve-driven course`](measurements/2026-08-03-curve-driven-course.md); the
+  before-picture is
   [`pressure-curve profile`](measurements/2026-08-03-pressure-curve-profile.md).
   The overnight lab measurements that claimed a 6 km peak stay retracted; they
   measured the bot failing at pace:
@@ -502,6 +517,17 @@ so the Dive stays always available, which is its whole purpose.
   contract that is *supposed* to fail when a later phase moves selection onto the
   curve. **No gameplay value changed and the build was not bumped.**
   [`pressure-curve profile`](measurements/2026-08-03-pressure-curve-profile.md).
+- **2026-08-03 — Selection moves onto the curve, and the first two regions swap
+  (0.39.0).** [D-0058] and the doctrine's Phase 3/4. `CourseAxisEnvelope` (`game/domain/`) maps
+  pressure to the recovery cadence, obstacle size, admissible authored rungs, and
+  multi-obstacle admission; three distance laws were deleted and the `difficulty`
+  label finally has a consumer, which is R10 satisfied rather than deferred. The
+  digest contract failed and was re-pinned in the same commit — the visible
+  record that behaviour moved. Bramble Canopy opens the game, Ancient Forest
+  follows, Silk Hollow is unchanged, and the two `hollow_lattice_*` patterns that
+  broke the width envelope are widened. Constriction length and consecutive
+  near-minimum chunks enter the probe, the audit and the suite.
+  [`curve-driven course`](measurements/2026-08-03-curve-driven-course.md).
 - **2026-08-02 — Difficulty and obstacle doctrine (PRs #124–#129).** The measured
   baseline and rule set behind that decision, plus the external evidence in
   [`difficulty-research`](game-design/difficulty-research-2026-08-02.md), which

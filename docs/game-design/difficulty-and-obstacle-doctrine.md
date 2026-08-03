@@ -157,7 +157,20 @@ decision density and timing". Both in
 § 1.1 and § 2.6. Neither finding depends on that agreement — they are `measured`
 and it is not.*
 
-### F1 · The `difficulty` label is dead metadata
+### F1 · The `difficulty` label is dead metadata — ⚠ RESOLVED 2026-08-03
+
+> **It has a consumer now.** [D-0057] makes the label the admission key for
+> R13's bounded spread: `CourseAxisEnvelope.admission_floor(pressure)` decides
+> which authored rungs a chunk may draw, so a label that drifts changes what the
+> generator builds and the course digest moves. R10 asked for exactly this —
+> *"`difficulty` becomes derived from measured geometry, or it is deleted"* — and
+> the middle path it did not name turned out to be available: the label stays
+> authored, but it is now load-bearing and therefore falsifiable.
+>
+> The first thing that fell out was a correction it had been hiding. Bramble's
+> four singles were labelled 4, identical to its four pairs, which is F5's
+> "binary" finding stated as data; they are 3 now, because §6.1's third lever
+> already said the pair is the commitment and the single is not.
 
 `difficulty` appears in `course_pattern_catalog.gd` and **nowhere else in the
 codebase**. Nothing reads it. §2.1 measures what the authors *intended*, which
@@ -194,6 +207,12 @@ Forest gets **none** — while its catalogue entry declares its quirk to be
 > This is a documented-versus-actual contradiction sitting exactly where the
 > owner reports most of his deaths, and it is the cheapest lead in this
 > document.
+>
+> **⚠ FIXED 2026-08-03 by [D-0057].** The per-region cadence constants are gone;
+> one pressure-driven interval governs every region, Ancient Forest included.
+> Measured recovery share is now **23.1%** against the 2% above — close to the
+> 20% its own catalogue entry has always claimed, and to the value O2 calls the
+> natural first try.
 
 ### F4 · Difficulty has two axes today and they are uncoordinated
 
@@ -772,11 +791,26 @@ polygons across the scoped range. Proves the numbers before they are
 load-bearing. Profile and the before-picture:
 [`../measurements/2026-08-03-pressure-curve-profile.md`](../measurements/2026-08-03-pressure-curve-profile.md).
 
-**Phase 3 — switch selection onto the curve, one region at a time**, with the
-slope exposed in the Test Lab.
+**Phase 3 — switch selection onto the curve. ✅ LANDED 2026-08-03**, as
+[D-0057], and **not** one region at a time in the end: the axis terms are
+region-independent by construction, so staging them per region would have meant
+three partial implementations of one rule. `CourseAxisEnvelope`
+(`game/domain/`) maps pressure to the recovery cadence, obstacle size, the
+admissible authored rungs, and multi-obstacle admission. Three distance laws
+were deleted with it, and the `difficulty` label finally has a consumer (R10).
+**The digest contract failed and was re-pinned, which is the visible record that
+behaviour moved.**
 
-**Phase 4 — the swap and the retune**, once the curve can express the result.
-Bramble opens the game, and the owner chose its opening ramp on 2026-08-03:
+The slope is **not** exposed in the Test Lab, and that reverses this line
+deliberately: pattern selection has to stay a pure function of
+`(chunk, distance, seed)` or no input trace reproduces. `ONSET_SHAPE` therefore
+stays a source constant and the **obstacle size floor** is the dial instead —
+it is a geometry scale, which the lab already tunes, and §8's own "one open
+risk" says it is the number that can look wrong rather than play wrong.
+
+**Phase 4 — the swap and the retune. ✅ LANDED 2026-08-03**, in the same change
+as Phase 3, because S4 already derived that they cannot land apart. Bramble
+opens the game, and the owner chose its opening ramp on 2026-08-03:
 
 | stretch | what carries it |
 | --- | --- |
@@ -796,6 +830,22 @@ independently landed on ~1440 m for Bramble's vocabulary to be fully shown.
 obstacle-scale range across all difficulty modes is 0.76–1.06; a meaningful
 opening ramp wants to go well below that, and how small an obstacle can be drawn
 before it looks wrong is a device call, not a measurable one.
+
+> **Shipped as 0.60 — a multiplier on the mode's own scale, not an absolute.**
+> At Standard that is 0.54 effective: a 300 px Bramble hook drawn at 162 px, 28%
+> of the corridor, against 270 px and 47% at full size. A multiplier keeps each
+> mode's own size intent instead of overriding it. It is `assumed`, it is the
+> Test Lab dial `opening_obstacle_scale_floor`, and it is the single thing in
+> this phase most likely to come back changed from a device session.
+>
+> **Two things got worse and are recorded rather than argued away.** Ancient
+> Forest's tightest sequential pair reads **0.288 s → 0.261 s** on unchanged
+> geometry, because spacing is measured at the speed cap and 5–10 km is a faster
+> band than 2–5 km; the owner clears 0.29–0.31 s on this content today and now
+> meets it a full 3 km later. And the swap puts the **thinnest pool in the game**
+> — Bramble's eight patterns, F6 — in the front slot, though F7's memorisable
+> four-beat loop goes with it. Numbers:
+> [`../measurements/2026-08-03-curve-driven-course.md`](../measurements/2026-08-03-curve-driven-course.md).
 
 **Phase 5 — per-region endless (§9)**, deepest pool first, as a non-records
 mode. Deliberately last: it is nearly free once Phase 2 lands and impossible
