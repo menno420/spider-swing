@@ -27,6 +27,25 @@ const CHUNK_WIDTH := 960.0
 const PIXELS_PER_METRE := 10.0
 const RECOVERY_PATTERN_ID := &"open_recovery"
 
+## One spider width. Constriction *length* is reported in these because that is
+## the unit D-0056 states the two width classes in — a threading gate may go
+## below the swing floor "as its constriction shortens toward roughly one spider
+## width".
+const SPIDER_WIDTH_PX := 36.0
+
+## A sample counts as "at the constriction" when it is within this fraction of
+## the chunk's own minimum. Taken from the ad-hoc method behind the 2026-08-03
+## corridor measurement so the numbers here are comparable to the ones that
+## produced the envelope, rather than a second definition of the same word.
+const NEAR_MINIMUM_TOLERANCE := 0.10
+
+## `lane` is the width classifier and **not** the timing one — the split D-0056
+## makes and N3 warns about in the other direction. `swing` means the route
+## requires a direction change around the obstacle, so the corridor is the whole
+## budget; `centre` patterns are threaded straight through and pay in width ×
+## length instead.
+const SWING_LANES := [&"high", &"low", &"weave"]
+
 ## Vertical line used to say which side of the corridor an obstacle grew from.
 ## Obstacles whose span crosses it are `centre` and never form an opposite pair.
 const CORRIDOR_MIDLINE_Y := (CourseStream.CEILING_Y + CourseStream.FLOOR_Y) * 0.5
@@ -38,11 +57,43 @@ const CORRIDOR_TOTAL_HEIGHT := CourseStream.FLOOR_Y - CourseStream.CEILING_Y
 
 ## Builds a stream positioned so `chunk_index` is never an edge chunk of the
 ## generated window. Edge chunks can be missing neighbour context.
+##
+## **Content fields come from the balanced preset, never from literals here.**
+## They used to be hard-coded, which meant the instrument measured a course the
+## game does not build the moment any of those defaults moved — a silent
+## divergence between the audit and the thing being audited, and exactly the
+## class of error the two contracts at the top of `course_audit_tests.gd` exist
+## to catch.
 static func stream_at(course_seed: int, chunk_index: int) -> CourseStream:
+	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 	var stream := CourseStream.new()
-	stream.reset(10000.0, 0.94, 0.90, 1.12, [], true, 1.0, 1.0, 20000.0, course_seed)
+	stream.reset(
+		config.middle_hazard_start_distance,
+		config.edge_obstacle_scale,
+		config.floating_obstacle_scale,
+		config.gate_opening_scale,
+		[],
+		config.corridor_contours_enabled,
+		config.corridor_clearance_scale,
+		config.corridor_tight_gap_scale,
+		config.tight_corridor_start_distance,
+		course_seed,
+		SimulationWorld.START_POSITION.x,
+		config.opening_obstacle_scale_floor,
+	)
 	stream.update_for_position(float(chunk_index) * CHUNK_WIDTH + CHUNK_WIDTH * 0.5)
 	return stream
+
+
+## The distance the generator itself passes to the pattern catalog for a chunk.
+##
+## `CourseStream` measures a chunk's distance from `START_X`, so a probe that
+## used `chunk × CHUNK_WIDTH` was reading the catalog 220 px ahead of the stream
+## it was measuring beside. That was harmless while selection was keyed to coarse
+## distance bands; it stops being harmless the moment selection reads a
+## continuous curve, because the two can then disagree about a chunk.
+static func pattern_distance_for(chunk_index: int) -> float:
+	return maxf(0.0, float(chunk_index) * CHUNK_WIDTH - CourseStream.START_X)
 
 
 ## One chunk's full axis vector.
@@ -54,6 +105,7 @@ static func audit_chunk(
 	stream: CourseStream = null,
 ) -> Dictionary:
 	var distance_px := float(chunk_index) * CHUNK_WIDTH
+	var pattern_distance := pattern_distance_for(chunk_index)
 	var live := stream
 	if live == null:
 		live = stream_at(course_seed, chunk_index)
@@ -62,7 +114,7 @@ static func audit_chunk(
 	var geometry := live.geometry()
 
 	var pattern := CoursePatternCatalog.pattern_for_chunk(
-		chunk_index, distance_px, course_seed
+		chunk_index, pattern_distance, course_seed
 	)
 	var pattern_id: StringName = pattern.get("id", &"")
 	var width := corridor_width_across(
@@ -71,23 +123,45 @@ static func audit_chunk(
 	var commitments := commitments_in(geometry, distance_px)
 	var speed_cap := config.spider_speed_cap_at(distance_px)
 	var pairs := classify_pairs(commitments, speed_cap)
+	var lane := StringName(pattern.get("lane", &""))
 
 	return {
 		"chunk": chunk_index,
 		"metres": distance_px / PIXELS_PER_METRE,
-		"region": str(CourseRegionCatalog.region_for_distance(distance_px).get(
-			"id", &"")),
+		"region": str(CourseRegionCatalog.region_for_distance(
+			pattern_distance + CHUNK_WIDTH * 0.5).get("id", &"")),
 		"pattern": str(pattern_id),
-		"lane": str(pattern.get("lane", &"")),
+		"lane": str(lane),
+		"width_class": "swing" if lane in SWING_LANES else "thread",
 		"label_difficulty": int(pattern.get("difficulty", 0)),
 		"is_recovery": pattern_id == RECOVERY_PATTERN_ID,
-		# Reported beside the axes it will eventually schedule, and read by
-		# nothing in the generator. This column is how the curve gets judged
-		# against what the game currently builds, before it moves anything.
-		"pressure": CoursePressure.at(distance_px),
+		# A warm-up chunk draws no pattern at all — pressure is zero there, so
+		# there is nothing for the curve to select. It is neither a challenge nor
+		# a scheduled recovery pocket, and counting it as either misreports the
+		# density axis: the previous audit read km 0 as "100% challenge" on the
+		# strength of chunks that carry no authored pattern.
+		"is_warm_up": pattern_id == &"",
+		# The curve, and the four axis terms it now drives. These are read by the
+		# generator, so a change to any of them moves the course — which is what
+		# `UNCHANGED_COURSE_DIGEST` is there to make visible.
+		"pressure": CoursePressure.at(pattern_distance),
+		"recovery_share": CourseAxisEnvelope.recovery_share(
+			CoursePressure.at(pattern_distance)),
+		"admission_floor": CourseAxisEnvelope.admission_floor(
+			CoursePressure.at(pattern_distance)),
+		"obstacle_scale": CourseAxisEnvelope.opening_scale(
+			CoursePressure.at(pattern_distance),
+			config.opening_obstacle_scale_floor,
+		) * CourseAxisEnvelope.growth_scale(
+			CoursePressure.at(pattern_distance)),
 		"min_corridor_px": width["min_px"],
 		"min_corridor_radii": width["min_radii"],
 		"mean_corridor_px": width["mean_px"],
+		# The first of the two width × duration terms nothing was watching. An
+		# obstacle could be reshaped into a 400 px tube at an unchanged minimum
+		# and every previous contract would have stayed green.
+		"constriction_px": width["constriction_px"],
+		"constriction_spider_widths": width["constriction_px"] / SPIDER_WIDTH_PX,
 		"commitment_count": commitments.size(),
 		# Seconds are AT THE SPEED CAP for this distance, which is what R13
 		# specifies and is the worst case. The px figures are speed-independent
@@ -132,7 +206,7 @@ static func course_digest(
 			var distance_px := float(chunk_index) * CHUNK_WIDTH
 			stream.update_for_position(distance_px + CHUNK_WIDTH * 0.5)
 			var pattern := CoursePatternCatalog.pattern_for_chunk(
-				chunk_index, distance_px, int(course_seed)
+				chunk_index, pattern_distance_for(chunk_index), int(course_seed)
 			)
 			hashing.update(("seed %d chunk %d %s %s %d\n" % [
 				int(course_seed),
@@ -175,21 +249,38 @@ static func _polygon_digest_text(
 	return text
 
 
-## Largest INTERIOR free vertical span, sampled across one chunk.
+## Largest INTERIOR free vertical span, sampled across one chunk — plus how far
+## that chunk holds its own minimum.
+##
+## **Constriction length is the term nothing was watching.** A narrow gap costs
+## width × length: a pinch crossed in 8 ms demands far less positional accuracy
+## than a tube of the same width that must be threaded, which is the whole
+## mechanism behind D-0056's two width classes. Measured as the longest run of
+## consecutive samples within `NEAR_MINIMUM_TOLERANCE` of this chunk's minimum,
+## reported in pixels so it is independent of the sample count.
+##
+## Resolution caveat, and it points the wrong way for a fairness floor: at the
+## audit's default 24 px step this **overestimates** the minimum slightly (the
+## 2 px reference run reads `hollow_lattice_*` at 240.8 px against 244.5). The
+## length term inherits the same coarseness — it is quantised to the step, so a
+## constriction shorter than one sample reads as one sample wide.
 static func corridor_width_across(
 	geometry: CourseGeometry,
 	chunk_x: float,
 	samples: int,
 	player_radius: float,
 ) -> Dictionary:
-	var step := CHUNK_WIDTH / float(maxi(samples, 1))
+	var count := maxi(samples, 1)
+	var step := CHUNK_WIDTH / float(count)
+	var gaps := PackedFloat32Array()
 	var min_px := INF
 	var total := 0.0
 	var counted := 0
 
-	for index in maxi(samples, 1):
+	for index in count:
 		var x := chunk_x + step * (float(index) + 0.5)
 		var gap := largest_interior_gap(geometry, x)
+		gaps.append(gap)
 		if gap < 0.0:
 			continue
 		min_px = minf(min_px, gap)
@@ -197,14 +288,80 @@ static func corridor_width_across(
 		counted += 1
 
 	if counted == 0:
-		return {"min_px": -1.0, "min_radii": -1.0, "mean_px": -1.0}
+		return {
+			"min_px": -1.0, "min_radii": -1.0, "mean_px": -1.0,
+			"constriction_px": -1.0,
+		}
+
+	var threshold := min_px * (1.0 + NEAR_MINIMUM_TOLERANCE)
+	var longest_run := 0
+	var run := 0
+	for gap: float in gaps:
+		if gap >= 0.0 and gap <= threshold:
+			run += 1
+			longest_run = maxi(longest_run, run)
+		else:
+			run = 0
 
 	var diameter := maxf(player_radius, 0.001) * 2.0
 	return {
 		"min_px": min_px,
 		"min_radii": min_px / diameter,
 		"mean_px": total / float(counted),
+		"constriction_px": float(longest_run) * step,
 	}
+
+
+## The second width × duration term: how long a region holds near its own
+## tightest corridor.
+##
+## D-0056 is written as a **distribution** precisely because a floor cannot see
+## this. Ancient Forest and Silk Hollow differ by 8% at their minima and by 3×
+## in how often they sit there and 2× in how long they sustain it — the
+## frequency and duration diverge far more than the width does, and that is the
+## difference between content the owner enjoys and content he calls a wall.
+##
+## Pure over a list of records so it can be contracted with literal inputs
+## instead of a generator run, which is the only way to prove it computes what it
+## claims rather than merely producing a plausible number.
+static func region_width_distribution(records: Array) -> Dictionary:
+	var by_region := {}
+	for record: Dictionary in records:
+		var radii := float(record.get("min_corridor_radii", -1.0))
+		if radii < 0.0:
+			continue
+		var region := str(record.get("region", ""))
+		if not by_region.has(region):
+			by_region[region] = []
+		(by_region[region] as Array).append(radii)
+
+	var result := {}
+	for region: String in by_region:
+		var widths: Array = by_region[region]
+		var sorted := widths.duplicate()
+		sorted.sort()
+		var minimum := float(sorted[0])
+		var threshold := minimum * (1.0 + NEAR_MINIMUM_TOLERANCE)
+		var near := 0
+		var longest_run := 0
+		var run := 0
+		# Deliberately walks `widths` in course order, not `sorted` — the run
+		# length is a fact about consecutive chunks and sorting destroys it.
+		for value: float in widths:
+			if value <= threshold:
+				near += 1
+				run += 1
+				longest_run = maxi(longest_run, run)
+			else:
+				run = 0
+		result[region] = {
+			"chunks": widths.size(),
+			"min_radii": minimum,
+			"median_radii": float(sorted[sorted.size() / 2]),
+			"share_near_min": float(near) / float(widths.size()),
+			"longest_run_near_min": longest_run,
+		}
+	return result
 
 
 ## Merges every blocked y-span at `x` and returns the largest gap BETWEEN them.

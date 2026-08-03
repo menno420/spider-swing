@@ -58,7 +58,8 @@ const CONTENT_FIELDS := [
 	"corridor_contours_enabled", "corridor_clearance_scale",
 	"corridor_tight_gap_scale", "tight_corridor_start_distance",
 	"middle_hazard_start_distance", "edge_obstacle_scale",
-	"floating_obstacle_scale", "gate_opening_scale", "guided_start_enabled",
+	"floating_obstacle_scale", "opening_obstacle_scale_floor",
+	"gate_opening_scale", "guided_start_enabled",
 	"rescue_life_enabled", "rescue_shield_duration",
 ]
 
@@ -126,6 +127,12 @@ const MODES := [
 			"floating_obstacle_scale": 1.02,
 			"corridor_clearance_scale": 0.88,
 			"corridor_tight_gap_scale": 0.85,
+			# No longer a difference: Standard's own warm-up moved to 500 m when
+			# the pressure curve took over selection, because the owner's
+			# "the first 500m should remain as it is" is a statement about
+			# Standard. Kept rather than deleted — it still records Harsh's
+			# intent, and D-0055 gives Harsh its real separation on the
+			# predictability, density and spacing axes in the mode-profile phase.
 			"middle_hazard_start_distance": 5000.0,
 			"tight_corridor_start_distance": 10000.0,
 		},

@@ -5,7 +5,30 @@ class_name CoursePatternCatalog
 ## Selection varies only the order of prevalidated patterns. CourseStream
 ## remains the geometry owner and every selected pattern still resolves through
 ## the shared route plan; no individual lethal object is placed randomly.
+##
+## **[D-0054] R1 lives here.** How *hard* a chunk is comes from
+## `CoursePressure.at(distance)` by way of `CourseAxisEnvelope`, and from nothing
+## else. Distance still decides which *region* you are in — that is R4's "regions
+## choose character, never amount" — and the region still owns its vocabulary,
+## its cadence quirks and its authored overrides. What it no longer owns is the
+## amount.
+##
+## Three distance laws were removed to get there, all of them measured as F2's
+## "the game's entire distance-driven progression belongs to Ancient Forest":
+##
+##   * the control → mastery → deep-forest pool ladder at 1 km / 2 km / 3.5 km,
+##     now one pool filtered by `CourseAxisEnvelope.admission_floor`;
+##   * `MASTERY_START_DISTANCE` gating the tight-rail corridor, now
+##     `tight_lane_admitted`;
+##   * `CONTROL_START_DISTANCE` gating whether any pattern exists at all, now
+##     "pressure is zero", which is the warm-up and nothing else.
+##
+## The pools below are unchanged authored content. Only who reads them moved.
 
+## Retained as the authored provenance of the three Ancient Forest rungs — the
+## distances at which the pool ladder used to step. **Nothing reads them for
+## selection any more**; `ANCIENT_FOREST_PATTERNS` is the ladder now and
+## `CourseAxisEnvelope` decides which rungs are legal.
 const CONTROL_START_DISTANCE := 10000.0
 const MASTERY_START_DISTANCE := 20000.0
 const DEEP_FOREST_START_DISTANCE := 35000.0
@@ -70,11 +93,20 @@ const DEEP_FOREST_PATTERNS := [
 ## None of these ids are inherited from Ancient Forest: the device-reviewed
 ## material swap was not enough while the underlying obstacle roles remained
 ## stumps, pods, curtains, and ordinary alternating rail growth.
+##
+## **These carry `difficulty` 3 against the pairs' 4, which is a correction, not
+## a nerf.** F5 measured Bramble as binary — 50% empty chunks and 50% identical
+## difficulty-4 chunks — and named the missing rung as the reason it cannot ramp.
+## §6.1's third lever says where the rung is: *"the pool is already split 4
+## singles / 4 pairs, and the pairs are the commitment"*. Now that the label has
+## a consumer (R10, via `CourseAxisEnvelope.admission_floor`) that distinction is
+## load-bearing rather than decorative, so it has to be honest about the two
+## rungs it actually contains.
 const BRAMBLE_CANOPY_SINGLE_PATTERNS := [
-	{"id": &"canopy_hook_high", "lane": &"high", "difficulty": 4},
-	{"id": &"canopy_hook_low", "lane": &"low", "difficulty": 4},
-	{"id": &"canopy_leaf_high", "lane": &"high", "difficulty": 4},
-	{"id": &"canopy_leaf_low", "lane": &"low", "difficulty": 4},
+	{"id": &"canopy_hook_high", "lane": &"high", "difficulty": 3},
+	{"id": &"canopy_hook_low", "lane": &"low", "difficulty": 3},
+	{"id": &"canopy_leaf_high", "lane": &"high", "difficulty": 3},
+	{"id": &"canopy_leaf_low", "lane": &"low", "difficulty": 3},
 ]
 
 const BRAMBLE_CANOPY_PAIR_PATTERNS := [
@@ -86,6 +118,38 @@ const BRAMBLE_CANOPY_PAIR_PATTERNS := [
 
 const BRAMBLE_CANOPY_PATTERNS := \
 	BRAMBLE_CANOPY_SINGLE_PATTERNS + BRAMBLE_CANOPY_PAIR_PATTERNS
+
+## Ancient Forest's three authored rungs as the one ladder the curve draws from.
+##
+## Built once rather than declared, so the rungs keep exactly one source. Order
+## is control → mastery → deep so the array reads as the ramp it encodes, and
+## duplicate `(id, difficulty)` pairs are dropped — `fallen_stump@2` and
+## `ceiling_stump@2` appear in both the control and mastery arrays, and two
+## identical rungs would bias selection toward those ids for no authored reason.
+##
+## This is F5's "Ancient Forest is the only early region that can ramp **because
+## it is the only early region whose pools contain more than one difficulty**",
+## turned from an accident of three distance-keyed arrays into a property the
+## selector can read at any pressure.
+static var _ancient_forest_ladder: Array = []
+
+
+static func ancient_forest_patterns() -> Array:
+	if _ancient_forest_ladder.is_empty():
+		var ladder: Array = []
+		var seen := {}
+		for pool: Array in [
+			CONTROL_PATTERNS, MASTERY_PATTERNS, DEEP_FOREST_PATTERNS,
+		]:
+			for pattern: Dictionary in pool:
+				var key := "%s@%d" % [
+					str(pattern["id"]), int(pattern["difficulty"])]
+				if seen.has(key):
+					continue
+				seen[key] = true
+				ladder.append(pattern)
+		_ancient_forest_ladder = ladder
+	return _ancient_forest_ladder
 
 ## Region three emphasizes exact lines around suspended hazards and rail-grown
 ## openings. A fixed recovery pocket follows every short precision set.
@@ -188,13 +252,15 @@ static func pattern_for_chunk(
 	distance_at_chunk: float,
 	course_seed: int = 0,
 ) -> Dictionary:
-	if _patterns_for_distance(distance_at_chunk).is_empty():
+	if _region_pool_for(distance_at_chunk).is_empty():
 		return {}
 
 	# Resolve from the latest authored recovery pocket. This keeps selection
 	# stateless across CourseStream rebuilds while comparing against the actual
 	# final previous choices, including authored weave/tight-gap overrides.
-	# Ancient Forest has no recovery cadence, but contains fewer than 53 chunks.
+	# Every region now carries a recovery cadence (R7), so the walk back is
+	# bounded by `CourseAxisEnvelope.max_consecutive_challenge` rather than by a
+	# region's chunk count.
 	var history_start := chunk_index
 	while history_start > 0:
 		var history_distance := maxf(
@@ -233,7 +299,7 @@ static func pattern_for_chunk(
 		var selected_id := StringName(selected["id"])
 		if selected_id != StringName(RECOVERY_PATTERN["id"]) and \
 				selected_id != &"tight_rail" and recent.has(selected_id):
-			var pool := _patterns_for_distance(current_distance)
+			var pool := _drawable_pool_for(current_chunk, current_distance)
 			var start_index := _index_for_id(pool, selected_id)
 			for offset in range(1, pool.size()):
 				var candidate: Dictionary = pool[
@@ -254,8 +320,7 @@ static func _base_pattern_for_chunk(
 	distance_at_chunk: float,
 	course_seed: int,
 ) -> Dictionary:
-	var pool := _patterns_for_distance(distance_at_chunk)
-	if pool.is_empty():
+	if _region_pool_for(distance_at_chunk).is_empty():
 		return {}
 	var region := CourseRegionCatalog.region_for_distance(
 		distance_at_chunk + CHUNK_WIDTH * 0.5)
@@ -270,29 +335,49 @@ static func _base_pattern_for_chunk(
 	if bool(region.get("checkpoint", false) or region.get("safe_entry", false)) \
 			and local_chunk == 0:
 		return RECOVERY_PATTERN.duplicate(true)
-	if region_id == CourseRegionCatalog.BRAMBLE_CANOPY:
-		# Bramble's axis is vertical displacement, not density. A whole open
-		# chunk before and after every commitment lets the player prepare and
-		# settle at full pace; pair slots still demand the authored high↔low
-		# change instead of stacking unrelated hazards around it.
-		if posmod(local_chunk, 2) == 0:
-			return RECOVERY_PATTERN.duplicate(true)
-		var bramble_pool := BRAMBLE_CANOPY_SINGLE_PATTERNS \
-			if posmod(local_chunk, 4) == 1 \
-			else BRAMBLE_CANOPY_PAIR_PATTERNS
-		return _seeded_pattern(
-			bramble_pool,
-			floori(float(local_chunk) / 2.0),
-			course_seed,
-			CourseRegionCatalog.region_index_for_id(region_id),
-		)
-	var recovery_interval := 5
-	if region_id != CourseRegionCatalog.ANCIENT_FOREST and \
-			posmod(local_chunk, recovery_interval) == recovery_interval - 1:
+	# The paired rotor/pane lesson, and the static recovery that must follow it.
+	# Both are authored overrides and both outrank the cadence: the combination
+	# used to sit one slot before the region's own every-fifth-chunk rhythm, and
+	# a curve-driven cadence has no reason to land there. Stating the intent
+	# beats leaving it to coincide — under the new cadence the combination slot
+	# would otherwise be swallowed by a recovery chunk and never appear.
+	if _is_arboretum_combination(chunk_index, distance_at_chunk):
+		return RUINED_ARBORETUM_PATTERNS[7].duplicate(true)
+	if _is_arboretum_combination(chunk_index - 1, distance_at_chunk - CHUNK_WIDTH):
 		return RECOVERY_PATTERN.duplicate(true)
+	var pressure := CoursePressure.at(distance_at_chunk)
+	# R7, and it now applies to every region including Ancient Forest — which
+	# F3 measured as the one region with no recovery cadence at all, while its
+	# own catalogue entry declares a "wide recovery rhythm". One curve, one rule,
+	# and the per-region constants that produced 2% / 50% / 21% are gone.
+	if CourseAxisEnvelope.is_recovery_chunk(
+		chunk_index,
+		pressure,
+		CoursePressure.at(distance_at_chunk - CHUNK_WIDTH),
+	):
+		# A region entry is itself an opening (R12's gate). Firing the cadence
+		# one chunk earlier would put two open chunks side by side, which is a
+		# gap rather than a pocket — and the shipped no-adjacent-repeat contract
+		# reads it, correctly, as `open_recovery` repeating.
+		if _is_region_entry(distance_at_chunk + CHUNK_WIDTH):
+			return _seeded_pattern(
+				_drawable_pool_for(chunk_index, distance_at_chunk),
+				local_chunk,
+				course_seed,
+				CourseRegionCatalog.region_index_for_id(region_id),
+			)
+		return RECOVERY_PATTERN.duplicate(true)
+	# The authored tight-rail corridor. **Slot 5 of 8, not 7 of 8, and the
+	# difference is load-bearing:** `chunk % 8 == 7` implies `chunk % 4 == 3`,
+	# which is exactly where the cadence puts its opening at the interval Ancient
+	# Forest runs. Every tight rail therefore landed on a scheduled recovery
+	# chunk — either the corridor vanished from the first 15 km, or it ate the
+	# region's only opening for ten chunks. `chunk % 8 == 5` is coprime with both
+	# intervals Ancient Forest ever uses, so the cadence keeps priority and the
+	# corridor still appears.
 	if region_id == CourseRegionCatalog.ANCIENT_FOREST and \
-			distance_at_chunk >= MASTERY_START_DISTANCE and \
-			posmod(chunk_index, 8) == 7:
+			CourseAxisEnvelope.tight_lane_admitted(pressure) and \
+			posmod(chunk_index, 8) == 5:
 		return {
 			"id": &"tight_rail",
 			"lane": &"tight",
@@ -301,11 +386,9 @@ static func _base_pattern_for_chunk(
 	if region_id == CourseRegionCatalog.SILK_HOLLOW and \
 			posmod(local_chunk, 7) == 4:
 		return SILK_HOLLOW_PATTERNS[2].duplicate(true)
-	if region_id == CourseRegionCatalog.RUINED_ARBORETUM and \
-			distance_at_chunk >= 185000.0 and posmod(local_chunk, 10) == 3:
-		# The paired rotor/pane lesson is authored into the slot immediately
-		# before the existing recovery cadence (local chunk 4 modulo 5).
-		return RUINED_ARBORETUM_PATTERNS[7].duplicate(true)
+	var pool := _drawable_pool_for(chunk_index, distance_at_chunk)
+	if pool.is_empty():
+		return {}
 	return _seeded_pattern(
 		pool,
 		local_chunk,
@@ -326,7 +409,16 @@ static func pattern_id_for_chunk(
 	).get("id", &""))
 
 
-static func _patterns_for_distance(distance_at_chunk: float) -> Array:
+## The region's whole authored vocabulary, before the curve filters it.
+##
+## Empty means one thing only: **pressure is zero, so this is the warm-up.** The
+## old `CONTROL_START_DISTANCE` test said the same thing in distance terms and
+## said it for Ancient Forest alone; saying it in pressure terms makes it true
+## for whichever region holds the front slot, which is exactly what the owner
+## asked for when he said the warm-up *"moves with the front slot"*.
+static func _region_pool_for(distance_at_chunk: float) -> Array:
+	if CoursePressure.at(distance_at_chunk) <= 0.0:
+		return []
 	var region_id := StringName(CourseRegionCatalog.region_for_distance(
 		distance_at_chunk + CHUNK_WIDTH * 0.5,
 	)["id"])
@@ -348,13 +440,109 @@ static func _patterns_for_distance(distance_at_chunk: float) -> Array:
 		return ASHEN_HOLLOW_PATTERNS
 	if region_id == CourseRegionCatalog.DEEP_MIST:
 		return DEEP_MIST_PATTERNS
-	if distance_at_chunk < CONTROL_START_DISTANCE:
+	return ancient_forest_patterns()
+
+
+## What may actually be drawn into this chunk: the region's vocabulary, filtered
+## by the curve. **This is R1's whole surface.**
+##
+## Two filters, both from `CourseAxisEnvelope` and neither reading distance:
+##
+##   1. **R13's bounded spread** — the easiest rungs drop out as pressure rises.
+##      Ancient Forest is the only pool in the scoped range with rungs to drop,
+##      which is F5 restated; every other pool passes through untouched and is
+##      shaped by cadence and size instead.
+##   2. **Commitment isolation.** A Bramble pair is admitted only once pressure
+##      has passed `MULTI_OBSTACLE_PRESSURE` *and* the preceding chunk is open.
+##      The first half is §6.1's "singles before pairs"; the second preserves the
+##      real fix D-0040 shipped — *"a pair owns one readable high↔low commitment"*
+##      — while letting the open chunks either side of it be filled, which C3
+##      established they may be, since the geometry fix carries Bramble on its
+##      own and the 50% cadence was guarding a failure two other things prevent.
+static func _drawable_pool_for(
+	chunk_index: int,
+	distance_at_chunk: float,
+) -> Array:
+	var pool := _region_pool_for(distance_at_chunk)
+	if pool.is_empty():
 		return []
-	if distance_at_chunk < MASTERY_START_DISTANCE:
-		return CONTROL_PATTERNS
-	if distance_at_chunk < DEEP_FOREST_START_DISTANCE:
-		return MASTERY_PATTERNS
-	return DEEP_FOREST_PATTERNS
+	var pressure := CoursePressure.at(distance_at_chunk)
+	var region_id := StringName(CourseRegionCatalog.region_for_distance(
+		distance_at_chunk + CHUNK_WIDTH * 0.5,
+	)["id"])
+	if region_id == CourseRegionCatalog.BRAMBLE_CANOPY and not (
+		CourseAxisEnvelope.multi_obstacle_admitted(pressure)
+			and _chunk_is_open(chunk_index - 1, distance_at_chunk - CHUNK_WIDTH)
+	):
+		pool = BRAMBLE_CANOPY_SINGLE_PATTERNS
+	return CourseAxisEnvelope.admitted_patterns(pool, pressure)
+
+
+## Whether the chunk containing `distance_at_chunk` is a region's first, i.e. the
+## slot R12's section gate owns.
+static func _is_region_entry(distance_at_chunk: float) -> bool:
+	if distance_at_chunk < 0.0:
+		return false
+	var region := CourseRegionCatalog.region_for_distance(
+		distance_at_chunk + CHUNK_WIDTH * 0.5)
+	if not bool(region.get("checkpoint", false) or region.get("safe_entry", false)):
+		return false
+	return floori((
+		distance_at_chunk + CHUNK_WIDTH * 0.5 - float(region["start_distance"])
+	) / CHUNK_WIDTH) == 0
+
+
+## Ruined Arboretum's authored rotor-plus-pane combination slot. Outside the
+## owner-scoped range and unchanged in placement; only its guaranteed recovery
+## had to become explicit.
+static func _is_arboretum_combination(
+	chunk_index: int,
+	distance_at_chunk: float,
+) -> bool:
+	if chunk_index < 0 or distance_at_chunk < 185000.0:
+		return false
+	var region := CourseRegionCatalog.region_for_distance(
+		distance_at_chunk + CHUNK_WIDTH * 0.5)
+	if StringName(region["id"]) != CourseRegionCatalog.RUINED_ARBORETUM:
+		return false
+	var local_chunk := maxi(
+		0,
+		floori((
+			distance_at_chunk + CHUNK_WIDTH * 0.5
+				- float(region["start_distance"])
+		) / CHUNK_WIDTH),
+	)
+	return posmod(local_chunk, 10) == 3
+
+
+## Whether a chunk carries no commitment at all — warm-up, region entry, or a
+## scheduled recovery pocket. Pure in `(chunk_index, distance)`, so it can be
+## asked about a neighbour without replaying that neighbour's selection.
+static func _chunk_is_open(
+	chunk_index: int,
+	distance_at_chunk: float,
+) -> bool:
+	if chunk_index < 0:
+		return true
+	if _region_pool_for(distance_at_chunk).is_empty():
+		return true
+	var region := CourseRegionCatalog.region_for_distance(
+		distance_at_chunk + CHUNK_WIDTH * 0.5)
+	var local_chunk := maxi(
+		0,
+		floori((
+			distance_at_chunk + CHUNK_WIDTH * 0.5
+				- float(region["start_distance"])
+		) / CHUNK_WIDTH),
+	)
+	if bool(region.get("checkpoint", false) or region.get("safe_entry", false)) \
+			and local_chunk == 0:
+		return true
+	return CourseAxisEnvelope.is_recovery_chunk(
+		chunk_index,
+		CoursePressure.at(distance_at_chunk),
+		CoursePressure.at(distance_at_chunk - CHUNK_WIDTH),
+	)
 
 
 static func _seeded_pattern(

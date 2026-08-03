@@ -6,6 +6,14 @@ class_name CourseStream
 ## them as visible targetable solids, lethal boundaries, or disabled geometry
 ## without changing obstacle collision policy. Detached middle-lane hazards do
 ## not appear until the configured distance runway has elapsed.
+##
+## **Obstacle size is now a term on the pressure curve** ([D-0054] R1). The four
+## distance-keyed steps of `_obstacle_growth_scale` became
+## `CourseAxisEnvelope.growth_scale`, and the owner's opening ramp —
+## *"decrease the obstacle size of it for the first 1000m or something like
+## that"* — is `CourseAxisEnvelope.opening_scale`. The runway itself is still a
+## distance, because "the first 500 m stays as it is" is a statement about
+## distance and R6 governs it.
 
 const CHUNK_WIDTH := 960.0
 const KEEP_BEHIND := 2
@@ -65,7 +73,7 @@ const CANOPY_LEAF_CONTACT_PROFILE := [
 ]
 
 var _geometry := CourseGeometry.new()
-var _middle_hazard_start_distance: float = 10000.0
+var _middle_hazard_start_distance: float = 5000.0
 var _edge_obstacle_scale: float = 0.94
 var _floating_obstacle_scale: float = 0.90
 var _gate_opening_scale: float = 1.12
@@ -75,10 +83,11 @@ var _corridor_clearance_scale: float = 1.0
 var _corridor_tight_gap_scale: float = 1.0
 var _tight_corridor_start_distance: float = 20000.0
 var _course_seed: int = 0
+var _opening_obstacle_scale_floor: float = CourseAxisEnvelope.OPENING_SCALE_FLOOR
 
 
 func reset(
-	middle_hazard_start_distance: float = 10000.0,
+	middle_hazard_start_distance: float = 5000.0,
 	edge_obstacle_scale: float = 0.94,
 	floating_obstacle_scale: float = 0.90,
 	gate_opening_scale: float = 1.12,
@@ -89,7 +98,9 @@ func reset(
 	tight_corridor_start_distance: float = 20000.0,
 	course_seed: int = 0,
 	initial_world_x: float = SimulationWorld.START_POSITION.x,
+	opening_obstacle_scale_floor: float = CourseAxisEnvelope.OPENING_SCALE_FLOOR,
 ) -> void:
+	_opening_obstacle_scale_floor = opening_obstacle_scale_floor
 	_middle_hazard_start_distance = middle_hazard_start_distance
 	_edge_obstacle_scale = edge_obstacle_scale
 	_floating_obstacle_scale = floating_obstacle_scale
@@ -458,7 +469,14 @@ func _append_middle_challenge(
 			_course_seed,
 		)
 		return
-	var growth := _obstacle_growth_scale(distance_at_chunk)
+	# The size axis, [D-0054] R1. `opening` is the owner's Bramble opening ramp —
+	# obstacles from the floor to full size over 500 m → ~1 500 m, and exactly
+	# 1.0 for every region after the first. `growth` folds in the late term that
+	# used to be `_obstacle_growth_scale`'s four distance-keyed steps.
+	var pressure := CoursePressure.at(distance_at_chunk)
+	var opening := CourseAxisEnvelope.opening_scale(
+		pressure, _opening_obstacle_scale_floor)
+	var growth := opening * CourseAxisEnvelope.growth_scale(pressure)
 	match pattern_id:
 		&"floor_vine":
 			var x := start_x + 610.0
@@ -576,7 +594,7 @@ func _append_middle_challenge(
 				hanging,
 				CANOPY_HOOK_WIDTH,
 				CANOPY_HOOK_HEIGHT,
-				_floating_obstacle_scale,
+				_floating_obstacle_scale * opening,
 			)
 		&"canopy_leaf_high", &"canopy_leaf_low":
 			var high_route := pattern_id == &"canopy_leaf_high"
@@ -595,7 +613,7 @@ func _append_middle_challenge(
 				hanging,
 				CANOPY_LEAF_WIDTH,
 				CANOPY_LEAF_HEIGHT,
-				_floating_obstacle_scale,
+				_floating_obstacle_scale * opening,
 			)
 		&"canopy_hook_high_low", &"canopy_hook_low_high":
 			var high_to_low := pattern_id == &"canopy_hook_high_low"
@@ -606,7 +624,7 @@ func _append_middle_challenge(
 				floor_y,
 				route_lane,
 				high_to_low,
-				_floating_obstacle_scale,
+				_floating_obstacle_scale * opening,
 			)
 		&"canopy_shutter_high_low", &"canopy_shutter_low_high":
 			var high_to_low := pattern_id == &"canopy_shutter_high_low"
@@ -617,7 +635,7 @@ func _append_middle_challenge(
 				floor_y,
 				route_lane,
 				high_to_low,
-				_floating_obstacle_scale,
+				_floating_obstacle_scale * opening,
 			)
 		&"silk_burr_high", &"silk_burr_low":
 			_append_floating_seed_burr(
@@ -742,16 +760,6 @@ func _append_middle_challenge(
 			)
 		_:
 			pass
-
-
-func _obstacle_growth_scale(distance_at_chunk: float) -> float:
-	if distance_at_chunk < CoursePatternCatalog.CONTROL_START_DISTANCE:
-		return 1.0
-	if distance_at_chunk < CoursePatternCatalog.MASTERY_START_DISTANCE:
-		return 1.08
-	if distance_at_chunk < CoursePatternCatalog.DEEP_FOREST_START_DISTANCE:
-		return 1.14
-	return 1.16
 
 
 func _append_creator_challenge(

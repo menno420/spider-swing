@@ -27,8 +27,13 @@ const FIXED_DELTA := 1.0 / 60.0
 ## A run the simulation lab produced and wrote as an input trace. Committed so
 ## the replay path has something to prove itself against without anyone having
 ## to re-run a search first.
+## Re-recorded for the 0.39.0 pressure curve. The previous fixture replayed
+## inputs against a course that no longer exists: same commands, different
+## world, and it landed 1 586 m short without erroring. `INPUT_TRACE_FORMAT`
+## moved to @5 in the same change so that class of trace is now refused rather
+## than silently reinterpreted.
 const COMMITTED_TRACE := \
-	"res://assets/runtime/traces/earned-speed-bird-technical.json"
+	"res://assets/runtime/traces/pressure-curve-bramble-opening.json"
 
 ## `SwingLabSession.TRACE_PIXELS_PER_METRE`, restated so this contract does not
 ## silently follow a change to it.

@@ -11,6 +11,23 @@ const CHUNK_WIDTH := 960.0
 const COURSE_START_X := 220.0
 const MID_Y := 398.0
 
+## `hollow_lattice_high` and `hollow_lattice_low` were the **only** two patterns
+## in the first 15 km that broke the corridor-width envelope: measured at 6.69
+## player diameters against the 7.39 floor their class may never cross, held for
+## 1.94 spider widths (99 ms). They are `swing` class — the route requires a
+## direction change around them — so unlike a threading gate they get no credit
+## for a short constriction.
+##
+## Lowered from 292 px. The bars are boxes tilted 0.48 rad, so a bar's vertical
+## reach is `height·cos(0.48) + 32·sin(0.48)`; 292 → 258 removes ~30 px of reach
+## and lifts the corridor clear of the floor. `hollow_suspended_bridge` keeps its
+## own 178 px lattice, which was never near the floor.
+##
+## D-0056's own words on why the fix is here rather than in Silk Hollow's
+## spacing: *"Silk Hollow's difficulty is to come from its 0.20 s spacing, not
+## from corridor width."*
+const SWING_LATTICE_HEIGHT := 258.0
+
 const V_HOLLOW_COCOON := &"hollow_cocoon"
 const V_HOLLOW_LATTICE := &"hollow_lattice"
 const V_HOLLOW_SPINDLE := &"hollow_spindle"
@@ -228,9 +245,11 @@ static func _append_hollow(
 			_append_thread_eye(
 				result, Vector2(start_x + 665.0, MID_Y), ceiling_y, floor_y)
 		&"hollow_lattice_high":
-			_append_lattice(result, start_x + 620.0, floor_y, false, 292.0)
+			_append_lattice(
+				result, start_x + 620.0, floor_y, false, SWING_LATTICE_HEIGHT)
 		&"hollow_lattice_low":
-			_append_lattice(result, start_x + 620.0, ceiling_y, true, 292.0)
+			_append_lattice(
+				result, start_x + 620.0, ceiling_y, true, SWING_LATTICE_HEIGHT)
 		&"hollow_droplet_needles":
 			for item: Array in [[500.0, 128.0], [650.0, 205.0], [800.0, 150.0]]:
 				_append_spindle(

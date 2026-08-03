@@ -976,6 +976,7 @@ func _reset_course_stream() -> void:
 		_config.tight_corridor_start_distance,
 		_course_seed,
 		SimulationWorld.START_POSITION.x + _start_distance_pixels,
+		_config.opening_obstacle_scale_floor,
 	)
 
 

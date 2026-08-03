@@ -2,12 +2,25 @@ extends RefCounted
 class_name PlayerProgress
 ## Versioned player progression value object.
 
-const SCHEMA_VERSION := 8
+const SCHEMA_VERSION := 9
 const TWENTY_LEVEL_SCHEMA_VERSION := 4
 const FORTY_LEVEL_SCHEMA_VERSION := 8
 const REGION_CHECKPOINT_SCHEMA_VERSION := 5
 const CAMPAIGN_STAR_SCHEMA_VERSION := 6
 const DIFFICULTY_MODE_SCHEMA_VERSION := 7
+const REGION_SWAP_SCHEMA_VERSION := 9
+## Checkpoints are persisted as region **ids**, and `checkpoint_start` resolves
+## an id to that region's start distance. The 0.39.0 region swap moved Bramble
+## Canopy to 0 m and Ancient Forest to 5 km, so a saved `bramble_canopy`
+## checkpoint no longer means what it meant when it was written.
+##
+## What it meant was *"this player reached 5 km"* — that is the distance the
+## unlock was earned at, and 5 km is Ancient Forest now. Migrating the id keeps
+## the earned unlock pointing at the same distance instead of silently
+## downgrading it to 0 m, which is what dropping it would do.
+const SWAPPED_CHECKPOINT_IDS := {
+	"bramble_canopy": &"ancient_forest",
+}
 const STYLE_GARDEN := &"garden"
 const STYLE_AMBER := &"amber"
 const STYLE_COMET := &"comet"
@@ -148,6 +161,13 @@ static func from_dictionary(data: Dictionary) -> PlayerProgress:
 	progress.unlocked_region_checkpoints.clear()
 	for raw_region: Variant in data.get("unlocked_region_checkpoints", []):
 		var region_id := StringName(str(raw_region))
+		# Schema 9: the first two regions swapped slots, so a checkpoint saved
+		# under the old id is rewritten to whichever region now occupies the
+		# distance it was earned at. Applied before the validity test, or the
+		# retired id would simply be dropped and the unlock lost.
+		if source_schema < REGION_SWAP_SCHEMA_VERSION and \
+				SWAPPED_CHECKPOINT_IDS.has(str(region_id)):
+			region_id = StringName(SWAPPED_CHECKPOINT_IDS[str(region_id)])
 		if CourseRegionCatalog.is_checkpoint(region_id) and \
 				region_id not in progress.unlocked_region_checkpoints:
 			progress.unlocked_region_checkpoints.append(region_id)

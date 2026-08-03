@@ -29,9 +29,13 @@ static func run() -> Dictionary:
 static func _test_region_entries_append_without_new_checkpoints(
 	failures: PackedStringArray,
 ) -> int:
+	# Slots 1 and 2 swapped in 0.39.0 — Bramble Canopy opens the game and Ancient
+	# Forest follows. The **boundaries** did not move and the append-only
+	# sequence past 15 km did not move; only which id occupies the first two
+	# slots, and with it which of them carries a checkpoint.
 	var expected := [
-		[CourseRegionCatalog.ANCIENT_FOREST, 0.0],
-		[CourseRegionCatalog.BRAMBLE_CANOPY, 50000.0],
+		[CourseRegionCatalog.BRAMBLE_CANOPY, 0.0],
+		[CourseRegionCatalog.ANCIENT_FOREST, 50000.0],
 		[CourseRegionCatalog.SILK_HOLLOW, 100000.0],
 		[CourseRegionCatalog.RUINED_ARBORETUM, 150000.0],
 		[CourseRegionCatalog.STORM_RIDGE, 200000.0],
@@ -57,8 +61,10 @@ static func _test_region_entries_append_without_new_checkpoints(
 	var practice_ids: Array[StringName] = []
 	for region: Dictionary in CourseRegionCatalog.practice_regions():
 		practice_ids.append(StringName(region["id"]))
+	# Bramble's start distance is now 0 m, which is not a checkpoint anyone can
+	# be sent back to. Ancient Forest inherits the 5 km one.
 	if practice_ids != [
-		CourseRegionCatalog.BRAMBLE_CANOPY,
+		CourseRegionCatalog.ANCIENT_FOREST,
 		CourseRegionCatalog.SILK_HOLLOW,
 	]:
 		failures.append("zone append changed the campaign/checkpoint surface")
@@ -810,7 +816,9 @@ static func _stream_at(metres: float, seed: int) -> CourseGeometry:
 		metres * CourseRegionCatalog.PIXELS_PER_METRE
 	var stream := CourseStream.new()
 	stream.reset(
-		10000.0, 0.94, 0.90, 1.12, [], true, 1.0, 1.0,
+		SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+				.middle_hazard_start_distance,
+			0.94, 0.90, 1.12, [], true, 1.0, 1.0,
 		20000.0, seed, world_x)
 	return stream.geometry()
 

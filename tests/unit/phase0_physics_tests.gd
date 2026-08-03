@@ -1940,7 +1940,13 @@ static func _test_contoured_rails_are_continuous_and_varied(
 ) -> int:
 	var stream := CourseStream.new()
 	stream.reset()
-	var geometry := stream.update_for_position(23000.0)
+	# 61 000 px ≈ 6.1 km. The tight-rail corridor is no longer keyed to raw
+	# distance (it was `>= MASTERY_START_DISTANCE`, i.e. 2 km) but to pressure
+	# passing `CourseAxisEnvelope.TIGHT_LANE_PRESSURE`, which lands inside
+	# Ancient Forest's new 5–10 km band rather than on its boundary. Chunk 69 is
+	# the first chunk that satisfies both that and the authored every-eighth
+	# cadence.
+	var geometry := stream.update_for_position(67000.0)
 	var found_open_route := false
 	var found_tight_route := false
 	for chunk_index in range(
@@ -2036,7 +2042,9 @@ static func _test_early_routes_are_obstacle_aware_and_late_gaps_are_clear(
 							chunk_index)
 					return 0
 
-	var tight_chunk_index := 23
+	# See the note in `_test_contoured_rails_are_continuous_and_varied`: the first
+	# chunk that draws the tight corridor is 69, not 23.
+	var tight_chunk_index := 69
 	var tight_chunk_start := \
 		float(tight_chunk_index) * CourseStream.CHUNK_WIDTH
 	var later := stream.update_for_position(tight_chunk_start + 1.0)
@@ -2148,42 +2156,58 @@ static func _test_curated_pattern_catalog_is_banded_and_varied(
 	if not stream.has_method("pattern_id_for_chunk"):
 		failures.append("course stream does not expose deterministic pattern IDs")
 		return 0
-	var unique_patterns := {}
-	var previous := &""
+	# Two windows, because the swap moved the game's thinnest and deepest pools
+	# past each other. Chunks 11–45 are Bramble Canopy, whose whole authored
+	# vocabulary is **eight patterns plus the recovery pocket** — F6 and §9 both
+	# name it as the thinnest pool in the game, and putting it in the front slot
+	# is a known and accepted cost of the swap. So the bar there is its own
+	# maximum rather than a round number: every one of the nine must show. The
+	# deep vocabulary now lives in Ancient Forest's 5–10 km band, and chunks
+	# 53–95 carry the ≥ 10 distinct ids this contract has always asked for.
+	var windows := [
+		{"first": 11, "last": 46, "minimum": 9, "where": "opening region"},
+		{"first": 53, "last": 96, "minimum": 10, "where": "second region"},
+	]
 	var paired_chunks := 0
 	var single_chunks := 0
-	for chunk_index in range(11, 46):
-		var pattern_id := StringName(stream.call(
-			"pattern_id_for_chunk",
-			chunk_index,
-		))
-		if pattern_id.is_empty():
-			failures.append("chunk %d has no curated pattern" % chunk_index)
-			return 0
-		if pattern_id == previous:
+	for window: Dictionary in windows:
+		var unique_patterns := {}
+		var previous := &""
+		for chunk_index in range(int(window["first"]), int(window["last"])):
+			var pattern_id := StringName(stream.call(
+				"pattern_id_for_chunk",
+				chunk_index,
+			))
+			if pattern_id.is_empty():
+				failures.append("chunk %d has no curated pattern" % chunk_index)
+				return 0
+			if pattern_id == previous:
+				failures.append(
+					"curated pattern %s repeats in adjacent chunks" % pattern_id)
+				return 0
+			previous = pattern_id
+			unique_patterns[pattern_id] = true
+			var chunk_start := float(chunk_index) * CourseStream.CHUNK_WIDTH
+			var geometry := stream.update_for_position(chunk_start + 1.0)
+			var count := 0
+			for obstacle: PackedVector2Array in geometry.obstacles:
+				var bounds := SolidGeometry.bounds(obstacle)
+				if bounds.get_center().x >= chunk_start and \
+						bounds.get_center().x < \
+							chunk_start + CourseStream.CHUNK_WIDTH:
+					count += 1
+			if count >= 2:
+				paired_chunks += 1
+			elif count == 1:
+				single_chunks += 1
+		if unique_patterns.size() < int(window["minimum"]):
 			failures.append(
-				"curated pattern %s repeats in adjacent chunks" % pattern_id)
+				"curated %s exposes only %d pattern IDs, below %d" % [
+					window["where"],
+					unique_patterns.size(),
+					int(window["minimum"]),
+				])
 			return 0
-		previous = pattern_id
-		unique_patterns[pattern_id] = true
-		var chunk_start := float(chunk_index) * CourseStream.CHUNK_WIDTH
-		var geometry := stream.update_for_position(chunk_start + 1.0)
-		var count := 0
-		for obstacle: PackedVector2Array in geometry.obstacles:
-			var bounds := SolidGeometry.bounds(obstacle)
-			if bounds.get_center().x >= chunk_start and \
-					bounds.get_center().x < \
-						chunk_start + CourseStream.CHUNK_WIDTH:
-				count += 1
-		if count >= 2:
-			paired_chunks += 1
-		elif count == 1:
-			single_chunks += 1
-	if unique_patterns.size() < 10:
-		failures.append(
-			"curated late course exposes only %d pattern IDs" %
-			unique_patterns.size())
-		return 0
 	if paired_chunks < 4 or single_chunks < 4:
 		failures.append(
 			"late course lost the intended mix of single and paired challenges")
@@ -2284,7 +2308,9 @@ static func _test_course_regions_are_seeded_distinct_and_recoverable(
 	for seed in [7, 77, 707]:
 		var stream := CourseStream.new()
 		stream.reset(
-			10000.0, 0.94, 0.90, 1.12, [], true, 1.0, 1.0,
+			SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+				.middle_hazard_start_distance,
+			0.94, 0.90, 1.12, [], true, 1.0, 1.0,
 			20000.0, seed,
 		)
 		for chunk_index in range(52, 66):
@@ -2349,10 +2375,19 @@ static func _test_bramble_owns_distinct_obstacle_vocabulary(
 	for seed in [0, 7, 77, 707]:
 		var stream := CourseStream.new()
 		stream.reset(
-			10000.0, 0.94, 0.90, 1.12, [], true, 1.0, 1.0,
+			SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+				.middle_hazard_start_distance,
+			0.94, 0.90, 1.12, [], true, 1.0, 1.0,
 			20000.0, seed,
 		)
-		for chunk_index in range(52, 105):
+		# Bramble occupies 0–5 km after the 0.39.0 swap, and this window starts
+		# at chunk 17 (~1 630 m) rather than at the region's first chunk on
+		# purpose: below `CourseAxisEnvelope.FULL_SIZE_PRESSURE` the owner's
+		# opening ramp is deliberately drawing these shapes small, and a small
+		# hook does not block the neutral centre lane. **That permissiveness is
+		# the ramp, not a regression** — what the region must never lose is its
+		# high↔low identity at full size, which is what this window measures.
+		for chunk_index in range(17, 52):
 			var pattern_id := stream.pattern_id_for_chunk(chunk_index)
 			if not expected.has(pattern_id):
 				continue
@@ -2445,6 +2480,20 @@ static func _test_bramble_clearance_has_reaction_and_recovery_time(
 	# shape over half the usable corridor, and allow only 0.55 s between the two
 	# opposite commitments in a pair. Validate the timed route envelope the
 	# player actually receives at full pace, while leaving the physics untouched.
+	#
+	# **What changed in 0.39.0, deliberately.** This contract used to require
+	# `adjacent_hard_chunks == 0` — every Bramble commitment isolated by an open
+	# chunk, D-0040's spacing fix. C3 in the 2026-08-03 corridor measurement
+	# retired the claim that the isolation is load-bearing: D-0040 shipped two
+	# fixes and the geometry one carried the region on its own, leaving Bramble
+	# with the widest minimum corridor in the game (8.49 diameters) and spacing
+	# clear of every floor in R13. The 50% open cadence was guarding a failure
+	# two other things already prevent, which is what makes it available to spend
+	# on the fill the owner asked for.
+	#
+	# What survives, and is now checked instead, is the part of D-0040 that was
+	# load-bearing: **a pair owns one readable high↔low commitment.** Two
+	# multi-obstacle chunks may never sit side by side. Singles may.
 	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
 	var corridor_height := CourseStream.FLOOR_Y - CourseStream.CEILING_Y
 	var maximum_width := 340.0
@@ -2458,11 +2507,13 @@ static func _test_bramble_clearance_has_reaction_and_recovery_time(
 	for seed in [0, 7, 77, 707]:
 		var stream := CourseStream.new()
 		stream.reset(
-			10000.0, 0.94, 0.90, 1.12, [], true, 1.0, 1.0,
+			SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+				.middle_hazard_start_distance,
+			0.94, 0.90, 1.12, [], true, 1.0, 1.0,
 			20000.0, seed,
 		)
 		var patterns := {}
-		for chunk_index in range(52, 105):
+		for chunk_index in range(0, 53):
 			var distance := maxf(
 				0.0,
 				float(chunk_index) * CourseStream.CHUNK_WIDTH
@@ -2473,12 +2524,16 @@ static func _test_bramble_clearance_has_reaction_and_recovery_time(
 			)["id"]) != CourseRegionCatalog.BRAMBLE_CANOPY:
 				continue
 			patterns[chunk_index] = stream.pattern_id_for_chunk(chunk_index)
+		var pair_ids := [
+			&"canopy_hook_high_low", &"canopy_hook_low_high",
+			&"canopy_shutter_high_low", &"canopy_shutter_low_high",
+		]
 		for chunk_index: int in patterns:
 			var pattern_id := StringName(patterns[chunk_index])
-			if pattern_id == &"open_recovery":
+			if pattern_id == &"open_recovery" or pattern_id.is_empty():
 				continue
-			if patterns.has(chunk_index + 1) and \
-					StringName(patterns[chunk_index + 1]) != &"open_recovery":
+			if pattern_id in pair_ids and patterns.has(chunk_index + 1) and \
+					StringName(patterns[chunk_index + 1]) in pair_ids:
 				adjacent_hard_chunks += 1
 			var chunk_start := float(chunk_index) * CourseStream.CHUNK_WIDTH
 			var chunk_end := chunk_start + CourseStream.CHUNK_WIDTH
@@ -2506,7 +2561,7 @@ static func _test_bramble_clearance_has_reaction_and_recovery_time(
 			observed_maximum_width > maximum_width + 0.01 or \
 			observed_maximum_height > maximum_height + 0.01:
 		failures.append(
-			("Bramble device envelope is still overcrowded: adjacent=%d, "
+			("Bramble device envelope is still overcrowded: adjacent pairs=%d, "
 				+ "pair gap %.0f/%.0f px, max %.0f×%.0f px "
 				+ "(limits %.0f×%.0f)") % [
 				adjacent_hard_chunks,
@@ -2526,7 +2581,7 @@ static func _test_checkpoint_practice_starts_safe_and_is_non_record(
 	failures: PackedStringArray,
 ) -> int:
 	var start := CourseRegionCatalog.checkpoint_start(
-		CourseRegionCatalog.BRAMBLE_CANOPY)
+		CourseRegionCatalog.ANCIENT_FOREST)
 	var session := SwingLabSession.new()
 	session.configure_run(SwingLabSession.RUN_PRACTICE, start, 77)
 	session._reset_run()
@@ -2534,7 +2589,7 @@ static func _test_checkpoint_practice_starts_safe_and_is_non_record(
 	if not is_equal_approx(snapshot.distance_pixels, start) or \
 			snapshot.run_mode != SwingLabSession.RUN_PRACTICE or \
 			snapshot.records_eligible or \
-			snapshot.region_id != CourseRegionCatalog.BRAMBLE_CANOPY or \
+			snapshot.region_id != CourseRegionCatalog.ANCIENT_FOREST or \
 			not session._world.web.attached or \
 			session._world._collides_with_obstacle(session._world.position):
 		failures.append(
@@ -2564,7 +2619,7 @@ static func _test_checkpoint_practice_starts_safe_and_is_non_record(
 	standard._world.distance_pixels = start
 	standard._update_region_progress()
 	standard._update_region_progress()
-	if reached != [CourseRegionCatalog.BRAMBLE_CANOPY]:
+	if reached != [CourseRegionCatalog.ANCIENT_FOREST]:
 		failures.append("standard checkpoint did not emit exactly once")
 		session.free()
 		standard.free()
@@ -2733,14 +2788,23 @@ static func _test_authored_weaves_and_small_silk_burrs_are_fair(
 	]
 	var stream := CourseStream.new()
 	stream.reset()
-	for chunk_index in range(22):
+	# 11 chunks is 0–1 056 m, restated as a literal rather than derived from the
+	# constant that produces it. Two owner rules meet in that stretch and both
+	# forbid a height switch: R6 protects 0–500 m outright, and §6.1's third
+	# lever — *"singles before pairs"* — holds the opposite-side pairs back until
+	# roughly 1 km. It used to be 22 chunks because nothing at all was drawn
+	# before 1 km and the weaves waited for a 2 km distance band; the protection
+	# is now a property of the curve rather than of Ancient Forest's pool ladder.
+	for chunk_index in range(11):
 		if stream.pattern_id_for_chunk(chunk_index) in pattern_ids:
 			failures.append("height-switch pattern entered the protected opening")
 			return 0
 	var found := {}
 	for seed in [0, 7, 77]:
 		stream.reset(
-			10000.0, 0.94, 0.90, 1.12, [], true, 1.0, 1.0,
+			SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+				.middle_hazard_start_distance,
+			0.94, 0.90, 1.12, [], true, 1.0, 1.0,
 			20000.0, seed,
 		)
 		for chunk_index in range(22, 130):
@@ -3178,10 +3242,16 @@ static func _test_creator_pattern_drives_deterministic_chunks(
 	var pattern: Array[StringName] = [
 		&"leaf", &"empty", &"pod", &"vine", &"gate", &"empty",
 	]
-	first.reset(10000.0, 0.94, 0.90, 1.12, pattern)
+	first.reset(
+		SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+			.middle_hazard_start_distance,
+		0.94, 0.90, 1.12, pattern)
 	var geometry_a := first.update_for_position(1300.0)
 	var second := CourseStream.new()
-	second.reset(10000.0, 0.94, 0.90, 1.12, pattern)
+	second.reset(
+		SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+			.middle_hazard_start_distance,
+		0.94, 0.90, 1.12, pattern)
 	var geometry_b := second.update_for_position(1300.0)
 	if geometry_a.obstacles.is_empty() or \
 			geometry_a.obstacles != geometry_b.obstacles:
@@ -3461,10 +3531,12 @@ static func _test_obstacle_contact_is_inside_the_painted_hazard(
 	for seed in [0, 7, 77, 707]:
 		var stream := CourseStream.new()
 		stream.reset(
-			10000.0, 0.94, 0.90, 1.12, [], true, 1.0, 1.0,
+			SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+				.middle_hazard_start_distance,
+			0.94, 0.90, 1.12, [], true, 1.0, 1.0,
 			20000.0, seed,
 		)
-		for chunk_index in range(52, 105):
+		for chunk_index in range(6, 52):
 			var pattern_id := stream.pattern_id_for_chunk(chunk_index)
 			if pattern_id not in [&"canopy_hook_high", &"canopy_hook_low",
 					&"canopy_leaf_high", &"canopy_leaf_low"]:
