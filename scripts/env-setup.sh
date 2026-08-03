@@ -163,13 +163,37 @@ if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
   } >> "$CLAUDE_ENV_FILE" 2>/dev/null
 fi
 
-# --- 6 · optional extras, never required ------------------------------------
-# imageio-ffmpeg is the only third-party package this repo has ever needed:
-# it decodes owner gameplay recordings for the calibration measurements. No
-# tool imports it, so its absence breaks nothing.
+# --- 6 · Python packages ----------------------------------------------------
+# Audited 2026-08-03 with an AST walk over every .py in the repo. Exactly ONE
+# third-party import exists outside the vendored kit:
+#
+#   REQUIRED  Pillow          tools/zone_art_audit.py line 13 does a hard,
+#                             unguarded `from PIL import Image, ImageDraw,
+#                             ImageFont, ImageOps`. Without it that tool cannot
+#                             even print --help. It does NOT gate verify.py, so
+#                             a missing Pillow breaks zone-art work rather than
+#                             CI -- which is precisely the kind of thing that
+#                             hides until someone needs it.
+#   OPTIONAL  imageio-ffmpeg  decodes owner gameplay recordings for the
+#                             calibration measurements. No file imports it.
+#
+# Everything else -- verify.py, check_architecture.py, difficulty_curve.py,
+# fit_bot.py, generate_audio_samples.py and bootstrap.py -- is pure stdlib.
+python3 -m pip install --quiet Pillow >/dev/null 2>&1 \
+  && log "required: Pillow installed (tools/zone_art_audit.py)" \
+  || log "WARNING: Pillow install failed -- tools/zone_art_audit.py will not run"
+
 python3 -m pip install --quiet imageio-ffmpeg >/dev/null 2>&1 \
   && log "optional: imageio-ffmpeg installed (owner-recording analysis)" \
-  || log "optional: imageio-ffmpeg unavailable (fine — nothing imports it)"
+  || log "optional: imageio-ffmpeg unavailable (fine -- nothing imports it)"
+
+# --- deliberately NOT installed ---------------------------------------------
+# JDK, the Android SDK and Godot export templates. No tool in this repo runs a
+# local `godot --export`; the APK is built by .github/workflows/android-debug.yml
+# using the chickensoft setup-godot action with include-templates. Pulling ~1 GB
+# of Android toolchain into every session would buy nothing. If a session ever
+# needs a local APK, that is a deliberate change to this file, not an oversight
+# in it.
 
 log "ready. Gates: 'python3 tools/verify.py --require-godot' and 'python3 bootstrap.py check --strict'"
 exit 0
