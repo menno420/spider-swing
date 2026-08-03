@@ -187,6 +187,33 @@ python3 -m pip install --quiet imageio-ffmpeg >/dev/null 2>&1 \
   && log "optional: imageio-ffmpeg installed (owner-recording analysis)" \
   || log "optional: imageio-ffmpeg unavailable (fine -- nothing imports it)"
 
+# --- 7 · GitHub CLI: present by default, required by nothing ----------------
+# Not here because this repo needs it. Nothing in tools/, tests/ or CI calls gh,
+# and every GitHub operation is already covered by git over HTTPS and the REST
+# API on the direct-PAT path. It is here because its ABSENCE has been reported
+# to the owner as a session blocker -- once by a session that, in the same
+# message, listed the open PRs and the open issue it had just read. A stock
+# Ubuntu package is cheaper than that conversation.
+if command -v gh >/dev/null 2>&1; then
+  log "gh: $(gh --version 2>/dev/null | head -1)"
+else
+  (apt-get update -qq && apt-get install -y -qq gh) >/dev/null 2>&1 \
+    || (sudo apt-get update -qq && sudo apt-get install -y -qq gh) >/dev/null 2>&1
+  if command -v gh >/dev/null 2>&1; then
+    log "gh: installed $(gh --version 2>/dev/null | head -1)"
+  else
+    log "gh: install failed -- NON-FATAL and NOT a blocker. Nothing in this repo"
+    log "    requires gh; use git over HTTPS and the REST API instead."
+  fi
+fi
+# Auth, measured 2026-08-03. The ambient GH_TOKEN over the agent proxy serves a
+# pinned subset only: `gh api user` answers, `gh api repos/{o}/{r}` returns 403
+# "GitHub access is not enabled for this session", and `gh pr list` 403s at
+# GraphQL. Both succeed on the direct-PAT path, so that 403 is the known
+# proxied-REST quirk and NOT an org-admin wall -- do not record it as one.
+log "gh auth: proxied path serves a pinned subset; for the rest use"
+log "    GH_TOKEN=\"\$GITHUB_PAT\" no_proxy='*' HTTPS_PROXY= gh <command>"
+
 # --- deliberately NOT installed ---------------------------------------------
 # JDK, the Android SDK and Godot export templates. No tool in this repo runs a
 # local `godot --export`; the APK is built by .github/workflows/android-debug.yml
