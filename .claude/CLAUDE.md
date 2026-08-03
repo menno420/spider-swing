@@ -56,6 +56,25 @@ Run before every push:
 python3 tools/verify.py
 ```
 
+## Verifying a claim
+
+**If a statement is checkable with one command, run the command before writing
+the sentence.** `printenv` before "the credential is missing"; `grep -rn <term>`
+before "that string does not exist"; re-run the tool before describing what it
+does. This is PL-013 (`measured` · `inferred` · `assumed`) applied at the moment
+of **stating**, not at the moment of writing the doc — the label goes on the
+artifact, but the error is made a step earlier, in prose.
+
+**A plausible cause is not a checked cause**, and that includes plausible
+explanations for your own mistakes.
+
+*Evidence: 2026-08-03. One session asserted three checkable things — a wall, a
+tool's behaviour, and a game string it called invented — was wrong on all three,
+and had each caught by the owner rather than by itself. None was a recall
+failure; each was a check not run, and each cost seconds. Two comfortable
+explanations were offered for the pattern and both were themselves wrong. Entries
+in `docs/CAPABILITIES.md`, 2026-08-03.*
+
 ## How the maintainer works
 
 Menno defines the product vision, evaluates feel, notices inconsistencies, and values honesty above inflated progress claims. He does not code and relies on autonomous Claude and Codex agents to make contained reversible technical decisions, implement end-to-end, verify against source, keep CI green, and land or clearly park their own PRs. Explain owner actions in plain language and ask only for genuine product forks, credentials, irreversible publishing, spending, or repository settings that tooling cannot safely perform.

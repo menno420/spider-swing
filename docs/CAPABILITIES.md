@@ -112,6 +112,22 @@ Format: `- YYYY-MM-DD · capability|wall · <venue> · finding · evidence · wo
 as venue `any`.)
 
 
+- 2026-08-03 · capability · `any` · **Hand-editing `.claude/CLAUDE.md` is SAFE, and
+  its banner reads the opposite. Editing a kit-planted doc is what PROTECTS it.**
+  · evidence: the kit records a sha256 per planted doc in
+  `.substrate/state.json` → `planted_doc_hashes`. `doc_is_untouched()`
+  (`bootstrap.py:18240`) returns true only while the file still matches that
+  hash — and a true there is what classifies the doc "consumer-untouched", which
+  is the class `upgrade --apply-docs` refreshes **whole-file**. Measured before
+  editing: the recorded hash and the live file matched exactly, so the pristine
+  copy was the one at risk of being clobbered. The first hand edit diverges the
+  hash, the doc reclassifies consumer-edited, and upgrade downgrades to a report
+  line instead of overwriting — the same covenant that protects the capability
+  append log. · workaround: none needed. **The real cost is the opposite of the
+  banner's warning:** an edited planted doc stops receiving upstream template
+  improvements automatically, so a later `upgrade` reports a diff someone has to
+  merge by hand. Worth it for a binding rule; not worth it for cosmetics.
+
 - 2026-08-03 · capability · `any` · **RETRACTION of two entries written below
   TODAY. `$GITHUB_PAT` over DIRECT EGRESS has admin on every repo. The wall is
   the proxy, and only the proxy — it is one flag wide.** · evidence: the owner
