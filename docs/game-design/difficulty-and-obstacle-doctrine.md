@@ -802,12 +802,15 @@ theme. Ancient Forest could sustain one today; Bramble could not.
 
 ### Unresolved conflicts
 
-- **The leaderboard is decided as one general board** (see the decision ledger;
-  it is stamped in `docs/product/upgrade-and-difficulty-research-2026-08-02.md`
-  § 4.4). Eight endless modes are either
-  eight boards — which is exactly the population-splitting that decision
-  rejected — or they are non-records modes. *Recommendation: non-records, like
-  Region Practice, unless and until the main board is healthy.*
+- **The leaderboard is one board per difficulty mode** — [D-0055], superseding
+  the "Standard alone" eligibility clause it replaced. That is three boards, and
+  it is bounded: a mode gets a board because it presents a *genuinely different
+  course*, which is what makes ranking within it meaningful. **Eight region-endless
+  modes do not clear that bar** — they are the same difficulty profile applied to
+  one region, so eight more boards would be the population-splitting the board's
+  own design rejected, without the justification the difficulty split has.
+  *Recommendation unchanged: region-endless is non-records, like Region Practice,
+  unless and until the main boards are healthy.*
 - **Economy.** If region-endless pays flies, players farm the cheapest region;
   if it pays nothing, it competes with the main run for attention and loses.
   Region Practice's existing answer is "awards nothing", and it is the safest

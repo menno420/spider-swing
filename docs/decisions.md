@@ -1233,3 +1233,84 @@
   and § 2.2, which is `inferred` external practice and loses to any measurement
   it contradicts. The three rulings are **agent defaults recorded for owner
   review**; any of them can be vetoed on the PR without disturbing the rest.
+
+## [D-0055] Difficulty modes are axis profiles, and every records-eligible mode has its own board
+
+- status: decided
+- date: 2026-08-03
+- verdict: **Difficulty modes stop being a geometry scale and become profiles on
+  the axis envelope.** Today a mode changes obstacle size, corridor clearance and
+  when hazards start; the code that decides *which pattern goes in which chunk*
+  never reads the mode at all, so Relaxed and Harsh generate the identical course
+  structure — same patterns, same order, same lane sequence — drawn bigger or
+  smaller. Modes gain the **Predictability** (R14), **Density** and **spacing**
+  (R13) axes: Relaxed runs a more legible cadence with lower density and wider
+  spacing; Harsh runs a less predictable cadence with tighter spacing. **Standard
+  remains the reference the other two are derived from**, and its override set
+  stays empty by construction. Two defaults, both open to veto: Harsh spends its
+  extra difficulty on **unpredictability, density and reaction time — not on
+  corridor width**, which stays near Standard; and the predictability axis is
+  expressed as legal continuations per recognisable beat, roughly **2 / 3 / 4**
+  across Relaxed / Standard / Harsh.
+  **Every records-eligible mode gets its own leaderboard.** This supersedes the
+  leaderboard-eligibility clause of D-0033 (*"only Standard is eligible for a
+  future leaderboard"*) and nothing else in that entry. In practice that means a
+  Standard board and a Harsh board — and a Relaxed board too, because
+  **Relaxed's rails become lethal.** Owner call, same conversation. That removes
+  the single reason Relaxed was records-ineligible (D-0033: a run that cannot
+  fall off the course would unlock every region checkpoint on a first attempt),
+  so Relaxed becomes records-eligible, gets a board, and the existing invariant
+  *a mode that cannot set a record must not claim a leaderboard slot* is
+  satisfied rather than bent. All three modes end up structurally uniform:
+  records-eligible, board-carrying, differing only in profile.
+  **What still makes Relaxed relaxed** is everything else it already has — wider
+  gates, smaller obstacles, more corridor clearance, later hazard onset, the
+  rescue life and its longer shield — plus the new profile axes. The non-lethal
+  rail was one lever of seven, and the only one that changed what a *distance*
+  meant. Relaxed stops being "a course you cannot fall off" and becomes "a
+  genuinely easier course", which is the thing a board can rank.
+- why: Menno, 2026-08-03: *"there will genuinely be players that eventually think
+  standard is too easy and will want more challenges, and they will want to
+  compare their runs to others in the same difficulty."*
+  **The two halves are coupled, and that is the strongest argument for both.**
+  Once a mode changes selection rather than scale, a Harsh run and a Standard run
+  are no longer the same course drawn differently — they are different courses.
+  One combined board would then be ranking runs that never faced the same
+  content, which is a worse form of the ambiguity D-0045 was written to avoid.
+  D-0033's "Standard alone" rule was correct for modes that only scaled geometry
+  and stops being correct the moment modes carry their own profile.
+  **This entry is not a reversal — it is the owner's intent recorded for the
+  first time.** He states, 2026-08-03, that the shipped mode system was an
+  agent's design produced from his initial suggestion of difficulty modes, not
+  something he specified, and that he left it uncorrected because other work
+  mattered more at the time. So the geometry-scale interpretation never carried
+  owner intent behind it; it carried an agent's reading of a one-line request.
+  A later session should not defend it as though it did.
+  This does **not** reopen D-0045. That entry rejected segmenting the board by
+  **upgrade level**, and it already requires the difficulty mode to be recorded on
+  every entry. Per-difficulty boards stay upgrade-independent and still publish
+  seed plus upgrade snapshot, so the reproducibility promise is unchanged.
+  **The known cost is recorded rather than argued away**: splitting one board
+  into two thins a small population, which is the same objection D-0045 raised
+  against upgrade classes. It is accepted here because the boards are measuring
+  genuinely different courses, which upgrade classes were not — and because a
+  player who has outgrown Standard currently has nothing to compete on at all.
+  Ordering follows the doctrine's own logic: modes are derived from Standard, so
+  **Standard must be on the pressure curve before either other mode is
+  profiled.** Deriving from a baseline that is still moving would have to be
+  redone.
+  **One migration consequence, recorded now rather than discovered later.**
+  Existing Relaxed best distances were set under non-lethal rails and are not
+  comparable to anything set afterwards. They are kept rather than wiped — the
+  boards start empty regardless, a local best is the player's own record rather
+  than a ranking claim, and every entry already carries the build identity that
+  distinguishes them. If that proves confusing on device, wiping the Relaxed best
+  once is a one-line change.
+- provenance: Menno, 2026-08-03, in conversation — the mode-profile direction
+  (*"easy mode would have a less intense seed with a lower difficulty, so more
+  evenly spread out and predictable patterns … expert/hard mode should have
+  tighter gaps and more randomness and unpredictable patterns"*) and the
+  per-difficulty leaderboard. Measured against `difficulty_catalog.gd`
+  (`CONTENT_FIELDS` carries no selection input) and `course_pattern_catalog.gd`
+  (never reads a mode). The width caution is F8 and his own 2026-08-02 verdict
+  that room is what makes density fair.
