@@ -1,0 +1,120 @@
+# Host-specific ref cleanup — the manual companion to the kit-owned
+# `branch-sweep.yml`, kept in a SEPARATE file by that workflow's own
+# instruction ("hand edits are OVERWRITTEN … put host-specific
+# customizations in a SEPARATE workflow file, never in this one").
+#
+# WHY THIS EXISTS: agent-side ref deletion is proxy-403'd in every
+# session seat (capability ledger, re-verified 2026-08-03: `git push
+# origin :refs/heads/…` and a PAT-authenticated REST DELETE both
+# refused, the latter by the agent proxy before it ever reaches
+# GitHub). `branch-sweep.yml` is the sanctioned way around that — but
+# it deliberately only collects refs that BOTH match an agent naming
+# pattern (claude/* · codex/* · bot/*) AND are the untouched head of a
+# spent pull request. A one-off ref outside that shape — a probe
+# branch, a mis-named branch, an abandoned experiment with no PR —
+# matches nothing and survives forever, and the only remaining path is
+# an owner click.
+#
+# This workflow is that path, made agent-dispatchable, with the same
+# refusals the sweep applies and one more (an explicit name, never a
+# pattern). It deletes exactly ONE ref that the caller names.
+#
+# WHAT IT REFUSES, in order — any one of these aborts the run:
+#   1. the repository's default branch;
+#   2. a ref that does not exist (a typo must fail loudly, not pass);
+#   3. the head of any OPEN pull request;
+#   4. a ref carrying commits not reachable from the default branch,
+#      UNLESS `allow_unmerged` is explicitly set — this is the guard
+#      that makes a wrong `ref` input recoverable rather than a data
+#      loss, and it is the one rule the nightly sweep achieves a
+#      different way (tip-SHA equality with a spent PR head).
+# `dry_run` defaults to TRUE: the safe call is the default call.
+name: ref-cleanup
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Exact branch name to delete (no refs/heads/ prefix).'
+        required: true
+        type: string
+      allow_unmerged:
+        description: 'Permit deleting a ref with commits not on the default branch.'
+        type: boolean
+        default: false
+      dry_run:
+        description: 'Check every rule and report; delete nothing.'
+        type: boolean
+        default: true
+# Least-privilege, matching branch-sweep: ref deletion needs
+# `contents: write`; the open-PR check needs `pull-requests: read`.
+permissions:
+  contents: write
+  pull-requests: read
+concurrency:
+  group: ref-cleanup
+  cancel-in-progress: false
+jobs:
+  ref-cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete one named ref, after every refusal rule passes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET_REF: ${{ inputs.ref }}
+          ALLOW_UNMERGED: ${{ inputs.allow_unmerged == true && 'true' || 'false' }}
+          DRY_RUN: ${{ inputs.dry_run == true && 'true' || 'false' }}
+        run: |
+          set -euo pipefail
+          ref="${TARGET_REF#refs/heads/}"
+          echo "target: $ref"
+          echo "dry run: $DRY_RUN · allow unmerged: $ALLOW_UNMERGED"
+
+          if [ -z "$ref" ]; then
+            echo "::error::refused — empty ref name"
+            exit 1
+          fi
+
+          default_branch="$(gh api "repos/$GITHUB_REPOSITORY" --jq .default_branch)"
+          if [ "$ref" = "$default_branch" ]; then
+            echo "::error::refused — '$ref' is the default branch"
+            exit 1
+          fi
+
+          # Rule 2: the ref must exist. `gh api` exits non-zero on 404,
+          # which `set -e` would turn into an opaque failure — so the
+          # miss is caught and named.
+          if ! sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$ref" --jq .object.sha 2>/dev/null)"; then
+            echo "::error::refused — no branch named '$ref' (typo, or already deleted)"
+            exit 1
+          fi
+          echo "tip: $sha"
+
+          # Rule 3: never touch a ref something is still building on.
+          # Collected to a file first, deliberately: under `pipefail` a
+          # `grep -q` that matches closes the pipe, `gh api` dies on
+          # SIGPIPE, and the pipeline reports non-zero — so the `if`
+          # would read FALSE on a match and this refusal would fail
+          # OPEN. branch-sweep.yml avoids the same trap the same way.
+          gh api "repos/$GITHUB_REPOSITORY/pulls?state=open&per_page=100" \
+            --paginate --jq '.[].head.ref' | sort -u > open-heads.txt
+          if grep -qxF "$ref" open-heads.txt; then
+            echo "::error::refused — '$ref' is the head of an OPEN pull request"
+            exit 1
+          fi
+
+          # Rule 4: unmerged work is the expensive mistake, so it needs
+          # an explicit opt-in. `compare` reports how far the ref sits
+          # ahead of the default branch; 0 means fully reachable.
+          ahead="$(gh api "repos/$GITHUB_REPOSITORY/compare/$default_branch...$ref" --jq .ahead_by)"
+          echo "commits ahead of $default_branch: $ahead"
+          if [ "$ahead" != "0" ] && [ "$ALLOW_UNMERGED" != "true" ]; then
+            echo "::error::refused — '$ref' carries $ahead commit(s) not on $default_branch; re-run with allow_unmerged if that is intended"
+            exit 1
+          fi
+
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "DRY-RUN: every rule passed; would delete $ref at $sha"
+            exit 0
+          fi
+          gh api -X DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$ref"
+          echo "deleted: $ref (was $sha)"
