@@ -53,6 +53,14 @@ frontmatter keeps the score.
   every file in the directory. Identity claims lose to
   [`../product/spider-biology-folio.md`](../product/spider-biology-folio.md).
 
+- [Run records and the tester programme](run-records-and-tester-programme-2026-08-03.md)
+  — captured 2026-08-03 from a live owner session after the `0.39.0` playtest.
+  Per-run stat retention plus a tester programme aimed at perspectives rather
+  than recordings. **They are one system:** two of the leaderboard categories the
+  competitive-layer idea already lists are stat-gated and unenforceable without
+  it. Three owner-only forks are open — distribution, data posture, board scope —
+  and the recruitment section is reserved for the owner's own plan.
+
 **The 2026-08-01 owner-conversation batch.** Five linked ideas captured from a
 long live planning session. They interlock: the charter governs the events, the
 events supply the breadth the economy needs, the competitive layer needs seeds
