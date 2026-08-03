@@ -471,6 +471,17 @@ this section carries only what is still owed.
   prioritised queue is in the
   [`fresh-session handoff`](planning/fresh-session-handoff-2026-08-01.md); do
   not turn that full checklist into one implementation task.
+- **Every gate above currently reads one player.** The owner is assembling an
+  external tester cohort for *perspectives* — difficulty perception, upgrade
+  meaningfulness, mode sufficiency, spiders, visuals — and **distribution is
+  settled as of 2026-08-03: a Google Play testing track, set up from the start,**
+  because a real share of testers will not enable installs from unknown sources.
+  The plan, the channel structure and the reward rule are in
+  [`run records and the tester programme`](ideas/run-records-and-tester-programme-2026-08-03.md);
+  its first engineering step is per-run stat retention, which is also what makes
+  two already-designed leaderboard categories enforceable at all. **Nothing there
+  is built yet**, and the data-posture fork (local-only versus designed for
+  upload) is still open.
 
 **Two device corrections are worth keeping here, because each overturned a
 passing test.** Bramble's first clearance claim was accepted by a static

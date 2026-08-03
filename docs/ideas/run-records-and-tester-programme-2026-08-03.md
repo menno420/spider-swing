@@ -16,8 +16,10 @@ outcome: open
 > separate: **per-run stat retention**, and **recruiting testers for
 > perspectives rather than for more recordings**.
 >
-> **Nothing here is approved.** The open forks are listed at the end and three of
-> them are owner-only.
+> **Nothing here is approved**, with one exception recorded as it happened:
+> **distribution was settled by the owner on 2026-08-03**, mid-document, in
+> favour of a Play Console testing track from the start. The remaining forks are
+> listed at the end, two of them owner-only.
 
 ## Why these are one system
 
@@ -172,22 +174,190 @@ Unfocused testers produce unfocused feedback. *"Play until you reach 5 km and
 tell me the first moment that felt unfair"* outperforms *"try the game"* by a
 wide margin, and it makes two testers' reports comparable.
 
-<!-- OWNER SECTION — the recruitment plan is the owner's and is being written
-     separately. This heading exists so it lands here rather than displacing the
-     analysis above. -->
+<!-- OWNER SECTION — the recruitment plan is the owner's. Items marked `+agent`
+     are additions written into it, kept visually separate so the owner's plan
+     stays legible as his. -->
 
 ### Recruitment and cohort plan
 
-*Owner-authored, pending.*
+**The owner's plan, as stated** (planning session, 2026-08-03):
+
+1. **`superbot-next` ships first.** The Discord server is stood up by an agent
+   driving the bot, not clicked together by hand.
+2. **The game gets a public name** — likely *Slingy Spider*.
+3. **Builds are uploaded manually, older versions included**, so testers can
+   compare across versions.
+4. **Recruit from Reddit and dedicated tester platforms.**
+5. **Dedicated channels for videos and for written feedback**, kept apart.
+6. **Reward testers after time played plus good feedback.**
+7. **The bot's AI is scoped to live game details**, so it can answer testers
+   about the actual build rather than improvising.
+8. **A Google Play testing account, set up from the start** — because a real
+   share of testers will not enable installs from unknown sources.
+
+Point 8 arrived last and is the one that changes the shape of everything else.
+
+#### What the Play decision settles, and what it costs
+
+**It closes owner fork 1 in §5** — distribution is a Play testing track, not
+hand-delivered APKs. That was the fork gating recruitment, so recruitment is no
+longer blocked on a decision.
+
+It also **retires hazard 1 in §3** (GitHub Actions artifacts: account required,
+14-day expiry) as the tester funnel, and it **reassigns the APK channel to the
+job the owner already named for it** — an archive of older versions for
+comparison, which is a genuinely useful thing that is simply not a funnel.
+
+`+agent` — **two things to check while setting the account up**, because they
+change the cohort's *size*, not merely its plumbing:
+
+- **Internal testing vs closed testing are different products.** Internal
+  testing takes up to 100 testers and publishes near-instantly with no review
+  wait; closed testing is larger and goes through review. For a first cohort of
+  ten, internal testing is the right track and the fast one.
+- **A personal (non-organisation) developer account carries a testing
+  requirement before production release** — a minimum tester count sustained
+  over a period. If that still holds, it sets a **floor on cohort size** and a
+  **clock that only starts once testers are actually opted in**, which is an
+  argument for opening the track early even with nobody in it yet. Worth
+  confirming at signup rather than trusting this paragraph — Play's policies
+  move, and this one is worth being right about.
+
+#### The channels, mapped to subsystems that already exist
+
+`+agent` — every row below is an existing `superbot-next` subsystem, so this is
+configuration rather than bot development. Named so the server build is a
+morning's work and not a project.
+
+| channel | its one job | subsystem |
+| --- | --- | --- |
+| `#start-here` | what the game is, what testing costs, the consent line, one tap to join | `welcome` · `setup` |
+| `#get-the-build` | the Play opt-in link, and only that | — |
+| `#version-archive` | older builds, for the compare-two-versions assignment | `media` |
+| `#your-assignment` | the current wave's single question, posted once | `automation` |
+| `#run-clips` | video only, no discussion — discussion drowns clips | `media` · `starboard` |
+| `#feedback` | one thread per report, structured intake | `ticket` |
+| `#bug-reports` | separate from feedback, so bugs do not bury perspectives | `ticket` |
+| `#what-changed` | the nos published, per `player-feedback-loop` | — |
+| `#lounge` | free chat, and where peer credit happens | `karma` |
+| `#rewarded` | locked; opened per tester as the reward lands | `proof_channel` |
+
+Two of those are load-bearing rather than decorative:
+
+- **`proof_channel`** is the prize-session family (`+prize`, `timedprize`,
+  `-prize`, `prizestatus`) — it grants one member access to a locked channel,
+  optionally with an automatic expiry. That is a reward mechanism with an audit
+  trail, already built, already tested.
+- **`karma`** (`!thanks @user`) is peer credit with a per-actor grant cap. It is
+  what lets *"good feedback"* be judged by more than one person without becoming
+  the owner's second job.
+
+#### The joining flow
+
+`+agent` — written as a funnel because every step loses people, and it is worth
+knowing which step.
+
+1. **Post → Discord invite.** The recruitment post links to the server, never
+   straight to a build. The invite is free, revocable, and the consent screen has
+   to happen before anything is collected regardless.
+2. **`#start-here`.** What the game is, what is asked (time, honesty), what is
+   given (the reward), and the consent line — §3 hazard 5, and it belongs
+   *here*, before a build exists on anyone's phone.
+3. **One tap.** Accepting grants the `tester` role and triggers a DM with the
+   Play opt-in link.
+4. **Opt in → install → play.**
+5. **`#your-assignment`** carries the wave's question from that point on.
+
+**Why Discord before build:** an invite costs nothing to hand out and nothing to
+withdraw; a Play tester slot on a personal account is a scarcer thing and, if
+the testing-requirement clock above is real, one that starts ticking.
+
+#### Cohort 1: about ten people, one wave at a time
+
+`+agent` — **eight to twelve.** Large enough that two testers disagreeing is
+information rather than noise; small enough that the owner can read every word
+personally, which §2 says is the correct handling for the open-ended half and
+which stops working somewhere around twenty.
+
+Each wave runs one assignment, for everyone, for a fixed stretch. §2's rule —
+*give each tester one assignment* — becomes *give the cohort one assignment*,
+which is strictly better: it makes ten reports directly comparable.
+
+| wave | assignment | what it answers | not asked, deliberately |
+| ---: | --- | --- | --- |
+| 1 | *"Play until you die three times. Tell me the first moment you did not know what to do."* | first-session comprehension — §3 hazard 2, the non-renewable asset | anything about balance |
+| 2 | *"Get as far as you can. Tell me the first moment that felt unfair."* | difficulty perception, read against the run records | — |
+| 3 | *"Spend your first upgrades however you like, then tell me whether you would spend them the same way again."* | upgrade meaningfulness and costs — the answer is mostly in *what they bought* | — |
+| 4 | *"Play this version and the older one in `#version-archive`. Which is better, and why?"* | the archive channel's real job, and the only question that gets at "have the changes helped" | — |
+
+Spiders, visuals and mode sufficiency ride along inside these waves per the §2
+instrument table — pick-rate for spiders, screenshots for visuals — rather than
+taking waves of their own. **Wave 1 asks one question and no others.** It is the
+only wave whose asset cannot be recovered.
+
+#### The reward rule, made exact
+
+The owner's rule is *"time played plus good feedback"*. Both halves need a
+definition that cannot be argued with at payout time.
+
+A tester qualifies for a wave's reward when **all three** hold:
+
+1. **Played** — a minimum number of runs on that wave's build, **evidenced by
+   run records rather than by claim.** This is the concrete reason §4 puts run
+   records first: without them, "time played" is self-reported and the reward
+   rule is unenforceable.
+2. **Reported** — at least one `#feedback` thread that answers *that wave's*
+   assignment. Off-assignment feedback is welcome and does not count here.
+3. **Judged good** — the report drew peer credit (`!thanks`) from at least two
+   other testers, **or** the owner marked it. `+agent`
+
+Then `+prize` opens `#rewarded` for them, which is both the reward and its
+receipt.
+
+`+agent` — **the failure mode of criterion 3, named now rather than discovered
+later:** in a cohort of ten, peer credit can decay into mutual back-scratching.
+Three things hold it: `karma`'s per-actor grant cap is already built, the owner
+mark is an unconditional override in both directions, and — the real one — the
+reward should be **small and repeatable** (a role, an early build, a name in the
+credits) rather than large and rivalrous. A reward worth farming will be farmed.
+
+#### What recruiting will actually cost, said before it is tried
+
+`+agent` — three things that are true about the two channels the owner named:
+
+- **Most subreddits ban self-promotion**, and the ones that permit it are mostly
+  other developers — who are excellent at spotting a bad control scheme and bad
+  at representing a player. Worth using, worth knowing what it returns.
+- **Paid tester platforms buy compliance, not curiosity.** They reliably produce
+  someone who completes the checklist. The owner's complaint about his friends is
+  not that they skipped the checklist — it is that they did not engage — and a
+  paid tester is engaged with the task, not the game. Expect structure from that
+  channel and insight from the Reddit one.
+- **The strongest recruiting asset this project has is the videos.** A clip of
+  the 10 km wall does more than any description, and it costs nothing to post.
+
+#### The one signal that needs no questions
+
+§3 hazard 3 — *do they come back tomorrow?* — becomes measurable the moment the
+Discord exists, at zero cost: **is the tester in the server on day 3, and did
+they play again.** Weak as a proxy, free as a measurement, and the single
+strongest number in the whole programme.
+
+#### Owner-only, in this section
+
+The Play Console account and its spend; the public name; the reward itself; and
+the recruitment post's wording. Everything else here is configuration an agent
+can perform.
 
 ## 3 · What will bite, that has not been named yet
 
-**1 · How testers actually get a build.** Today it is a GitHub Actions artifact:
-it needs a GitHub account and it **expires after 14 days**. That is an unusable
-funnel for strangers recruited from a testing platform, and it gates the entire
-programme.
+**1 · How testers actually get a build.** ~~Today it is a GitHub Actions
+artifact: it needs a GitHub account and it **expires after 14 days**.~~
+**Answered while this document was being written** — the owner is opening a Play
+Console testing track from the start, so the funnel is a Play opt-in link and
+the Actions artifact never touches a tester. See the recruitment plan above.
 [`distribution-and-first-contact`](distribution-and-first-contact-2026-08-01.md)
-already owns this problem.
+still owns the wider problem; this closes its tester-facing half.
 
 **2 · A tester's first session is a one-time, non-renewable asset.** Nobody meets
 these controls cold twice, and the owner cannot see this failure mode at all
@@ -221,9 +391,12 @@ Ordered by what unblocks what, and by what is expensive to undo.
    questions and the upgrade questions simultaneously.
 2. **In-app closed prompts.** Cheap, and only useful once there are stats to
    compare the answers against.
-3. **Distribution.** Gates recruitment, so it must be settled before a cohort
-   exists rather than after.
-4. **Consent.** Gates anything leaving the device.
+3. **Distribution — decided, and running in parallel.** The Play track is the
+   owner's own work and does not block steps 1 and 2, which is the best possible
+   arrangement: the thing that gates recruitment is being built by the person who
+   is not writing the code.
+4. **Consent.** Gates anything leaving the device — and now also gates the
+   `#start-here` tap, which is the first place a real tester meets this project.
 5. **A server — deliberately last.** Local records plus manual export carry a
    cohort of ~20 at zero cost and zero liability, and they establish which stats
    are worth collecting *before* anything is built to receive them. Building the
@@ -236,11 +409,15 @@ an agent and recorded.
 
 **Owner:**
 
-1. **Distribution** — a Play Console internal-testing track (account plus spend,
-   handles 100 testers properly), or hand-delivered APKs while the cohort is
-   small?
+1. ~~**Distribution**~~ — **settled 2026-08-03: a Play Console testing track,
+   set up from the start**, on the owner's reasoning that a real share of
+   testers will not enable installs from unknown sources. Hand-delivered APKs
+   are demoted to the version archive. This was the fork gating recruitment;
+   recruitment is no longer waiting on a decision.
 2. **Data posture** — local-only with manual export, or design now for automatic
    upload later? This changes the consent design, not merely the plumbing.
+   **Now the top open fork**, because §4 puts run records first and this decides
+   what they are built into.
 3. **Board scope** — do run records get built to serve the narrow boards
    immediately, or to answer design questions first with boards following?
 
@@ -250,9 +427,17 @@ record type lives in the layer model.
 
 ## Provenance
 
-Owner planning session, 2026-08-03, following the `0.39.0` playtest. Interlocks
-with [`competitive-layer`](competitive-layer-2026-08-01.md) (the boards that need
+Owner planning session, 2026-08-03, following the `0.39.0` playtest, in three
+parts: the run-stats ask, the tester-perspectives ask, and the Discord plan with
+its Play-track addendum. Interlocks with
+[`competitive-layer`](competitive-layer-2026-08-01.md) (the boards that need
 these stats), [`player-feedback-loop`](player-feedback-loop-2026-08-01.md) (what
 happens to what testers say), and
 [`distribution-and-first-contact`](distribution-and-first-contact-2026-08-01.md)
 (how a tester gets a build at all).
+
+**Outside this repository:** the channel and reward mechanics above are read
+from `menno420/superbot-next` — `proof_channel`, `karma`, `ticket`, `welcome`,
+`role`, `media`, `automation` are shipped subsystems there, not proposals. The
+server build is configuration of an existing bot. Nothing in this document asks
+for bot development.
