@@ -68,6 +68,14 @@ call.
 was still correct, which is the uncomfortable part — a right answer reached the
 wrong way is the kind that survives review and misleads later.
 
+**I wrote an off-taxonomy `📊 Model:` task class and shipped it to CI**, which
+red-flagged the gate. Worth recording for the reason rather than the slip:
+**`bootstrap.py check --strict` locally does not reproduce the gate CI runs on a
+newly added card.** Locally the grammar miss is an *advisory* and the run reports
+`all checks passed`; in CI the added-card gate promotes the same finding to red.
+So a green local strict check is not proof a new card will pass — the one class
+of change where local and CI genuinely disagree.
+
 **The open-PR refusal would have failed open on the case it exists to catch.**
 First draft piped `gh api … | grep -qxF`. Under `pipefail` a matching `grep -q`
 closes the pipe, `gh` dies on SIGPIPE, the pipeline reports non-zero, and the
@@ -129,4 +137,5 @@ the answer since 2026-07-14, complete with a header explaining the exact wall it
 was built for. An owner list should be what is genuinely his, not what a session
 did not search for.
 
-- **📊 Model:** opus-5 · high · tooling — one workflow, one ledger correction
+- **📊 Model:** opus-5 · high · feature build — one dispatchable workflow, one
+  ledger correction
