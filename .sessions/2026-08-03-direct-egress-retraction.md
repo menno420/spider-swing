@@ -16,6 +16,15 @@ contract, no build bump. Two spent branches deleted — both already in tonight'
 confirmed sweep plan, so that accelerates a scheduled action rather than taking a
 new one.
 
+**Scope widened once, deliberately and recorded rather than quietly:** a second
+document, `docs/technical/gameplay-video-review.md`, landed in the same change.
+It was written to be held back for its own PR, and then the honest options were
+"widen a declared scope in the open" or "leave finished work untracked on a
+container that can be reclaimed". The first is cheaper and visible. Both changes
+are documentation, both came out of the same conversation, and the scope-check
+box on the PR is ticked against *this* sentence rather than against the original
+one.
+
 ## Previous-session review
 
 The ref-cleanup card, three hours old, closed with a workflow improvement that
@@ -108,6 +117,13 @@ open PR's head.
 operation, the host, the flag — three greps, and today they would each have
 returned the answer. The seed fence is the oldest claim in the file, not the
 first fact.
+
+Also: `docs/technical/gameplay-video-review.md` now carries a grounding block for
+an external multimodal reviewer, and **revises this morning's "video is the
+second instrument" conclusion.** That conclusion was entirely a cost argument;
+the cost is gone, so it splits — the game reports the numbers, the video answers
+where to look. One claim in it is deliberately left unfalsified and labelled:
+that batching causes the attribution errors. The test is named in the doc.
 
 ## 💡 Session idea
 
