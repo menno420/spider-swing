@@ -3,21 +3,35 @@
 # instruction ("hand edits are OVERWRITTEN … put host-specific
 # customizations in a SEPARATE workflow file, never in this one").
 #
-# WHY THIS EXISTS: agent-side ref deletion is proxy-403'd in every
-# session seat (capability ledger, re-verified 2026-08-03: `git push
-# origin :refs/heads/…` and a PAT-authenticated REST DELETE both
-# refused, the latter by the agent proxy before it ever reaches
-# GitHub). `branch-sweep.yml` is the sanctioned way around that — but
-# it deliberately only collects refs that BOTH match an agent naming
+# CORRECTION, 2026-08-03, same day this file was authored: the original
+# version of this comment said agent-side ref deletion is walled in
+# every seat. THAT IS FALSE and the false version shipped. A session
+# holding `$GITHUB_PAT` deletes refs directly over DIRECT EGRESS —
+# `curl --noproxy '*' --cacert /root/.ccr/ca-bundle.crt`, or `requests`
+# with `trust_env=False` — and that path answers 204. Only the PROXIED
+# path 403s, and `git push origin :refs/heads/…` with it. See the
+# capability ledger's 2026-08-03 correction, and the fleet master copy
+# in menno420/fleet-manager, which has documented this since 2026-07-18.
+#
+# WHY THIS STILL EXISTS, on the narrower ground that survives:
+#   * it is the path for a seat WITHOUT the PAT — a routine-fired or
+#     subagent seat has the GitHub MCP tools and no `delete_branch`
+#     among them;
+#   * a dispatch is logged, attributable and re-readable months later,
+#     where an ad-hoc DELETE from a session leaves no repo-side trace;
+#   * the refusal rules below are the actual product. A direct DELETE
+#     will happily remove an open PR's head or a ref carrying unmerged
+#     work; this asks first.
+# `branch-sweep.yml` remains the FIRST choice — it needs no dispatch at
+# all — but it only collects refs that BOTH match an agent naming
 # pattern (claude/* · codex/* · bot/*) AND are the untouched head of a
 # spent pull request. A one-off ref outside that shape — a probe
 # branch, a mis-named branch, an abandoned experiment with no PR —
-# matches nothing and survives forever, and the only remaining path is
-# an owner click.
+# matches nothing and survives until something deliberately removes it.
 #
-# This workflow is that path, made agent-dispatchable, with the same
-# refusals the sweep applies and one more (an explicit name, never a
-# pattern). It deletes exactly ONE ref that the caller names.
+# This workflow is that something, with the same refusals the sweep
+# applies and one more (an explicit name, never a pattern). It deletes
+# exactly ONE ref that the caller names.
 #
 # WHAT IT REFUSES, in order — any one of these aborts the run:
 #   1. the repository's default branch;
