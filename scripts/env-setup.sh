@@ -23,16 +23,36 @@ export DEBIAN_FRONTEND=noninteractive
 ARCH_NAME="spider-swing"
 log() { echo "[env-setup:$ARCH_NAME] $*"; }
 
-REPO_ROOT="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)}"
+# Find the checkout. This script may be invoked from INSIDE the repo, or by the
+# thin environment setup script from a fetched temp path with the repo not yet
+# cloned. Both must work, so the location is searched rather than assumed.
+REPO_ROOT=""
+for _c in "${CLAUDE_PROJECT_DIR:-}" \
+          "$(cd "$(dirname -- "${BASH_SOURCE[0]}")/.." 2>/dev/null && pwd)" \
+          "$PWD" "$PWD/spider-swing" \
+          "/workspace/spider-swing" "$HOME/spider-swing" "/home/user/spider-swing"; do
+  if [ -n "$_c" ] && [ -f "$_c/.godot-version" ]; then REPO_ROOT="$_c"; break; fi
+done
 
 # --- 1 · the pinned engine version comes from the repo, never from here ------
 # .godot-version is the single source of truth; tools/verify.py fails the build
 # if the running engine disagrees with it. Hard-coding a version in two places
 # is how they drift, so this reads it.
-GODOT_VERSION="$(tr -d '[:space:]' < "$REPO_ROOT/.godot-version" 2>/dev/null)"
+GODOT_VERSION=""
+if [ -n "$REPO_ROOT" ]; then
+  GODOT_VERSION="$(tr -d '[:space:]' < "$REPO_ROOT/.godot-version" 2>/dev/null)"
+  log "engine pin read from $REPO_ROOT/.godot-version"
+else
+  # No checkout on disk yet (setup runs before Claude Code launches). The repo
+  # is public, so read the pin from the default branch rather than guessing.
+  GODOT_VERSION="$(curl -fsSL --retry 2 --max-time 30 \
+    https://raw.githubusercontent.com/menno420/spider-swing/main/.godot-version \
+    2>/dev/null | tr -d '[:space:]')"
+  [ -n "$GODOT_VERSION" ] && log "engine pin read from origin/main (no local checkout yet)"
+fi
 if [ -z "$GODOT_VERSION" ]; then
   GODOT_VERSION="4.7.1"
-  log "WARNING: .godot-version unreadable — falling back to $GODOT_VERSION"
+  log "WARNING: engine pin unreadable — falling back to $GODOT_VERSION"
 fi
 log "pinned engine: Godot $GODOT_VERSION Standard"
 
