@@ -413,6 +413,15 @@ document disagree, the measurement document wins.
   [`curve-driven course`](measurements/2026-08-03-curve-driven-course.md); the
   before-picture is
   [`pressure-curve profile`](measurements/2026-08-03-pressure-curve-profile.md).
+- **The curve has a device verdict, and it is provisional.** Eight owner runs on
+  `0.39.0`, two of them at L0: **six runs entered the 2 000–2 500 m band and none
+  died there**, against the 41% hazard that band carried before the swap. Median
+  distance 1 850 m → 3 988 m. **Eight runs is a direction, not a rate** — six
+  runs through a band cannot tell 0% from 15%. The L0 runs cleared Bramble and
+  one of them out-ran four fully-upgraded attempts, which says upgrades change
+  pace rather than difficulty in the first 5 km; it is confounded by
+  within-session learning and needs a second player.
+  [`device verdict`](measurements/2026-08-03-device-verdict-on-the-curve.md).
   The overnight lab measurements that claimed a 6 km peak stay retracted; they
   measured the bot failing at pace:
   [`difficulty-curve`](measurements/2026-08-01-difficulty-curve.md).
