@@ -16,6 +16,8 @@ static func run() -> Dictionary:
 	passed += _test_menus_are_thumb_sized_and_state_their_progress(failures)
 	passed += _test_home_deck_reports_the_run_you_are_about_to_start(failures)
 	passed += _test_tutorial_covers_current_mechanics(failures)
+	passed += _test_tutorial_previews_use_live_assets_and_cosmetics(failures)
+	passed += _test_tutorial_is_enclosed_on_short_landscapes(failures)
 	passed += _test_settings_are_validated_and_emitted(failures)
 	passed += _test_settings_are_scrollable_and_mobile_readable(failures)
 	passed += _test_settings_codec_round_trip(failures)
@@ -515,33 +517,156 @@ static func _test_home_deck_reports_the_run_you_are_about_to_start(
 static func _test_tutorial_covers_current_mechanics(
 	failures: PackedStringArray,
 ) -> int:
-	if FrontEndState.TUTORIAL_STEPS.size() != 6:
-		failures.append("tutorial must have exactly six focused steps")
-		return 0
-	var combined := ""
-	for step: Dictionary in FrontEndState.TUTORIAL_STEPS:
-		for key in ["title", "body", "tip"]:
-			combined += " " + str(step.get(key, ""))
-	for required: String in [
-		"no free forward drive",
-		"solid ceiling or obstacle edge",
-		"tap anywhere",
-		"wide rising release",
-		"hold REEL",
-		"fixed rate",
-		"BURST",
-		"double-tap",
-		"minimum Burst travel",
-		"40% Dive Pull",
-		"lethal by default",
-		"Buckler",
-		"upper web",
-		"ends the run",
-		"MENU",
-	]:
-		if required.to_lower() not in combined.to_lower():
-			failures.append("tutorial omits required concept: %s" % required)
+	var lesson_ids: Array[StringName] = []
+	var goals: Array[StringName] = []
+	var mechanic_counts := {}
+	for lesson: Dictionary in FrontEndState.TUTORIAL_STEPS:
+		var lesson_id := StringName(lesson.get("id", &""))
+		var goal := StringName(lesson.get("goal", &""))
+		if lesson_id == &"" or lesson_id in lesson_ids:
+			failures.append("tutorial lesson ids are missing or duplicated")
 			return 0
+		if goal == &"" or goal in goals:
+			failures.append("tutorial teaching goals are missing or duplicated")
+			return 0
+		lesson_ids.append(lesson_id)
+		goals.append(goal)
+		for mechanic: StringName in lesson.get("mechanics", []):
+			mechanic_counts[mechanic] = int(mechanic_counts.get(mechanic, 0)) + 1
+	for expected_id: StringName in [
+		&"opening_pressure", &"attach", &"swing_release", &"reel",
+		&"anchor_burst", &"dive_recovery", &"read_course",
+		&"survive_restart",
+	]:
+		if expected_id not in lesson_ids:
+			failures.append("tutorial omits focused lesson: %s" % expected_id)
+			return 0
+	if lesson_ids.find(&"anchor_burst") == lesson_ids.find(&"dive_recovery"):
+		failures.append("Burst and Dive still share one overloaded tutorial lesson")
+		return 0
+	for required: StringName in [
+		&"opening_web", &"no_drive", &"earned_speed", &"bird_pressure",
+		&"attach_legality", &"attach_range", &"aim_guides",
+		&"swing_arc", &"release_momentum", &"poor_release",
+		&"reel_rate", &"reel_radius", &"reel_energy", &"reel_recharge",
+		&"slack_take_up", &"burst_aimed", &"burst_button",
+		&"burst_fraction", &"burst_minimum", &"burst_charges",
+		&"dive_fraction", &"dive_one_shot", &"dive_upper_rearm",
+		&"pull_recovery", &"route_change", &"flies", &"obstacles",
+		&"lethal_rails", &"burst_frenzy", &"regions", &"rescue",
+		&"buckler_bounce", &"death_attribution", &"restart", &"menu",
+	]:
+		if int(mechanic_counts.get(required, 0)) != 1:
+			failures.append(
+				"tutorial mechanic %s must have one declared teaching owner" % required)
+			return 0
+	return 1
+
+
+static func _test_tutorial_previews_use_live_assets_and_cosmetics(
+	failures: PackedStringArray,
+) -> int:
+	var preview_source := FileAccess.get_file_as_string(
+		"res://game/presentation/scripts/tutorial_preview.gd")
+	for forbidden_factory in [
+		"SwingLabSession.new(", "SimulationWorld.new(",
+		"ProgressionService.new(", "SaveRepository.new(",
+	]:
+		if forbidden_factory in preview_source:
+			failures.append(
+				"tutorial preview took authoritative ownership through %s" % \
+					forbidden_factory)
+			return 0
+	var selected_spider := SpiderCatalog.ANCHORITE
+	var selected_asset := ArtAssetCatalog.spider_asset_id(selected_spider)
+	var preview := TutorialPreview.new()
+	preview.size = Vector2(620.0, 360.0)
+	for lesson: Dictionary in FrontEndState.TUTORIAL_STEPS:
+		preview.configure(
+			lesson,
+			true,
+			selected_spider,
+			PlayerProgress.STYLE_COMET,
+			PlayerProgress.WEB_DEW,
+		)
+		var contract := preview.preview_contract()
+		if StringName(contract.get("lesson_id", &"")) != \
+				StringName(lesson.get("id", &"")) or \
+				StringName(contract.get("spider_asset", &"")) != selected_asset or \
+				StringName(contract.get("web_variant", &"")) != PlayerProgress.WEB_DEW:
+			failures.append("tutorial preview ignores its lesson or selected cosmetics")
+			preview.free()
+			return 0
+		var requested: Array[StringName] = contract["requested_assets"]
+		var resolved: PackedStringArray = contract["resolved_assets"]
+		var fallbacks: PackedStringArray = contract["fallback_assets"]
+		if requested.size() < 6 or resolved.size() != requested.size() or \
+				not fallbacks.is_empty() or bool(contract.get("primitive_only", true)):
+			failures.append(
+				"tutorial lesson %s does not resolve the live game art contract" % \
+					lesson.get("id", ""))
+			preview.free()
+			return 0
+		var frozen_phase := float(contract.get("motion_phase", -1.0))
+		preview._process(3.0)
+		if not is_equal_approx(
+			frozen_phase,
+			float(preview.preview_contract().get("motion_phase", -2.0)),
+		):
+			failures.append("Reduced Motion does not produce a stable tutorial pose")
+			preview.free()
+			return 0
+	preview.free()
+	return 1
+
+
+static func _test_tutorial_is_enclosed_on_short_landscapes(
+	failures: PackedStringArray,
+) -> int:
+	for viewport_size: Vector2i in [
+		Vector2i(1280, 720), Vector2i(1280, 600), Vector2i(1040, 480),
+	]:
+		var state := FrontEndState.new()
+		state.configure(PlayerSettings.defaults(), PlayerProgress.defaults())
+		state.show_tutorial()
+		var viewport := SubViewport.new()
+		viewport.size = viewport_size
+		var view := FrontEndView.new()
+		view.size = Vector2(viewport_size)
+		viewport.add_child(view)
+		view.bind_state(state)
+		var tutorial := view.find_child("Tutorial", true, false) as Control
+		for node_name in [
+			"AnimatedMechanicsPreview", "TutorialCopyWebPanel",
+			"TutorialNavigation",
+		]:
+			var panel := view.find_child(node_name, true, false) as Control
+			if panel == null or panel.anchor_left < 0.0 or panel.anchor_top < 0.0 or \
+					panel.anchor_right > 1.0 or panel.anchor_bottom > 1.0:
+				failures.append(
+					"%s escapes tutorial at %s" % [node_name, viewport_size])
+				viewport.free()
+				return 0
+		for button_name: StringName in [
+			&"TutorialBack", &"TutorialPrevious", &"TutorialStartRun",
+			&"TutorialNext",
+		]:
+			var button := view.front_end_button(button_name)
+			if button == null or button.custom_minimum_size.y < 80.0:
+				failures.append(
+					"%s is below the tutorial touch floor" % button_name)
+				viewport.free()
+				return 0
+		if tutorial == null or not tutorial.find_children(
+			"", "ScrollContainer", true, false).is_empty():
+			failures.append("tutorial introduced a competing scroll/gesture owner")
+			viewport.free()
+			return 0
+		if view.front_end_button(&"TutorialStartRun").text != "START RUN":
+			failures.append("ordinary tutorial launch is mislabeled as practice")
+			viewport.free()
+			return 0
+		viewport.free()
 	return 1
 
 

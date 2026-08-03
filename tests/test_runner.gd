@@ -9,13 +9,13 @@ const AudioPresentationSuite = preload(
 const MAIN_SCENE_PATH := "res://game/bootstrap/main.tscn"
 const EXPORT_PRESETS_PATH := "res://export_presets.cfg"
 const ANDROID_WORKFLOW_PATH := "res://.github/workflows/android-debug.yml"
-const BUILD_VERSION := "0.39.0-pressure-curve-region-swap"
-const ANDROID_VERSION_CODE := 59
-const ANDROID_APP_NAME := "Spider Swing Pressure Curve Region Swap (dev)"
+const BUILD_VERSION := "0.40.0-live-tutorial"
+const ANDROID_VERSION_CODE := 60
+const ANDROID_APP_NAME := "Spider Swing Live Tutorial (dev)"
 const DEBUG_KEYSTORE_PATH := "res://.github/android/debug.keystore"
 const DEBUG_KEYSTORE_SHA256 := \
 	"e9104672477e0238b6cc2f7d6b994c459e37f130cae06a37aff05001f101bbda"
-const EXPECTED_CHECK_COUNT := 232
+const EXPECTED_CHECK_COUNT := 234
 const REQUIRED_INPUT_ACTIONS := [
 	"web_action", "reel_in", "burst_action", "pause", "restart_run",
 	"toggle_debug"]
