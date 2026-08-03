@@ -1,0 +1,1 @@
+- `claude/tutorial-live-rebuild` · **Rebuild the tutorial around the live Spider Swing experience** · game/application/front_end_state.gd, game/presentation/tutorial, front-end contracts and docs · 2026-08-03

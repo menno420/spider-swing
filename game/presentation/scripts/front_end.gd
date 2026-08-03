@@ -660,7 +660,7 @@ func _build_guide_hub() -> void:
 	routes.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	body.add_child(routes)
 	var tutorial := _hub_route_button(
-		&"Tutorial", "HOW TO SWING\nsix visual lessons · practice", CYAN)
+		&"Tutorial", "HOW TO SWING\neight focused lessons · live previews", CYAN)
 	tutorial.pressed.connect(_on_tutorial)
 	routes.add_child(tutorial)
 	var field_guide := _hub_route_button(
@@ -701,52 +701,56 @@ func _hub_status_panel(status_name: StringName) -> Label:
 
 func _build_tutorial() -> void:
 	_tutorial = _full_screen(&"Tutorial")
-	var back := _button(&"TutorialBack", "‹  GUIDE", CYAN, 64.0)
+	var back := _button(&"TutorialBack", "‹  GUIDE", CYAN, 80.0)
 	back.pressed.connect(_on_guide_hub)
-	_place(back, _tutorial, 0.025, 0.035, 0.16, 0.11)
+	_place(back, _tutorial, 0.025, 0.02, 0.18, 0.19)
 
 	_tutorial_preview = TutorialPreview.new()
 	_tutorial_preview.name = "AnimatedMechanicsPreview"
-	_place(_tutorial_preview, _tutorial, 0.05, 0.18, 0.56, 0.78)
+	_place(_tutorial_preview, _tutorial, 0.04, 0.20, 0.57, 0.77)
 
 	var copy_card := _panel(PANEL)
-	_place(copy_card, _tutorial, 0.60, 0.14, 0.95, 0.8)
+	copy_card.name = "TutorialCopyWebPanel"
+	_place(copy_card, _tutorial, 0.59, 0.13, 0.96, 0.79)
 	var copy := VBoxContainer.new()
-	copy.add_theme_constant_override("separation", 16)
-	_fill_with_margin(copy, copy_card, 30.0)
+	copy.add_theme_constant_override("separation", 8)
+	_fill_with_margin(copy, copy_card, 18.0)
 	_tutorial_kicker = _section_label("")
 	copy.add_child(_tutorial_kicker)
-	_tutorial_title = _label("", 36, INK)
+	_tutorial_title = _label("", 30, INK)
 	_tutorial_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	copy.add_child(_tutorial_title)
-	_tutorial_body = _paragraph("")
-	_tutorial_body.custom_minimum_size.y = 126.0
+	_tutorial_body = _label("", 18, MUTED)
+	_tutorial_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_tutorial_body.custom_minimum_size.y = 100.0
+	_tutorial_body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	copy.add_child(_tutorial_body)
 	var tip_panel := _panel(Color(0.05, 0.18, 0.22, 0.95), 12)
-	tip_panel.custom_minimum_size.y = 90.0
+	tip_panel.custom_minimum_size.y = 68.0
 	copy.add_child(tip_panel)
-	_tutorial_tip = _label("", 17, YELLOW)
+	_tutorial_tip = _label("", 15, YELLOW)
 	_tutorial_tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_fill_with_margin(_tutorial_tip, tip_panel, 18.0)
+	_fill_with_margin(_tutorial_tip, tip_panel, 12.0)
 
 	var nav := HBoxContainer.new()
-	nav.add_theme_constant_override("separation", 14)
-	_place(nav, _tutorial, 0.05, 0.84, 0.95, 0.95)
-	var previous := _button(&"TutorialPrevious", "PREVIOUS", MUTED, 60.0)
+	nav.name = "TutorialNavigation"
+	nav.add_theme_constant_override("separation", 10)
+	_place(nav, _tutorial, 0.04, 0.81, 0.96, 0.98)
+	var previous := _button(&"TutorialPrevious", "PREVIOUS", MUTED, 80.0)
 	previous.pressed.connect(_on_tutorial_previous)
-	previous.custom_minimum_size.x = 190.0
+	previous.custom_minimum_size.x = 150.0
 	nav.add_child(previous)
 	_tutorial_progress = _label("", 17, MUTED)
 	_tutorial_progress.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_tutorial_progress.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	nav.add_child(_tutorial_progress)
-	var practice := _button(&"TutorialPractice", "PRACTICE NOW", ORANGE, 60.0)
-	practice.pressed.connect(_on_play)
-	practice.custom_minimum_size.x = 210.0
-	nav.add_child(practice)
-	_tutorial_next = _button(&"TutorialNext", "NEXT", GREEN, 60.0)
+	var start_run := _button(&"TutorialStartRun", "START RUN", ORANGE, 80.0)
+	start_run.pressed.connect(_on_play)
+	start_run.custom_minimum_size.x = 170.0
+	nav.add_child(start_run)
+	_tutorial_next = _button(&"TutorialNext", "NEXT", GREEN, 80.0)
 	_tutorial_next.pressed.connect(_on_tutorial_next)
-	_tutorial_next.custom_minimum_size.x = 190.0
+	_tutorial_next.custom_minimum_size.x = 150.0
 	nav.add_child(_tutorial_next)
 
 
@@ -2011,15 +2015,18 @@ func _render() -> void:
 			FrontEndState.TUTORIAL_STEPS.size(),
 		]
 		_tutorial_next.text = (
-			"START" if _state.tutorial_index ==
+			"START RUN" if _state.tutorial_index ==
 				FrontEndState.TUTORIAL_STEPS.size() - 1
 			else "NEXT"
 		)
 		front_end_button(&"TutorialPrevious").disabled = \
 			_state.tutorial_index == 0
 		_tutorial_preview.configure(
-			_state.tutorial_index,
+			step,
 			_state.settings.reduced_motion,
+			_state.progress.selected_spider_id,
+			_state.progress.selected_spider_style,
+			_state.progress.selected_web_variant,
 		)
 	_syncing_settings = true
 	var selected_preset := _preset_index(_state.settings.swing_preset)

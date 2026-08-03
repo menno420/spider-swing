@@ -62,22 +62,33 @@ guide (Guide hub or Garage).
 ### Tutorial
 
 The tutorial is data-driven by `FrontEndState.TUTORIAL_STEPS` and illustrated by
-`TutorialPreview`. Its six focused steps cover:
+`TutorialPreview`. Lessons have stable ids, one declared teaching goal, explicit
+mechanic coverage, and one focused page for each of these subjects:
 
-1. automatic forward movement and distance;
-2. forgiving solid ceiling/obstacle targets, optional aim guides, and range;
-3. manual momentum carry plus the bounded wide/rising release award;
-4. speed-neutral rope-shortening Reel use and finite energy;
-5. percentage-based Anchor Burst, detached double-tap targeting, one-shot
-   downward Dive Pull, and immediate recovery-web interruption;
-6. shaped warning obstacles, ceiling/floor gaps, fly routes, temporary Burst
-   Frenzy, configurable lethal rails, restart, Menu, and optional debug tooling.
+1. Bramble Canopy's guided opening, earned speed, and pursuing-bird pressure;
+2. legal in-range attachment surfaces versus optional aim guidance;
+3. wide rising swings, release quality, and momentum preservation;
+4. speed-neutral rope-shortening Reel, finite energy, recharge, and automatic
+   slack take-up;
+5. aimed double-tap Anchor Burst, the unaimed button fallback, minimum travel,
+   charges, and cooldown;
+6. one-shot downward Dive Pull, upper-web rearm, and recovery interruption;
+7. route changes, production obstacle silhouettes, flies, lethal rails, Burst
+   Frenzy, and region changes;
+8. Rescue, Buckler's separate rail bounce, death attribution, restart, and Menu.
 
-The preview is an in-engine animation rather than a prerecorded video. This is a
-deliberate reversible decision: the guide stays synchronized with live mechanics,
-adapts to differing aspect ratios, honors reduced motion, and can be localized
-without re-editing video. A polished cinematic can replace or precede it later
-without changing the navigation contract.
+The preview is a deterministic in-engine presentation rather than a prerecorded
+video or second simulator. It resolves the selected production spider, body tint,
+and Silk treatment plus Bramble backdrop/rails, current obstacles, the pursuing
+bird, flies, route/target cues, and gameplay-shaped HUD controls through the live
+asset catalog. Missing imports have an explicit labeled/silhouette fallback and
+cannot silently restore the old cyan grid, rectangle, circle, and line-spider
+diagram. Reduced Motion freezes each lesson at a useful staged pose.
+
+Copy, preview, and 80-reference-pixel tutorial actions are enclosed at 1280×720,
+1280×600, and strict unscaled 1040×480 without adding a nested scroll or gesture
+owner. `START RUN` truthfully launches the ordinary endless run; lesson-specific
+practice is not claimed by this build.
 
 ### Garage and Shop
 
@@ -205,7 +216,8 @@ recording and on taller aspect ratios.
   Garage/Shop/Course Lab/Region Practice intent, Field Guide selection, compact
   versus advanced debug launch intent, the Test Lab working set, and run requests.
 - `FrontEndView` renders state and forwards button intent.
-- `TutorialPreview` renders illustration only.
+- `TutorialPreview` renders deterministic production-asset snapshots only; it
+  owns no simulation, settlement, progression, or persistence state.
 - `ProgressionService` applies each run settlement once and owns fly-funded
   upgrades, selections, creator edits, and milestone cosmetic unlocks.
 - `SaveRepository` exclusively reads and writes settings, progression, and the
@@ -224,7 +236,13 @@ No global manager or autoload is introduced.
 - Play, Spider, Play Modes, Guide, Settings, and Debug Test Run are real
   event-consuming Home buttons; each hub's destination buttons consume their
   own events and return through the same state-owned route;
-- the tutorial has exactly six steps and covers the live mechanics;
+- every tutorial lesson has a unique stable id and teaching goal, the live
+  mechanics each have one declared lesson owner, and Burst/Dive are separate;
+- every preview resolves the selected spider plus real game presentation assets,
+  Reduced Motion freezes deterministically, and primitive-only presentation
+  cannot silently return;
+- tutorial copy, preview, navigation, and 80 px actions remain enclosed at
+  1280×720, 1280×600, and strict unscaled 1040×480 with no nested scroller;
 - Settings owns a vertical scroll surface with readable type and mobile-sized
   three-card preset/action controls, a touch deadzone, no focus snapping, and
   complete descendant drag bubbling;

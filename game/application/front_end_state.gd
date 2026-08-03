@@ -54,66 +54,118 @@ enum Screen {
 	DEBUG_TEST_LAB,
 }
 
+## Stable, application-owned lessons. `mechanics` makes coverage checkable
+## without trusting paragraph searches or a brittle page count. `preview` asks
+## presentation for a staged snapshot; it never starts a second simulation.
 const TUTORIAL_STEPS := [
 	{
-		"title": "KEEP MOVING",
-		"kicker": "01 · THE RUN",
-		"body": "The spider launches on a training web, but there is no free "
-			+ "forward drive after that. You have about a second to read the first "
-			+ "arc and may take control immediately. Every later gain is earned.",
-		"tip": "Let the opening swing carry you, then watch the space ahead.",
+		"id": &"opening_pressure",
+		"goal": &"understand_opening_pressure",
+		"preview": &"opening_pressure",
+		"title": "EARN THE OPENING",
+		"kicker": "OPENING · PRESSURE",
+		"body": "Bramble Canopy starts you on a guided web. There is no free "
+			+ "forward drive after it: speed comes from your swings, while the bird "
+			+ "makes standing still unsafe.",
+		"tip": "Read the first arc, then keep making useful space ahead.",
+		"mechanics": [&"opening_web", &"no_drive", &"earned_speed", &"bird_pressure"],
 	},
 	{
-		"title": "TAP THE CEILING",
-		"kicker": "02 · ATTACH",
-		"body": "Tap any solid ceiling or obstacle edge to fire a web. The small "
-			+ "glowing markers are aim guides, not the only valid attachment "
-			+ "points. Nearby taps are forgiven; out-of-range targets are not.",
+		"id": &"attach",
+		"goal": &"attach_to_legal_solid_targets",
+		"preview": &"attach",
+		"title": "TAP A SOLID TARGET",
+		"kicker": "ATTACH · AIM",
+		"body": "Tap an in-range solid ceiling or anchorable obstacle to fire a "
+			+ "web. Glowing route cues guide your aim; they do not make a surface legal.",
 		"tip": "Aim ahead along the ceiling to build a longer forward arc.",
+		"mechanics": [&"attach_legality", &"attach_range", &"aim_guides"],
 	},
 	{
-		"title": "RELEASE WITH MOMENTUM",
-		"kicker": "03 · SWING",
-		"body": "While attached, tap anywhere away from the controls to release. "
-			+ "A wide rising release adds forward momentum; poor timing only keeps "
-			+ "the speed you already carried.",
-		"tip": "Release while rising to carry momentum forward.",
+		"id": &"swing_release",
+		"goal": &"release_while_rising_with_momentum",
+		"preview": &"swing_release",
+		"title": "RELEASE WHILE RISING",
+		"kicker": "SWING · RELEASE",
+		"body": "While attached, tap the course away from controls to release. "
+			+ "A wide rising arc earns forward momentum. Poor timing adds nothing, "
+			+ "so preserve the speed you already carried.",
+		"tip": "Long, rising arcs create the useful hand-off to your next web.",
+		"mechanics": [&"swing_arc", &"release_momentum", &"poor_release"],
 	},
 	{
-		"title": "HOLD THE LARGE REEL",
-		"kicker": "04 · REEL-IN",
-		"body": "Use your left thumb to hold REEL while aiming with your right. "
-			+ "It shortens the line at a fixed rate while the rope constraint "
-			+ "guides you inward. It no longer stacks a separate speed boost. "
-			+ "Natural inward movement also keeps most of the shorter length, "
-			+ "while leaving a little stretch. The energy ring recharges afterward.",
-		"tip": "Reel changes swing radius; the automatic take-up prevents deep surprise drops.",
+		"id": &"reel",
+		"goal": &"control_swing_radius_with_reel",
+		"preview": &"reel",
+		"title": "HOLD REEL TO SHORTEN",
+		"kicker": "REEL · RADIUS",
+		"body": "Hold REEL to shorten the rope at a fixed rate and tighten your "
+			+ "swing radius. It spends the ring, which recharges after release; "
+			+ "automatic slack take-up keeps most natural inward gains.",
+		"tip": "Reel changes radius; it does not add a separate speed boost.",
+		"mechanics": [
+			&"reel_rate", &"reel_radius", &"reel_energy", &"reel_recharge",
+			&"slack_take_up",
+		],
 	},
 	{
-		"title": "PULL TO THE TARGET",
-		"kicker": "05 · ANCHOR BURST",
-		"body": "Double-tap any solid target to cross 40% of the web distance "
-			+ "in a quick controlled pull toward that exact point. The BURST "
-			+ "button does the same without aiming, for when you cannot reach "
-			+ "across. Every "
-			+ "spider also has a useful minimum Burst travel that upgrades can "
-			+ "improve. Tapping "
-			+ "a solid below performs a shorter 40% Dive Pull and never stays "
-			+ "attached. During either pull, tap an upper solid to recover with "
-			+ "a normal web immediately.",
-		"tip": "Double-tap aims the Burst; at speed that beats reaching for the button.",
+		"id": &"anchor_burst",
+		"goal": &"use_aimed_and_fallback_anchor_burst",
+		"preview": &"anchor_burst",
+		"title": "BURST TO AN ANCHOR",
+		"kicker": "ANCHOR BURST · AIM",
+		"body": "Double-tap an upper solid to pull 40% toward that exact point. "
+			+ "The BURST button is an unaimed fallback. Bursts have a useful minimum "
+			+ "travel and spend visible charges that return on cooldown.",
+		"tip": "Aim the double-tap when route choice matters; use the button when it does not.",
+		"mechanics": [
+			&"burst_aimed", &"burst_button", &"burst_fraction",
+			&"burst_minimum", &"burst_charges",
+		],
 	},
 	{
-		"title": "SURVIVE & RECOVER",
-		"kicker": "06 · STAY ALIVE",
-		"body": "Collect flies along suggested routes and watch for Burst Frenzy. "
-			+ "The solid ceiling and floor are lethal by default, but reshape "
-			+ "around most obstacles to create high, low, and occasional tight "
-			+ "routes. A lethal mistake can spend your one visible RESCUE. "
-			+ "Buckler also has one moderate rail bounce that an upper web "
-			+ "recharges. A hard impact or obstacle still ends the run. Tap after "
-			+ "death to restart, or use MENU.",
-		"tip": "Follow the changing corridor and save recovery mechanics for real mistakes.",
+		"id": &"dive_recovery",
+		"goal": &"dive_once_then_rearm_or_interrupt",
+		"preview": &"dive_recovery",
+		"title": "DIVE, THEN RECOVER",
+		"kicker": "DIVE PULL · RECOVERY",
+		"body": "Tap a solid below for a one-shot 40% Dive Pull; it does not stay "
+			+ "attached. An upper web rearms the Dive and can interrupt either pull "
+			+ "immediately when you need to recover.",
+		"tip": "Spend Dive to change height, then secure the next upper web.",
+		"mechanics": [
+			&"dive_fraction", &"dive_one_shot", &"dive_upper_rearm",
+			&"pull_recovery",
+		],
+	},
+	{
+		"id": &"read_course",
+		"goal": &"read_routes_pickups_and_region_changes",
+		"preview": &"read_course",
+		"title": "READ THE COURSE",
+		"kicker": "ROUTES · REGIONS",
+		"body": "The corridor reshapes around real obstacle silhouettes. Read "
+			+ "high and low routes, collect flies, avoid lethal rails, and use Burst "
+			+ "Frenzy before the scenery and route vocabulary change again.",
+		"tip": "Route cues suggest a line; the visible solid course decides what is legal.",
+		"mechanics": [
+			&"route_change", &"flies", &"obstacles", &"lethal_rails",
+			&"burst_frenzy", &"regions",
+		],
+	},
+	{
+		"id": &"survive_restart",
+		"goal": &"recognize_recovery_death_and_restart_paths",
+		"preview": &"survive_restart",
+		"title": "SURVIVE, RESTART, LEAVE",
+		"kicker": "RESCUE · RESTART",
+		"body": "One visible RESCUE can absorb a lethal mistake. Buckler instead "
+			+ "adds one moderate rail bounce, rearmed by an upper web. The HUD names "
+			+ "bird, obstacle, or rail deaths; tap to restart, or choose MENU.",
+		"tip": "Recovery is limited. Spend it on the mistake that would end the run.",
+		"mechanics": [
+			&"rescue", &"buckler_bounce", &"death_attribution", &"restart", &"menu",
+		],
 	},
 ]
 
@@ -765,6 +817,13 @@ func reset_settings() -> void:
 
 func current_tutorial_step() -> Dictionary:
 	return TUTORIAL_STEPS[tutorial_index]
+
+
+static func tutorial_lesson(lesson_id: StringName) -> Dictionary:
+	for lesson: Dictionary in TUTORIAL_STEPS:
+		if StringName(lesson.get("id", &"")) == lesson_id:
+			return lesson.duplicate(true)
+	return {}
 
 
 func _publish_debug_test_profile() -> void:
