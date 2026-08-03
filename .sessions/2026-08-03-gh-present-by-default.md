@@ -1,6 +1,6 @@
 # `gh` was never a blocker — install it anyway, and say so in the ledger
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 
