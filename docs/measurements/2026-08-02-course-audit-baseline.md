@@ -98,6 +98,15 @@ His account, 2026-08-02, and what the generator says.
 
 ### N1 · The tightest content in the game is not the weave
 
+> **⚠ This is a SPACING finding, not a width one — clarified 2026-08-03.** Every
+> figure below is centre-to-centre or edge-to-edge distance *between* obstacles.
+> It has repeatedly been read as a corridor-width claim, and it is not:
+> `hollow_spindle_gate`, named here as tightest, has a **7.85-diameter corridor**
+> and an **8 ms constriction** — the most generous tight pattern in Silk Hollow.
+> Corridor width is measured in
+> [`2026-08-03-corridor-and-constriction.md`](2026-08-03-corridor-and-constriction.md)
+> and governed by the corridor-width envelope in the decision ledger.
+
 **The whole of O3 was framed around `high_low_weave` at 420 px / 0.60 s.** It is
 not the floor. Measured, tightest first:
 
@@ -181,8 +190,12 @@ Hollow's worst. That nuances F8: "narrowness" is two different quantities
    questions.
 2. **It is not passability.** The instrument does not sweep a route. The existing
    fairness contracts do that, and they still pass.
-3. **It says nothing about deaths.** There is no play data here. The hazard
-   telemetry that § 3 of
+3. **It says nothing about deaths.** There is no play data *here* — though as
+   of 2026-08-03 there is some, in
+   [`2026-08-03-owner-run-attrition.md`](2026-08-03-owner-run-attrition.md):
+   35 recorded attempts whose hazard peaks at **2 000–2 500 m**, independently
+   landing on the same cliff this document found from geometry. The instrumented
+   hazard telemetry that § 3 of
    [`../game-design/difficulty-research-2026-08-02.md`](../game-design/difficulty-research-2026-08-02.md)
    specifies — deaths over runs that *reached* a point, first exposure separated
    from later — needs instrumented runs and does not exist yet.
