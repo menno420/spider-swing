@@ -1,6 +1,13 @@
 # The curve gets a consumer, and Bramble opens the game
 
 > **Status:** `complete`
+>
+> **One deviation from the card discipline, recorded rather than hidden:**
+> this log was written at close-out and committed already `complete`,
+> not born `in-progress` as the session's first commit. The rule exists so
+> parallel sessions can see in-flight work; nothing else was running here,
+> so the cost was zero — but back-dating a born-red commit now would be
+> theatre, and the honest record is that the discipline was skipped.
 
 ## Goal
 
