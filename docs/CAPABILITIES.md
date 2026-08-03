@@ -139,6 +139,31 @@ as venue `any`.)
   inline in the command before a long Godot run if a future container's `/root`
   is not writable.
 
+- 2026-08-03 · capability · `owner-live` · **A link-shared Google Drive
+  *folder* enumerates too, not only individual file links — so the owner can
+  drop a whole playtest session in one link.** · evidence: a plain
+  `curl -L https://drive.google.com/drive/folders/<id>` returned `http=200`
+  and 349 KB of HTML with every child file id embedded as a 33-character
+  `1…` token; filtering those against the folder's own id gave 6 ids, each of
+  which then served `video/mp4` from the already-verified
+  `uc?export=download&id=<id>` endpoint. Re-listing the same folder minutes
+  later surfaced 2 newly added ids, so the listing is live rather than cached.
+  · workaround: filenames are **not** adjacent to the ids in that HTML, so a
+  file cannot be identified by name this way — order and content are the only
+  handles. Same privacy caveat as the entry below: a readable link means the
+  folder is public to anyone holding it.
+
+- 2026-08-03 · wall · `owner-live` · **HUD text in gameplay footage cannot be
+  read by template matching in this seat; frames must be read visually.** ·
+  evidence: glyph segmentation over 693 crops produced 5 347 distinct bitmaps
+  (anti-aliased white text over a moving high-contrast canopy), and a
+  nearest-neighbour classifier built from four hand-labelled reference frames
+  decoded ~15% of frames while emitting impossible values such as 99 003 m on a
+  course whose scope ends at 15 000 m. · workaround: extract the handful of
+  frames that actually matter — death moments, region transitions — crop tightly
+  around the readout, upscale 4× with `flags=neighbor`, tile them into one sheet
+  and read it. No OCR binary is installed; `pytesseract` would need one.
+
 - 2026-08-02 · capability · `owner-live` · **A link-shared Google Drive video
   downloads and decodes in this seat, so owner playtest footage no longer has to
   be uploaded into chat.** · evidence: two `drive.google.com/file/d/<id>/view`
