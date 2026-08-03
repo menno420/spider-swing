@@ -69,6 +69,17 @@ func _initialize() -> void:
 		"runs": runs,
 	}
 
+	report["course_digest"] = Probe.course_digest(
+		range(seed_base, seed_base + seed_count), first_chunk, last_chunk)
+
+	# One number for "the generator built exactly the same course". It changes
+	# when — and only when — pattern selection or geometry changes, so a slice
+	# that claims to leave behaviour alone can be checked rather than believed.
+	# Printed outside the summary because `--quiet` suppresses the table, not the
+	# proof.
+	print("[course-audit] course digest (patterns + polygons, chunks %d..%d, %d seed(s)): %s" % [
+		first_chunk, last_chunk, seed_count, report["course_digest"]])
+
 	if not quiet:
 		_print_summary(report)
 
@@ -131,9 +142,12 @@ func _print_summary(report: Dictionary) -> void:
 	print("  gates   = simultaneous ceiling+floor pairs sharing an x-range.")
 	print("            A width challenge, not a timing one — counted, not timed.")
 	print("  new     = chunks introducing a pattern not yet seen in that run.")
+	print("  press   = CoursePressure at the kilometre mark. NOTHING READS IT YET —")
+	print("            it is printed beside the axes it will eventually schedule so")
+	print("            the curve can be judged against what the game builds today.")
 	print("")
-	print("    km  region              label  dens%  minGap(radii)  minOpp(s)  gates  new")
-	print("  ---- ------------------- ------ ------ -------------- ---------- ------ ----")
+	print("    km  region               press  label  dens%  minGap(radii)  minOpp(s)  gates  new")
+	print("  ---- ------------------- ------ ------ ------ -------------- ---------- ------ ----")
 
 	var buckets := {}
 	for run: Dictionary in report["runs"]:
@@ -170,9 +184,10 @@ func _print_summary(report: Dictionary) -> void:
 	for km: int in keys:
 		var bucket: Dictionary = buckets[km]
 		var count := maxi(1, int(bucket["count"]))
-		print("  %4d  %-19s %6.2f %5.0f%% %14s %10s %6d %4d" % [
+		print("  %4d  %-19s %6.3f %6.2f %5.0f%% %14s %10s %6d %4d" % [
 			km,
 			bucket["region"],
+			CoursePressure.at(float(km) * CoursePressure.PIXELS_PER_KILOMETRE),
 			float(bucket["label_total"]) / float(count),
 			100.0 * float(bucket["challenge"]) / float(count),
 			("%.2f" % bucket["min_radii"]) if not is_inf(bucket["min_radii"]) else "-",
@@ -180,4 +195,25 @@ func _print_summary(report: Dictionary) -> void:
 			bucket["gates"],
 			bucket["new"],
 		])
+	print("")
+	_print_curve_profile(report)
+
+
+## The curve's own numbers, so the slope can be argued with directly rather than
+## inferred from the per-kilometre column.
+func _print_curve_profile(report: Dictionary) -> void:
+	var top := CoursePressure.SCOPE_TOP_PIXELS
+	var steepest := CoursePressure.steepest_kilometre(0.0, top, 50.0)
+	print("  CoursePressure: 0 through %.0f m, 1.000 at %.0f m, clamped above." % [
+		CoursePressure.WARM_UP_END_PIXELS / Probe.PIXELS_PER_METRE,
+		top / Probe.PIXELS_PER_METRE,
+	])
+	print(("    The top of the curve is the top of the OWNER-SCOPED RANGE, not a "
+		+ "plateau placement —"))
+	print("    O1 is deferred, so the curve clamps at the edge of the evidence.")
+	print("    steepest kilometre: %.4f (bound %.4f) · onset shape %.2f" % [
+		steepest,
+		CoursePressure.MAX_RISE_PER_KILOMETRE,
+		CoursePressure.ONSET_SHAPE,
+	])
 	print("")

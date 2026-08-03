@@ -1168,3 +1168,68 @@
 - provenance: Menno, 2026-08-02 — twelve-concept comparison video plus a 0.36.0
   Home screenshot; direction chosen from `docs/product/menu-ux-review-2026-08-02.md`
   § 4 and the three mocked directions
+
+## [D-0054] Difficulty is one pressure curve spending an axis envelope, for the first 15 km
+
+- status: decided
+- date: 2026-08-03
+- verdict: [`difficulty-and-obstacle-doctrine`](game-design/difficulty-and-obstacle-doctrine.md)
+  becomes `binding` for **0–15 km only** (Ancient Forest, Bramble Canopy, Silk
+  Hollow), and generator work may proceed against it. One monotone
+  `pressure(d) ∈ [0, 1]` is the single source of difficulty *amount*: zero
+  through the warm-up, rising to 1.0 at the top of the scoped range, constant
+  above. Three rulings settle the questions that blocked implementation.
+  **(a) R6 is reworded, not the generator.** R6 becomes *"0–500 m carries no
+  multi-obstacle pattern and no opposite-side pair"* rather than "no lethal
+  obstacle". **(b) The axis *budget* becomes an axis *envelope*.** The scalar
+  decides which profiles are admissible at a distance; each axis carries its own
+  cap, slope limit and cooldown, plus explicitly forbidden combinations —
+  maximum narrowness may not coincide with maximum novelty and minimum reaction
+  time. Requirement 5 survives as *"equal envelopes, different profiles"*.
+  **(c) R13's spacing floor T is a function of local predictability, not a
+  constant** — 0.60 s only where R14 has already made that beat predictable,
+  0.8–1.0 s for an unlearned opposite-side choice, 1.2–1.4 s where significant
+  swing correction is also needed. The plateau's position is **not** decided
+  here: O1 stays deferred, and the curve clamps at the top of the owner-scoped
+  range rather than inventing one.
+- why: The doctrine had sat at `status: plan` with no ledger entry, so every
+  later phase was blocked behind a decision nobody had recorded. Each ruling
+  resolves a conflict that measurement had already settled rather than a matter
+  of taste. **(a)** is forced: the audit measured chunks 1 and 4 (96 m and
+  384 m) each carrying one obstacle contact polygon, identically across three
+  seeds, so R6 as written contradicted both the shipped generator and R12's own
+  first-gate row. The owner's requirement was *"the first 500m should remain as
+  it is"*, which favours rewording the rule over retuning content that already
+  matches his description. **(b)** removes an unvalidated claim rather than
+  adding one: pressure is very unlikely to be additive, a point of narrowing is
+  not a point of density, and a search for a validated conserved difficulty
+  budget found none. The envelope costs nothing already being built — every
+  chunk still gets a vector, every region a profile — and changes only what the
+  comparison looks at: maxima, consecutive exposure, and interaction terms, not
+  means alone. **(c)** was reached twice independently, from this repository's
+  own route analysis and from reaction-time literature, and a known beat lets
+  anticipation begin before the window opens while an unlearned choice cannot
+  use anticipation at all. The three constants remain `assumed` pending a device
+  verdict; their *structure* does not.
+  **One trap is recorded because the doctrine walked into it.** O3 was framed
+  around the weave at 420 px / 0.60 s, and the weave is **not** the tightest
+  content. Measured: `hollow_spindle_gate` 180 px, `staggered_s` 233 px,
+  `stump_and_vine` 252 px — all `lane = centre`, and every `weave`-lane pattern
+  is looser than all three. Any T chosen against 0.60 s would leave the three
+  tightest patterns beneath it untouched. **The lane label does not predict
+  timing pressure and may not be used as a proxy for it.**
+  **What this entry deliberately does not decide.** The envelope's per-axis caps
+  are not fixed here. A cap with no consumer is exactly the shape of the
+  `difficulty` label F1 calls dead metadata — unfalsifiable and free to drift —
+  so each axis gets its numbers in the phase that gives it a consumer, region by
+  region.
+- provenance: Menno, 2026-08-02 device session after a recorded 10 605 m run —
+  requirements 1–8 in § 1 of the doctrine, the O2 recovery bound, and the O1
+  scope deferral (*"let's focus on the first 15K because that's actually
+  something that's proven to be reachable"*); measured against
+  [`course-audit baseline`](measurements/2026-08-02-course-audit-baseline.md)
+  (N1, N3, N5, N6) and pressure-tested by
+  [`difficulty-research`](game-design/difficulty-research-2026-08-02.md) § 2.1
+  and § 2.2, which is `inferred` external practice and loses to any measurement
+  it contradicts. The three rulings are **agent defaults recorded for owner
+  review**; any of them can be vetoed on the PR without disturbing the rest.

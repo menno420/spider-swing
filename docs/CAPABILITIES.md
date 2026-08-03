@@ -111,6 +111,34 @@ Format: `- YYYY-MM-DD · capability|wall · <venue> · finding · evidence · wo
 `any`; older five-field lines without a venue token stay valid — read them
 as venue `any`.)
 
+- 2026-08-03 · capability · `owner-live` · **Godot 4.7.1 Standard is
+  PREINSTALLED in the owner's standard spider-swing environment. Do not download
+  it — run `which godot` first.** · The owner created `scripts/env-setup.sh` on
+  2026-08-03 and now starts every spider-swing session from an environment that
+  runs it at container creation. It installs the engine to `/opt/godot/godot`
+  and symlinks `/usr/local/bin/godot`. Measured this session: `which godot` →
+  `/usr/local/bin/godot`; `--version` → `4.7.1.stable.official.a13da4feb`, the
+  exact pin; and `python3 tools/verify.py --require-godot` printed `using Godot
+  from PATH: /usr/local/bin/godot` and passed the full suite **with no
+  environment variable set and nothing downloaded**. · **This supersedes the
+  2026-08-02 "the seat starts with no engine" entry below for this
+  environment.** That entry was true when written — the setup script did not
+  exist yet — and its download recipe stays valid as the fallback for a seat
+  that genuinely has no engine. This session re-downloaded 211 MB before
+  checking `which godot`, which is THE DISCOVERY RULE step 2 skipped; the copy
+  was removed. · caveat, measured, not a wall: `scripts/env-setup.sh` exports
+  `GODOT_BIN` and the three `XDG_*` roots **only into `~/.bashrc`**
+  (lines 111–114), which non-interactive agent shells never source —
+  `bash -c 'echo "[$GODOT_BIN]"'` → `[]` while `which godot` resolves.
+  `tools/verify.py` is unaffected because its documented lookup order ends at
+  `godot` on PATH. The unprotected part is the XDG roots: that script's own
+  comment records headless Godot aborting with **exit 134 (SIGABRT)** and no
+  useful message when they are not writable. It did not fire here because
+  `/root/.cache/godot`, `/root/.config/godot` and `/root/.local/share/godot`
+  exist and are writable as root. · workaround: set the three `XDG_*` roots
+  inline in the command before a long Godot run if a future container's `/root`
+  is not writable.
+
 - 2026-08-02 · capability · `owner-live` · **A link-shared Google Drive video
   downloads and decodes in this seat, so owner playtest footage no longer has to
   be uploaded into chat.** · evidence: two `drive.google.com/file/d/<id>/view`

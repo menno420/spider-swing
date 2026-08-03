@@ -40,6 +40,20 @@ const WEAVE_SPACING_TOLERANCE := 0.05
 const AUTHORED_OPENING_COMMITMENTS := [0, 1, 0, 0, 1, 0]
 const OPENING_SEEDS := [1000, 1001, 1002]
 
+## The whole owner-scoped range, so the digest below spans all three regions in
+## scope rather than only Ancient Forest. Chunk 156 is 14 976 m.
+const DIGEST_SEEDS := [1000, 1001]
+const DIGEST_FIRST_CHUNK := 0
+const DIGEST_LAST_CHUNK := 156
+
+## Measured against the generator as it stood when `CoursePressure` was written,
+## on the pinned `4.7.1.stable.official.a13da4feb`. Reproduce with:
+##
+##   godot --headless --path . --script res://tools/course_audit.gd -- \
+##     --to-metres=15000 --seeds=2 --seed-base=1000 --quiet
+const UNCHANGED_COURSE_DIGEST := \
+	"4d7bbdf27f856fa7d16e68b5a21419a121103d911954694aa0aabd1b249f076f"
+
 
 static func run() -> Dictionary:
 	var failures := PackedStringArray()
@@ -49,6 +63,7 @@ static func run() -> Dictionary:
 	passed += _test_probe_reproduces_authored_weave_spacing(failures)
 	passed += _test_audit_is_deterministic(failures)
 	passed += _test_opening_is_authored_not_seeded(failures)
+	passed += _test_course_is_unchanged_by_the_pressure_curve(failures)
 	return {"passed": passed, "failures": failures}
 
 
@@ -200,4 +215,36 @@ static func _test_opening_is_authored_not_seeded(
 						+ "either seeded or has been retuned")
 					% [chunk_index, course_seed, actual, expected])
 				return 0
+	return 1
+
+
+## `CoursePressure` computes the difficulty-amount curve and **nothing consumes
+## it yet**, so the generator must still build exactly the course it built
+## before. This is the contract that makes that a fact rather than an assurance,
+## and it is what makes every later phase comparable: the before-picture cannot
+## drift out from under the after-picture unnoticed.
+##
+## It is *expected* to fail the moment a later phase wires selection onto the
+## curve. That failure is the deliverable — it forces a deliberate re-pin, so no
+## generator change can land looking like a no-op.
+static func _test_course_is_unchanged_by_the_pressure_curve(
+	failures: PackedStringArray,
+) -> int:
+	var digest := Probe.course_digest(
+		DIGEST_SEEDS, DIGEST_FIRST_CHUNK, DIGEST_LAST_CHUNK)
+	if digest != UNCHANGED_COURSE_DIGEST:
+		failures.append(
+			("course audit: the generated course changed. Chunks %d..%d on "
+				+ "seeds %s now hash to %s, not the pinned %s. If you moved "
+				+ "selection or geometry deliberately, re-pin this constant in "
+				+ "the same commit and say so; if you did not, something reads "
+				+ "the pressure curve that should not.")
+			% [
+				DIGEST_FIRST_CHUNK,
+				DIGEST_LAST_CHUNK,
+				str(DIGEST_SEEDS),
+				digest,
+				UNCHANGED_COURSE_DIGEST,
+			])
+		return 0
 	return 1
