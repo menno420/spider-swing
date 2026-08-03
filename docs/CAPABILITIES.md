@@ -112,6 +112,24 @@ Format: `- YYYY-MM-DD · capability|wall · <venue> · finding · evidence · wo
 as venue `any`.)
 
 
+- 2026-08-03 · capability · `any` · **`$GITHUB_PAT` is ENVIRONMENT-SCOPED, not universal —
+  and an environment without it is not a degraded one.** Qualifies the direct-PAT
+  workaround in the entry below, which reads as though the variable is always present.
+  It is not: some environments working this repo carry it and some do not. · evidence:
+  owner-confirmed 2026-08-03; and this session's own clone, fetch and pushes to this repo
+  all succeeded over the configured remote with **no PAT supplied to git at any point** —
+  the token was used only for direct `api.github.com` calls. · workaround: **check first,
+  then branch.** `printenv GITHUB_PAT` before reaching for the direct path. If set → the
+  recipe below. If not set → git over the configured remote does clone/fetch/push/branch,
+  and whatever GitHub access the environment already provides does the rest; between them
+  that is every GitHub operation this repo performs. **Do not record a missing PAT as a
+  wall** — a variable absent by design in one environment and present in another is
+  configuration, not a capability limit, and reading it as one is how the `gh` question
+  started. `scripts/env-setup.sh` § 7 now branches on the variable rather than asserting
+  it. The generalisation worth keeping: **a recipe in this ledger should name the
+  precondition it assumes**, or a reader whose environment differs concludes they are
+  blocked rather than that they need a different line.
+
 - 2026-08-03 · capability · `owner-live` · **`gh` is one `apt-get` away and is required
   by NOTHING — which retires the "this seat has no `gh` CLI" clause in the GraphQL
   entry below.** That clause was accurate about the default image and has since been

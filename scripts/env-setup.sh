@@ -211,8 +211,19 @@ fi
 # "GitHub access is not enabled for this session", and `gh pr list` 403s at
 # GraphQL. Both succeed on the direct-PAT path, so that 403 is the known
 # proxied-REST quirk and NOT an org-admin wall -- do not record it as one.
-log "gh auth: proxied path serves a pinned subset; for the rest use"
-log "    GH_TOKEN=\"\$GITHUB_PAT\" no_proxy='*' HTTPS_PROXY= gh <command>"
+# GITHUB_PAT is environment-scoped, not universal, so the recipe branches on it.
+# An environment without the PAT is NOT a degraded one -- printing the direct
+# path anyway would hand the reader a command that expands to an empty token,
+# which is indistinguishable from a permission problem and is exactly how a
+# missing variable gets recorded as a missing capability.
+if [ -n "${GITHUB_PAT:-}" ]; then
+  log "gh auth: proxied path serves a pinned subset; for the rest use"
+  log "    GH_TOKEN=\"\$GITHUB_PAT\" no_proxy='*' HTTPS_PROXY= gh <command>"
+else
+  log "gh auth: no GITHUB_PAT in this environment -- NOT a blocker. git over the"
+  log "    configured remote (clone/fetch/push/branch) and whatever GitHub access"
+  log "    this environment already provides cover every operation this repo needs."
+fi
 
 # --- deliberately NOT installed ---------------------------------------------
 # JDK, the Android SDK and Godot export templates. No tool in this repo runs a
