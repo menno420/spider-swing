@@ -1,9 +1,10 @@
-# The first device verdict on the curve — eight runs, two of them unupgraded
+# The first device verdict on the curve — eleven runs across three regions
 
 > **Status:** `reference`
 >
-> Owner play on `0.39.0-pressure-curve-region-swap`, recorded as eight screen
-> captures and supplied as a Drive folder on 2026-08-03. Read frame-by-frame
+> Owner play on `0.39.0-pressure-curve-region-swap`, recorded as ten screen
+> captures and supplied as a Drive folder on 2026-08-03. Eight attempts from 0 m
+> plus three entered cold at 10 km; one recording holds three of them. Read frame-by-frame
 > from the HUD; every distance below is a direct reading of the death frame, not
 > a conversion from duration.
 >
@@ -12,13 +13,14 @@
 > [`owner-run-attrition`](2026-08-03-owner-run-attrition.md) — is 35 attempts on
 > the pre-swap build.
 >
-> **Eight runs is not a rate.** Read every percentage here as a direction.
+> **Eleven runs is not a rate.** Read every percentage here as a direction.
 
 ## The runs
 
 `measured` — HUD distance and region at the death frame. Upgrade state is read
-from the run banner, not assumed: runs 7 and 8 display
-`DEBUG START 0 m · UPGRADES L0 · AWARDS NOTHING`.
+from the run banner, not assumed. Runs 1–6 are ordinary runs on the owner's own save, with no debug banner. Runs
+7–8 declare `DEBUG START 0 m · UPGRADES L0`, and runs 9–10 (below)
+`DEBUG START 10000 m · UPGRADES L40`.
 
 | run | died at | region | spider |
 | ---: | ---: | --- | --- |
@@ -86,6 +88,57 @@ The owner's own reading of why, and it fits the numbers:
 **`inferred`, and confounded.** The L0 runs were played *after* the upgraded
 ones in the same sitting, so within-session learning is inseparable from upgrade
 state in this sample. A clean answer needs the two interleaved, or two players.
+
+## Silk Hollow, entered cold at 10 km
+
+Three further attempts from a `DEBUG START 10000 m · UPGRADES L40` launch, plus
+the owner's verbal result at L0.
+
+| attempt | died at | travelled from the 10 km start |
+| --- | ---: | ---: |
+| 9 | 13 208.4 m | **3 208 m** |
+| 10-A | ~11 600 m | ~1 600 m |
+| 10-B | ~10 650 m | ~650 m |
+| L0 | — | **owner reports it is not clearable for him** |
+
+Median progress at L40 is ~1.6 km against a 5 km region. For contrast, the same
+player from 0 m covered 1.2–8.2 km through Bramble and Ancient Forest.
+
+**Nothing in this build made Silk Hollow harder, and one thing made it easier.**
+The only change inside 10–15 km was widening `hollow_lattice_high` and
+`hollow_lattice_low` — lattice height 292 → 258 px, lifting the region's tightest
+corridor from 6.79 to 7.75 player diameters. Its cadence measured 21.2% before
+and after, its pool is untouched, its spacing is untouched, and the obstacle-size
+ramp is deliberately not applied to zone-authored geometry.
+
+### Why it still reads narrow, and it is not the minimum
+
+The owner's report — *"the corridor itself is still pretty narrow as well
+compared to the other sections"* — is right, and the distribution says why it is
+not a floor problem:
+
+| region | tightest | median | share near its own min |
+| --- | ---: | ---: | ---: |
+| Ancient Forest | 7.39 d | 12.22 d | **4%** |
+| Bramble Canopy | 8.49 d | 10.50 d | 9% |
+| **Silk Hollow** | **7.75 d** | 10.39 d | **24%** |
+
+**Silk Hollow's worst chunk is now wider than Ancient Forest's worst chunk.**
+What separates them is frequency: Ancient Forest opens back to 12.2 diameters and
+pinches on 4% of chunks, Silk Hollow sits near its floor on 24% — six times as
+often. That is precisely the term the width envelope was written as a
+distribution to capture, and a floor-only rule cannot see it.
+
+The larger factor is timing rather than width. Tightest opposite-side pair:
+Bramble **0.87 s**, Ancient Forest **0.26 s**, Silk Hollow **0.20 s** — a 4.3×
+collapse at the 10 km boundary, unchanged by this build and consistent with the
+earlier finding that the 10 km wall is a timing wall.
+
+**A caveat on the method, not the content:** a debug start drops the player in at
+the speed cap with no run-up and no chance to read the region. It is a harsher
+entry than arriving organically, so these three attempts bound Silk Hollow's
+difficulty from the wrong side. They say the region is hard to enter cold; they
+do not say what it costs a player who arrives having played the first 10 km.
 
 ## A bound worth writing down before anyone raises Bramble's density again
 
