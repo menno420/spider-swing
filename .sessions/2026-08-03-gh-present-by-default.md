@@ -99,4 +99,4 @@ a hand-edited file as untouched, which is the failure that entry documents.
 `bootstrap.py check --strict` passes with the drift, confirming it is a
 fingerprint rather than a lock.
 
-- **📊 Model:** opus-5 · high · env + docs — one script section, two ledger entries
+- **📊 Model:** opus-5 · high · feature build — env-setup section + two ledger entries
