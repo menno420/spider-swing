@@ -2,13 +2,14 @@
 
 > **Status:** `binding` for 0–15 km · [D-0054]
 >
-> **Approved 2026-08-03 by [D-0054].** This was a proposal for five days and is
-> now the governing plan for the first 15 km; generator work may proceed against
-> it. Three questions that blocked implementation were settled by that entry and
-> are folded in below — **R6** is reworded rather than the generator, the axis
-> **budget** is an axis **envelope**, and **R13's T** is a function of local
-> predictability rather than a constant. Each was recorded as an agent default
-> open to owner veto.
+> **Approved 2026-08-03 by [D-0054].** Written across 2026-08-02 (PRs #124–#129)
+> and refined the following morning (#130–#132, the last of which landed the
+> instrument that contradicted two of its rules), it is now the governing plan for
+> the first 15 km; generator work may proceed against it. Three questions that
+> blocked implementation were settled by that entry and are folded in below —
+> **R6** is reworded rather than the generator, the axis **budget** is an axis
+> **envelope**, and **R13's T** is a function of local predictability rather than
+> a constant. Each was recorded as an agent default open to owner veto.
 >
 > **Still not decided: where the plateau goes.** O1 remains deferred, so
 > `pressure(d)` clamps at the top of the owner-scoped range instead of placing

@@ -30,10 +30,13 @@ moment the curve landed, destroying the one thing it exists to rule out.
 
 ## What landed
 
-**Phase 1 — [D-0054].** The doctrine had sat at `status: plan` for five days with
-zero ledger entries, which blocked every later phase behind a decision nobody had
-recorded. It is now `binding` for 0–15 km, with three rulings folded into the
-document itself:
+**Phase 1 — [D-0054].** The doctrine carried `status: plan` and zero ledger
+entries, which blocked every later phase behind a decision nobody had recorded.
+It was one day old — written 2026-08-02 across PRs #124–#129 and refined the next
+morning by #130–#132, the last of which landed the instrument that contradicted
+two of its rules. Not neglect: it was finished one day and approved the next.
+It is now `binding` for 0–15 km, with three rulings folded into the document
+itself:
 
 - **R6 is reworded, not the generator.** Its old wording — "0–500 m carries no
   lethal obstacle" — described a game that has never shipped. The owner's ask was
