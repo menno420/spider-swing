@@ -110,7 +110,7 @@
     "owner_profile": {
       "question_id": "Q-008",
       "source": "user",
-      "value": "Menno defines the product vision, evaluates feel, notices inconsistencies, and values honesty above inflated progress claims. He does not code and relies on autonomous Claude and Codex agents to make contained reversible technical decisions, implement end-to-end, verify against source, keep CI green, and land or clearly park their own PRs. Explain owner actions in plain language and ask only for genuine product forks, credentials, irreversible publishing, spending, or repository settings that tooling cannot safely perform."
+      "value": "Menno defines the product vision, evaluates feel, notices inconsistencies, and values honesty above inflated progress claims. He does not code and relies on autonomous Claude and Codex agents to make contained reversible technical decisions, implement end-to-end, verify against source, keep CI green, and land or clearly park their own PRs. Explain owner actions in plain language and ask only for genuine product forks, credentials, irreversible publishing, spending, or repository settings that tooling cannot safely perform. He does not read the repository \u2014 not source, not session cards, not pull requests. His picture of a project comes from what agents tell him directly, so the chat reply is the deliverable, not a pointer to one: a link, a filename, or \"see the session card\" does not reach him. He works mainly from a phone or tablet, which is the reason owner-facing output is one copyable block rather than a recipe to assemble."
     },
     "ownership_model": {
       "question_id": "Q-006",

@@ -1,4 +1,4 @@
-# spider-swing — owner working profile
+# Spider Swing — owner working profile
 
 > **Status:** `owner-guidance`
 >
@@ -19,4 +19,4 @@ Agents work through ready born-red PRs, finish the declared scope, run the exact
 This doc records working style only: communication preferences, review
 cadence, decision boundaries, autonomy expectations. No contact details, no
 personal history, nothing that identifies the person beyond their role on
-spider-swing. When in doubt, leave it out.
+Spider Swing. When in doubt, leave it out.
