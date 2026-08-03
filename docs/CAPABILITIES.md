@@ -112,6 +112,38 @@ Format: `- YYYY-MM-DD · capability|wall · <venue> · finding · evidence · wo
 as venue `any`.)
 
 
+- 2026-08-03 · capability · `any` · **Ref deletion HAS a sanctioned path now:
+  `.github/workflows/ref-cleanup.yml`, dispatched with
+  `actions_run_trigger`.** · evidence: the same shape as the release-via-
+  `workflow_dispatch` entry above — the repo's own `GITHUB_TOKEN` holds
+  `contents: write`, so a workflow deletes what a session cannot. Deletes exactly
+  one caller-named ref and refuses the default branch, a non-existent ref, the
+  head of an open PR, and any ref carrying commits not on the default branch
+  (that last one needs an explicit `allow_unmerged`). `dry_run` defaults to
+  **true**, so the safe call is the default call. · workaround: this IS the
+  workaround. **Reach for `branch-sweep.yml` first** — it runs nightly, takes
+  every `claude/*|codex/*|bot/*` head of a spent PR with no dispatch at all, and
+  a dry run on 2026-08-03 confirmed it collecting three. `ref-cleanup` is for the
+  refs that fall outside that shape, which is exactly how one got stranded today.
+
+- 2026-08-03 · wall · `any` · **CORRECTION to this morning's own entry: "403 on
+  every path" was right in conclusion and sloppy in evidence — I never checked
+  the environment, which is step 2 of the rule I was following.** · evidence: the
+  owner asked whether his PAT would do it. `GITHUB_PAT`, `GH_TOKEN` and
+  `GITHUB_TOKEN` are all **present in the environment** and I had not looked.
+  Presenting `GITHUB_PAT` to `api.github.com` still 403s — but the body is the
+  *agent proxy's*, not GitHub's: *"GitHub access is not enabled for this session.
+  An org admin must connect the Claude GitHub App for this organization."* The
+  request never reaches GitHub, so no token can satisfy it. The git path is a
+  separate gate: the remote is the local proxy (`127.0.0.1:41729`), which
+  authenticates on the session's behalf and enforces its own ref-operation
+  policy — create and update pass, delete and tag refuse. **A PAT is not a factor
+  in either gate.** · workaround: the workflow above. **The general lesson is the
+  one I skipped: `printenv` BEFORE concluding a credential is absent, and say
+  which layer refused** — "GitHub refuses this" and "the proxy never asked
+  GitHub" are different facts with different fixes, and only one of them can be
+  fixed by an owner.
+
 - 2026-08-03 · wall · `any` · **The `stale-wall` advisory cannot be cleared by
   doing what it asks. Re-verify anyway — but do not expect the warning to go
   away, and do not "fix" it by editing the fence.** · evidence: `check_stale_walls`
