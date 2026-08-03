@@ -76,6 +76,7 @@ var _tutorial_title: Label
 var _tutorial_body: Label
 var _tutorial_tip: Label
 var _tutorial_progress: Label
+var _tutorial_action: Button
 var _tutorial_next: Button
 var _preset_buttons: Dictionary = {}
 var _hints_toggle: CheckButton
@@ -744,10 +745,10 @@ func _build_tutorial() -> void:
 	_tutorial_progress.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_tutorial_progress.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	nav.add_child(_tutorial_progress)
-	var start_run := _button(&"TutorialStartRun", "START RUN", ORANGE, 80.0)
-	start_run.pressed.connect(_on_play)
-	start_run.custom_minimum_size.x = 170.0
-	nav.add_child(start_run)
+	_tutorial_action = _button(&"TutorialLessonAction", "START RUN", ORANGE, 80.0)
+	_tutorial_action.pressed.connect(_on_tutorial_action)
+	_tutorial_action.custom_minimum_size.x = 190.0
+	nav.add_child(_tutorial_action)
 	_tutorial_next = _button(&"TutorialNext", "NEXT", GREEN, 80.0)
 	_tutorial_next.pressed.connect(_on_tutorial_next)
 	_tutorial_next.custom_minimum_size.x = 150.0
@@ -2014,8 +2015,15 @@ func _render() -> void:
 			_state.tutorial_index + 1,
 			FrontEndState.TUTORIAL_STEPS.size(),
 		]
+		var practice: Dictionary = step.get("practice", {})
+		var can_practise := bool(practice.get("practice_available", false))
+		_tutorial_action.text = (
+			"COMPLETED · PRACTISE AGAIN"
+			if can_practise and bool(step.get("practice_completed", false))
+			else "PRACTISE LESSON" if can_practise else "START RUN"
+		)
 		_tutorial_next.text = (
-			"START RUN" if _state.tutorial_index ==
+			"GUIDE HUB" if _state.tutorial_index ==
 				FrontEndState.TUTORIAL_STEPS.size() - 1
 			else "NEXT"
 		)
@@ -2839,6 +2847,11 @@ func _on_tutorial_previous() -> void:
 func _on_tutorial_next() -> void:
 	if _state != null:
 		_state.next_tutorial_step()
+
+
+func _on_tutorial_action() -> void:
+	if _state != null:
+		_state.request_current_tutorial_action()
 
 
 func _on_preset_selected(index: int) -> void:

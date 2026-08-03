@@ -17,6 +17,10 @@ signal practice_play_requested(
 	region_id: StringName,
 	start_distance_pixels: float,
 )
+signal tutorial_practice_requested(
+	settings: PlayerSettings,
+	lesson_id: StringName,
+)
 signal debug_play_requested(
 	settings: PlayerSettings,
 	start_distance_pixels: float,
@@ -199,6 +203,9 @@ var screen: int = Screen.HOME
 var field_guide_return_screen: int = Screen.HOME
 var field_guide_spider_id: StringName = SpiderCatalog.CLASSIC
 var tutorial_index: int = 0
+## Deliberately session-only. Tutorial practice is repeatable coaching, not a
+## new progression or save schema.
+var tutorial_practice_completed: Array[StringName] = []
 var settings: PlayerSettings = PlayerSettings.defaults()
 var progress: PlayerProgress = PlayerProgress.defaults()
 var debug_test_profile: DebugTestProfile = DebugTestProfile.defaults()
@@ -239,6 +246,7 @@ func configure(
 		_progression_service.clear_debug_upgrade_overlay()
 	screen = Screen.HOME
 	tutorial_index = 0
+	tutorial_practice_completed.clear()
 	changed.emit()
 
 
@@ -266,6 +274,15 @@ func show_tutorial() -> void:
 	screen = Screen.TUTORIAL
 	tutorial_index = 0
 	changed.emit()
+
+
+func show_tutorial_lesson(lesson_id: StringName) -> void:
+	for index in range(TUTORIAL_STEPS.size()):
+		if StringName(TUTORIAL_STEPS[index].get("id", &"")) == lesson_id:
+			tutorial_index = index
+			screen = Screen.TUTORIAL
+			changed.emit()
+			return
 
 
 func show_settings() -> void:
@@ -405,7 +422,7 @@ func debug_upgrade_overlay_level() -> int:
 
 func next_tutorial_step() -> void:
 	if tutorial_index >= TUTORIAL_STEPS.size() - 1:
-		request_play()
+		show_guide_hub()
 		return
 	tutorial_index += 1
 	changed.emit()
@@ -419,6 +436,23 @@ func previous_tutorial_step() -> void:
 func request_play() -> void:
 	_clear_debug_overlay_for_normal_run()
 	play_requested.emit(settings.copy())
+
+
+func request_current_tutorial_action() -> void:
+	var lesson_id := StringName(current_tutorial_step().get("id", &""))
+	if TutorialPracticeCatalog.practice_available(lesson_id):
+		_clear_debug_overlay_for_normal_run()
+		tutorial_practice_requested.emit(settings.copy(), lesson_id)
+		return
+	request_play()
+
+
+func mark_tutorial_practice_completed(lesson_id: StringName) -> void:
+	if not TutorialPracticeCatalog.practice_available(lesson_id) or \
+			lesson_id in tutorial_practice_completed:
+		return
+	tutorial_practice_completed.append(lesson_id)
+	changed.emit()
 
 
 func request_creator_play() -> void:
@@ -816,7 +850,12 @@ func reset_settings() -> void:
 
 
 func current_tutorial_step() -> Dictionary:
-	return TUTORIAL_STEPS[tutorial_index]
+	var step: Dictionary = TUTORIAL_STEPS[tutorial_index].duplicate(true)
+	var lesson_id := StringName(step.get("id", &""))
+	var practice := TutorialPracticeCatalog.lesson(lesson_id)
+	step["practice"] = practice
+	step["practice_completed"] = lesson_id in tutorial_practice_completed
+	return step
 
 
 static func tutorial_lesson(lesson_id: StringName) -> Dictionary:

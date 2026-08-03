@@ -15,7 +15,7 @@ live in [`player-preference research`](product/player-preference-research-2026-0
 External benchmarks and the verified zone audit live in
 [`upgrade-and-difficulty research`](product/upgrade-and-difficulty-research-2026-08-02.md).
 
-Build `0.40.0-live-tutorial` is current. Continuous drive is
+Build `0.41.0-tutorial-practice` is current. Continuous drive is
 zero; release, swing control, Reel, and pull timing earn speed; the former left
 kill line is a visible pursuing bird. `target_speed_at` remains a named
 reference. The bot still cannot tune the bird — model v4 pumps, but it sustains
@@ -42,12 +42,17 @@ without a reported regression.
   Campaign, Field Guide, Settings, the compact debug-run launcher, and Advanced
   Test Lab remain state-owned destinations. The bootstrap root alone wires and mounts
   presentation, input, persistence, progression, and the application session.
-- The Guide tutorial now has eight stable, single-goal lessons. Its deterministic
+- The Guide tutorial has eight stable, single-goal lessons. Its deterministic
   preview uses the selected production spider/style/Silk plus Bramble art,
   current obstacles, the pursuing bird, flies, route cues, and gameplay-shaped
   HUD controls. Reduced Motion freezes a useful pose; all tutorial controls stay
-  enclosed through strict 1040×480. `START RUN` remains an honest ordinary-run
-  launch; direct lesson practice is the next separate slice.
+  enclosed through strict 1040×480. Attach, momentum release, Reel, Anchor Burst,
+  and Dive-plus-upper-web recovery each launch a fixed-seed short practice in the
+  real simulation with the selected spider and upgrades. Authoritative events,
+  never distance, complete the objective; completion, death, and Menu return to
+  the originating lesson. The feedback is session-local and practice creates no
+  settlement, stars, flies, records, checkpoints, leaderboard eligibility, or
+  save write. Overview lessons retain an honestly labelled `START RUN` action.
 - Layering is enforced in both directions: domain imports no Godot-facing layer;
   simulation imports domain; application imports inward; adapters and
   presentation are outer peers; presentation never mutates simulation state.
@@ -68,7 +73,7 @@ without a reported regression.
 - A separately versioned `DebugTestProfile` auto-saves the Test Lab working set
   and A/B/C comparison slots. Its resolved display values and sparse explicit
   overrides never enter `PlayerSettings` or `PlayerProgress`.
-- Build `0.38.0-campaign-combination-playtest` (Android version code 58, package
+- Build `0.41.0-tutorial-practice` (Android version code 61, package
   `com.menno420.spiderswing.dev`) retains the stable conventional public debug
   identity introduced by `0.19.0-depth-testing` in
   `.github/android/debug.keystore`. The workflow pins its file and certificate

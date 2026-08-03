@@ -5,17 +5,19 @@ const ZoneProgressionSuite = preload(
 	"res://tests/unit/zone_progression_tests.gd")
 const AudioPresentationSuite = preload(
 	"res://tests/unit/audio_presentation_tests.gd")
+const TutorialPracticeSuite = preload(
+	"res://tests/unit/tutorial_practice_tests.gd")
 
 const MAIN_SCENE_PATH := "res://game/bootstrap/main.tscn"
 const EXPORT_PRESETS_PATH := "res://export_presets.cfg"
 const ANDROID_WORKFLOW_PATH := "res://.github/workflows/android-debug.yml"
-const BUILD_VERSION := "0.40.0-live-tutorial"
-const ANDROID_VERSION_CODE := 60
-const ANDROID_APP_NAME := "Spider Swing Live Tutorial (dev)"
+const BUILD_VERSION := "0.41.0-tutorial-practice"
+const ANDROID_VERSION_CODE := 61
+const ANDROID_APP_NAME := "Spider Swing Tutorial Practice (dev)"
 const DEBUG_KEYSTORE_PATH := "res://.github/android/debug.keystore"
 const DEBUG_KEYSTORE_SHA256 := \
 	"e9104672477e0238b6cc2f7d6b994c459e37f130cae06a37aff05001f101bbda"
-const EXPECTED_CHECK_COUNT := 234
+const EXPECTED_CHECK_COUNT := 244
 const REQUIRED_INPUT_ACTIONS := [
 	"web_action", "reel_in", "burst_action", "pause", "restart_run",
 	"toggle_debug"]
@@ -38,6 +40,7 @@ func _initialize() -> void:
 	_check_zone_progression()
 	_check_spider_biology()
 	_check_campaign()
+	_check_tutorial_practice()
 	_check_difficulty()
 	_check_upgrade_audit()
 	_check_simulation_lab()
@@ -372,6 +375,17 @@ func _check_campaign() -> void:
 		return
 	for failure: String in failures:
 		_fail("Campaign teaching tier — %s" % failure)
+
+
+func _check_tutorial_practice() -> void:
+	var result := TutorialPracticeSuite.run()
+	var failures: PackedStringArray = result["failures"]
+	if failures.is_empty():
+		_passed += int(result["passed"])
+		print("  ✓ Tutorial lesson practice: %d contracts" % int(result["passed"]))
+		return
+	for failure: String in failures:
+		_fail("Tutorial lesson practice — %s" % failure)
 
 
 func _check_spider_biology() -> void:

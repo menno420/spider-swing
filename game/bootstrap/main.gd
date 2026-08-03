@@ -28,6 +28,7 @@ var _input_router: InputRouter
 var _view: SwingLabView
 var _audio_director: AudioDirector
 var _active_run_is_debug_test: bool = false
+var _active_tutorial_lesson_id: StringName = &""
 
 
 func _ready() -> void:
@@ -44,6 +45,8 @@ func _ready() -> void:
 	_front_end_state = FRONT_END_STATE_SCRIPT.new() as FrontEndState
 	_front_end_state.play_requested.connect(_start_game)
 	_front_end_state.practice_play_requested.connect(_start_practice_game)
+	_front_end_state.tutorial_practice_requested.connect(
+		_start_tutorial_practice_game)
 	_front_end_state.campaign_play_requested.connect(_start_campaign_game)
 	_front_end_state.difficulty_requested.connect(_select_difficulty)
 	_front_end_state.debug_play_requested.connect(_start_debug_game)
@@ -110,6 +113,7 @@ func _instantiate_front_end() -> PackedStringArray:
 
 func _start_game(settings: PlayerSettings) -> void:
 	_active_run_is_debug_test = false
+	_active_tutorial_lesson_id = &""
 	_unmount_front_end()
 	var failures := _mount_swing_lab(settings)
 	if failures.is_empty():
@@ -125,6 +129,7 @@ func _start_creator_game(
 	pattern: Array[StringName],
 ) -> void:
 	_active_run_is_debug_test = false
+	_active_tutorial_lesson_id = &""
 	_unmount_front_end()
 	var failures := _mount_swing_lab(settings, pattern)
 	if failures.is_empty():
@@ -147,6 +152,7 @@ func _start_practice_game(
 			):
 		return
 	_active_run_is_debug_test = false
+	_active_tutorial_lesson_id = &""
 	_unmount_front_end()
 	var failures := _mount_swing_lab(
 		settings,
@@ -176,6 +182,7 @@ func _start_campaign_game(
 	if not CampaignCatalog.has_level(level_id):
 		return
 	_active_run_is_debug_test = false
+	_active_tutorial_lesson_id = &""
 	_unmount_front_end()
 	var failures := _mount_swing_lab(
 		settings,
@@ -191,6 +198,34 @@ func _start_campaign_game(
 		printerr("[spider-swing] campaign start failed — %s" % failure)
 	_unmount_swing_lab()
 	_mount_front_end()
+
+
+func _start_tutorial_practice_game(
+	settings: PlayerSettings,
+	lesson_id: StringName,
+) -> void:
+	if not TutorialPracticeCatalog.practice_available(lesson_id):
+		return
+	_active_run_is_debug_test = false
+	_active_tutorial_lesson_id = lesson_id
+	_unmount_front_end()
+	var failures := _mount_swing_lab(
+		settings,
+		[],
+		SwingLabSession.RUN_TUTORIAL_PRACTICE,
+		0.0,
+		false,
+		&"",
+		{},
+		{},
+		lesson_id,
+	)
+	if failures.is_empty():
+		return
+	for failure: String in failures:
+		printerr("[spider-swing] tutorial practice failed — %s" % failure)
+	_unmount_swing_lab()
+	_show_front_end()
 
 
 ## Mount a run and immediately hand it a recorded trace to replay.
@@ -211,6 +246,7 @@ func _start_trace_watch(
 		printerr("[spider-swing] trace %s is missing or unreadable" % trace_path)
 		return
 	_active_run_is_debug_test = true
+	_active_tutorial_lesson_id = &""
 	_unmount_front_end()
 	var failures := _mount_swing_lab(
 		settings,
@@ -254,6 +290,7 @@ func _start_debug_game(
 			):
 		return
 	_active_run_is_debug_test = true
+	_active_tutorial_lesson_id = &""
 	_unmount_front_end()
 	var failures := _mount_swing_lab(
 		settings,
@@ -283,6 +320,7 @@ func _mount_swing_lab(
 	campaign_level_id: StringName = &"",
 	bird_debug_overrides: Dictionary = {},
 	debug_tuning_overrides: Dictionary = {},
+	tutorial_lesson_id: StringName = &"",
 ) -> PackedStringArray:
 	var failures := PackedStringArray()
 	if not ResourceLoader.exists(SWING_LAB_SCENE_PATH):
@@ -314,11 +352,18 @@ func _mount_swing_lab(
 	_session.event_published.connect(_audio_director.present_event)
 	_session.settlement_created.connect(_apply_settlement)
 	_session.checkpoint_reached.connect(_unlock_region_checkpoint)
+	_session.tutorial_practice_ended.connect(_finish_tutorial_practice)
 	_session.configure_progress(_progress, _progression_service)
 	_session.configure_creator_pattern(creator_pattern)
 	_session.configure_bird_debug_overrides(bird_debug_overrides)
 	_session.configure_run(
-		run_mode, start_distance_pixels, -1, debug_start, campaign_level_id)
+		run_mode,
+		start_distance_pixels,
+		-1,
+		debug_start,
+		campaign_level_id,
+		tutorial_lesson_id,
+	)
 	_input_router.web_tapped.connect(_on_web_tapped)
 	_input_router.reel_changed.connect(_session.set_reel_active)
 	_input_router.burst_requested.connect(_session.request_burst)
@@ -372,7 +417,19 @@ func _return_to_menu() -> void:
 	call_deferred("_show_front_end")
 
 
+func _finish_tutorial_practice(
+	lesson_id: StringName,
+	completed: bool,
+) -> void:
+	if lesson_id != _active_tutorial_lesson_id:
+		return
+	if completed:
+		_front_end_state.mark_tutorial_practice_completed(lesson_id)
+	call_deferred("_show_front_end")
+
+
 func _show_front_end() -> void:
+	var tutorial_return_id := _active_tutorial_lesson_id
 	if _session != null and _front_end_state.settings.show_debug_tools:
 		var snapshot := _session.current_snapshot()
 		if _active_run_is_debug_test or snapshot.debug_start_active or \
@@ -392,10 +449,14 @@ func _show_front_end() -> void:
 			)
 	_unmount_swing_lab()
 	_active_run_is_debug_test = false
+	_active_tutorial_lesson_id = &""
 	# The run is over, so its borrowed upgrade levels are too. Read the snapshot
 	# above first — the launcher still needs the level the finished run used.
 	_front_end_state.end_debug_run_overlay()
-	_front_end_state.show_home()
+	if tutorial_return_id.is_empty():
+		_front_end_state.show_home()
+	else:
+		_front_end_state.show_tutorial_lesson(tutorial_return_id)
 	_mount_front_end()
 
 

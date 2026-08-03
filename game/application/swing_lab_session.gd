@@ -11,6 +11,7 @@ signal event_published(event: SimulationEvent)
 signal settlement_created(settlement: RunSettlement)
 signal checkpoint_reached(region_id: StringName, distance_pixels: float)
 signal campaign_level_completed(level_id: StringName)
+signal tutorial_practice_ended(lesson_id: StringName, completed: bool)
 
 const FIXED_DELTA := 1.0 / 60.0
 ## Trace identity and scale live in `TraceCatalog`, in domain, because the
@@ -21,6 +22,7 @@ const TRACE_PIXELS_PER_METRE := TraceCatalog.PIXELS_PER_METRE
 const RUN_STANDARD := &"standard"
 const RUN_PRACTICE := &"practice"
 const RUN_CAMPAIGN := &"campaign"
+const RUN_TUTORIAL_PRACTICE := &"tutorial_practice"
 static var TUNING_PARAMETERS: Array[StringName] = TuningCatalog.parameter_ids()
 const BIRD_DEBUG_PARAMETERS := [
 	&"bird_speed", &"bird_acceleration", &"bird_start_offset",
@@ -38,6 +40,9 @@ var _creator_pattern: Array[StringName] = []
 var _run_mode: StringName = RUN_STANDARD
 var _start_distance_pixels: float = 0.0
 var _campaign_level_id: StringName = &""
+var _tutorial_lesson_id: StringName = &""
+var _tutorial_objective_progress: Dictionary = {}
+var _tutorial_end_emitted: bool = false
 ## Which difficulty the run is played on. Standard until a run is configured.
 var _difficulty_mode: StringName = DifficultyCatalog.MODE_STANDARD
 ## Verbs the player actually performed this run. A campaign level is only
@@ -145,13 +150,32 @@ func configure_run(
 	course_seed_override: int = -1,
 	debug_start_requested: bool = false,
 	campaign_level_id: StringName = &"",
+	tutorial_lesson_id: StringName = &"",
 ) -> void:
 	_debug_start_active = debug_start_requested
 	_verbs_performed.clear()
+	_tutorial_lesson_id = &""
+	_tutorial_objective_progress.clear()
 	var requested_campaign := mode == RUN_CAMPAIGN and \
 		CampaignCatalog.has_level(campaign_level_id)
 	_campaign_level_id = campaign_level_id if requested_campaign else &""
 	var requested_practice := mode == RUN_PRACTICE
+	var requested_tutorial := mode == RUN_TUTORIAL_PRACTICE and \
+		TutorialPracticeCatalog.practice_available(tutorial_lesson_id)
+	if requested_tutorial:
+		var tutorial := TutorialPracticeCatalog.lesson(tutorial_lesson_id)
+		_tutorial_lesson_id = tutorial_lesson_id
+		_tutorial_objective_progress = \
+			TutorialPracticeCatalog.initial_progress(tutorial_lesson_id)
+		_run_mode = RUN_TUTORIAL_PRACTICE
+		_difficulty_mode = DifficultyCatalog.MODE_STANDARD
+		_config = _resolved_config(_config.preset_name)
+		if is_inside_tree():
+			_world.config = _config
+		_start_distance_pixels = maxf(
+			0.0, float(tutorial.get("start_distance_pixels", 0.0)))
+		_course_seed_override = int(tutorial.get("fixed_seed", -1))
+		return
 	if requested_campaign:
 		# A campaign level is one fixed course for every player and attempt,
 		# so its seed is the level's, not the session's.
@@ -642,6 +666,7 @@ func _step_once() -> void:
 					_config.burst_frenzy_duration,
 				)
 			_note_verb(event)
+			_observe_tutorial_objective(event)
 			if event.kind == SimulationEvent.Kind.DEATH_REQUESTED:
 				if _rescue_available and _config.rescue_life_enabled:
 					_rescue_available = false
@@ -656,6 +681,8 @@ func _step_once() -> void:
 		_check_campaign_completion()
 	elif _run.state == RunStateMachine.State.DYING:
 		_run.advance(FIXED_DELTA)
+		if _run.state == RunStateMachine.State.DEAD:
+			_end_tutorial_practice(false)
 	_publish_snapshot()
 
 
@@ -698,6 +725,10 @@ func _reset_run(
 	if rotate_course_seed:
 		_course_seed = _next_course_seed()
 	_settlement_emitted = false
+	_tutorial_end_emitted = false
+	if not _tutorial_lesson_id.is_empty():
+		_tutorial_objective_progress = \
+			TutorialPracticeCatalog.initial_progress(_tutorial_lesson_id)
 	_effects.reset()
 	_rescue_available = _config.rescue_life_enabled
 	_reached_checkpoint_ids.clear()
@@ -861,6 +892,15 @@ func _make_snapshot() -> SimulationSnapshot:
 	snapshot.debug_upgrade_overlay_level = \
 		_progression_service.debug_upgrade_overlay_level()
 	snapshot.records_eligible = _records_eligible()
+	snapshot.tutorial_lesson_id = _tutorial_lesson_id
+	if not _tutorial_lesson_id.is_empty():
+		var tutorial := TutorialPracticeCatalog.lesson(_tutorial_lesson_id)
+		snapshot.tutorial_objective = str(tutorial.get("objective", ""))
+		snapshot.tutorial_coaching = str(tutorial.get("coaching", ""))
+		snapshot.tutorial_progress = TutorialPracticeCatalog.progress_text(
+			_tutorial_lesson_id, _tutorial_objective_progress)
+		snapshot.tutorial_objective_complete = bool(
+			_tutorial_objective_progress.get("complete", false))
 	var region := CourseRegionCatalog.region_for_distance(
 		_world.distance_pixels)
 	snapshot.region_id = StringName(region["id"])
@@ -905,18 +945,31 @@ func _populate_dive_preview(snapshot: SimulationSnapshot) -> void:
 func _note_verb(event: SimulationEvent) -> void:
 	if _campaign_level_id.is_empty():
 		return
-	var verb := &""
-	match event.kind:
-		SimulationEvent.Kind.REEL_STARTED:
-			verb = CampaignCatalog.VERB_REEL
-		SimulationEvent.Kind.BURST_STARTED:
-			verb = CampaignCatalog.VERB_BURST
-		SimulationEvent.Kind.DIVE_STARTED:
-			verb = CampaignCatalog.VERB_DIVE
-		_:
-			return
+	var verb := CampaignCatalog.verb_for_event_kind(event.kind)
+	if verb.is_empty():
+		return
 	if not verb in _verbs_performed:
 		_verbs_performed.append(verb)
+
+
+func _observe_tutorial_objective(event: SimulationEvent) -> void:
+	if _tutorial_lesson_id.is_empty() or \
+			bool(_tutorial_objective_progress.get("complete", false)):
+		return
+	_tutorial_objective_progress = TutorialPracticeCatalog.observe(
+		_tutorial_lesson_id,
+		_tutorial_objective_progress,
+		event,
+	)
+	if bool(_tutorial_objective_progress.get("complete", false)):
+		_end_tutorial_practice(true)
+
+
+func _end_tutorial_practice(completed: bool) -> void:
+	if _tutorial_lesson_id.is_empty() or _tutorial_end_emitted:
+		return
+	_tutorial_end_emitted = true
+	tutorial_practice_ended.emit(_tutorial_lesson_id, completed)
 
 
 func _check_campaign_completion() -> void:
@@ -943,6 +996,11 @@ func _emit_settlement(cause: StringName) -> void:
 	if _settlement_emitted:
 		return
 	_settlement_emitted = true
+	# Tutorial practice is an application teaching loop, not a settlement
+	# source. It therefore has no settlement id and cannot reach progression or
+	# persistence even if the player collected flies before dying.
+	if _run_mode == RUN_TUTORIAL_PRACTICE:
+		return
 	var settlement := RunSettlement.create(
 		"%s-run-%d" % [_session_id, _run_sequence],
 		_world.distance_pixels,
@@ -1064,6 +1122,8 @@ func _run_start_message(region: Dictionary, guided: bool) -> String:
 		return "DEBUG UPGRADE OVERLAY L%d · awards nothing" % overlay_level
 	if _run_mode == RUN_PRACTICE:
 		return "%s practice · no records or rewards" % region["name"]
+	if _run_mode == RUN_TUTORIAL_PRACTICE:
+		return "LESSON PRACTICE · complete the action · awards nothing"
 	if guided and _config.bird_speed > 0.0:
 		return "Opening web ready · wings are already behind you"
 	return "Opening web ready" if guided else "%s ready" % region["name"]
