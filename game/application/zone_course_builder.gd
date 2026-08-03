@@ -67,9 +67,12 @@ static func append_challenge(
 	distance_at_chunk: float,
 	chunk_index: int,
 	course_seed: int,
+	reaction_spacing_scale: float = 1.0,
 ) -> void:
 	if String(pattern_id).begins_with("hollow_"):
-		_append_hollow(result, start_x, ceiling_y, floor_y, pattern_id)
+		_append_hollow(
+			result, start_x, ceiling_y, floor_y, pattern_id,
+			reaction_spacing_scale)
 	elif String(pattern_id).begins_with("arboretum_"):
 		_append_arboretum(
 			result, start_x, ceiling_y, floor_y, pattern_id,
@@ -231,6 +234,7 @@ static func _append_hollow(
 	ceiling_y: float,
 	floor_y: float,
 	pattern_id: StringName,
+	reaction_spacing_scale: float = 1.0,
 ) -> void:
 	match pattern_id:
 		&"hollow_cocoon_chute":
@@ -239,8 +243,10 @@ static func _append_hollow(
 		&"hollow_spindle_gate":
 			_append_spindle(
 				result, Vector2(start_x + 650.0, ceiling_y), 238.0, true)
+			var second_x := _profile_second_offset(
+				650.0, 830.0, reaction_spacing_scale)
 			_append_spindle(
-				result, Vector2(start_x + 830.0, floor_y), 148.0, false)
+				result, Vector2(start_x + second_x, floor_y), 148.0, false)
 		&"hollow_thread_eye":
 			_append_thread_eye(
 				result, Vector2(start_x + 665.0, MID_Y), ceiling_y, floor_y)
@@ -262,7 +268,23 @@ static func _append_hollow(
 			_append_cocoon(result, Vector2(start_x + 790.0, ceiling_y), 205.0, true)
 		&"hollow_suspended_bridge":
 			_append_lattice(result, start_x + 650.0, floor_y, false, 178.0)
-			_append_cocoon(result, Vector2(start_x + 785.0, ceiling_y), 136.0, true)
+			var second_x := _profile_second_offset(
+				650.0, 785.0, reaction_spacing_scale)
+			_append_cocoon(
+				result, Vector2(start_x + second_x, ceiling_y), 136.0, true)
+
+
+static func _profile_second_offset(
+	first_offset: float,
+	second_offset: float,
+	spacing_scale: float,
+) -> float:
+	if is_equal_approx(spacing_scale, 1.0):
+		return second_offset
+	return minf(
+		CHUNK_WIDTH - 30.0,
+		first_offset + (second_offset - first_offset) * spacing_scale,
+	)
 
 
 static func _append_cocoon(

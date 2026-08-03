@@ -1,0 +1,1 @@
+- `claude/difficulty-pressure-profiles` · **Profile Relaxed and Harsh on the pressure-driven course** · domain difficulty profile, deterministic course selection/cadence, audit tooling, contracts, measurement, docs and Android identity · 2026-08-04

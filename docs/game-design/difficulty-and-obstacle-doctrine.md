@@ -803,7 +803,7 @@ behaviour moved.**
 
 The slope is **not** exposed in the Test Lab, and that reverses this line
 deliberately: pattern selection has to stay a pure function of
-`(chunk, distance, seed)` or no input trace reproduces. `ONSET_SHAPE` therefore
+`(chunk, distance, seed, mode)` or no input trace reproduces. `ONSET_SHAPE` therefore
 stays a source constant and the **obstacle size floor** is the dial instead —
 it is a geometry scale, which the lab already tunes, and §8's own "one open
 risk" says it is the number that can look wrong rather than play wrong.
@@ -846,6 +846,20 @@ before it looks wrong is a device call, not a measurable one.
 > — Bramble's eight patterns, F6 — in the front slot, though F7's memorisable
 > four-beat loop goes with it. Numbers:
 > [`../measurements/2026-08-03-curve-driven-course.md`](../measurements/2026-08-03-curve-driven-course.md).
+
+**Phase 4.5 — difficulty profiles. ✅ LANDED 2026-08-04**, implementing the
+ready course-generation half of [D-0055]. `CourseDifficultyProfile` composes
+Relaxed and Harsh with Standard's shared pressure envelope: 2 / 3 / 4 legal
+continuations, ordered recovery and challenge density, pressure-shaped rung
+admission, and 1.25× / 1.00× / 0.90× sequential reaction spacing. Standard's
+pre-change sequence and full geometry digest remain exact. Harsh's former
+corridor-tightening overrides are removed; physics remains identical across
+all modes. The audit records the structural ordering and width backstops, while
+device play remains the only feel verdict:
+[`../measurements/2026-08-04-difficulty-profiles.md`](../measurements/2026-08-04-difficulty-profiles.md).
+
+Per-difficulty leaderboards, Relaxed's lethal-rail/record migration, and
+historical-best posture remain separate later slices, as D-0055 itself records.
 
 **Phase 5 — per-region endless (§9)**, deepest pool first, as a non-records
 mode. Deliberately last: it is nearly free once Phase 2 lands and impossible

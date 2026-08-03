@@ -64,8 +64,13 @@ const CORRIDOR_TOTAL_HEIGHT := CourseStream.FLOOR_Y - CourseStream.CEILING_Y
 ## divergence between the audit and the thing being audited, and exactly the
 ## class of error the two contracts at the top of `course_audit_tests.gd` exist
 ## to catch.
-static func stream_at(course_seed: int, chunk_index: int) -> CourseStream:
+static func stream_at(
+	course_seed: int,
+	chunk_index: int,
+	difficulty_mode: StringName = DifficultyCatalog.MODE_STANDARD,
+) -> CourseStream:
 	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	DifficultyCatalog.apply_to_config(config, difficulty_mode)
 	var stream := CourseStream.new()
 	stream.reset(
 		config.middle_hazard_start_distance,
@@ -80,6 +85,7 @@ static func stream_at(course_seed: int, chunk_index: int) -> CourseStream:
 		course_seed,
 		SimulationWorld.START_POSITION.x,
 		config.opening_obstacle_scale_floor,
+		difficulty_mode,
 	)
 	stream.update_for_position(float(chunk_index) * CHUNK_WIDTH + CHUNK_WIDTH * 0.5)
 	return stream
@@ -103,18 +109,19 @@ static func audit_chunk(
 	samples: int,
 	config: SwingConfig,
 	stream: CourseStream = null,
+	difficulty_mode: StringName = DifficultyCatalog.MODE_STANDARD,
 ) -> Dictionary:
 	var distance_px := float(chunk_index) * CHUNK_WIDTH
 	var pattern_distance := pattern_distance_for(chunk_index)
 	var live := stream
 	if live == null:
-		live = stream_at(course_seed, chunk_index)
+		live = stream_at(course_seed, chunk_index, difficulty_mode)
 	else:
 		live.update_for_position(distance_px + CHUNK_WIDTH * 0.5)
 	var geometry := live.geometry()
 
 	var pattern := CoursePatternCatalog.pattern_for_chunk(
-		chunk_index, pattern_distance, course_seed
+		chunk_index, pattern_distance, course_seed, difficulty_mode
 	)
 	var pattern_id: StringName = pattern.get("id", &"")
 	var width := corridor_width_across(
@@ -145,10 +152,21 @@ static func audit_chunk(
 		# generator, so a change to any of them moves the course — which is what
 		# `UNCHANGED_COURSE_DIGEST` is there to make visible.
 		"pressure": CoursePressure.at(pattern_distance),
-		"recovery_share": CourseAxisEnvelope.recovery_share(
-			CoursePressure.at(pattern_distance)),
+		"difficulty_mode": str(DifficultyCatalog.resolve(difficulty_mode)),
+		"legal_continuations": CourseDifficultyProfile.legal_continuations(
+			difficulty_mode,
+			CoursePatternCatalog.authored_pool_size_for_distance(pattern_distance),
+		),
+		"recovery_interval": CourseDifficultyProfile.recovery_interval(
+			difficulty_mode, CoursePressure.at(pattern_distance)),
+		"recovery_share": 1.0 / float(
+			CourseDifficultyProfile.recovery_interval(
+				difficulty_mode, CoursePressure.at(pattern_distance))),
+		"reaction_spacing_scale": \
+			CourseDifficultyProfile.reaction_spacing_scale(difficulty_mode),
 		"admission_floor": CourseAxisEnvelope.admission_floor(
-			CoursePressure.at(pattern_distance)),
+			CourseDifficultyProfile.admission_pressure(
+				difficulty_mode, CoursePressure.at(pattern_distance))),
 		"obstacle_scale": CourseAxisEnvelope.opening_scale(
 			CoursePressure.at(pattern_distance),
 			config.opening_obstacle_scale_floor,
@@ -197,16 +215,21 @@ static func course_digest(
 	seeds: Array,
 	first_chunk: int,
 	last_chunk: int,
+	difficulty_mode: StringName = DifficultyCatalog.MODE_STANDARD,
 ) -> String:
 	var hashing := HashingContext.new()
 	hashing.start(HashingContext.HASH_SHA256)
 	for course_seed: int in seeds:
-		var stream := stream_at(int(course_seed), first_chunk)
+		var stream := stream_at(
+			int(course_seed), first_chunk, difficulty_mode)
 		for chunk_index in range(first_chunk, last_chunk + 1):
 			var distance_px := float(chunk_index) * CHUNK_WIDTH
 			stream.update_for_position(distance_px + CHUNK_WIDTH * 0.5)
 			var pattern := CoursePatternCatalog.pattern_for_chunk(
-				chunk_index, pattern_distance_for(chunk_index), int(course_seed)
+				chunk_index,
+				pattern_distance_for(chunk_index),
+				int(course_seed),
+				difficulty_mode,
 			)
 			hashing.update(("seed %d chunk %d %s %s %d\n" % [
 				int(course_seed),

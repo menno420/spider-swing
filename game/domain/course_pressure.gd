@@ -10,11 +10,10 @@ class_name CoursePressure
 ## budget exists. This file is the orchestration instrument, not the exchange
 ## rate.
 ##
-## **Nothing reads it yet, and that is the point of the slice that introduced
-## it.** The curve is computed, contracted and reported while the generator still
-## builds exactly the course it built before — pinned by
-## `UNCHANGED_COURSE_DIGEST` in `tests/unit/course_audit_tests.gd` — so the
-## numbers can be judged before they are load-bearing.
+## `CourseAxisEnvelope` maps this scalar onto the shared Standard axes, and
+## `CourseDifficultyProfile` composes mode-specific selection/cadence transforms
+## without adding another distance law. Standard's exact output remains pinned
+## by `UNCHANGED_COURSE_DIGEST` in `tests/unit/course_audit_tests.gd`.
 ##
 ## Distances are the simulation's authoritative pixel unit (10 px = 1 m), the
 ## same convention `CourseRegionCatalog` and `SwingConfig.spider_speed_cap_at`

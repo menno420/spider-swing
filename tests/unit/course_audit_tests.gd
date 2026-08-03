@@ -91,6 +91,13 @@ const FAIRNESS_BACKSTOP_DIAMETERS := 3.0
 ## minimum for the full chunk once it carries an obstacle.
 const MAXIMUM_RUN_NEAR_REGION_MINIMUM := 3
 
+## Profile selection exposes a four-chunk relative near-minimum run in Relaxed
+## Bramble, but its absolute minimum there is 9.66 diameters — 2.27 diameters
+## wider than the swing floor and wider than Standard. Pin that measured
+## distribution separately so the relative statistic cannot masquerade as a
+## width regression, while any longer profile tube still fails.
+const MAXIMUM_PROFILE_RUN_NEAR_REGION_MINIMUM := 4
+
 ## O2's bound, owner-stated: recovery share strictly above Ancient Forest's
 ## shipped 2% and strictly below Bramble's shipped 50%. Restated as literals so
 ## this contract cannot follow `CourseAxisEnvelope`'s own constants into a
@@ -143,6 +150,7 @@ static func run() -> Dictionary:
 	passed += _test_constriction_length_is_a_run_not_a_point(failures)
 	passed += _test_region_distribution_counts_consecutive_chunks(failures)
 	passed += _test_width_envelope_holds_across_the_scoped_range(failures)
+	passed += _test_profile_modes_preserve_width_backstops(failures)
 	passed += _test_recovery_share_stays_inside_the_owner_bound(failures)
 	passed += _test_recovery_cadence_never_exceeds_r7(failures)
 	passed += _test_difficulty_envelope_never_saw_tooths(failures)
@@ -493,6 +501,51 @@ static func _test_width_envelope_holds_across_the_scoped_range(
 			failures.append(
 				"course audit: %s reports a median below its own minimum" % region)
 			return 0
+	return 1
+
+
+## D-0055 changes cadence, selection and reaction spacing, never the width
+## contract. A different pattern order can still expose a width defect Standard
+## happened not to draw on this seed, so every mode walks the same backstops.
+static func _test_profile_modes_preserve_width_backstops(
+	failures: PackedStringArray,
+) -> int:
+	for mode_id: StringName in DifficultyCatalog.mode_ids():
+		var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+		DifficultyCatalog.apply_to_config(config, mode_id)
+		var stream := Probe.stream_at(ENVELOPE_SEED, 0, mode_id)
+		var records: Array = []
+		for chunk_index in range(ENVELOPE_LAST_CHUNK + 1):
+			var record := Probe.audit_chunk(
+				ENVELOPE_SEED, chunk_index, SAMPLES, config, stream, mode_id)
+			records.append(record)
+			var radii := float(record["min_corridor_radii"])
+			if radii < 0.0:
+				continue
+			if radii < FAIRNESS_BACKSTOP_DIAMETERS:
+				failures.append("%s chunk %d crosses the %.2f-diameter backstop" % [
+					mode_id, chunk_index, FAIRNESS_BACKSTOP_DIAMETERS])
+				return 0
+			if str(record["width_class"]) == "swing" and \
+					radii + 0.005 < SWING_CLASS_FLOOR_DIAMETERS:
+				failures.append("%s swing chunk %d measures only %.2f diameters" % [
+					mode_id, chunk_index, radii])
+				return 0
+			var constriction := float(record["constriction_px"])
+			if constriction < 0.0 or constriction > Probe.CHUNK_WIDTH + 0.01:
+				failures.append("%s chunk %d reports invalid constriction %.1f" % [
+					mode_id, chunk_index, constriction])
+				return 0
+		var distribution := Probe.region_width_distribution(records)
+		for region: String in distribution:
+			var entry: Dictionary = distribution[region]
+			if int(entry["chunks"]) >= 5 and \
+					int(entry["longest_run_near_min"]) > \
+						MAXIMUM_PROFILE_RUN_NEAR_REGION_MINIMUM:
+				failures.append(
+					"%s %s holds its near-minimum width for %d chunks" % [
+						mode_id, region, int(entry["longest_run_near_min"])])
+				return 0
 	return 1
 
 

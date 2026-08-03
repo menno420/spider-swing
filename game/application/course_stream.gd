@@ -84,6 +84,7 @@ var _corridor_tight_gap_scale: float = 1.0
 var _tight_corridor_start_distance: float = 20000.0
 var _course_seed: int = 0
 var _opening_obstacle_scale_floor: float = CourseAxisEnvelope.OPENING_SCALE_FLOOR
+var _difficulty_mode: StringName = DifficultyCatalog.MODE_STANDARD
 
 
 func reset(
@@ -99,6 +100,7 @@ func reset(
 	course_seed: int = 0,
 	initial_world_x: float = SimulationWorld.START_POSITION.x,
 	opening_obstacle_scale_floor: float = CourseAxisEnvelope.OPENING_SCALE_FLOOR,
+	difficulty_mode: StringName = DifficultyCatalog.MODE_STANDARD,
 ) -> void:
 	_opening_obstacle_scale_floor = opening_obstacle_scale_floor
 	_middle_hazard_start_distance = middle_hazard_start_distance
@@ -111,6 +113,7 @@ func reset(
 	_corridor_tight_gap_scale = corridor_tight_gap_scale
 	_tight_corridor_start_distance = tight_corridor_start_distance
 	_course_seed = course_seed
+	_difficulty_mode = DifficultyCatalog.resolve(difficulty_mode)
 	_geometry = CourseGeometry.new()
 	update_for_position(initial_world_x)
 
@@ -236,6 +239,7 @@ func pattern_id_for_chunk(chunk_index: int) -> StringName:
 		chunk_index,
 		distance_at_chunk,
 		_course_seed,
+		_difficulty_mode,
 	)
 
 
@@ -365,6 +369,7 @@ func _route_plan(
 		chunk_index,
 		maxf(0.0, float(chunk_index) * CHUNK_WIDTH - START_X),
 		_course_seed,
+		_difficulty_mode,
 	)
 	var lane := StringName(pattern.get("lane", ROUTE_CENTRE))
 	if pattern_id in [&"tight_rail", &"hollow_thread_eye"] and \
@@ -467,6 +472,7 @@ func _append_middle_challenge(
 			distance_at_chunk,
 			chunk_index,
 			_course_seed,
+			CourseDifficultyProfile.reaction_spacing_scale(_difficulty_mode),
 		)
 		return
 	# The size axis, [D-0054] R1. `opening` is the owner's Bramble opening ramp —
@@ -520,7 +526,7 @@ func _append_middle_challenge(
 			)
 		&"staggered_s":
 			var floor_x := start_x + 570.0
-			var ceiling_x := start_x + 805.0
+			var ceiling_x := start_x + _profile_second_offset(570.0, 805.0)
 			_append_leaf_cluster(
 				result,
 				floor_x,
@@ -539,7 +545,8 @@ func _append_middle_challenge(
 			)
 		&"high_low_weave":
 			var floor_x := start_x + WEAVE_FIRST_OFFSET_X
-			var ceiling_x := start_x + WEAVE_SECOND_OFFSET_X
+			var ceiling_x := start_x + _profile_second_offset(
+				WEAVE_FIRST_OFFSET_X, WEAVE_SECOND_OFFSET_X)
 			_append_root_stump(
 				result,
 				floor_x,
@@ -559,7 +566,8 @@ func _append_middle_challenge(
 			)
 		&"low_high_weave":
 			var ceiling_x := start_x + WEAVE_FIRST_OFFSET_X
-			var floor_x := start_x + WEAVE_SECOND_OFFSET_X
+			var floor_x := start_x + _profile_second_offset(
+				WEAVE_FIRST_OFFSET_X, WEAVE_SECOND_OFFSET_X)
 			_append_hanging_seed_pod(
 				result,
 				ceiling_x,
@@ -678,7 +686,7 @@ func _append_middle_challenge(
 			)
 		&"alternating_thorns":
 			var floor_x := start_x + 590.0
-			var ceiling_x := start_x + 815.0
+			var ceiling_x := start_x + _profile_second_offset(590.0, 815.0)
 			_append_leaf_cluster(
 				result,
 				floor_x,
@@ -740,7 +748,7 @@ func _append_middle_challenge(
 				)
 		&"stump_and_vine":
 			var floor_x := start_x + 560.0
-			var ceiling_x := start_x + 815.0
+			var ceiling_x := start_x + _profile_second_offset(560.0, 815.0)
 			_append_root_stump(
 				result,
 				floor_x,
@@ -760,6 +768,19 @@ func _append_middle_challenge(
 			)
 		_:
 			pass
+
+
+## The course stream owns placement. Difficulty contributes only a pure scalar;
+## this clamp keeps the later commitment inside its authored chunk. Standard
+## takes the early return so its coordinates remain byte-for-byte unchanged.
+func _profile_second_offset(first_offset: float, second_offset: float) -> float:
+	var scale := CourseDifficultyProfile.reaction_spacing_scale(_difficulty_mode)
+	if is_equal_approx(scale, 1.0):
+		return second_offset
+	return minf(
+		CHUNK_WIDTH - 30.0,
+		first_offset + (second_offset - first_offset) * scale,
+	)
 
 
 func _append_creator_challenge(
@@ -1011,7 +1032,8 @@ func _append_canopy_hook_pair(
 	scale: float,
 ) -> void:
 	var first_x := start_x + CANOPY_PAIR_FIRST_OFFSET_X
-	var second_x := start_x + CANOPY_PAIR_SECOND_OFFSET_X
+	var second_x := start_x + _profile_second_offset(
+		CANOPY_PAIR_FIRST_OFFSET_X, CANOPY_PAIR_SECOND_OFFSET_X)
 	var first_hanging := not high_to_low
 	var second_hanging := high_to_low
 	_append_canopy_hook_vine(
@@ -1058,7 +1080,8 @@ func _append_canopy_shutter_pair(
 	scale: float,
 ) -> void:
 	var first_x := start_x + CANOPY_PAIR_FIRST_OFFSET_X
-	var second_x := start_x + CANOPY_PAIR_SECOND_OFFSET_X
+	var second_x := start_x + _profile_second_offset(
+		CANOPY_PAIR_FIRST_OFFSET_X, CANOPY_PAIR_SECOND_OFFSET_X)
 	var first_hanging := not high_to_low
 	var second_hanging := high_to_low
 	_append_canopy_leaf_shutter(

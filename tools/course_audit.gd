@@ -16,6 +16,7 @@ extends SceneTree
 ##   --seeds=N         audit N course seeds, N>=1 (default 5)
 ##   --seed-base=N     first course seed (default 1000)
 ##   --samples=N       vertical probes per chunk (default 40, i.e. every 24 px)
+##   --mode=MODE       relaxed, standard, or harsh (default standard)
 ##   --json=PATH       also write the full per-chunk record as JSON
 ##   --quiet           suppress the per-kilometre table
 
@@ -30,6 +31,7 @@ func _initialize() -> void:
 	var samples := 40
 	var json_path := ""
 	var quiet := false
+	var difficulty_mode := DifficultyCatalog.MODE_STANDARD
 
 	for argument: String in OS.get_cmdline_user_args():
 		if argument.begins_with("--from-metres="):
@@ -44,10 +46,14 @@ func _initialize() -> void:
 			samples = maxi(4, int(argument.trim_prefix("--samples=")))
 		elif argument.begins_with("--json="):
 			json_path = argument.trim_prefix("--json=")
+		elif argument.begins_with("--mode="):
+			difficulty_mode = DifficultyCatalog.resolve(StringName(
+				argument.trim_prefix("--mode=")))
 		elif argument == "--quiet":
 			quiet = true
 
 	var config := SwingConfig.from_preset(SwingConfig.PRESET_BALANCED)
+	DifficultyCatalog.apply_to_config(config, difficulty_mode)
 	var first_chunk := maxi(0, floori(
 		from_metres * Probe.PIXELS_PER_METRE / Probe.CHUNK_WIDTH))
 	var last_chunk := maxi(first_chunk, floori(
@@ -56,7 +62,13 @@ func _initialize() -> void:
 	var runs: Array[Dictionary] = []
 	for offset in seed_count:
 		runs.append(_audit_seed(
-			seed_base + offset, first_chunk, last_chunk, samples, config))
+			seed_base + offset,
+			first_chunk,
+			last_chunk,
+			samples,
+			config,
+			difficulty_mode,
+		))
 
 	var report := {
 		"first_chunk": first_chunk,
@@ -66,19 +78,24 @@ func _initialize() -> void:
 		"seeds": range(seed_base, seed_base + seed_count),
 		"samples_per_chunk": samples,
 		"player_collision_radius": config.player_collision_radius,
+		"difficulty_mode": str(difficulty_mode),
 		"runs": runs,
 	}
 
 	report["course_digest"] = Probe.course_digest(
-		range(seed_base, seed_base + seed_count), first_chunk, last_chunk)
+		range(seed_base, seed_base + seed_count),
+		first_chunk,
+		last_chunk,
+		difficulty_mode,
+	)
 
 	# One number for "the generator built exactly the same course". It changes
 	# when — and only when — pattern selection or geometry changes, so a slice
 	# that claims to leave behaviour alone can be checked rather than believed.
 	# Printed outside the summary because `--quiet` suppresses the table, not the
 	# proof.
-	print("[course-audit] course digest (patterns + polygons, chunks %d..%d, %d seed(s)): %s" % [
-		first_chunk, last_chunk, seed_count, report["course_digest"]])
+	print("[course-audit] %s course digest (patterns + polygons, chunks %d..%d, %d seed(s)): %s" % [
+		difficulty_mode, first_chunk, last_chunk, seed_count, report["course_digest"]])
 
 	if not quiet:
 		_print_summary(report)
@@ -104,15 +121,22 @@ func _audit_seed(
 	last_chunk: int,
 	samples: int,
 	config: SwingConfig,
+	difficulty_mode: StringName,
 ) -> Dictionary:
-	var stream := Probe.stream_at(course_seed, first_chunk)
+	var stream := Probe.stream_at(course_seed, first_chunk, difficulty_mode)
 	var chunks: Array[Dictionary] = []
 	var seen_patterns := {}
 	var seen_lanes := {}
 
 	for chunk_index in range(first_chunk, last_chunk + 1):
 		var record := Probe.audit_chunk(
-			course_seed, chunk_index, samples, config, stream)
+			course_seed,
+			chunk_index,
+			samples,
+			config,
+			stream,
+			difficulty_mode,
+		)
 		var pattern: String = record["pattern"]
 		var lane: String = record["lane"]
 		record["first_exposure_pattern"] = not seen_patterns.has(pattern)
@@ -125,11 +149,18 @@ func _audit_seed(
 
 
 func _print_summary(report: Dictionary) -> void:
-	print("[course-audit] %d seed(s), chunks %d..%d, player radius %.1f px" % [
+	print("[course-audit] mode %s · %d seed(s), chunks %d..%d, player radius %.1f px" % [
+		report["difficulty_mode"],
 		report["seeds"].size(),
 		report["first_chunk"],
 		report["last_chunk"],
 		report["player_collision_radius"],
+	])
+	var mode_id := StringName(report["difficulty_mode"])
+	print("  profile: %d legal continuations · %.2fx reaction spacing · recovery interval %d at p=.75" % [
+		CourseDifficultyProfile.legal_continuations(mode_id, 8),
+		CourseDifficultyProfile.reaction_spacing_scale(mode_id),
+		CourseDifficultyProfile.recovery_interval(mode_id, 0.75),
 	])
 	print("")
 	print("  These are GEOMETRIC PROXIES, not difficulty. Use them to detect")

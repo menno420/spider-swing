@@ -1035,6 +1035,7 @@ func _reset_course_stream() -> void:
 		_course_seed,
 		SimulationWorld.START_POSITION.x + _start_distance_pixels,
 		_config.opening_obstacle_scale_floor,
+		_difficulty_mode,
 	)
 
 
