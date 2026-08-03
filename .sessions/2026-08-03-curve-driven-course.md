@@ -173,8 +173,10 @@ region sits where. That is the strongest single piece of evidence that R1 landed
   `course_pattern_catalog.gd`, `course_stream.gd`, `course_region_catalog.gd`,
   `player_progress.gd`, `swing_config.gd`, `zone_course_builder.gd`,
   `trace_catalog.gd`, `tuning_catalog.gd`, the probe and the audit.
-- verify: `python3 tools/verify.py --require-godot` — **232/232**, all seven
-  stages pass. `python3 bootstrap.py check --strict` — all checks passed.
+- verify: `python3 tools/verify.py --require-godot` — every declared check
+  passes, all seven stages green. (The count is deliberately not written
+  out: it has drifted three times, and `EXPECTED_CHECK_COUNT` is its one
+  home.) `python3 bootstrap.py check --strict` — all checks passed.
 - build: `0.39.0-pressure-curve-region-swap`, Android version code 59, bumped
   across all four pinned files.
 
