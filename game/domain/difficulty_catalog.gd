@@ -2,8 +2,9 @@ extends RefCounted
 class_name DifficultyCatalog
 ## Difficulty modes: Relaxed, Standard, Harsh.
 ##
-## D-0033 settled the shape. A mode changes **which content the stream may
-## serve** and **how much recovery the player gets** — never the physics. The
+## D-0033 settled the physics boundary and D-0055 settled the structural shape.
+## A mode changes **which content the stream may serve**, its predictable
+## continuation window, cadence and reaction spacing — never the physics. The
 ## one owner-approved preset stays authoritative for every mode, so the swing
 ## feels identical in all three and only the course around it moves.
 ##
@@ -48,9 +49,10 @@ const PHYSICS_FIELDS := [
 	"surface_snap_distance", "pickup_collision_radius",
 ]
 
-## The sanctioned difficulty surface: obstacle size and gate width (what the
-## stream serves), how early hazards and tight corridors appear (when it serves
-## it), and the rescue life plus non-lethal rails (how much recovery there is).
+## The legacy config-owned difficulty surface: obstacle size and gate width,
+## hazard timing, rescue, and rail lethality. Pressure-envelope selection axes
+## live centrally in `CourseDifficultyProfile`, because they are generator
+## inputs rather than `SwingConfig` values.
 ## All of these already reach `CourseStream.reset()` or the collision policy;
 ## none of them is a physics value.
 const CONTENT_FIELDS := [
@@ -115,26 +117,16 @@ const MODES := [
 		"id": MODE_HARSH,
 		"name": "HARSH",
 		"order": 2,
-		"blurb": "No rescue life, tighter gaps, hazards from the start. "
-			+ "Sets records and unlocks checkpoints; not leaderboard "
+		"blurb": "No rescue life and less recovery. "
+			+ "Denser, less predictable pressure profile. Sets records and "
+			+ "unlocks checkpoints; not leaderboard "
 			+ "eligible.",
 		"records_eligible": true,
 		"leaderboards_eligible": false,
 		"overrides": {
 			"rescue_life_enabled": false,
-			"gate_opening_scale": 1.00,
 			"edge_obstacle_scale": 1.06,
 			"floating_obstacle_scale": 1.02,
-			"corridor_clearance_scale": 0.88,
-			"corridor_tight_gap_scale": 0.85,
-			# No longer a difference: Standard's own warm-up moved to 500 m when
-			# the pressure curve took over selection, because the owner's
-			# "the first 500m should remain as it is" is a statement about
-			# Standard. Kept rather than deleted — it still records Harsh's
-			# intent, and D-0055 gives Harsh its real separation on the
-			# predictability, density and spacing axes in the mode-profile phase.
-			"middle_hazard_start_distance": 5000.0,
-			"tight_corridor_start_distance": 10000.0,
 		},
 	},
 ]

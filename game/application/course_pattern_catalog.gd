@@ -7,8 +7,9 @@ class_name CoursePatternCatalog
 ## the shared route plan; no individual lethal object is placed randomly.
 ##
 ## **[D-0054] R1 lives here.** How *hard* a chunk is comes from
-## `CoursePressure.at(distance)` by way of `CourseAxisEnvelope`, and from nothing
-## else. Distance still decides which *region* you are in — that is R4's "regions
+## `CoursePressure.at(distance)` by way of `CourseAxisEnvelope`, composed with
+## the pure mode transforms in `CourseDifficultyProfile`, and from nothing else.
+## Distance still decides which *region* you are in — that is R4's "regions
 ## choose character, never amount" — and the region still owns its vocabulary,
 ## its cadence quirks and its authored overrides. What it no longer owns is the
 ## amount.
@@ -24,6 +25,8 @@ class_name CoursePatternCatalog
 ##     "pressure is zero", which is the warm-up and nothing else.
 ##
 ## The pools below are unchanged authored content. Only who reads them moved.
+## Difficulty mode is a declared deterministic input beside seed, chunk and
+## pressure; Standard is the exact pre-profile identity path.
 
 ## Retained as the authored provenance of the three Ancient Forest rungs — the
 ## distances at which the pool ladder used to step. **Nothing reads them for
@@ -33,7 +36,6 @@ const CONTROL_START_DISTANCE := 10000.0
 const MASTERY_START_DISTANCE := 20000.0
 const DEEP_FOREST_START_DISTANCE := 35000.0
 const CHUNK_WIDTH := 960.0
-const REPETITION_COOLDOWN_CHUNKS := 2
 const RECOVERY_PATTERN := {
 	"id": &"open_recovery",
 	"lane": &"centre",
@@ -251,6 +253,7 @@ static func pattern_for_chunk(
 	chunk_index: int,
 	distance_at_chunk: float,
 	course_seed: int = 0,
+	difficulty_mode: StringName = DifficultyCatalog.MODE_STANDARD,
 ) -> Dictionary:
 	if _region_pool_for(distance_at_chunk).is_empty():
 		return {}
@@ -272,6 +275,7 @@ static func pattern_for_chunk(
 			history_start,
 			history_distance,
 			course_seed,
+			difficulty_mode,
 		)
 		if history_pattern.is_empty():
 			history_start += 1
@@ -293,13 +297,15 @@ static func pattern_for_chunk(
 			current_chunk,
 			current_distance,
 			course_seed,
+			difficulty_mode,
 		)
 		if selected.is_empty():
 			continue
 		var selected_id := StringName(selected["id"])
 		if selected_id != StringName(RECOVERY_PATTERN["id"]) and \
 				selected_id != &"tight_rail" and recent.has(selected_id):
-			var pool := _drawable_pool_for(current_chunk, current_distance)
+			var pool := _drawable_pool_for(
+				current_chunk, current_distance, difficulty_mode)
 			var start_index := _index_for_id(pool, selected_id)
 			for offset in range(1, pool.size()):
 				var candidate: Dictionary = pool[
@@ -309,7 +315,8 @@ static func pattern_for_chunk(
 					selected_id = StringName(selected["id"])
 					break
 		recent.append(selected_id)
-		while recent.size() > REPETITION_COOLDOWN_CHUNKS:
+		while recent.size() > CourseDifficultyProfile.repetition_cooldown_chunks(
+			difficulty_mode):
 			recent.pop_front()
 		resolved = selected
 	return resolved
@@ -319,6 +326,7 @@ static func _base_pattern_for_chunk(
 	chunk_index: int,
 	distance_at_chunk: float,
 	course_seed: int,
+	difficulty_mode: StringName,
 ) -> Dictionary:
 	if _region_pool_for(distance_at_chunk).is_empty():
 		return {}
@@ -350,7 +358,8 @@ static func _base_pattern_for_chunk(
 	# F3 measured as the one region with no recovery cadence at all, while its
 	# own catalogue entry declares a "wide recovery rhythm". One curve, one rule,
 	# and the per-region constants that produced 2% / 50% / 21% are gone.
-	if CourseAxisEnvelope.is_recovery_chunk(
+	if CourseDifficultyProfile.is_recovery_chunk(
+		difficulty_mode,
 		chunk_index,
 		pressure,
 		CoursePressure.at(distance_at_chunk - CHUNK_WIDTH),
@@ -361,10 +370,13 @@ static func _base_pattern_for_chunk(
 		# reads it, correctly, as `open_recovery` repeating.
 		if _is_region_entry(distance_at_chunk + CHUNK_WIDTH):
 			return _seeded_pattern(
-				_drawable_pool_for(chunk_index, distance_at_chunk),
+				_drawable_pool_for(
+					chunk_index, distance_at_chunk, difficulty_mode),
 				local_chunk,
 				course_seed,
 				CourseRegionCatalog.region_index_for_id(region_id),
+				difficulty_mode,
+				chunk_index,
 			)
 		return RECOVERY_PATTERN.duplicate(true)
 	# The authored tight-rail corridor. **Slot 5 of 8, not 7 of 8, and the
@@ -386,7 +398,8 @@ static func _base_pattern_for_chunk(
 	if region_id == CourseRegionCatalog.SILK_HOLLOW and \
 			posmod(local_chunk, 7) == 4:
 		return SILK_HOLLOW_PATTERNS[2].duplicate(true)
-	var pool := _drawable_pool_for(chunk_index, distance_at_chunk)
+	var pool := _drawable_pool_for(
+		chunk_index, distance_at_chunk, difficulty_mode)
 	if pool.is_empty():
 		return {}
 	return _seeded_pattern(
@@ -394,6 +407,8 @@ static func _base_pattern_for_chunk(
 		local_chunk,
 		course_seed,
 		CourseRegionCatalog.region_index_for_id(region_id),
+		difficulty_mode,
+		chunk_index,
 	)
 
 
@@ -401,11 +416,13 @@ static func pattern_id_for_chunk(
 	chunk_index: int,
 	distance_at_chunk: float,
 	course_seed: int = 0,
+	difficulty_mode: StringName = DifficultyCatalog.MODE_STANDARD,
 ) -> StringName:
 	return StringName(pattern_for_chunk(
 		chunk_index,
 		distance_at_chunk,
 		course_seed,
+		difficulty_mode,
 	).get("id", &""))
 
 
@@ -443,6 +460,13 @@ static func _region_pool_for(distance_at_chunk: float) -> Array:
 	return ancient_forest_patterns()
 
 
+## Instrument-facing count of the authored vocabulary at this distance. The
+## audit uses it to report the profile's bounded legal-continuation count; it
+## does not expose or mutate selection state.
+static func authored_pool_size_for_distance(distance_at_chunk: float) -> int:
+	return _region_pool_for(distance_at_chunk).size()
+
+
 ## What may actually be drawn into this chunk: the region's vocabulary, filtered
 ## by the curve. **This is R1's whole surface.**
 ##
@@ -462,6 +486,7 @@ static func _region_pool_for(distance_at_chunk: float) -> Array:
 static func _drawable_pool_for(
 	chunk_index: int,
 	distance_at_chunk: float,
+	difficulty_mode: StringName,
 ) -> Array:
 	var pool := _region_pool_for(distance_at_chunk)
 	if pool.is_empty():
@@ -471,11 +496,20 @@ static func _drawable_pool_for(
 		distance_at_chunk + CHUNK_WIDTH * 0.5,
 	)["id"])
 	if region_id == CourseRegionCatalog.BRAMBLE_CANOPY and not (
-		CourseAxisEnvelope.multi_obstacle_admitted(pressure)
-			and _chunk_is_open(chunk_index - 1, distance_at_chunk - CHUNK_WIDTH)
+		CourseDifficultyProfile.multi_obstacle_admitted(
+			difficulty_mode, pressure)
+			and _chunk_is_open(
+				chunk_index - 1,
+				distance_at_chunk - CHUNK_WIDTH,
+				difficulty_mode,
+			)
 	):
 		pool = BRAMBLE_CANOPY_SINGLE_PATTERNS
-	return CourseAxisEnvelope.admitted_patterns(pool, pressure)
+	return CourseAxisEnvelope.admitted_patterns(
+		pool,
+		CourseDifficultyProfile.admission_pressure(
+			difficulty_mode, pressure),
+	)
 
 
 ## Whether the chunk containing `distance_at_chunk` is a region's first, i.e. the
@@ -521,6 +555,7 @@ static func _is_arboretum_combination(
 static func _chunk_is_open(
 	chunk_index: int,
 	distance_at_chunk: float,
+	difficulty_mode: StringName,
 ) -> bool:
 	if chunk_index < 0:
 		return true
@@ -538,7 +573,8 @@ static func _chunk_is_open(
 	if bool(region.get("checkpoint", false) or region.get("safe_entry", false)) \
 			and local_chunk == 0:
 		return true
-	return CourseAxisEnvelope.is_recovery_chunk(
+	return CourseDifficultyProfile.is_recovery_chunk(
+		difficulty_mode,
 		chunk_index,
 		CoursePressure.at(distance_at_chunk),
 		CoursePressure.at(distance_at_chunk - CHUNK_WIDTH),
@@ -550,11 +586,21 @@ static func _seeded_pattern(
 	local_chunk: int,
 	course_seed: int,
 	region_index: int,
+	difficulty_mode: StringName,
+	chunk_index: int,
 ) -> Dictionary:
 	var size := pool.size()
 	var offset := posmod(course_seed * 31 + region_index * 17, size)
 	var stride := _coprime_stride(size, course_seed + region_index * 11)
-	var index := posmod(offset + local_chunk * stride, size)
+	var standard_index := posmod(offset + local_chunk * stride, size)
+	var index := CourseDifficultyProfile.select_index(
+		difficulty_mode,
+		pool,
+		standard_index,
+		chunk_index,
+		course_seed,
+		region_index,
+	)
 	return (pool[index] as Dictionary).duplicate(true)
 
 

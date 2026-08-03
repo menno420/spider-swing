@@ -66,7 +66,7 @@ drift.
 
 ```jsonc
 {
-  "format": "spider-swing-input-trace@4",
+  "format": "spider-swing-input-trace@6",
   "setup": {            // everything needed to rebuild the identical world
     "preset": "balanced_baseline", "spider": "classic", "skill": "expert",
     "upgrades": 0, "difficulty": "standard", "start_m": 0,

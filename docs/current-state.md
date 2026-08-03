@@ -15,7 +15,7 @@ live in [`player-preference research`](product/player-preference-research-2026-0
 External benchmarks and the verified zone audit live in
 [`upgrade-and-difficulty research`](product/upgrade-and-difficulty-research-2026-08-02.md).
 
-Build `0.41.0-tutorial-practice` is current. Continuous drive is
+Build `0.42.0-difficulty-profiles` is current. Continuous drive is
 zero; release, swing control, Reel, and pull timing earn speed; the former left
 kill line is a visible pursuing bird. `target_speed_at` remains a named
 reference. The bot still cannot tune the bird — model v4 pumps, but it sustains
@@ -73,7 +73,7 @@ without a reported regression.
 - A separately versioned `DebugTestProfile` auto-saves the Test Lab working set
   and A/B/C comparison slots. Its resolved display values and sparse explicit
   overrides never enter `PlayerSettings` or `PlayerProgress`.
-- Build `0.41.0-tutorial-practice` (Android version code 61, package
+- Build `0.42.0-difficulty-profiles` (Android version code 62, package
   `com.menno420.spiderswing.dev`) retains the stable conventional public debug
   identity introduced by `0.19.0-depth-testing` in
   `.github/android/debug.keystore`. The workflow pins its file and certificate
@@ -128,6 +128,14 @@ without a reported regression.
   weaves, and small silk burrs appear. The runway is the owner's own warm-up
   figure and now coincides exactly with where `CoursePressure` leaves zero, so
   there is one boundary rather than two.
+- `CourseDifficultyProfile` is the one pure mode shape composed with that
+  pressure curve. Standard is its identity path and preserves the exact shipped
+  0–15 km sequence and geometry digest. Relaxed uses two legal continuations,
+  more recovery, lower challenge admission and 1.25× sequential reaction
+  spacing; Harsh uses four continuations, less recovery, denser admission and
+  0.90× spacing. The generator remains deterministic in mode, seed, chunk and
+  pressure; no profile owns a physics, reward, input, upgrade, or persistence
+  field. Harsh no longer tightens corridor width as a primary difficulty lever.
 - The authored endless-course schedule enters **Bramble Canopy at 0 m, Ancient
   Forest at 5000 m**, Silk Hollow at 10000 m, Ruined Arboretum at 15000 m, Storm
   Ridge at 20000 m, Web City at 25000 m, Ashen Hollow at 30000 m, and Deep Mist
@@ -339,14 +347,15 @@ without a reported regression.
   groups the two tiers behind one native scroller. Adding levels is additive:
   the star ledger is keyed by level id and filtered through `has_level`, so an
   older save simply has no stars for them and **no schema bump is needed**.
-- **Difficulty modes now exist** — this boundary also moved on purpose.
-  Relaxed, Standard and Harsh are chosen on Home and change only what the
-  stream serves and how much recovery there is: obstacle size, gate width, when
-  hazards and tight corridors begin, the rescue life, and whether the rails are
-  lethal. `DifficultyCatalog.PHYSICS_FIELDS` lists every value a mode may never
-  move and a contract asserts each mode leaves all of them identical to
-  Standard's, so the swing feels the same in all three. Standard is the
-  approved preset with an empty override set. Each mode keeps its own best
+- **Difficulty modes now carry real pressure-envelope profiles.** Relaxed,
+  Standard and Harsh are chosen on Home and now change deterministic pattern
+  selection, legal-continuation count, recovery/challenge cadence, rung
+  admission, and measured reaction spacing in addition to their existing
+  content/recovery advantages. `DifficultyCatalog.PHYSICS_FIELDS` lists every
+  value a mode may never move and a contract asserts each mode leaves all of
+  them identical to Standard's, so the swing feels the same in all three.
+  Standard is the approved preset with an empty override set and exact pinned
+  sequence/digest. Each mode keeps its own best
   distance (schema 7); only records-eligible modes move the authoritative best
   that region checkpoints unlock from, which excludes Relaxed because its rails
   are not lethal; only Standard is leaderboard-eligible. **Both of those change
@@ -507,6 +516,16 @@ accidental dives. Collision is untouched and diving to the floor is unchanged,
 so the Dive stays always available, which is its whole purpose.
 
 ## Recently shipped (newest first)
+
+- **2026-08-04 — Relaxed and Harsh become pressure-envelope profiles
+  (0.42.0).** `CourseDifficultyProfile` centralizes predictability, density,
+  recovery, admission and reaction-spacing transforms around Standard's exact
+  baseline. Mode becomes a declared deterministic course input, the audit can
+  compare profiles directly, and trace format @6 rejects pre-profile
+  Relaxed/Harsh replays. Measured structure is ordered without claiming a feel
+  verdict: Relaxed is more legible, wider and more recoverable; Harsh is denser,
+  more variable and tighter in reaction time. Leaderboards and Relaxed's lethal
+  rail migration remain later slices.
 
 - **2026-08-02 — Campaign combination tier (0.38.0).** Three levels requiring
   two or three verbs in one run. Each pairing is a distinction the repository

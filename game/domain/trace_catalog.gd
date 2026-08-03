@@ -21,15 +21,13 @@ class_name TraceCatalog
 ## agree on it and neither may own it. Bump it when the record shape or
 ## authoritative physics semantics changes so an old trace is refused rather
 ## than replayed into a world it was never recorded in.
-## Bumped to @5 by the 0.39.0 pressure-curve slice. **A course generation change
-## is exactly what this constant is for.** Selection now derives from
-## `CoursePressure` and the first two regions swapped slots, so every trace
-## recorded before it is a record of inputs against a course that no longer
-## exists — and replaying one produces a plausible, wrong run rather than an
-## error. The doctrine's §11 already claimed traces "fail loudly rather than
-## silently" across a generation change; before this bump they did not, because
-## nothing had told the format that the world had moved.
-const INPUT_TRACE_FORMAT := "spider-swing-input-trace@5"
+## Bumped to @6 by the 0.42.0 mode-profile slice. **A course generation change
+## is exactly what this constant is for.** Difficulty mode is now a declared
+## structural selection input. Standard's course stays exact,
+## but an older Relaxed/Harsh trace would otherwise replay into a different
+## sequence while looking plausible. The setup already records difficulty; the
+## format bump makes the semantic change fail loudly.
+const INPUT_TRACE_FORMAT := "spider-swing-input-trace@6"
 const TRACE_DIRECTORY := "res://assets/runtime/traces"
 const TRACE_EXTENSION := ".json"
 const PIXELS_PER_METRE := 10.0
