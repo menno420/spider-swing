@@ -112,6 +112,65 @@ Format: `- YYYY-MM-DD · capability|wall · <venue> · finding · evidence · wo
 as venue `any`.)
 
 
+- 2026-08-03 · capability · `any` · **RETRACTION of two entries written below
+  TODAY. `$GITHUB_PAT` over DIRECT EGRESS has admin on every repo. The wall is
+  the proxy, and only the proxy — it is one flag wide.** · evidence: the owner
+  said so, and it verifies. `requests` with `trust_env=False` and
+  `verify=/root/.ccr/ca-bundle.crt` (equivalently
+  `curl --noproxy '*' --cacert /root/.ccr/ca-bundle.crt`):
+  `GET /user` → **200** `login=menno420`;
+  `GET /repos/menno420/spider-swing` → **200** with
+  `permissions={admin, maintain, push, triage, pull}` all true;
+  `GET …/rulesets` → **200**; and the operation this whole thread was about,
+  `DELETE /repos/menno420/spider-swing/git/refs/heads/claude/spider-swing-systems-241lkq`
+  → **204**, branch confirmed gone by re-listing. The *proxied* path 403s for all
+  of these, which is a **path quirk, not a permission**. Still genuinely walled:
+  `git push origin :refs/heads/…`, which rides the proxy. · workaround: switch
+  paths. **`trust_env=False` is the whole trick** — a bare `requests.get` inherits
+  `HTTPS_PROXY` from the environment and reproduces the 403, so a session can
+  "test the direct path" and get the proxied answer without noticing.
+
+- 2026-08-03 · wall · `any` · **The failure behind those two wrong entries, and it
+  is not "I didn't check the fleet repo". THE ANSWER WAS IN THIS FILE, 300 LINES
+  BELOW WHERE I WAS APPENDING.** · evidence: the 2026-07-31 entry in this same
+  append log reads *"`api.github.com` direct HTTP is NOT blocked — the seeded wall
+  is false as written … the same call with `--noproxy '*'` → 200 … a session
+  losing the MCP server would conclude it has no GitHub access at all, when it has
+  full access one flag away."* The entry immediately below it says, verbatim:
+  ***"Read this file before probing a format or credential question, not after"***
+  — and reports the owner having explained the same ability to Claude sessions
+  repeatedly. Today I probed first, appended six entries above both of those, and
+  the owner explained it again. `fleet-manager` has carried it since 2026-07-18
+  too, naming branch deletion explicitly, but that is the lesser miss: **I was
+  editing the file that already answered the question.** · workaround: **the
+  append log is READ-FIRST, not write-only.** Before appending a wall, grep this
+  file for the surface — `grep -n` on the operation, the host, the flag. It is 600
+  lines and newest-first, so the correction you need is *below* the fence, never
+  in it.
+
+- 2026-08-03 · wall · `any` · **The mechanism that keeps re-teaching the false
+  wall, now confirmed from three directions in one day: the tooling treats the
+  kit-owned seed fence as authoritative, and the fence is stale.** · evidence:
+  (1) the seed row still says *"`api.github.com` direct HTTP: blocked → GitHub
+  access is MCP-tools-only"*, refuted here on 2026-07-31 and again today; (2)
+  `docs/seat-digest.md` line 44 renders that seed row verbatim into every seat
+  prompt derived from it — **and the digest is not fence-only, which is worse
+  rather than better.** Measured here: it lists all six seed walls in full, then
+  ONE append-log row, then *"…plus 16 more"*. Corrections therefore compete for a
+  single truncated slot on a newest-first list while the refuted seed rows are
+  never displaced, so every new finding this repo records pushes the *previous*
+  correction out of the digest. (fleet-manager described this gap on 2026-07-18
+  as the digest rendering the seed only; on this kit version that is not exactly
+  the shape — the outcome is the same and the mechanism is sharper.) (3) the
+  `stale-wall` advisory dates rows from `LAST-VERIFIED:` stamps that also live
+  only in the fence. **So the guard points a session's attention at the one place
+  a session may not write, while the corrections accumulate where the render
+  truncates them.** · workaround: none available in-repo — both `bootstrap.py`
+  and the digest are generated. The fix is kit-side: let a seed row be *struck*
+  by a matching append-log correction, in both the digest and the staleness
+  check. Until then, **treat a seed row as the oldest claim in the file, not the
+  first fact**, and grep the append log for its refutation.
+
 - 2026-08-03 · capability · `any` · **Ref deletion HAS a sanctioned path now:
   `.github/workflows/ref-cleanup.yml`, dispatched with
   `actions_run_trigger`.** · evidence: the same shape as the release-via-
