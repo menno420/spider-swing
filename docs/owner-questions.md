@@ -15,7 +15,8 @@
 One fork remains from the 2026-08-01 overnight systems run (OQ-9). Two
 others (OQ-8, OQ-11) were **closed by owner device evidence the same morning** —
 the lab audit behind them was wrong. **OQ-12 was answered the same evening** and
-opened the earned-speed follow-ups OQ-13 … OQ-16.
+opened the earned-speed follow-ups OQ-13 … OQ-16. **OQ-17** is new from the
+2026-08-03 difficulty-curve slice and needs a build before it can be answered.
 
 ### OQ-13 · What does *Quick Feet* become when the drive is gone?
 
@@ -120,6 +121,41 @@ modes, so difficulty is currently **economically invisible**.
 **The fork:** whether a harder course should pay for the shorter runs it
 causes, and by how much. A multiplier is the obvious shape; the size is a feel
 decision, not a measurable one.
+
+### OQ-17 · How fast should difficulty rise over the first 15 km?
+
+**Landed 2026-08-03:** difficulty amount is now one curve, `pressure(d)`,
+approved in the decision ledger. It is computed and **nothing reads it yet** — the course
+is unchanged. Its shape is fixed by things already decided (zero through the
+warm-up, monotone, bounded slope, 1.0 at the top of your 15 km scope). Exactly
+one number in it is a judgement call, and it is a feel decision no measurement
+can settle.
+
+**Default:** `ONSET_SHAPE = 0.70` — a front-loaded ramp that decelerates into
+the top. In plain terms it means difficulty climbs fastest between roughly 2 and
+5 km and eases off after 10 km, reaching about 41% of full pressure at 5 km and
+84% at 10 km. Front-loaded because your loudest complaint was that the start is
+too easy — *"the whole time I'm speeding through it with reel just to get it over
+with"*. Decelerating at the top because where the plateau really belongs is still
+deferred; a curve that eases off can be stretched later, one still climbing hard
+at 15 km would have to be redesigned.
+
+**The fork:** whether that rise is *"not too slow and not too fast"* — your own
+requirement 2, and the only part of it a number cannot check. Too slow and the
+opening stays boring; too fast and 2–5 km becomes the wall you already described.
+
+**What you will need to answer it:** a build with the slope on a Test Lab dial.
+That is the next phase, and the doctrine deliberately puts every knob on this one
+curve so a session judges **one slope** rather than re-authoring content chunk by
+chunk. **Nothing is blocked meanwhile** — the default ships and can move in one
+line.
+
+**Riding the same build:** the three spacing-floor constants (0.60 s for a beat
+you already know, 0.8–1.0 s for an unlearned opposite-side choice, 1.2–1.4 s when
+a big swing correction is also needed). They are `assumed` from reaction-time
+research, not measured on your hands, and they cannot be judged without content
+that actually uses them. Asking now would gather a weak verdict, so they are
+parked here rather than raised separately.
 
 ## Answered
 

@@ -700,7 +700,7 @@ evaluate individual patterns on device, it has failed.
 **Phase 0 — instrumentation only. ✅ LANDED 2026-08-02.**
 `tools/course_audit.gd` walks the generator and reports the axis vector per
 chunk; `tools/course_audit_probe.gd` holds the measurement, so the CLI and the
-contracts can never measure differently. Five contracts in
+contracts can never measure differently. The contracts in
 `tests/unit/course_audit_tests.gd` pin the *instrument* — not the difficulty —
 and each was falsified before being trusted. **No gameplay value changed.**
 First output and its six new findings:

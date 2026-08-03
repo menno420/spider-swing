@@ -389,9 +389,12 @@ document disagree, the measurement document wins.
   was is **superseded** by the 2026-08-02 device session: the first 500 m is too
   easy, difficulty jumps sharply near 2 500 m, 2 500–5 000 m holds most deaths,
   5 000–10 000 m opens up again, and 10 km at least doubles with no ramp. Eight
-  structural findings and fourteen proposed rules — **none implemented, scoped to
-  the first 15 km** — are in
+  structural findings and the rule set built on them — **approved 2026-08-03 in
+  the decision ledger and scoped to the first 15 km** — are in
   [`difficulty-and-obstacle-doctrine`](game-design/difficulty-and-obstacle-doctrine.md).
+  `CoursePressure` now computes the amount curve and **nothing reads it yet**, so
+  the generated course is still exactly the measured one:
+  [`pressure-curve profile`](measurements/2026-08-03-pressure-curve-profile.md).
   The overnight lab measurements that claimed a 6 km peak stay retracted; they
   measured the bot failing at pace:
   [`difficulty-curve`](measurements/2026-08-01-difficulty-curve.md).
@@ -466,19 +469,29 @@ so the Dive stays always available, which is its whole purpose.
 - **2026-08-02 — Phase 0 course instrumentation.** `tools/course_audit.gd` walks
   the deterministic generator and reports the axis vector per chunk — corridor
   width, sequential opposite-commitment spacing, simultaneous gates, density,
-  novelty and route family. **No gameplay value changed.** Five contracts pin
+  novelty and route family. **No gameplay value changed.** Its contracts pin
   the instrument rather than the difficulty. Its first output reproduces all
   four of the owner's felt difficulty boundaries from geometry alone:
   [`course-audit baseline`](measurements/2026-08-02-course-audit-baseline.md).
-- **2026-08-02 — Difficulty and obstacle doctrine (PRs #124–#129).** A measured
-  baseline and a proposed rule set for how difficulty and obstacle placement are
-  decided, scoped to the first 15 km. **Nothing in it is implemented and no
-  ledger entry records it** — it is a proposal the owner is analysing. See
-  [`the doctrine`](game-design/difficulty-and-obstacle-doctrine.md) and the
-  external evidence behind it in
+- **2026-08-03 — The doctrine is approved, and the curve is computed.**
+  The doctrine moved from `plan` to `binding` for 0–15 km, settling
+  three questions that blocked implementation: R6 is reworded rather than the
+  generator, the axis **budget** becomes an axis **envelope**, and R13's spacing
+  floor T is a function of local predictability rather than a constant. Where the
+  plateau belongs stays **deferred**. `CoursePressure`
+  (`game/domain/course_pressure.gd`) computes `pressure(d)` — zero through 500 m,
+  1.0 at the top of the owner-scoped range, clamped above — and **no region, pool
+  or pattern reads it**. Proven, not asserted: a digest over patterns and
+  polygons across 0–15 km is identical before and after, and is pinned by a
+  contract that is *supposed* to fail when a later phase moves selection onto the
+  curve. **No gameplay value changed and the build was not bumped.**
+  [`pressure-curve profile`](measurements/2026-08-03-pressure-curve-profile.md).
+- **2026-08-02 — Difficulty and obstacle doctrine (PRs #124–#129).** The measured
+  baseline and rule set behind that decision, plus the external evidence in
   [`difficulty-research`](game-design/difficulty-research-2026-08-02.md), which
-  bounds the reaction-window question and argues the axis budget should be an
-  admission envelope rather than a fungible point-sum.
+  bounds the reaction-window question and argued the axis budget should be an
+  admission envelope rather than a fungible point-sum — a correction the decision
+  adopted.
 - **2026-08-02 — Home is the run you are about to start (PR #122, 0.37.0).**
   Home becomes an identity card plus a run deck — difficulty, personal best with
   its region, three loadout chips grouped by the catalogue's own scopes, and one
