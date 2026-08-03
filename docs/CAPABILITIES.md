@@ -112,6 +112,38 @@ Format: `- YYYY-MM-DD · capability|wall · <venue> · finding · evidence · wo
 as venue `any`.)
 
 
+- 2026-08-03 · capability · `owner-live` · **`gh` is one `apt-get` away and is required
+  by NOTHING — which retires the "this seat has no `gh` CLI" clause in the GraphQL
+  entry below.** That clause was accurate about the default image and has since been
+  read as a capability limit; `scripts/env-setup.sh` § 7 now installs it, so the
+  question should stop arising. · evidence: `apt-cache policy gh` → candidate
+  `2.45.0-1ubuntu0.3`; installed and ran clean. **The auth behaviour is the part worth
+  recording, because it mimics a permission wall:** over the agent proxy the ambient
+  `GH_TOKEN` serves a pinned subset only — `gh api user` → `menno420`, while
+  `gh api repos/menno420/spider-swing` → **403** *"GitHub access is not enabled for this
+  session. An org admin must connect the Claude GitHub App for this organization"* and
+  `gh pr list` → **403** at GraphQL. Both succeed on the direct-PAT path, so that 403 is
+  the known proxied-REST quirk and **not** an org-admin wall. A session that recorded it
+  at face value would send the owner to a settings page for a door that is already open.
+  · workaround: `GH_TOKEN="$GITHUB_PAT" no_proxy='*' HTTPS_PROXY= gh <command>` —
+  verified with `gh api user` and `gh pr list --repo menno420/spider-swing`, which
+  returned real merged PRs. **And the framing matters more than the recipe: the absence
+  of `gh` has never blocked anything here.** It has been reported to the owner as a
+  blocker by a session that, in the same message, listed the open PRs and the open issue
+  it had just read — git over HTTPS and the REST API cover every operation this repo
+  performs.
+
+- 2026-08-03 · capability · `owner-live` · **Direct `api.github.com` over the PAT works
+  and is the routine path, which narrows the "direct HTTP is blocked" entry below
+  further than its own correction did.** · evidence: repeated
+  `curl -sS --noproxy '*' -H "Authorization: Bearer $GITHUB_PAT"` calls to
+  `/repos/menno420/{fleet-manager,spider-swing}/commits/{sha}/check-runs` and
+  `/repos/menno420/spider-swing` returned **200** with real payloads this session,
+  including the `permissions` object (`admin: true`, `push: true`). The blocked case is
+  the **proxied** request, not the direct one — the two differ by `--noproxy '*'` plus
+  the PAT, and testing without both measures the proxy rather than the API.
+  · workaround: none needed; this is the documented direct-PAT path working as intended.
+
 - 2026-08-03 · capability · `any` · **Hand-editing `.claude/CLAUDE.md` is SAFE, and
   its banner reads the opposite. Editing a kit-planted doc is what PROTECTS it.**
   · evidence: the kit records a sha256 per planted doc in
