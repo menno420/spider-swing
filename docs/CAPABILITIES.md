@@ -111,6 +111,90 @@ Format: `- YYYY-MM-DD · capability|wall · <venue> · finding · evidence · wo
 `any`; older five-field lines without a venue token stay valid — read them
 as venue `any`.)
 
+
+- 2026-08-03 · wall · `any` · **The `stale-wall` advisory cannot be cleared by
+  doing what it asks. Re-verify anyway — but do not expect the warning to go
+  away, and do not "fix" it by editing the fence.** · evidence: `check_stale_walls`
+  in `bootstrap.py` classes a seed row as a wall by its enclosing `## Walls`
+  section and dates it from that row's own trailing `LAST-VERIFIED:` stamp. All
+  seven currently-firing stamps sit *inside* the kit-owned seed fence, whose own
+  banner says "Append your findings BELOW the fence, never inside it". There is no
+  title match, no supersession rule, and no path by which an append-log row
+  refreshes a seed row's date — and `refresh_capability_seed` re-renders the
+  fence only from the kit template, whose stamps are literals that move when
+  substrate-kit ships, not when a session verifies anything. So six honest
+  re-verifications appended on 2026-08-03 cleared exactly zero of the seven
+  warnings. · workaround: **treat these seven as permanently advisory in this
+  repo.** They are warn-only and never exit-affecting, so nothing is blocked. The
+  real fix is upstream in the kit — either a supersession rule (an append-log
+  `wall` row whose bold title matches a seed row re-dates it) or moving freshness
+  stamps out of the fence. Recorded so no future session re-pays the discovery,
+  and so the doc-hygiene trigger firing every single session is read as a known
+  structural nag rather than as fresh drift.
+
+- 2026-08-03 · wall · `any` · **Re-verified: branch DELETION is still 403 on every
+  path available to this seat, and tag push with it.** · evidence: pushed a real
+  throwaway ref and then tried to remove it —
+  `git push origin :refs/heads/capability-probe-20260803` returned
+  `error: RPC failed; HTTP 403 curl 22` / `send-pack: unexpected disconnect`;
+  `git push origin HEAD:refs/tags/capability-probe-20260803` returned the
+  identical 403. Branch *creation* in the same breath succeeded
+  (`* [new branch] HEAD -> capability-probe-20260803`), so the wall is
+  deletion-shaped exactly as recorded. No `delete_branch` exists among the GitHub
+  MCP tools, so "every path" holds for the paths this seat has. · workaround:
+  unchanged — owner deletes by hand, or enables "Automatically delete head
+  branches". **Consequence of this probe: `capability-probe-20260803` is live on
+  the remote and this seat cannot remove it.** Owner ask, ten seconds.
+
+- 2026-08-03 · wall · `any` · **Probing a *creation* wall is a one-way door in
+  this seat, and that is now evidence-backed rather than cautious.** · evidence:
+  the branch-deletion probe above proves this seat can create remote refs and
+  cannot remove them. Any probe of "Environment / Project creation" therefore
+  risks leaving an artifact in the owner's console with no agent-side cleanup. ·
+  workaround: **the Environment / Project creation entry is deliberately NOT
+  re-verified this session** — it stays a dated claim rather than becoming a
+  fabricated fact. Re-verify only when the owner wants the artifact, or can
+  remove it.
+
+- 2026-08-03 · wall · `any` · **CORRECTION, not a refresh: the GraphQL entry is
+  wrong in kind. It is an allowlist, not a quota.** · evidence:
+  `POST https://api.github.com/graphql` with `query{viewer{login}}` returns
+  **403** and a proxy body that names the real rule: *"This GraphQL query is not
+  enabled for this session — only the pinned set of PR-review operations is
+  served."* The 2026-07-10 entry says the quota is "tight — batch queries", which
+  would tell a future session to optimise its way through a door that is shut. ·
+  workaround: the proxy's own advice is `gh api repos/{owner}/{repo}/...` — **but
+  this seat has no `gh` CLI**, so the workaround that actually applies here is the
+  GitHub MCP tools.
+
+- 2026-08-03 · wall · `any` · **`api.github.com` direct HTTP is blocked but NOT
+  blanket — the entry overstates it.** · evidence:
+  `GET /repos/menno420/spider-swing` → **403**, while
+  `GET /rate_limit` → **200** in the same session, seconds apart. So "blocked →
+  MCP-tools-only" is right about repo data and wrong as a general statement about
+  the host. · workaround: unchanged for anything that matters — use the MCP
+  tools. Recorded because a future session testing reachability against
+  `/rate_limit` would conclude the wall had lifted.
+
+- 2026-08-03 · capability · `owner-live` · **Merging agent-side: partially
+  re-verified, and the part that was exercised worked.** · evidence: PRs #148 and
+  #149 both merged today with auto-merge armed by the repo's own
+  `enable-auto-merge` workflow job, squash method, no owner click. · workaround:
+  none needed — but note the limit of this evidence honestly: **a direct
+  agent-issued `merge_pull_request` was not re-attempted**, because the only open
+  PR was #150 and it is deliberately held red by the born-red session gate.
+  Merging it to test the tool would have been a fabricated completion.
+
+- 2026-08-03 · wall · `owner-live` · **The silent-prompt-stall class exists in
+  `owner-live` too, where it is not silent but still costs the owner.** ·
+  evidence: `mcp__Claude_Code_Remote__delete_trigger` raised a permission prompt
+  at ~15:18 CEST and blocked until the owner approved it; he reported the stall
+  unprompted. The existing entry is tagged `routine-fired`, where the same prompt
+  would hang unattended. · workaround: **do not call `delete_trigger` as cleanup.**
+  A `send_later` routine is one-shot and disables itself after firing, so deleting
+  a spent trigger buys nothing and spends owner attention. Owner-stated preference,
+  2026-08-03.
+
 - 2026-08-03 · capability · `owner-live` · **Godot 4.7.1 Standard is
   PREINSTALLED in the owner's standard spider-swing environment. Do not download
   it — run `which godot` first.** · The owner created `scripts/env-setup.sh` on
