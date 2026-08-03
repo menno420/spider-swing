@@ -331,6 +331,10 @@ product decisions.
   honors reduced motion, and uses mipmaps for heavily minified moving art.
 - an arbitrary debug start inherits practice settlement ownership and cannot
   grant flies, records, checkpoints, or leaderboard eligibility;
+- tutorial practice is a separate application run purpose with fixed seeds and
+  event-backed Attach, momentum Release, Reel, Burst, and Dive Recovery
+  objectives; it creates no settlement at all and returns to the originating
+  lesson after completion, confirmed death, or Menu;
 - geometry at an off-grid debug distance exactly equals the same seed streamed
   sequentially from zero;
 - the selectable upgrade overlay never serializes, affects only the selected
@@ -356,7 +360,7 @@ current mechanics continuation, use
 and its earned-speed specification. No new recording is expected; device-only
 questions require a playtest verdict.
 
-Install `0.27.0-forty-level-progression-playtest` over `0.19.0-depth-testing` or any later
+Install `0.41.0-tutorial-practice` over `0.19.0-depth-testing` or any later
 stable-key build without uninstalling; both use the stable signer and the update
 should preserve the save.
 Only a device that never installed `0.19.0` or later needs the one final

@@ -87,8 +87,26 @@ diagram. Reduced Motion freezes each lesson at a useful staged pose.
 
 Copy, preview, and 80-reference-pixel tutorial actions are enclosed at 1280×720,
 1280×600, and strict unscaled 1040×480 without adding a nested scroll or gesture
-owner. `START RUN` truthfully launches the ordinary endless run; lesson-specific
-practice is not claimed by this build.
+owner. Overview pages retain a truthful `START RUN`; Attach, momentum Release,
+Reel, Anchor Burst, and Dive Recovery instead expose `PRACTISE LESSON`.
+
+`TutorialPracticeCatalog` is the one application-owned metadata and objective
+model. Each lesson declares whether direct practice exists; applicable entries
+carry a stable objective id, fixed seed/start, coaching, and completion rule.
+Reel, Burst, and Dive reuse the same authoritative verb mapping as Campaign,
+while Attach consumes `ATTACHED`, momentum Release requires a `RELEASED` event
+with a positive simulation-awarded `forward_bonus`, and Dive Recovery requires
+`DIVE_STARTED` followed by an upper attachment whose event says `dive_rearmed`.
+Distance is not an objective input.
+
+Practice mounts `SwingLabSession.RUN_TUTORIAL_PRACTICE` on Standard course
+structure with the selected production spider, cosmetics, upgrades, real input,
+physics, HUD, and deterministic course stream. The HUD presents objective,
+authoritative progress, and concise coaching. Completion is session-local;
+completion, confirmed death, and Menu remount the same tutorial lesson. This run
+purpose never creates a `RunSettlement`, so it has no settlement id and cannot
+reach Campaign stars, flies, bests, checkpoints, leaderboard eligibility,
+`ProgressionService`, or `SaveRepository`.
 
 ### Garage and Shop
 
@@ -212,12 +230,15 @@ recording and on taller aspect ratios.
 
 ## Ownership
 
-- `FrontEndState` owns navigation, tutorial progress, settings validation,
+- `FrontEndState` owns navigation, tutorial page and session-local completion
+  state, settings validation,
   Garage/Shop/Course Lab/Region Practice intent, Field Guide selection, compact
   versus advanced debug launch intent, the Test Lab working set, and run requests.
 - `FrontEndView` renders state and forwards button intent.
 - `TutorialPreview` renders deterministic production-asset snapshots only; it
   owns no simulation, settlement, progression, or persistence state.
+- `TutorialPracticeCatalog` owns stable lesson objective and launch metadata;
+  `SwingLabSession` observes authoritative events and publishes progress.
 - `ProgressionService` applies each run settlement once and owns fly-funded
   upgrades, selections, creator edits, and milestone cosmetic unlocks.
 - `SaveRepository` exclusively reads and writes settings, progression, and the
@@ -243,6 +264,12 @@ No global manager or autoload is introduced.
   cannot silently return;
 - tutorial copy, preview, navigation, and 80 px actions remain enclosed at
   1280×720, 1280×600, and strict unscaled 1040×480 with no nested scroller;
+- every practice-enabled lesson resolves a fixed launch and authoritative
+  objective; distance and wrong verbs cannot complete it, Dive requires its
+  ordered upper-web rearm, and identical launches resolve the same seed;
+- tutorial practice emits no settlement or checkpoint, remains record- and
+  leaderboard-ineligible, returns to its originating lesson on completion,
+  death, or Menu, and leaves ordinary Play and Campaign run purposes unchanged;
 - Settings owns a vertical scroll surface with readable type and mobile-sized
   three-card preset/action controls, a touch deadzone, no focus snapping, and
   complete descendant drag bubbling;

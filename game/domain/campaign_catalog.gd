@@ -4,8 +4,9 @@ class_name CampaignCatalog
 ##
 ## D-0033 approved a staged campaign whose early levels teach one mechanic
 ## each. The gap it names is specific: the tutorial explains Reel, Burst and
-## Dive across six static text steps and then never asks the player to perform
-## any of them.
+## Dive and now offers short direct practice. Campaign remains a separate
+## distance-plus-verb challenge that awards stars; tutorial practice never
+## routes through that reward path.
 ##
 ## **Two tiers.** The teaching tier asks for one verb each. The combination tier
 ## asks for two or three in a single run, because knowing three verbs separately
@@ -47,6 +48,21 @@ const COMBINE_FULL := &"combine_full"
 
 const TIER_TEACH := &"teach"
 const TIER_COMBINE := &"combine"
+
+
+## Translate an authoritative simulation fact into the shared teaching verb it
+## proves. Campaign and tutorial practice both consume this one mapping so a
+## requested-but-unavailable action can never satisfy either objective.
+static func verb_for_event_kind(event_kind: int) -> StringName:
+	match event_kind:
+		SimulationEvent.Kind.REEL_STARTED:
+			return VERB_REEL
+		SimulationEvent.Kind.BURST_STARTED:
+			return VERB_BURST
+		SimulationEvent.Kind.DIVE_STARTED:
+			return VERB_DIVE
+		_:
+			return &""
 
 ## Display order for the tier headings. A tier is presentation grouping only —
 ## nothing gates on it, exactly as nothing gates the three teaching levels on

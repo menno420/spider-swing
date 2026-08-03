@@ -648,7 +648,7 @@ static func _test_tutorial_is_enclosed_on_short_landscapes(
 				viewport.free()
 				return 0
 		for button_name: StringName in [
-			&"TutorialBack", &"TutorialPrevious", &"TutorialStartRun",
+			&"TutorialBack", &"TutorialPrevious", &"TutorialLessonAction",
 			&"TutorialNext",
 		]:
 			var button := view.front_end_button(button_name)
@@ -662,8 +662,14 @@ static func _test_tutorial_is_enclosed_on_short_landscapes(
 			failures.append("tutorial introduced a competing scroll/gesture owner")
 			viewport.free()
 			return 0
-		if view.front_end_button(&"TutorialStartRun").text != "START RUN":
+		if view.front_end_button(&"TutorialLessonAction").text != "START RUN":
 			failures.append("ordinary tutorial launch is mislabeled as practice")
+			viewport.free()
+			return 0
+		state.show_tutorial_lesson(&"attach")
+		if view.front_end_button(&"TutorialLessonAction").text != \
+				"PRACTISE LESSON":
+			failures.append("practice-enabled tutorial action is not truthfully labeled")
 			viewport.free()
 			return 0
 		viewport.free()
@@ -975,7 +981,9 @@ static func _test_composition_root_mounts_front_end_first(
 	if not source.contains(
 		"_front_end_state.debug_play_requested.connect(_start_debug_game)"
 	) or not source.contains(
-		"run_mode, start_distance_pixels, -1, debug_start, campaign_level_id)"
+		"_session.configure_run("
+	) or not source.contains(
+		"campaign_level_id,\n\t\ttutorial_lesson_id,"
 	) or not source.contains(
 		"_front_end_state.debug_tuning_request_is_valid("
 	):

@@ -51,6 +51,16 @@ static func menu_rect(_viewport_size: Vector2) -> Rect2:
 	return Rect2(24.0, 24.0, 92.0, 52.0)
 
 
+static func tutorial_coaching_rect(viewport_size: Vector2) -> Rect2:
+	var width := clampf(viewport_size.x * 0.46, 440.0, 590.0)
+	return Rect2(
+		viewport_size.x * 0.5 - width * 0.5,
+		16.0,
+		width,
+		88.0,
+	)
+
+
 static func debug_toggle_rect(viewport_size: Vector2) -> Rect2:
 	return Rect2(viewport_size.x - 126.0, 24.0, 102.0, 56.0)
 

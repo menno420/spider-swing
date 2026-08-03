@@ -1743,6 +1743,30 @@ func _draw_hud(size: Vector2) -> void:
 			17,
 			YELLOW,
 		)
+	elif _snapshot.run_mode == SwingLabSession.RUN_TUTORIAL_PRACTICE:
+		var coaching := LabLayout.tutorial_coaching_rect(size)
+		var coaching_color := GREEN \
+			if _snapshot.tutorial_objective_complete else CYAN
+		draw_rect(coaching, Color(0.02, 0.07, 0.08, 0.94))
+		draw_rect(coaching, coaching_color, false, 3.0)
+		_draw_centered_text(
+			Vector2(coaching.get_center().x, coaching.position.y + 27.0),
+			_snapshot.tutorial_progress,
+			16,
+			coaching_color,
+		)
+		_draw_centered_text(
+			Vector2(coaching.get_center().x, coaching.position.y + 57.0),
+			_snapshot.tutorial_coaching,
+			14,
+			WEB,
+		)
+		_draw_centered_text(
+			Vector2(coaching.get_center().x, coaching.position.y + 78.0),
+			"NO REWARDS · RETURNS TO THIS LESSON",
+			12,
+			YELLOW,
+		)
 	if _region_banner_remaining > 0.0:
 		var alpha := clampf(_region_banner_remaining, 0.0, 1.0)
 		var banner := Rect2(
