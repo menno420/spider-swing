@@ -162,11 +162,11 @@ godot --headless --path . --script res://tests/test_runner.gd
   interpolation, mipmapped moving art, restrained/reduced-motion-safe action
   poses, region ambience and persistent practice status remain presentation-only,
   and world input waits for Godot GUI handling;
-- thirty-one front-end contracts proving Home starts before gameplay,
+- thirty-six front-end contracts proving Home starts before gameplay,
   Play/Garage/Shop/Tutorial/Campaign/Course Lab/Region Practice/Field Guide/
   Settings route correctly,
-  the six tutorial
-  steps cover live mechanics, Settings
+  the eight data-driven tutorial
+  lessons cover live mechanics, Settings
   is touch-scrollable from every descendant control/card region without focus
   snapping and remains mobile-readable, options (including continuous Music
   volume plus independent Effects and Haptics) validate and emit once,

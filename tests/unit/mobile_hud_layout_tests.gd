@@ -1022,11 +1022,19 @@ static func _test_bramble_canopy_uses_world_anchored_art_pack(
 		FileAccess.READ,
 	)
 	var source := "" if source_file == null else source_file.get_as_text()
+	var canopy_art_file := FileAccess.open(
+		"res://game/presentation/scripts/canopy_obstacle_art.gd",
+		FileAccess.READ,
+	)
+	var canopy_art_source := "" if canopy_art_file == null \
+		else canopy_art_file.get_as_text()
 	if not source.contains("REGION_VISUAL_TRANSITION_DURATION") or \
 			not source.contains("ArtAssetCatalog.CANOPY_RAIL_TILE") or \
-			not source.contains("ArtAssetCatalog.CANOPY_HOOK_VINE") or \
-			not source.contains("ArtAssetCatalog.CANOPY_LEAF_SHUTTER") or \
-			not source.contains("CourseObstacleCatalog.CANOPY_HOOK_VINE_LEFT"):
+			not source.contains("CanopyObstacleArt.directional_spec") or \
+			not canopy_art_source.contains("ArtAssetCatalog.CANOPY_HOOK_VINE") or \
+			not canopy_art_source.contains("ArtAssetCatalog.CANOPY_LEAF_SHUTTER") or \
+			not canopy_art_source.contains(
+				"CourseObstacleCatalog.CANOPY_HOOK_VINE_LEFT"):
 		failures.append(
 			"Bramble backdrop transition or region obstacle routing is missing")
 		view.free()

@@ -73,8 +73,9 @@ var _field_guide_sources: Label
 var _tutorial_preview: TutorialPreview
 var _tutorial_kicker: Label
 var _tutorial_title: Label
-var _tutorial_body: Label
-var _tutorial_tip: Label
+var _tutorial_point_panels: Array[Control] = []
+var _tutorial_point_cues: Array[Label] = []
+var _tutorial_point_texts: Array[Label] = []
 var _tutorial_progress: Label
 var _tutorial_action: Button
 var _tutorial_next: Button
@@ -708,30 +709,53 @@ func _build_tutorial() -> void:
 
 	_tutorial_preview = TutorialPreview.new()
 	_tutorial_preview.name = "AnimatedMechanicsPreview"
-	_place(_tutorial_preview, _tutorial, 0.04, 0.20, 0.57, 0.77)
+	_place(_tutorial_preview, _tutorial, 0.03, 0.20, 0.56, 0.78)
 
 	var copy_card := _panel(PANEL)
 	copy_card.name = "TutorialCopyWebPanel"
-	_place(copy_card, _tutorial, 0.59, 0.13, 0.96, 0.79)
+	_place(copy_card, _tutorial, 0.58, 0.11, 0.97, 0.79)
 	var copy := VBoxContainer.new()
-	copy.add_theme_constant_override("separation", 8)
-	_fill_with_margin(copy, copy_card, 18.0)
+	copy.add_theme_constant_override("separation", 7)
+	_fill_with_margin(copy, copy_card, 14.0)
 	_tutorial_kicker = _section_label("")
 	copy.add_child(_tutorial_kicker)
-	_tutorial_title = _label("", 30, INK)
+	_tutorial_title = _label("", 28, INK)
 	_tutorial_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_tutorial_title.custom_minimum_size.y = 38.0
 	copy.add_child(_tutorial_title)
-	_tutorial_body = _label("", 18, MUTED)
-	_tutorial_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_tutorial_body.custom_minimum_size.y = 100.0
-	_tutorial_body.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	copy.add_child(_tutorial_body)
-	var tip_panel := _panel(Color(0.05, 0.18, 0.22, 0.95), 12)
-	tip_panel.custom_minimum_size.y = 68.0
-	copy.add_child(tip_panel)
-	_tutorial_tip = _label("", 15, YELLOW)
-	_tutorial_tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_fill_with_margin(_tutorial_tip, tip_panel, 12.0)
+	var point_stack := VBoxContainer.new()
+	point_stack.name = "TutorialTeachingPoints"
+	point_stack.add_theme_constant_override("separation", 6)
+	point_stack.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	copy.add_child(point_stack)
+	for index in range(FrontEndState.TUTORIAL_POINT_COUNT):
+		var point_panel := _panel(
+			Color("101c18f2"),
+			11,
+			Color(CYAN, 0.42),
+		)
+		point_panel.name = "TutorialPointCard%d" % (index + 1)
+		point_panel.custom_minimum_size.y = 58.0
+		point_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		point_stack.add_child(point_panel)
+		_tutorial_point_panels.append(point_panel)
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 9)
+		_fill_with_margin(row, point_panel, 8.0)
+		var cue := _label("", 13, CYAN)
+		cue.name = "TutorialPointCue%d" % (index + 1)
+		cue.custom_minimum_size.x = 88.0
+		cue.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		cue.add_theme_constant_override("outline_size", 3)
+		cue.add_theme_color_override("font_outline_color", DEEP)
+		row.add_child(cue)
+		_tutorial_point_cues.append(cue)
+		var point_text := _label("", 17, INK)
+		point_text.name = "TutorialPointText%d" % (index + 1)
+		point_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		point_text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(point_text)
+		_tutorial_point_texts.append(point_text)
 
 	var nav := HBoxContainer.new()
 	nav.name = "TutorialNavigation"
@@ -2009,8 +2033,18 @@ func _render() -> void:
 		var step := _state.current_tutorial_step()
 		_tutorial_kicker.text = str(step.get("kicker", ""))
 		_tutorial_title.text = str(step.get("title", ""))
-		_tutorial_body.text = str(step.get("body", ""))
-		_tutorial_tip.text = "TIP · %s" % step.get("tip", "")
+		var points: Array = step.get("points", [])
+		for index in range(FrontEndState.TUTORIAL_POINT_COUNT):
+			var available := index < points.size()
+			_tutorial_point_panels[index].visible = available
+			if not available:
+				continue
+			var point: Dictionary = points[index]
+			_tutorial_point_cues[index].text = "%d  %s" % [
+				index + 1,
+				str(point.get("label", "")),
+			]
+			_tutorial_point_texts[index].text = str(point.get("text", ""))
 		_tutorial_progress.text = "%d / %d" % [
 			_state.tutorial_index + 1,
 			FrontEndState.TUTORIAL_STEPS.size(),

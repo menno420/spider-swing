@@ -15,7 +15,7 @@ live in [`player-preference research`](product/player-preference-research-2026-0
 External benchmarks and the verified zone audit live in
 [`upgrade-and-difficulty research`](product/upgrade-and-difficulty-research-2026-08-02.md).
 
-Build `0.42.0-difficulty-profiles` is current. Continuous drive is
+Build `0.43.0-tutorial-clarity` is current. Continuous drive is
 zero; release, swing control, Reel, and pull timing earn speed; the former left
 kill line is a visible pursuing bird. `target_speed_at` remains a named
 reference. The bot still cannot tune the bird — model v4 pumps, but it sustains
@@ -42,10 +42,15 @@ without a reported regression.
   Campaign, Field Guide, Settings, the compact debug-run launcher, and Advanced
   Test Lab remain state-owned destinations. The bootstrap root alone wires and mounts
   presentation, input, persistence, progression, and the application session.
-- The Guide tutorial has eight stable, single-goal lessons. Its deterministic
-  preview uses the selected production spider/style/Silk plus Bramble art,
-  current obstacles, the pursuing bird, flies, route cues, and gameplay-shaped
-  HUD controls. Reduced Motion freezes a useful pose; all tutorial controls stay
+- The Guide tutorial has eight stable, single-goal lessons. Each page pairs
+  three large numbered teaching points with the same numbered cues inside its
+  deterministic scene, replacing the small paragraph-plus-tip layout seen in
+  the owner's 1040×480 review. The preview uses the selected production
+  spider/style/Silk plus Bramble art, current obstacles, the pursuing bird,
+  flies, a real Burst Frenzy pickup, route cues, and gameplay-shaped HUD
+  controls. Directional hook/shutter art shares the gameplay renderer's
+  floor/ceiling orientation rule, so ceiling growth cannot be staged upside
+  down. Reduced Motion freezes a useful pose; all tutorial controls stay
   enclosed through strict 1040×480. Attach, momentum release, Reel, Anchor Burst,
   and Dive-plus-upper-web recovery each launch a fixed-seed short practice in the
   real simulation with the selected spider and upgrades. Authoritative events,
@@ -73,7 +78,7 @@ without a reported regression.
 - A separately versioned `DebugTestProfile` auto-saves the Test Lab working set
   and A/B/C comparison slots. Its resolved display values and sparse explicit
   overrides never enter `PlayerSettings` or `PlayerProgress`.
-- Build `0.42.0-difficulty-profiles` (Android version code 62, package
+- Build `0.43.0-tutorial-clarity` (Android version code 63, package
   `com.menno420.spiderswing.dev`) retains the stable conventional public debug
   identity introduced by `0.19.0-depth-testing` in
   `.github/android/debug.keystore`. The workflow pins its file and certificate
@@ -516,6 +521,13 @@ accidental dives. Collision is untouched and diving to the floor is unchanged,
 so the Dive stays always available, which is its whole purpose.
 
 ## Recently shipped (newest first)
+
+- **2026-08-04 — Tutorial orientation and teaching clarity (0.43.0).** The
+  owner's first 1040×480 tutorial review replaced dense prose and tiny scene
+  badges with three shared numbered points per lesson. Ceiling/floor Bramble
+  obstacle orientation now comes from one presentation helper used by both
+  gameplay and the tutorial; the course, practice objectives, physics,
+  progression, and difficulty profiles are unchanged.
 
 - **2026-08-04 — Relaxed and Harsh become pressure-envelope profiles
   (0.42.0).** `CourseDifficultyProfile` centralizes predictability, density,

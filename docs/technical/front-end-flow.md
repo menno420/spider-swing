@@ -78,12 +78,22 @@ mechanic coverage, and one focused page for each of these subjects:
 8. Rescue, Buckler's separate rail bounce, death attribution, restart, and Menu.
 
 The preview is a deterministic in-engine presentation rather than a prerecorded
-video or second simulator. It resolves the selected production spider, body tint,
-and Silk treatment plus Bramble backdrop/rails, current obstacles, the pursuing
-bird, flies, route/target cues, and gameplay-shaped HUD controls through the live
-asset catalog. Missing imports have an explicit labeled/silhouette fallback and
-cannot silently restore the old cyan grid, rectangle, circle, and line-spider
-diagram. Reduced Motion freezes each lesson at a useful staged pose.
+video or second simulator. Every lesson owns exactly three concise teaching
+points. Their numbered labels drive both the copy card and the matching large,
+high-contrast scene callouts, so the explanation and picture cannot become two
+different lessons. This replaces the paragraph-plus-small-tip hierarchy that
+the owner's 1040×480 recording proved technically enclosed but hard to read.
+
+The scene resolves the selected production spider, body tint, and Silk treatment
+plus Bramble backdrop/rails, current obstacles, the pursuing bird, flies, the
+real Burst Frenzy lightning pickup, route/target cues, and gameplay-shaped HUD
+controls through the live asset catalog. `CanopyObstacleArt` is the one
+presentation rule for directional hook/shutter art in both `SwingLab` and
+`TutorialPreview`: source art grows upward from the floor, ceiling mounts flip
+vertically, and the authored left/right kind alone controls horizontal mirroring.
+Missing imports have an explicit labeled/silhouette fallback and cannot silently
+restore the old cyan grid, rectangle, circle, and line-spider diagram. Reduced
+Motion freezes each lesson at a useful staged pose.
 
 Copy, preview, and 80-reference-pixel tutorial actions are enclosed at 1280×720,
 1280×600, and strict unscaled 1040×480 without adding a nested scroll or gesture
@@ -257,11 +267,13 @@ No global manager or autoload is introduced.
 - Play, Spider, Play Modes, Guide, Settings, and Debug Test Run are real
   event-consuming Home buttons; each hub's destination buttons consume their
   own events and return through the same state-owned route;
-- every tutorial lesson has a unique stable id and teaching goal, the live
-  mechanics each have one declared lesson owner, and Burst/Dive are separate;
+- every tutorial lesson has a unique stable id and teaching goal, exactly three
+  concise teaching points, no paragraph-plus-tip fallback, and the live
+  mechanics each have one declared lesson owner; Burst/Dive remain separate;
 - every preview resolves the selected spider plus real game presentation assets,
-  Reduced Motion freezes deterministically, and primitive-only presentation
-  cannot silently return;
+  uses the same three labels as its copy, applies the shared ceiling/floor
+  obstacle orientation, freezes deterministically under Reduced Motion, and
+  cannot silently return to primitive-only presentation;
 - tutorial copy, preview, navigation, and 80 px actions remain enclosed at
   1280×720, 1280×600, and strict unscaled 1040×480 with no nested scroller;
 - every practice-enabled lesson resolves a fixed launch and authoritative

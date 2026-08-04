@@ -529,6 +529,23 @@ static func _test_tutorial_covers_current_mechanics(
 		if goal == &"" or goal in goals:
 			failures.append("tutorial teaching goals are missing or duplicated")
 			return 0
+		if lesson.has("body") or lesson.has("tip"):
+			failures.append("tutorial returned to paragraph-plus-tip teaching")
+			return 0
+		var points: Array = lesson.get("points", [])
+		if points.size() != FrontEndState.TUTORIAL_POINT_COUNT:
+			failures.append("tutorial lessons must expose three readable teaching points")
+			return 0
+		var point_labels := PackedStringArray()
+		for point: Dictionary in points:
+			var point_label := str(point.get("label", ""))
+			var point_text := str(point.get("text", ""))
+			if point_label.is_empty() or point_label in point_labels or \
+					point_text.is_empty() or point_text.length() > 80:
+				failures.append(
+					"tutorial teaching points are missing, duplicated, or paragraph-sized")
+				return 0
+			point_labels.append(point_label)
 		lesson_ids.append(lesson_id)
 		goals.append(goal)
 		for mechanic: StringName in lesson.get("mechanics", []):
@@ -568,6 +585,11 @@ static func _test_tutorial_previews_use_live_assets_and_cosmetics(
 ) -> int:
 	var preview_source := FileAccess.get_file_as_string(
 		"res://game/presentation/scripts/tutorial_preview.gd")
+	var gameplay_source := FileAccess.get_file_as_string(
+		"res://game/presentation/scripts/swing_lab.gd")
+	if not gameplay_source.contains("CanopyObstacleArt.directional_spec"):
+		failures.append("gameplay no longer shares canopy obstacle orientation")
+		return 0
 	for forbidden_factory in [
 		"SwingLabSession.new(", "SimulationWorld.new(",
 		"ProgressionService.new(", "SaveRepository.new(",
@@ -600,13 +622,24 @@ static func _test_tutorial_previews_use_live_assets_and_cosmetics(
 		var requested: Array[StringName] = contract["requested_assets"]
 		var resolved: PackedStringArray = contract["resolved_assets"]
 		var fallbacks: PackedStringArray = contract["fallback_assets"]
+		var expected_callouts := TutorialPreview.lesson_callout_labels(lesson)
+		var callouts: PackedStringArray = contract["callout_labels"]
 		if requested.size() < 6 or resolved.size() != requested.size() or \
-				not fallbacks.is_empty() or bool(contract.get("primitive_only", true)):
+				not fallbacks.is_empty() or bool(contract.get("primitive_only", true)) or \
+				callouts != expected_callouts or \
+				callouts.size() != FrontEndState.TUTORIAL_POINT_COUNT:
 			failures.append(
 				"tutorial lesson %s does not resolve the live game art contract" % \
 					lesson.get("id", ""))
 			preview.free()
 			return 0
+		for obstacle_visual: Dictionary in contract.get("obstacle_visuals", []):
+			var mounted_to_ceiling := StringName(obstacle_visual.get(
+				"mount", &"")) == CanopyObstacleArt.MOUNT_CEILING
+			if bool(obstacle_visual.get("flip_y", false)) != mounted_to_ceiling:
+				failures.append("tutorial obstacle orientation disagrees with its mount")
+				preview.free()
+				return 0
 		var frozen_phase := float(contract.get("motion_phase", -1.0))
 		preview._process(3.0)
 		if not is_equal_approx(
@@ -617,6 +650,19 @@ static func _test_tutorial_previews_use_live_assets_and_cosmetics(
 			preview.free()
 			return 0
 	preview.free()
+	var floor_hook := CanopyObstacleArt.directional_spec(
+		CourseObstacleCatalog.CANOPY_HOOK_VINE_RIGHT,
+		CanopyObstacleArt.MOUNT_FLOOR,
+	)
+	var ceiling_hook := CanopyObstacleArt.directional_spec(
+		CourseObstacleCatalog.CANOPY_HOOK_VINE_RIGHT,
+		CanopyObstacleArt.MOUNT_CEILING,
+	)
+	if floor_hook.is_empty() or ceiling_hook.is_empty() or \
+			bool(floor_hook.get("flip_y", true)) or \
+			not bool(ceiling_hook.get("flip_y", false)):
+		failures.append("shared canopy orientation does not flip only ceiling art")
+		return 0
 	return 1
 
 
@@ -636,6 +682,8 @@ static func _test_tutorial_is_enclosed_on_short_landscapes(
 		viewport.add_child(view)
 		view.bind_state(state)
 		var tutorial := view.find_child("Tutorial", true, false) as Control
+		var copy_panel := view.find_child(
+			"TutorialCopyWebPanel", true, false) as Control
 		for node_name in [
 			"AnimatedMechanicsPreview", "TutorialCopyWebPanel",
 			"TutorialNavigation",
@@ -645,6 +693,20 @@ static func _test_tutorial_is_enclosed_on_short_landscapes(
 					panel.anchor_right > 1.0 or panel.anchor_bottom > 1.0:
 				failures.append(
 					"%s escapes tutorial at %s" % [node_name, viewport_size])
+				viewport.free()
+				return 0
+		for index in range(FrontEndState.TUTORIAL_POINT_COUNT):
+			var point_card := view.find_child(
+				"TutorialPointCard%d" % (index + 1), true, false) as Control
+			var cue := view.find_child(
+				"TutorialPointCue%d" % (index + 1), true, false) as Label
+			var point_text := view.find_child(
+				"TutorialPointText%d" % (index + 1), true, false) as Label
+			if copy_panel == null or point_card == null or cue == null or \
+					point_text == null or cue.text.is_empty() or \
+					point_text.text.is_empty() or \
+					point_text.get_theme_font_size("font_size") < 17:
+				failures.append("tutorial teaching points are not readable at %s" % viewport_size)
 				viewport.free()
 				return 0
 		for button_name: StringName in [
