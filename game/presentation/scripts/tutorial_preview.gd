@@ -34,7 +34,41 @@ const LESSON_ASSETS := {
 		ArtAssetCatalog.CANOPY_LEAF_SHUTTER,
 		ArtAssetCatalog.GOLDEN_FLY,
 	],
-	&"survive_restart": [ArtAssetCatalog.CANOPY_BRAMBLE],
+	&"survive_restart": [
+		ArtAssetCatalog.CANOPY_BRAMBLE,
+		ArtAssetCatalog.BUCKLER_SPIDER,
+	],
+}
+
+## Directional obstacle declarations are semantic rather than hand-flipped.
+## Their visual transforms come from the same helper used by SwingLab.
+const LESSON_OBSTACLES := {
+	&"opening_pressure": [{
+		"kind": CourseObstacleCatalog.CANOPY_HOOK_VINE_RIGHT,
+		"mount": CanopyObstacleArt.MOUNT_CEILING,
+	}],
+	&"attach": [{
+		"kind": CourseObstacleCatalog.CANOPY_HOOK_VINE_RIGHT,
+		"mount": CanopyObstacleArt.MOUNT_CEILING,
+	}],
+	&"anchor_burst": [{
+		"kind": CourseObstacleCatalog.CANOPY_HOOK_VINE_RIGHT,
+		"mount": CanopyObstacleArt.MOUNT_CEILING,
+	}],
+	&"dive_recovery": [{
+		"kind": CourseObstacleCatalog.CANOPY_LEAF_SHUTTER_RIGHT,
+		"mount": CanopyObstacleArt.MOUNT_FLOOR,
+	}],
+	&"read_course": [
+		{
+			"kind": CourseObstacleCatalog.CANOPY_HOOK_VINE_RIGHT,
+			"mount": CanopyObstacleArt.MOUNT_CEILING,
+		},
+		{
+			"kind": CourseObstacleCatalog.CANOPY_LEAF_SHUTTER_RIGHT,
+			"mount": CanopyObstacleArt.MOUNT_FLOOR,
+		},
+	],
 }
 
 var lesson: Dictionary = FrontEndState.TUTORIAL_STEPS[0]
@@ -97,6 +131,9 @@ func preview_contract() -> Dictionary:
 		"requested_assets": requested,
 		"resolved_assets": resolved,
 		"fallback_assets": fallbacks,
+		"callout_labels": lesson_callout_labels(lesson),
+		"obstacle_visuals": lesson_obstacle_specs(
+			StringName(lesson.get("preview", &""))),
 		"reduced_motion": reduced_motion,
 		"motion_phase": _motion_phase(),
 		"presentation_only": true,
@@ -115,6 +152,25 @@ static func required_asset_ids(
 	for asset_id: StringName in LESSON_ASSETS.get(preview_id, []):
 		if asset_id not in result:
 			result.append(asset_id)
+	return result
+
+
+static func lesson_callout_labels(next_lesson: Dictionary) -> PackedStringArray:
+	var labels := PackedStringArray()
+	for point: Dictionary in next_lesson.get("points", []):
+		labels.append(str(point.get("label", "")))
+	return labels
+
+
+static func lesson_obstacle_specs(preview_id: StringName) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for declaration: Dictionary in LESSON_OBSTACLES.get(preview_id, []):
+		var spec := CanopyObstacleArt.directional_spec(
+			StringName(declaration.get("kind", &"")),
+			StringName(declaration.get("mount", &"")),
+		)
+		if not spec.is_empty():
+			result.append(spec)
 	return result
 
 
@@ -188,8 +244,9 @@ func _draw_opening_pressure(area: Rect2) -> void:
 	_draw_target(anchor, true)
 	_draw_spider(spider, -0.12)
 	_draw_bird(Vector2(area.size.x * 0.18, area.size.y * 0.56), 0.12)
-	_draw_obstacle(
-		ArtAssetCatalog.CANOPY_HOOK_VINE,
+	_draw_lesson_obstacle(
+		&"opening_pressure",
+		0,
 		Rect2(area.size.x * 0.72, area.size.y * 0.08, 92.0, area.size.y * 0.48),
 	)
 	_draw_route_arrow(
@@ -197,22 +254,26 @@ func _draw_opening_pressure(area: Rect2) -> void:
 		Vector2(area.size.x * 0.82, area.size.y * 0.42),
 		GREEN,
 	)
-	_draw_badge("NO FREE DRIVE", Vector2(area.size.x * 0.50, area.size.y * 0.80), YELLOW)
+	_draw_lesson_callout(0, Vector2(area.size.x * 0.46, area.size.y * 0.34), CYAN)
+	_draw_lesson_callout(1, Vector2(area.size.x * 0.63, area.size.y * 0.76), YELLOW)
+	_draw_lesson_callout(2, Vector2(area.size.x * 0.22, area.size.y * 0.76), RED)
 
 
 func _draw_attach(area: Rect2) -> void:
 	var spider := Vector2(area.size.x * 0.30, area.size.y * 0.68)
 	var target := Vector2(area.size.x * 0.70, area.size.y * 0.22)
-	_draw_obstacle(
-		ArtAssetCatalog.CANOPY_HOOK_VINE,
+	_draw_lesson_obstacle(
+		&"attach",
+		0,
 		Rect2(area.size.x * 0.64, area.size.y * 0.05, 108.0, area.size.y * 0.43),
 	)
 	_draw_spider(spider)
 	_draw_web(spider, spider.lerp(target, 0.72 if reduced_motion else _motion_phase()), 3.0)
 	_draw_target(target, true)
 	_draw_target(Vector2(area.size.x * 0.47, area.size.y * 0.13), false)
-	_draw_badge("SOLID + IN RANGE", Vector2(area.size.x * 0.63, area.size.y * 0.67), GREEN)
-	_draw_badge("GUIDE ≠ SURFACE", Vector2(area.size.x * 0.33, area.size.y * 0.30), CYAN)
+	_draw_lesson_callout(0, Vector2(area.size.x * 0.73, area.size.y * 0.44), GREEN)
+	_draw_lesson_callout(1, Vector2(area.size.x * 0.58, area.size.y * 0.73), YELLOW)
+	_draw_lesson_callout(2, Vector2(area.size.x * 0.35, area.size.y * 0.30), CYAN)
 
 
 func _draw_swing_release(area: Rect2) -> void:
@@ -234,7 +295,9 @@ func _draw_swing_release(area: Rect2) -> void:
 		Vector2(area.size.x * 0.82, area.size.y * 0.37),
 		GREEN,
 	)
-	_draw_badge("RISING RELEASE", Vector2(area.size.x * 0.68, area.size.y * 0.73), GREEN)
+	_draw_lesson_callout(0, Vector2(area.size.x * 0.34, area.size.y * 0.70), CYAN)
+	_draw_lesson_callout(1, Vector2(area.size.x * 0.64, area.size.y * 0.34), GREEN)
+	_draw_lesson_callout(2, Vector2(area.size.x * 0.73, area.size.y * 0.76), YELLOW)
 
 
 func _draw_reel(area: Rect2) -> void:
@@ -251,7 +314,9 @@ func _draw_reel(area: Rect2) -> void:
 		CYAN,
 		1.0 - pulse * 0.62,
 	)
-	_draw_badge("SHORTER RADIUS", Vector2(area.size.x * 0.49, area.size.y * 0.69), YELLOW)
+	_draw_lesson_callout(0, Vector2(area.size.x * 0.80, area.size.y * 0.46), CYAN)
+	_draw_lesson_callout(1, Vector2(area.size.x * 0.48, area.size.y * 0.72), YELLOW)
+	_draw_lesson_callout(2, Vector2(area.size.x * 0.78, area.size.y * 0.80), GREEN)
 
 
 func _draw_anchor_burst(area: Rect2) -> void:
@@ -259,8 +324,9 @@ func _draw_anchor_burst(area: Rect2) -> void:
 	var target := Vector2(area.size.x * 0.72, area.size.y * 0.24)
 	var travel := 0.40 if reduced_motion else minf(_motion_phase() * 0.64, 0.40)
 	var spider := start.lerp(target, travel)
-	_draw_obstacle(
-		ArtAssetCatalog.CANOPY_HOOK_VINE,
+	_draw_lesson_obstacle(
+		&"anchor_burst",
+		0,
 		Rect2(area.size.x * 0.67, area.size.y * 0.04, 104.0, area.size.y * 0.44),
 	)
 	draw_line(start, target, Color(SILK, 0.34), 2.0, true)
@@ -269,7 +335,9 @@ func _draw_anchor_burst(area: Rect2) -> void:
 	_draw_spider(spider, -0.35)
 	_draw_action_button(
 		Vector2(area.size.x * 0.84, area.size.y * 0.72), "BURST", YELLOW, 0.68)
-	_draw_badge("AIMED 40%", Vector2(area.size.x * 0.53, area.size.y * 0.73), YELLOW)
+	_draw_lesson_callout(0, Vector2(area.size.x * 0.70, area.size.y * 0.42), GREEN)
+	_draw_lesson_callout(1, Vector2(area.size.x * 0.52, area.size.y * 0.74), YELLOW)
+	_draw_lesson_callout(2, Vector2(area.size.x * 0.81, area.size.y * 0.48), CYAN)
 
 
 func _draw_dive_recovery(area: Rect2) -> void:
@@ -277,8 +345,9 @@ func _draw_dive_recovery(area: Rect2) -> void:
 	var lower := Vector2(area.size.x * 0.64, area.size.y * 0.79)
 	var upper := Vector2(area.size.x * 0.74, area.size.y * 0.17)
 	var spider := start.lerp(lower, 0.40)
-	_draw_obstacle(
-		ArtAssetCatalog.CANOPY_LEAF_SHUTTER,
+	_draw_lesson_obstacle(
+		&"dive_recovery",
+		0,
 		Rect2(area.size.x * 0.54, area.size.y * 0.65, 120.0, area.size.y * 0.26),
 	)
 	_draw_burst_trail(start, spider)
@@ -286,17 +355,20 @@ func _draw_dive_recovery(area: Rect2) -> void:
 	_draw_target(lower, true)
 	_draw_target(upper, true)
 	_draw_spider(spider, 0.34)
-	_draw_badge("DIVE SPENT", Vector2(area.size.x * 0.34, area.size.y * 0.72), YELLOW)
-	_draw_badge("UPPER WEB REARMS", Vector2(area.size.x * 0.67, area.size.y * 0.46), GREEN)
+	_draw_lesson_callout(0, Vector2(area.size.x * 0.61, area.size.y * 0.76), YELLOW)
+	_draw_lesson_callout(1, Vector2(area.size.x * 0.33, area.size.y * 0.72), RED)
+	_draw_lesson_callout(2, Vector2(area.size.x * 0.69, area.size.y * 0.38), GREEN)
 
 
 func _draw_read_course(area: Rect2) -> void:
-	_draw_obstacle(
-		ArtAssetCatalog.CANOPY_HOOK_VINE,
+	_draw_lesson_obstacle(
+		&"read_course",
+		0,
 		Rect2(area.size.x * 0.40, area.size.y * 0.05, 106.0, area.size.y * 0.43),
 	)
-	_draw_obstacle(
-		ArtAssetCatalog.CANOPY_LEAF_SHUTTER,
+	_draw_lesson_obstacle(
+		&"read_course",
+		1,
 		Rect2(area.size.x * 0.68, area.size.y * 0.60, 120.0, area.size.y * 0.29),
 	)
 	var spider := Vector2(area.size.x * 0.22, area.size.y * 0.63)
@@ -304,10 +376,12 @@ func _draw_read_course(area: Rect2) -> void:
 	_draw_route_arrow(spider + Vector2(45.0, -12.0), Vector2(area.size.x * 0.80, area.size.y * 0.43), GREEN)
 	_draw_asset(
 		ArtAssetCatalog.GOLDEN_FLY,
-		Rect2(area.size.x * 0.57, area.size.y * 0.42, 56.0, 38.0),
+		Rect2(area.size.x * 0.56, area.size.y * 0.43, 56.0, 38.0),
 	)
-	_draw_badge("BURST FRENZY", Vector2(area.size.x * 0.72, area.size.y * 0.18), CYAN)
-	_draw_badge("BRAMBLE CANOPY", Vector2(area.size.x * 0.28, area.size.y * 0.82), INK)
+	_draw_boost(Vector2(area.size.x * 0.74, area.size.y * 0.43))
+	_draw_lesson_callout(0, Vector2(area.size.x * 0.30, area.size.y * 0.76), GREEN)
+	_draw_lesson_callout(1, Vector2(area.size.x * 0.48, area.size.y * 0.31), RED)
+	_draw_lesson_callout(2, Vector2(area.size.x * 0.68, area.size.y * 0.72), CYAN)
 
 
 func _draw_survive_restart(area: Rect2) -> void:
@@ -320,10 +394,15 @@ func _draw_survive_restart(area: Rect2) -> void:
 	draw_circle(spider, 43.0, Color(GREEN, 0.10))
 	draw_arc(spider, 43.0, 0.0, TAU, 48, GREEN, 5.0, true)
 	_draw_bird(Vector2(area.size.x * 0.23, area.size.y * 0.56), 0.08)
-	_draw_badge("RESCUE READY", Vector2(area.size.x * 0.48, area.size.y * 0.38), GREEN)
-	_draw_badge("RAIL · OBSTACLE · BIRD", Vector2(area.size.x * 0.67, area.size.y * 0.82), RED)
+	_draw_asset(
+		ArtAssetCatalog.BUCKLER_SPIDER,
+		Rect2(area.size.x * 0.62, area.size.y * 0.38, 92.0, 44.0),
+	)
 	_draw_cocoon_button(
 		Rect2(area.size.x * 0.68, area.size.y * 0.22, 112.0, 42.0), "RESTART", GREEN)
+	_draw_lesson_callout(0, Vector2(area.size.x * 0.47, area.size.y * 0.38), GREEN)
+	_draw_lesson_callout(1, Vector2(area.size.x * 0.71, area.size.y * 0.58), YELLOW)
+	_draw_lesson_callout(2, Vector2(area.size.x * 0.76, area.size.y * 0.20), CYAN)
 
 
 func _draw_common_hud(area: Rect2) -> void:
@@ -365,17 +444,55 @@ func _draw_bird(position: Vector2, rotation: float = 0.0) -> void:
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
-func _draw_obstacle(asset_id: StringName, rect: Rect2) -> void:
-	if not _draw_asset(asset_id, rect):
+func _draw_lesson_obstacle(
+	preview_id: StringName,
+	index: int,
+	rect: Rect2,
+) -> void:
+	var specs := lesson_obstacle_specs(preview_id)
+	if index < 0 or index >= specs.size():
+		draw_rect(rect, Color(SpiderUiTheme.BARK, 0.92))
+		draw_rect(rect, RED, false, 3.0)
+		return
+	var spec := specs[index]
+	_draw_obstacle(
+		StringName(spec["asset_id"]),
+		rect,
+		bool(spec["flip_y"]),
+		bool(spec["flip_x"]),
+	)
+
+
+func _draw_obstacle(
+	asset_id: StringName,
+	rect: Rect2,
+	flip_y: bool = false,
+	flip_x: bool = false,
+) -> void:
+	if not _draw_asset(asset_id, rect, flip_y, flip_x):
 		draw_rect(rect, Color(SpiderUiTheme.BARK, 0.92))
 		draw_rect(rect, RED, false, 3.0)
 
 
-func _draw_asset(asset_id: StringName, rect: Rect2) -> bool:
+func _draw_asset(
+	asset_id: StringName,
+	rect: Rect2,
+	flip_y: bool = false,
+	flip_x: bool = false,
+) -> bool:
 	var texture := _texture(asset_id)
 	if texture == null:
 		return false
-	draw_texture_rect(texture, rect, false)
+	if flip_y or flip_x:
+		draw_set_transform(
+			rect.get_center(),
+			0.0,
+			Vector2(-1.0 if flip_x else 1.0, -1.0 if flip_y else 1.0),
+		)
+		draw_texture_rect(texture, Rect2(-rect.size * 0.5, rect.size), false)
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	else:
+		draw_texture_rect(texture, rect, false)
 	return true
 
 
@@ -401,9 +518,14 @@ func _draw_burst_trail(from: Vector2, to: Vector2) -> void:
 func _draw_target(position: Vector2, legal: bool) -> void:
 	var color := GREEN if legal else CYAN
 	var pulse := 0.0 if reduced_motion else sin(_elapsed * 3.6) * 3.0
-	draw_circle(position, 16.0 + pulse, Color(color, 0.16))
-	draw_arc(position, 9.0, 0.0, TAU, 24, color, 3.0, true)
-	draw_circle(position, 3.0, INK)
+	if legal:
+		draw_circle(position, 16.0 + pulse, Color(color, 0.16))
+		draw_arc(position, 9.0, 0.0, TAU, 24, color, 3.0, true)
+		draw_circle(position, 3.0, INK)
+	else:
+		draw_arc(position, 12.0 + pulse, 0.0, TAU, 4, color, 3.0, true)
+		draw_line(position + Vector2(-6.0, -6.0), position + Vector2(6.0, 6.0), color, 3.0)
+		draw_line(position + Vector2(6.0, -6.0), position + Vector2(-6.0, 6.0), color, 3.0)
 
 
 func _draw_route_arrow(from: Vector2, to: Vector2, color: Color) -> void:
@@ -431,13 +553,31 @@ func _draw_action_button(
 	_draw_centered(label, center + Vector2(0.0, 6.0), 14, INK)
 
 
-func _draw_badge(text: String, center: Vector2, accent: Color) -> void:
-	var font_size := 12
+func _draw_lesson_callout(index: int, center: Vector2, accent: Color) -> void:
+	var points: Array = lesson.get("points", [])
+	if index < 0 or index >= points.size():
+		return
+	var text := "%d  %s" % [index + 1, str(points[index].get("label", ""))]
+	var font_size := 15
 	var width := ThemeDB.fallback_font.get_string_size(
-		text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + 20.0
-	var rect := Rect2(center - Vector2(width * 0.5, 14.0), Vector2(width, 28.0))
-	draw_style_box(SpiderUiTheme.badge_style(accent), rect)
-	_draw_centered(text, center + Vector2(0.0, 4.0), font_size, accent)
+		text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + 28.0
+	var rect := Rect2(center - Vector2(width * 0.5, 17.0), Vector2(width, 34.0))
+	draw_style_box(
+		SpiderUiTheme.button_style(Color("0b1412e8"), accent, 2),
+		rect,
+	)
+	_draw_centered(text, center + Vector2(0.0, 5.0), font_size, INK)
+
+
+func _draw_boost(center: Vector2) -> void:
+	draw_circle(center, 18.0, Color(0.08, 0.30, 0.34, 0.94))
+	draw_arc(center, 22.0, 0.0, TAU, 28, CYAN, 4.0)
+	draw_polyline(PackedVector2Array([
+		center + Vector2(-5.0, -12.0),
+		center + Vector2(4.0, -3.0),
+		center + Vector2(-2.0, 2.0),
+		center + Vector2(7.0, 12.0),
+	]), SILK, 4.0, true)
 
 
 func _draw_cocoon_button(rect: Rect2, text: String, accent: Color) -> void:

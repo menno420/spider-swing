@@ -934,22 +934,15 @@ func _draw_obstacle(
 			if canopy_art else ArtAssetCatalog.FOREST_BRAMBLE
 		var flip_y := false
 		var flip_x := false
-		if canopy_art and obstacle_kind in [
-			CourseObstacleCatalog.CANOPY_HOOK_VINE_LEFT,
-			CourseObstacleCatalog.CANOPY_HOOK_VINE_RIGHT,
-		]:
-			asset_id = ArtAssetCatalog.CANOPY_HOOK_VINE
-			flip_y = attached_to_ceiling
-			flip_x = obstacle_kind == \
-				CourseObstacleCatalog.CANOPY_HOOK_VINE_LEFT
-		elif canopy_art and obstacle_kind in [
-			CourseObstacleCatalog.CANOPY_LEAF_SHUTTER_LEFT,
-			CourseObstacleCatalog.CANOPY_LEAF_SHUTTER_RIGHT,
-		]:
-			asset_id = ArtAssetCatalog.CANOPY_LEAF_SHUTTER
-			flip_y = attached_to_ceiling
-			flip_x = obstacle_kind == \
-				CourseObstacleCatalog.CANOPY_LEAF_SHUTTER_LEFT
+		var directional_art := CanopyObstacleArt.directional_spec(
+			obstacle_kind,
+			CanopyObstacleArt.MOUNT_CEILING
+				if attached_to_ceiling else CanopyObstacleArt.MOUNT_FLOOR,
+		) if canopy_art else {}
+		if not directional_art.is_empty():
+			asset_id = StringName(directional_art["asset_id"])
+			flip_y = bool(directional_art["flip_y"])
+			flip_x = bool(directional_art["flip_x"])
 		elif canopy_art and detached:
 			asset_id = ArtAssetCatalog.CANOPY_BRAMBLE
 		elif canopy_art and (tall_narrow or (hanging and not wide)):
