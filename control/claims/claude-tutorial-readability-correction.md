@@ -1,0 +1,1 @@
+- `claude/tutorial-readability-correction` · **Correct tutorial obstacle orientation and teaching clarity** · tutorial lesson data, shared canopy art orientation, front-end presentation, contracts, docs and Android identity · 2026-08-04
