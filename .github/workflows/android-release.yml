@@ -221,9 +221,14 @@ jobs:
       - name: Export the Android Release bundle
         env:
           SIGNED: ${{ steps.keystore.outputs.signed }}
-          GODOT_ANDROID_KEYSTORE_RELEASE_PATH: ${{ runner.temp }}/signing/upload.jks
-          GODOT_ANDROID_KEYSTORE_RELEASE_USER: ${{ secrets.RELEASE_KEYSTORE_USER }}
-          GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          # All three must be set together or all three empty. Godot rejects a
+          # partial config outright: "Either Release Keystore, Release User AND
+          # Release Password settings must be configured OR none of them."
+          # Setting PATH unconditionally while the secrets were absent is exactly
+          # what failed run 30991213967.
+          GODOT_ANDROID_KEYSTORE_RELEASE_PATH: ${{ steps.keystore.outputs.signed == 'true' && format('{0}/signing/upload.jks', runner.temp) || '' }}
+          GODOT_ANDROID_KEYSTORE_RELEASE_USER: ${{ steps.keystore.outputs.signed == 'true' && secrets.RELEASE_KEYSTORE_USER || '' }}
+          GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD: ${{ steps.keystore.outputs.signed == 'true' && secrets.RELEASE_KEYSTORE_PASSWORD || '' }}
         run: |
           set -euo pipefail
           mkdir -p build
