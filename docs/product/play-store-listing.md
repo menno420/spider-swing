@@ -12,7 +12,25 @@
 
 ## App name — limit 30
 
-**NOT CHOSEN. `Swingy Spider` is ruled out — do not ship it.**
+# **`Slingy Spider`** — 13 characters. **DECIDED 2026-08-05 (owner).**
+
+Set `RELEASE_APP_NAME` to `Slingy Spider`. The application ID is a separate,
+**permanent** decision and is no longer blocked by the name —
+`com.menno420.slingyspider` is the obvious candidate, but it is the owner's call
+and can never be changed after publishing.
+
+Exact-phrase search on Google Play returns **no app with this name**. Play's
+search parses "slingy" as swing/momentum and surfaces **Stickman Hook (100M+)**
+at position 2 — the store already understands the word. Full evidence, and the
+three retracted objections, in [`name-status.md`](name-status.md).
+
+**Still open:** trademark only — BOIP (Benelux) and EUIPO, Nice Class 9 and 41.
+
+---
+
+### The ruled-out predecessor, kept as the record
+
+**`Swingy Spider` is ruled out — do not ship it.**
 
 Verified 2026-08-05 by fetching the listings, not by search summary:
 
@@ -135,6 +153,17 @@ your device.
 | Feature graphic | 1024×500, JPEG or 24-bit PNG, **no** alpha | **not produced** |
 | Phone screenshots | ≥2 to publish; ≤8 per device type | **not produced** |
 | Games recommendation eligibility | ≥3 landscape 16:9 at ≥1920×1080 | **not produced** |
+
+**The graphics are the differentiator here, not a formality.** Owner review of
+the category (2026-08-05) found store art across competing swinging games to be
+uniformly cheap. The closest name-neighbour, *Spider Swing* (10K+ installs, ad-
+supported), ships screenshots of a **flat solid-blue background with thin
+magenta lines**, and its live build carries a **"trial version" watermark**.
+
+Against that baseline, a set of real 1920×1080 captures of an actual art-directed
+game is a large, cheap advantage — and it is on the critical path anyway, since
+the listing gates the closed-test rollout. Treat these assets as a priority, not
+as paperwork.
 
 **Screenshots must be real capture.** The game renders 16:9 landscape natively
 at a 1280×720 reference viewport, so 1920×1080 captures need no cropping — but
