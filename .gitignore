@@ -56,6 +56,21 @@ local.properties
 *.certSigningRequest
 export_credentials.cfg
 !.github/android/debug.keystore
+
+# Play release signing (ADR 0005). The upload key lives in repository secrets
+# and is materialised only inside a CI runner's temp directory; none of these
+# may ever appear in the tree. Base64 is called out explicitly because a
+# keystore encoded for a secret stops matching *.jks/*.keystore and would
+# otherwise slip past every rule above.
+keystore.properties
+signing.properties
+upload-keystore.*
+upload_certificate.pem
+*.keystore.base64
+*.jks.base64
+# Service-account JSON for the Play Developer Publishing API, if it is ever used.
+play-publisher*.json
+google-play-service-account*.json
 .env
 .env.*
 !.env.example

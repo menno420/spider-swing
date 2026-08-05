@@ -1,5 +1,5 @@
 # Spider Swing · status
-updated: 2026-08-01T19:36:46Z
+updated: 2026-08-05T00:40:23Z
 phase: earned speed — release-quality slice at PR #97 closeout; drive → 0 is next
 health: implementation 33cf084 · build 0.25.0 · exact Godot 4.7.1 and 184/184 contracts green · strict gate on designed born-red hold until final flip
 kit: v1.20.2 · check: designed hold · engaged: yes
