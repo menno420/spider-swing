@@ -33,6 +33,9 @@
 | [`product/menu-ux-review-2026-08-02.md`](product/menu-ux-review-2026-08-02.md) | Dated audit of every front-end screen against the owner's menu research — what was adopted, what was ranked and deferred. |
 | [`product/player-preference-research-2026-08-02.md`](product/player-preference-research-2026-08-02.md) | **The 25 k north star** and the genre-preference research behind it — plus the provenance block separating the three corroborated claims from the unverified ones, the upgrade capability-vs-numbers fork, the hard monetisation boundaries, and what is explicitly parked. |
 | [`product/economy-model.md`](product/economy-model.md) | **Economy source of truth.** What each currency is for, what it buys, what cannot be bought at any price, and what happens to the measurably inert upgrade tracks. |
+| [`product/play-store-listing.md`](product/play-store-listing.md) | Draft Play store listing copy — app name, short and full descriptions, written from GDD § 2.1–2.5, with character counts measured against the real limits and the graphics still outstanding. |
+| [`product/play-console-answers.md`](product/play-console-answers.md) | Prepared answers for every Play Console App content declaration — Data safety, IARC content rating, target audience — each with the reasoning, plus the hard gate that fires when leaderboards start transmitting. |
+| [`legal/privacy-policy.md`](legal/privacy-policy.md) | The publishable privacy-policy draft Play requires before any track above internal testing, and the source-verified reasoning for its no-collection claim. |
 | [`owner-questions.md`](owner-questions.md) | Open owner-only forks, each with the default the work proceeds under, plus the answered ones. |
 
 ## Technical
@@ -47,6 +50,7 @@
 | [`technical/simulation-lab.md`](technical/simulation-lab.md) | The headless batch-run lab — what it can and cannot answer, and the standing ban on using it to settle difficulty, upgrades or the economy. |
 | [`technical/phase-0-swing-laboratory.md`](technical/phase-0-swing-laboratory.md) | The Swing Laboratory reference — traversal response contract, the depth-access gate, and the device traversal checklist. |
 | [`technical/front-end-flow.md`](technical/front-end-flow.md) | How the front end is wired: states, hubs, and which surface owns each write path. |
+| [`technical/play-closed-test-runbook.md`](technical/play-closed-test-runbook.md) | **Getting the closed test live** — the critical path in order, why the store listing blocks the tester clock, what is verified against a fetched Google page and what is explicitly not. |
 
 ## Measurements
 
@@ -90,6 +94,7 @@ Binding. Superseded rather than deleted.
 | [`0002`](technical/adr/0002-simulation-and-event-boundaries.md) | Inward layering and deterministic event flow. |
 | [`0003`](technical/adr/0003-android-build-strategy.md) | Debug-only Android CI now; production signing later, owner-controlled. |
 | [`0004`](technical/adr/0004-deterministic-moving-parts.md) | Pure fixed-tick motion, swept moving collision, and energy-safe moving web anchors. |
+| [`0005`](technical/adr/0005-android-release-aab.md) | Android release: App Bundle via Gradle, placeholder identity in the tree, owner-held upload key, dispatch-only workflow that never publishes. Extends 0003. |
 
 ## Executed plans — records, not queues
 
