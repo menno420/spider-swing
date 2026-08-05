@@ -32,9 +32,9 @@ clock. Use it only to sanity-check that the bundle installs.
 Steps 1–3 are the ones that block everything else. Do them first even if the
 listing text is not final.
 
-### 1. Choose the application ID — permanent, five minutes
+### 1. Set the application ID and app name — permanent, five minutes
 
-`com.menno420.swingyspider` is the obvious candidate. It can **never** be
+`com.menno420.slingyspider` is the recommended identifier. It can **never** be
 changed or reused once published. It is invisible to players and does **not**
 have to match the store name.
 
@@ -43,11 +43,12 @@ Set it in the repository so builds stop refusing to run — GitHub → `spider-s
 
 | Variable | Value |
 |---|---|
-| `RELEASE_PACKAGE_ID` | `com.menno420.swingyspider` (or your choice) |
-| `RELEASE_APP_NAME` | the store-visible label, **≤30 characters** |
+| `RELEASE_PACKAGE_ID` | `com.menno420.slingyspider` |
+| `RELEASE_APP_NAME` | `Slingy Spider` (13/30) |
 
-The store name can be revised later; the application ID cannot. Do not stall
-step 1 on the name being final.
+The store name is **decided — `Slingy Spider`** (see
+[`../product/name-status.md`](../product/name-status.md)) and can still be
+revised later if needed. The application ID cannot.
 
 ### 2. Create the upload key — 15 minutes
 
@@ -80,8 +81,37 @@ per upload. Play rejects a reused value.
 
 ### 4. Create the app in Play Console
 
-App name, default language, "Game", free. Then work the two checklists Console
-shows: **Store listing** and **App content**.
+Play Console → **Create app**. Observed on the live form, 2026-08-05:
+
+| Field | Value | Reversible? |
+|---|---|---|
+| App name | `Slingy Spider` (13/30) | yes, editable later |
+| **Package name** | **`com.menno420.slingyspider`** | **NO — permanent** |
+| Default language | English (United States) – en-US | yes |
+| App or game | **Game** | yes, in Store settings |
+| Free or paid | **Free** | **NO once published** |
+
+**Two irreversible choices sit on this one screen.**
+
+- **Package name.** Newer Console asks for it at creation rather than at first
+  upload, with a *"Check availability"* button beside it. It must be globally
+  unique, and it must match `RELEASE_PACKAGE_ID` **character for character** or
+  the bundle will not be accepted for this app.
+- **Free.** The form states it plainly: once a free app is published it can never
+  be converted to paid. In-app purchases and ads remain possible on a free app; a
+  one-time price does not. Free is the right default here, but it is a decision,
+  not a formality.
+
+Three declaration checkboxes must all be ticked:
+
+1. **Developer Program Policies** — unticked by default; the form will not submit
+   without it.
+2. **Play App Signing terms** — required to publish an App Bundle at all. This is
+   what enables the upload-key / app-signing-key split from step 2.
+3. **US export laws.**
+
+Creating the app publishes nothing. It produces a Console entry and unlocks the
+two checklists: **Store listing** and **App content**.
 
 ### 5. Store listing — the blocking assets
 
@@ -126,8 +156,14 @@ Create the closed track, upload the bundle, add testers, roll out. Review for a
 closed track typically takes **up to 7 days**, and after the first publish it
 can take several hours for the opt-in link to work.
 
-Testers join at `https://play.google.com/apps/testing/<your.package.id>` and
-each needs a Google account.
+Testers join at `https://play.google.com/apps/testing/com.menno420.slingyspider`
+and each needs a Google account.
+
+**Every tester needs an Android device.** Obvious in hindsight, and it has
+already cost one volunteer: a friend who asked to play on 2026-08-03 could not,
+because he is on iPhone and Apple does not permit installs from outside the App
+Store. **iOS contacts cannot count toward the 12**, however keen they are. Screen
+for Android before counting heads.
 
 **Recruit more than 12.** The 14 days must be continuous per tester; someone
 opting out breaks their own streak. There is no single global timer — each

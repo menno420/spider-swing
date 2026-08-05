@@ -1,6 +1,6 @@
 # Sync the closed-test runbook to the decided name
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 
@@ -21,11 +21,32 @@ changes and fell out of step with them.
 
 ## Shipped
 
-[[fill: shipped]]
+- `docs/technical/play-closed-test-runbook.md`:
+  - Package ID corrected to **`com.menno420.slingyspider`** in both places, and
+    `RELEASE_APP_NAME` given its decided value `Slingy Spider` (13/30).
+  - Step 1 retitled — it now sets both identifiers rather than deferring the name.
+  - **Step 4 rewritten against the live Console form**: the five fields with an
+    explicit reversible/permanent column, the two irreversible choices called out
+    (package name; free-vs-paid, which can never become paid after publishing),
+    and the three declaration checkboxes including the Developer Program Policies
+    box that is unticked by default and blocks submission.
+  - Step 7 now states that **every tester needs an Android device** — iOS
+    contacts cannot count toward the 12, with the 2026-08-03 volunteer who could
+    not install as the concrete case.
+  - Tester opt-in URL made concrete with the real package id.
 
 ## Verification
 
-[[fill: verification]]
+- `python3 tools/verify.py --require-godot` → **exit 0**, 256/256 contracts.
+  Documentation-only; the run proves the tree is undisturbed.
+- `python3 bootstrap.py check --strict` → **exit 0**, run **post-commit**.
+- Drift found by `grep -rn "swingyspider"` rather than recall; the same sweep
+  found two more references in fleet-manager's owner queue, fixed there.
+- Console field behaviour transcribed from the owner's screenshot of the live
+  form, not inferred from documentation.
+
+**Honest nulls unchanged:** `android-release.yml` has still never run end to end;
+store graphics are still not produced; trademark clearance is untouched.
 
 ## 💡 Session idea
 
