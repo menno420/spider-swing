@@ -528,6 +528,14 @@ so the Dive stays always available, which is its whole purpose.
 
 ## Recently shipped (newest first)
 
+- **2026-08-05 — The game is on Google Play's internal testing track.** A signed
+  Android App Bundle, version code 64, built by `android-release.yml` and
+  published by the owner under the name **Slingy Spider**
+  (`com.menno420.slingyspider`). Nothing is public: internal testing needs no
+  store listing and no review, and the track sits inactive until testers are
+  configured. The path to a shareable link runs through the store listing —
+  see the [closed-test runbook](technical/play-closed-test-runbook.md) § 7.
+
 - **2026-08-04 — Tutorial orientation and teaching clarity (0.43.0).** The
   owner's first 1040×480 tutorial review replaced dense prose and tiny scene
   badges with three shared numbered points per lesson. Ceiling/floor Bramble

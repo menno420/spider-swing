@@ -156,8 +156,67 @@ Create the closed track, upload the bundle, add testers, roll out. Review for a
 closed track typically takes **up to 7 days**, and after the first publish it
 can take several hours for the opt-in link to work.
 
-Testers join at `https://play.google.com/apps/testing/com.menno420.slingyspider`
-and each needs a Google account.
+#### How testers actually join — verified 2026-08-05
+
+Fetched from [answer/9845334](https://support.google.com/googleplay/android-developer/answer/9845334)
+and [answer/14151465](https://support.google.com/googleplay/android-developer/answer/14151465).
+This replaces the previous **NULL — unverified** paragraph.
+
+| Track | Who can join | Ceiling |
+|---|---|---|
+| Internal | Only addresses on an email list you build. *"You can create a list of internal testers by email address."* | 100 per app |
+| Closed | Email lists **or Google Groups**. *"In the 'Testers' section, you can add testers via email or Google Groups."* | 200 lists × 2,000 users |
+| Open | *"If you run an open test, anyone can join your testing program"* — no list at all | unlimited, or a floor of 1,000 |
+
+**A tester must be on the list or in the group before the opt-in link does
+anything.** The link is an enrolment page for an already-permitted account, not
+an invitation. Google states it for the group case directly: *"If you're running
+a closed test with a Google Group, users need to join the group before opting
+into your test."*
+
+Two link shapes exist and they are not interchangeable:
+
+- **Internal:** `https://play.google.com/apps/internaltest/<track-id>` — a
+  numeric track id, not the package name. *(Measured from this app's Console on
+  2026-08-05, not from a documentation page.)*
+- **Closed:** `https://play.google.com/apps/testing/<package-name>` —
+  **unverified.** Widely used, but it is not stated on any page fetched in
+  session. Console prints the real link; trust Console over this line.
+
+#### Open testing is not an escape hatch
+
+The obvious reading — "skip the email collection, run an open test" — does not
+work on this account. Google's page is explicit: *"Open testing is available
+when you have production access."* Production access is exactly what the closed
+test is a precondition for, so the ordering is closed test → production access →
+open testing. There is no way to start with the open track.
+
+#### The one self-serve route: closed testing + an open Google Group
+
+Handing over an email address before you can see the game is a poor first
+impression, and it makes the developer the bottleneck on every single tester.
+The way around it is the Google Group, which closed testing accepts and internal
+testing does not.
+
+Google Groups has a **"Who can join group"** setting whose most permissive
+option is **"Anyone can join"** — any person on the web adds themselves, with no
+invitation and no approval
+([groups/answer/2464926](https://support.google.com/groups/answer/2464926)).
+
+Set that, add the group to the closed track, and the flow becomes: share one
+link → the person joins the group themselves → they opt in and install. No
+addresses collected, no approvals, no developer in the loop. **And it is the
+track that counts toward the 12 × 14 requirement**, so the self-serve flow and
+the clock are the same flow.
+
+The cost is the gate in the first section of this document: a closed track
+cannot roll out until the store listing and App content are complete and the
+build has passed review. Internal testing is instant but manual; closed testing
+is self-serve but gated. **This is the strongest practical argument for
+finishing the store listing** — it is not paperwork before the fun part, it is
+what unlocks the only link worth sharing.
+
+#### Counting heads
 
 **Every tester needs an Android device.** Obvious in hindsight, and it has
 already cost one volunteer: a friend who asked to play on 2026-08-03 could not,
@@ -165,15 +224,12 @@ because he is on iPhone and Apple does not permit installs from outside the App
 Store. **iOS contacts cannot count toward the 12**, however keen they are. Screen
 for Android before counting heads.
 
-**Recruit more than 12.** The 14 days must be continuous per tester; someone
-opting out breaks their own streak. There is no single global timer — each
-tester counts their own 14 days — so adding people later does not reset anyone
-else, it just means those people finish later.
-
-*(Tester mechanics above came back **ungrounded** from the research model and
-are recorded as **NULL — unverified** except the opt-in URL format and the
-12×14 rule itself, which are on the fetched pages. Console will show the exact
-opt-in link for your app; trust that over this paragraph.)*
+**Recruit more than 12.** Google counts continuous days per tester: *"we won't
+count testers who opted in, tested for less than 14 days, and then opted out.
+Even if they opt back in so that they are opted in for a total of 14 days, these
+14 days must be consecutive."* There is no single global timer — each tester
+runs their own 14 days — so adding people later does not reset anyone else, it
+only means those people finish later.
 
 ## When leaderboards go online
 
@@ -211,8 +267,18 @@ rating and target-audience requirements; every listing dimension and character
 limit; the Data safety definition of "collect"; the upload-key/app-signing-key
 split and upload-key recoverability.
 
-**NULL — unverified:** the internal-vs-closed *tester limits* and per-track
-review details (ungrounded model output); tester opt-in/opt-out mechanics beyond
-the URL format; whether the store name can be freely changed after publishing
-(believed yes, **not confirmed**); anything about Play Games Services; and the
-first end-to-end run of `android-release.yml`.
+**Verified 2026-08-05, second pass:** the per-track tester ceilings (100 /
+2,000 per list / unlimited); that Google Groups are accepted for closed testing
+and not for internal; that a tester must be on the list or in the group before
+the opt-in link works; that open testing requires production access and
+therefore cannot precede the closed test; that a Google Group can be set so
+anyone on the web joins without approval; and the consecutive-days rule quoted
+verbatim.
+
+**NULL — unverified:** the closed-test opt-in URL *format*
+(`/apps/testing/<package>`) — the internal one is a numeric track id, so the
+shapes differ and Console is the only trustworthy source; per-track review
+durations; whether the store name can be freely changed after publishing
+(believed yes, **not confirmed**); anything about Play Games Services; and
+whether a Google Group added to a closed track admits people who join the group
+*after* the track is rolled out without a further Console action.
