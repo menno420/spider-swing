@@ -1,6 +1,6 @@
 # The game is Slingy Spider
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 
@@ -22,11 +22,31 @@ decision and retracts the reasoning.
 
 ## Shipped
 
-[[fill: shipped]]
+- `docs/product/name-status.md` — **Slingy Spider recorded as the decided release
+  name**, with the three retracted objections and the evidence that killed each,
+  the Play search data (Stickman Hook at position 2; Spider Solitaire dominating
+  the result set), and the documented competitive picture.
+- `docs/legal/privacy-policy.md` — placeholder replaced with the real name; the
+  draft is now publishable once the owner reviews it.
+- `docs/product/play-store-listing.md` — app name set, `RELEASE_APP_NAME` value
+  stated, the application-ID decision flagged as unblocked-but-permanent, and the
+  graphics section rewritten around presentation as a differentiator.
 
 ## Verification
 
-[[fill: verification]]
+- `python3 tools/verify.py --require-godot` → **exit 0**, 256/256 contracts.
+  Documentation-only; the run proves the tree is undisturbed.
+- `python3 bootstrap.py check --strict` → **exit 0**, run **post-commit**.
+- The video evidence was read by asking for **transcription, not judgement** —
+  the method from `2026-08-05-hud-telemetry-verification.md`. It returned the
+  literal search string, 52 result titles with install counts, and the absence of
+  any "did you mean" correction. Run on Vertex, so credit-funded.
+- Play install figures for the incumbents were fetched directly from their store
+  listings, not taken from a search summary.
+
+**Honest nulls:** no trademark search was run — BOIP and EUIPO in Nice Class 9
+and 41 remain owner work, and are now the *only* open item on the name. Domain
+and social handles unreserved. The application ID is unblocked but undecided.
 
 ## 💡 Session idea
 

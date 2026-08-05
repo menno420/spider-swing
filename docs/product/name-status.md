@@ -5,6 +5,86 @@
 > Tracks GDD § 25 decision 7 (release name and brand identity) and the codename
 > warning at the head of `docs/game-design/Spider-Swing-GDD-v2.0.md`.
 
+## DECIDED, 2026-08-05: the game is **Slingy Spider**
+
+**Owner decision. This is the release name.** 13 characters, inside Play's
+30-character limit.
+
+It was rejected earlier the same day by this repository's own research, on three
+grounds. All three were subsequently **retracted against evidence**, and the
+retraction is recorded here because the reasoning failure is more instructive
+than the conclusion:
+
+| Objection raised | Why it was dropped |
+|---|---|
+| "Sling" names the wrong mechanic — this is a pendulum, not a slingshot | **A person who had only watched gameplay independently generated the name "Slingy Spider".** Others endorsed the fit. That is the mechanic-inference test passed empirically; the objection was armchair semantics and lost to observed human behaviour. |
+| Confusable with **SLINKY** (live US mark, genericised) | The owner's Play Store search — captured on video — shows Play offering **no "did you mean"** and no correction toward "slinky". Nobody who saw or heard the name misread it. The concern had no empirical support at any point. |
+| The `[sling]+[spider]` namespace is saturated and mistrained | **Measured wrong.** Play's results for "slingy spider" are dominated by **Spider Solitaire** (~15 of 52 results; Play's own related-search suggestion is *"spider solitair classic"*), not by superhero titles. Direct competitors are negligible — Spider Swinger delisted, **Spider Swinger 2 at 10K+ installs**, Spider Swing 3D rated 3.6. |
+
+**One finding actively favours the name.** Searching "slingy spider" on Play
+returns **Stickman Hook (Madbox, 100M+ installs) at position 2**, with
+*A Webbing Journey* also present. Play's search parses "slingy" as
+swing/momentum and surfaces the canonical games of exactly this genre — the
+store already understands what the word means.
+
+**Exact-phrase search is clean:** no app on Google Play carries this name.
+
+### What remains open on the name
+
+**Trademark only.** Unrelated to everything above and still owner work: **BOIP**
+(Benelux — the owner's home registry) and **EUIPO**, for exact and phonetically
+similar marks in **Nice Class 9** (software) and **Class 41** (entertainment
+services). Also worth reserving: social handles and the domain — checked via
+**WHOIS/RDAP rather than a registrar search bar**, which front-runs queries.
+
+### The competitive picture behind the decision
+
+Owner review of the genre on Play, 2026-08-05:
+
+- **Store art across the category is cheap and dull.** Nearly every swinging
+  game's cover looks low-effort. Presentation is therefore a *differentiator*,
+  not a formality — the feature graphic and screenshots carry unusual weight
+  here, and are on the critical path anyway (see
+  [`play-store-listing.md`](play-store-listing.md)).
+- **"Spider Swing" — the closest name-neighbour — is weak, and documented.**
+  Owner-captured store listing and gameplay, 2026-08-05:
+
+  | | |
+  |---|---|
+  | Developer | "Hyper casual go go" |
+  | Downloads | **10K+** |
+  | Monetisation | contains ads |
+  | Rating label | PEGI 3, "Casual games" |
+  | Description | *"Bestuur de spin om naar de finishlijn te slingeren"* |
+  | Presentation | flat solid-blue background, thin magenta line anchors, portrait |
+  | **Live build** | carries a **"trial version" watermark** in the corner |
+
+  A watermarked trial export is shipping on the Play Store. The owner's verdict —
+  less enjoyable than this project's first prototype — is consistent with what
+  the screenshots show.
+
+  **The failure is in the settlement, and it is worth understanding precisely.**
+  The red strip *is* the finish line, and reaching it *is* a win — but the game
+  stops instantly with no feedback of any kind. Owner's account: it feels the
+  same as dying, and less enjoyable.
+
+  So a player cannot distinguish victory from death **by the game's response**,
+  not by misreading the art. Winning and losing produce the same event: the run
+  simply ends. Whatever the level design does, the moment that decides whether a
+  run felt worth playing is unhandled.
+
+  That is the clearest possible argument for this project's own settlement work.
+  GDD § 2.2 promises **Ownership** — a death should be understandable and feel
+  caused by a player decision — and the same obligation applies to a win. The
+  category's closest name-neighbour fails exactly there, at 10K installs, with a
+  watermarked build. The bar is not just low on art; it is low on the thing this
+  game is actually built around.
+
+The bar in this genre is low, and it is low on exactly the axes this game
+optimises for — feel, momentum, and readability. That is the argument for a
+legible spider name rather than an abstract one: the audience searching for
+these games exists and is currently underserved.
+
 ## Ruled out, 2026-08-05: "Swingy Spider"
 
 The working release candidate has been **eliminated**, and so has the whole
