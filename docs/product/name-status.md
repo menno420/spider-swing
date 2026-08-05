@@ -21,6 +21,35 @@ than the conclusion:
 | Confusable with **SLINKY** (live US mark, genericised) | The owner's Play Store search — captured on video — shows Play offering **no "did you mean"** and no correction toward "slinky". Nobody who saw or heard the name misread it. The concern had no empirical support at any point. |
 | The `[sling]+[spider]` namespace is saturated and mistrained | **Measured wrong.** Play's results for "slingy spider" are dominated by **Spider Solitaire** (~15 of 52 results; Play's own related-search suggestion is *"spider solitair classic"*), not by superhero titles. Direct competitors are negligible — Spider Swinger delisted, **Spider Swinger 2 at 10K+ installs**, Spider Swing 3D rated 3.6. |
 
+### Where the name actually came from
+
+Provenance, because this is the evidence that overturned the research and it
+should not decay into "someone liked it":
+
+**Discord, 2026-07-30, ~10:20–10:23.** The owner posted a single gameplay clip —
+the real game, `RUN ENDED` on screen, `REEL` and `ATTACH` controls visible,
+987.7 m distance. A friend who had never seen the project responded *"You made
+that??"*, *"On what PC?"*, *"That's cool man"*, then — on learning it was a
+phone-made mobile game — *"Upload to Google play bro"*, *"Flappy bird"*.
+
+His next message was **"Slingy Spider"**. It drew a 🔥 reaction.
+
+Three things make this stronger than a naming exercise:
+
+1. **Unprompted.** There was no brief, no candidate list, no request for a name.
+   He was reacting to gameplay.
+2. **Roughly three minutes** from first seeing the game to producing the name.
+   That is mechanic inference at conversational speed — the thing a store
+   listing has to achieve on a cold viewer.
+3. **Generated in the right register.** It arrived immediately after "upload to
+   Google Play" and "Flappy bird" — he was thinking about what works as a
+   snappy, shareable mobile title, which is exactly the commercial frame this
+   product needs. A methodology-driven exercise optimises for structure; this
+   optimised for the actual job.
+
+It also **predates every research pass by a week**, so it cannot have been
+contaminated by any candidate list generated on 2026-08-05.
+
 **One finding actively favours the name.** Searching "slingy spider" on Play
 returns **Stickman Hook (Madbox, 100M+ installs) at position 2**, with
 *A Webbing Journey* also present. Play's search parses "slingy" as

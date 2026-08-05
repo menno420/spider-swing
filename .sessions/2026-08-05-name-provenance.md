@@ -1,6 +1,6 @@
 # Record where the name actually came from
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 
@@ -22,11 +22,25 @@ Discord exchange, which contains detail the summary had flattened.
 
 ## Shipped
 
-[[fill: shipped]]
+- `docs/product/name-status.md` — a "Where the name actually came from" section:
+  the date and time, what was on screen in the clip that prompted it, the
+  unprompted three-minute turnaround, the commercial register it arrived in, and
+  the fact that it predates every research pass by a week and so cannot have been
+  contaminated by a candidate list.
 
 ## Verification
 
-[[fill: verification]]
+- `python3 tools/verify.py --require-godot` → **exit 0**, 256/256 contracts.
+  Documentation-only; the run proves the tree is undisturbed.
+- `python3 bootstrap.py check --strict` → **exit 0**, run **post-commit**.
+- Every detail was read off the owner's screenshot directly — timestamps
+  (10:20–10:23), the on-screen HUD in the shared clip (`RUN ENDED`, `REEL`,
+  `ATTACH`, 987.7 m), the message order, and the 🔥 reaction. Transcribed, not
+  characterised.
+
+**Honest null:** this records one person's reaction, and the owner separately
+reports that others endorsed the name. Those endorsements are not individually
+sourced here and remain the owner's account rather than captured evidence.
 
 ## 💡 Session idea
 
