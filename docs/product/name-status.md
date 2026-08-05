@@ -283,6 +283,83 @@ Carried from the GDD so the review has criteria rather than taste alone:
   contained the moment a package identifier is published** — which is why ADR 0003
   keeps publishing behind an explicit owner step.
 
+## Trademark register search — run 2026-08-05, owner-executed
+
+The Play Store search established that nobody is *using* the name. That is a
+different question from whether anyone has *registered* it, and the register
+search was run separately on [TMview](https://www.tmdn.org/tmview/), which covers
+Benelux, the EU and most national offices in one query.
+
+**"Slingy spider" as a phrase: zero hits.** Searched across all participating
+offices — *"Geen rijen gevonden"*. The exact name is unregistered everywhere the
+search reaches.
+
+**"Slingy" alone returns one live mark.**
+
+| Mark | Office | Status | Filed | Classes | Holder |
+|---|---|---|---|---|---|
+| SLINGY | **Benelux (BOIP)** | **Registered** | 2025-09-05 | **28, 35** | Alexander Gabriël Gaal |
+| Slingy | Denmark | lapsed | 2005 | 24 | — |
+| Slingy | Denmark | lapsed | 2005 | 18, 24 | — |
+| SlingYoga | UK | lapsed | — | — | — |
+
+Only the Benelux one is live, and it is in this project's home territory
+(BE, BX, LU, NL).
+
+### What classes 28 and 35 actually cover — verified, not assumed
+
+Class numbers are meaningless without their definitions, so they were fetched
+from WIPO's own Nice Classification, 12th edition version 2025
+([class 28](https://nclpub.wipo.int/enfr/pdf-download.pdf?lang=en&dateInForce=20250101&classNumber=28),
+[class 9](https://nclpub.wipo.int/enfr/pdf-download.pdf?lang=en&dateInForce=20250101&classNumber=9)):
+
+- **Class 28** — *"Games, toys and playthings; video game apparatus."* The
+  entries are physical: `video game consoles`, `arcade video game machines`,
+  `controllers for game consoles`, `board games`, `card games`. **Software is not
+  in this class.**
+- **Class 9** — *"recorded and downloadable media, computer software."* Class 9's
+  own exclusion note pushes hardware the other way: `joysticks for video games,
+  controllers for toys and game consoles (Cl. 28)`. The split is
+  **software here, hardware there.**
+- **Class 35** is advertising, business and retail services. *(Heading not
+  fetched — stated from general knowledge, not verified this session.)*
+
+A mobile game distributed through Play is **class 9** (the downloadable software)
+and **class 41** (the online entertainment service). So the live SLINGY mark and
+this project **share no class**.
+
+### The honest reading of that
+
+Class separation lowers the risk; it is not a wall, and the comforting version of
+this finding should not be recorded as the finding.
+
+- **Classes are an administrative index, not a legal boundary.** Conflicts are
+  decided on similarity of the actual goods and services. "Games" in class 28 and
+  "game software" in class 9 are adjacent, and EU practice has treated
+  complementary goods across classes as similar before.
+- **"One word of two is registered" is not by itself reassuring.** Comparison
+  weighs the *dominant* element of a mark. `SLINGY` is the distinctive word and
+  it sits first; `Spider` describes the subject. The word-count argument runs the
+  wrong way — the class separation is what carries this, not the added noun.
+- **The mark is recent (filed 2025-09-05)**, so it is inside the grace period
+  during which it cannot be challenged for non-use.
+
+**What it does not affect: publishing.** Google does not check trademarks, and
+nothing here blocks the listing, the test tracks, or the launch.
+
+**What it does affect: registering a mark of this project's own.** Benelux and EU
+registries publish applications and give earlier holders a window to oppose.
+*(Window length **NULL — unverified**: BOIP serves a reCAPTCHA to automated
+fetches and EUIPO returns CloudFront 403, so neither could be read in session.)*
+
+### Recommendation
+
+Launch as planned; do not register yet. If the game gains traction, this specific
+fact pattern — identical dominant word, adjacent goods, same territory, recent
+filing — is worth a short paid consultation with a Benelux trademark attorney
+rather than another research pass. It is a judgement call about similarity, and
+no amount of register-reading settles it.
+
 ## Owner action
 
 Tracked as an owner action in the founding session card. Nothing in Phase 0, 1, or
