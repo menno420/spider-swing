@@ -50,6 +50,32 @@ Three things make this stronger than a naming exercise:
 It also **predates every research pass by a week**, so it cannot have been
 contaminated by any candidate list generated on 2026-08-05.
 
+**Second data point, and a weaker kind — recorded as such.** Discord, **2026-08-03,
+08:55**. A different friend, having watched a gameplay clip (`953.2 m`, `FLIES 3`,
+`REEL` and `ATTACH` visible), asked *"What's tho game called bro?"*. The owner
+answered *"I think it will be 'slingy spider'"* — adding *"but still haven't
+fully decided"* — and the reply was **"That's a good fit for it"**, with a 🔥.
+
+This is **endorsement, not independent generation**: the name was put to him
+rather than produced by him. It is genuine supporting evidence and it is not a
+second instance of the mechanic-inference result. The distinction matters,
+because the strength of the 2026-07-30 exchange rests entirely on the name being
+unprompted.
+
+**Two useful things surfaced in the same conversation, unrelated to naming:**
+
+- **Demand exists before launch.** The friend's first message was *"How can I
+  play it xD"*. He could not: he is on iPhone, and Apple does not permit installs
+  from outside the App Store. Pre-release testing is therefore **Android-only**,
+  which reinforces the Android-first strategy and means iOS contacts cannot serve
+  as closed-test testers.
+- **Tester recruitment is already in motion.** The owner stated an intent to open
+  a Discord server for testers "somewhere this week", explicitly because he needs
+  multiple opinions rather than his own. That is the recruiting half of
+  `OQ-PLAY-CLOSED-TEST` — which needs **12 testers opted in for 14 continuous
+  days** on Android, each with a Google account. See
+  [`../technical/play-closed-test-runbook.md`](../technical/play-closed-test-runbook.md).
+
 **One finding actively favours the name.** Searching "slingy spider" on Play
 returns **Stickman Hook (Madbox, 100M+ installs) at position 2**, with
 *A Webbing Journey* also present. Play's search parses "slingy" as

@@ -38,9 +38,15 @@ Discord exchange, which contains detail the summary had flattened.
   `ATTACH`, 987.7 m), the message order, and the 🔥 reaction. Transcribed, not
   characterised.
 
-**Honest null:** this records one person's reaction, and the owner separately
-reports that others endorsed the name. Those endorsements are not individually
-sourced here and remain the owner's account rather than captured evidence.
+- A **second** exchange (2026-08-03, 08:55) was subsequently supplied and is
+  recorded with its distinction intact: the name was **put to** that friend, who
+  called it "a good fit", rather than produced by him. Endorsement, not a second
+  independent generation — noted explicitly because the whole weight of the
+  2026-07-30 result rests on it having been unprompted.
+
+**Honest null, now partly closed:** two of the endorsements the owner reported
+are sourced (2026-07-30 generation, 2026-08-03 endorsement). Any further
+endorsements remain his account rather than captured evidence.
 
 ## 💡 Session idea
 
