@@ -1,6 +1,6 @@
 # Play Console — prepared answers for the App content declarations
 
-> **Status:** `owner-approval-required`
+> **Status:** `owner-guidance`
 >
 > Every declaration Play requires before a closed-test release can roll out,
 > with the answer and **why** it is that answer. Read the reasoning — you are

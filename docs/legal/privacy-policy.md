@@ -1,6 +1,6 @@
 # Privacy policy — publishable text
 
-> **Status:** `owner-approval-required`
+> **Status:** `owner-guidance`
 >
 > This is a **draft for the owner to read and publish**, not a published policy.
 > Google Play requires a live, public privacy-policy URL before a release can be

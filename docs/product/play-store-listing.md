@@ -1,6 +1,6 @@
 # Play store listing — draft copy
 
-> **Status:** `owner-approval-required`
+> **Status:** `owner-guidance`
 >
 > Draft copy for the Play Console store listing, written from the GDD's own
 > product definition (§ 2.1–2.5) rather than invented. **Character counts below
