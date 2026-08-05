@@ -92,4 +92,4 @@ records your runs." Both are true because the words mean different things. The
 form asks the narrower question, and answering it with the broader intuition
 would have been a false declaration.
 
-- **📊 Model:** opus-5 · high · documentation + tooling
+- **📊 Model:** opus-5 · high · docs-only
