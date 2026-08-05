@@ -12,12 +12,47 @@
 
 ## App name — limit 30
 
-**`Swingy Spider`** — 13 characters.
+**NOT CHOSEN. `Swingy Spider` is ruled out — do not ship it.**
 
-Pending `OQ-SWINGY-NAME` (store-conflict check). The store name can be revised
-later; the **application ID cannot**, so do not stall the ID decision on this.
-*(Whether the store name is freely editable after publishing is believed yes and
-**not verified** — treat as unconfirmed.)*
+Verified 2026-08-05 by fetching the listings, not by search summary:
+
+| Conflict | Platform | Evidence |
+|---|---|---|
+| **Swingy Spider** by Garrett Goodwin | itch.io | [`goodwingames.itch.io/swingy-spider`](https://goodwingames.itch.io/swingy-spider) — HTTP 200, a 2D web-swinging game where you **eat flies and avoid enemy bugs** |
+| **Swingy Spider** by Tim Mendez | Amazon Appstore | [listing](https://www.amazon.com/Tim-Mendez-Swingy-Spider/dp/B017V0UL8M) — endless swing game, *swing from leaf to leaf*, leaderboards |
+
+Same name, same genre, same core loop. This is not a near-miss.
+
+**The wider finding is that the whole construction is unusable.** Every
+`[swing|sling] + spider` name sits in a namespace saturated by *Spider Swing*,
+*Spider Swinger*, *Spider Swing 3D*, *Slinging Spider* and *Spider Slingers* —
+and those titles have trained store search to return **urban superhero
+brawlers**. A calm physics game entering that space loses on algorithmic
+mismatch even where the exact string is free. GDD § 2.5 requires the name be
+store-searchable; no name of this shape can satisfy it.
+
+`Slingy Spider` was checked too: no exact store conflict, but it is one letter
+from **SLINKY** (live US trademark, reg. 1455493, genericised in speech), and it
+names the wrong mechanic — this is a pendulum, not a slingshot.
+
+**Researched candidates with no exact-match conflicts** (verified by independent
+search; ranked by a Deep Research pass that agreed on all verdicts):
+
+| Candidate | Chars | Notes |
+|---|---|---|
+| `Silken Pendulum` | 15 | Ranked first by both passes. Footprint is antique horology and poetry — non-competing, so the term is winnable. |
+| `Thread Momentum` | 15 | Literal about speed→momentum; keeps the miniature scale. |
+| `Tension Weaver` | 14 | Names the Reel-In skill directly. |
+| `Arcing Arachnid` | 15 | Clear on the arc; slightly on-the-nose. |
+
+**Owner is holding the decision** (2026-08-05) — `OQ-SWINGY-NAME` stays open.
+These are candidates, **not clearances**: web search shows what is indexed and
+is no substitute for a Play Console search under the owner's account or a
+trademark check.
+
+The store name can be revised later; the **application ID cannot**, so do not
+stall the ID decision on this. *(Whether a published store name is freely
+editable is believed yes and **not verified**.)*
 
 ## Short description — limit 80
 

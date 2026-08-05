@@ -2,6 +2,10 @@
 
 > **Status:** `owner-guidance`
 >
+> ⚠️ **The name is not chosen.** "Swingy Spider" was ruled out on 2026-08-05 —
+> it is taken by a same-genre game. Replace the placeholder in the heading
+> before publishing. See `../product/name-status.md`.
+>
 > This is a **draft for the owner to read and publish**, not a published policy.
 > Google Play requires a live, public privacy-policy URL before a release can be
 > rolled out to any track above internal testing — including the closed test.
@@ -16,12 +20,11 @@
 
 ## Publishable text begins
 
-# Privacy Policy for Swingy Spider
+# Privacy Policy for [GAME NAME — NOT YET CHOSEN]
 
 **Last updated: 5 August 2026**
 
-This policy explains what Swingy Spider ("the game") does with information on
-your device. It is written to be read, not to be survived.
+This policy explains what the game does with information on your device. It is written to be read, not to be survived.
 
 ## The short version
 
