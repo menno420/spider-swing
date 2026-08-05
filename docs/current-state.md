@@ -90,6 +90,12 @@ without a reported regression.
   credentials are public. It must **NEVER** be reused for Google Play, a release
   build, production signing, or any signed distribution. Release signing remains
   absent and the workflow never publishes.
+- A second preset, `Android Release`, builds the App Bundle Play requires of new
+  apps (Gradle build, min/target SDK 24/36). Its identity is a committed
+  placeholder because a published applicationId is permanent;
+  `android-release.yml` is dispatch-only, substitutes owner-set variables, and
+  builds unsigned until an upload key exists. Never run end to end — see
+  [ADR 0005](technical/adr/0005-android-release-aab.md).
 
 **Traversal and deterministic course**
 

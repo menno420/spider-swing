@@ -11,13 +11,24 @@ const TutorialPracticeSuite = preload(
 const MAIN_SCENE_PATH := "res://game/bootstrap/main.tscn"
 const EXPORT_PRESETS_PATH := "res://export_presets.cfg"
 const ANDROID_WORKFLOW_PATH := "res://.github/workflows/android-debug.yml"
+const ANDROID_RELEASE_WORKFLOW_PATH := \
+	"res://.github/workflows/android-release.yml"
 const BUILD_VERSION := "0.43.0-tutorial-clarity"
 const ANDROID_VERSION_CODE := 63
 const ANDROID_APP_NAME := "Spider Swing Tutorial Clarity (dev)"
 const DEBUG_KEYSTORE_PATH := "res://.github/android/debug.keystore"
 const DEBUG_KEYSTORE_SHA256 := \
 	"e9104672477e0238b6cc2f7d6b994c459e37f130cae06a37aff05001f101bbda"
-const EXPECTED_CHECK_COUNT := 251
+# Release packaging (ADR 0005). Play requires an App Bundle for new apps, and a
+# published applicationId is permanent — so the committed identity is a
+# deliberate placeholder and the workflow substitutes the owner's real value.
+const RELEASE_PRESET_NAME := "Android Release"
+const RELEASE_PLACEHOLDER_PACKAGE := "com.example.PLACEHOLDER.setbyworkflow"
+const RELEASE_PLACEHOLDER_APP_NAME := "PLACEHOLDER SET BY WORKFLOW"
+const RELEASE_EXPORT_FORMAT_AAB := 1
+const RELEASE_MIN_SDK := "24"
+const RELEASE_TARGET_SDK := "36"
+const EXPECTED_CHECK_COUNT := 256
 const REQUIRED_INPUT_ACTIONS := [
 	"web_action", "reel_in", "burst_action", "pause", "restart_run",
 	"toggle_debug"]
@@ -34,6 +45,7 @@ func _initialize() -> void:
 	_check_input_actions()
 	_check_project_configuration()
 	_check_android_preset()
+	_check_android_release_preset()
 	_check_no_autoloads()
 	_check_inward_dependencies()
 	_check_phase0_physics()
@@ -226,6 +238,103 @@ func _check_android_preset() -> void:
 		_ok("Android Debug preset is development-only and uniquely versioned")
 		return
 	_fail("Android Debug preset is missing")
+
+
+func _check_android_release_preset() -> void:
+	## ADR 0005. Google Play has not accepted an APK for a new app since August
+	## 2021, so a release path must produce an App Bundle. These contracts guard
+	## the two ways that path can go wrong quietly: shipping the wrong artifact
+	## format, and freezing a permanent identifier or a real key into the tree.
+	var config := ConfigFile.new()
+	if config.load(EXPORT_PRESETS_PATH) != OK:
+		_fail("export presets cannot be read")
+		return
+	for section: String in config.get_sections():
+		if str(config.get_value(section, "name", "")) != RELEASE_PRESET_NAME:
+			continue
+		var options := "%s.options" % section
+		if str(config.get_value(section, "platform", "")) != "Android":
+			_fail("Android Release preset targets the wrong platform")
+			return
+
+		# An APK cannot be submitted as a new app, and Godot refuses the AAB
+		# format unless the Gradle build is enabled — so these two travel together.
+		if int(config.get_value(options, "gradle_build/export_format", -1)) != \
+				RELEASE_EXPORT_FORMAT_AAB:
+			_fail("Android Release preset does not export an App Bundle")
+			return
+		if not bool(config.get_value(
+				options, "gradle_build/use_gradle_build", false)):
+			_fail("Android Release preset needs the Gradle build for an AAB")
+			return
+		if not str(config.get_value(section, "export_path", "")).ends_with(
+				".aab"):
+			_fail("Android Release export path is not an .aab")
+			return
+		_ok("Android Release preset exports an App Bundle via the Gradle build")
+
+		# Pinned rather than left blank: Play requires API 36 of new submissions
+		# from 2026-08-31, and an engine upgrade must not move it silently.
+		if str(config.get_value(options, "gradle_build/min_sdk", "")) != \
+				RELEASE_MIN_SDK or \
+				str(config.get_value(options, "gradle_build/target_sdk", "")) != \
+				RELEASE_TARGET_SDK:
+			_fail("Android Release SDK levels are not pinned to %s/%s" % [
+				RELEASE_MIN_SDK, RELEASE_TARGET_SDK])
+			return
+		_ok("Android Release pins min/target SDK for Play's requirement")
+
+		# A published applicationId can never be changed or reused. The committed
+		# value must stay a placeholder; the workflow substitutes the real one.
+		var release_package := str(
+			config.get_value(options, "package/unique_name", ""))
+		if release_package != RELEASE_PLACEHOLDER_PACKAGE:
+			_fail("Android Release package identifier is no longer the "
+				+ "placeholder — a permanent applicationId must not be committed")
+			return
+		if str(config.get_value(options, "package/name", "")) != \
+				RELEASE_PLACEHOLDER_APP_NAME:
+			_fail("Android Release app label is no longer the placeholder")
+			return
+		_ok("Android Release identity stays a placeholder in the tree")
+
+		# No key exists here, so the committed preset must not claim to sign.
+		if bool(config.get_value(options, "package/signed", true)):
+			_fail("Android Release preset claims signing with no key in the tree")
+			return
+		_ok("Android Release preset is unsigned in the committed tree")
+
+		var workflow := FileAccess.open(
+			ANDROID_RELEASE_WORKFLOW_PATH, FileAccess.READ)
+		if workflow == null:
+			_fail("Android release workflow cannot be read")
+			return
+		var workflow_text := workflow.get_as_text()
+		# Never on a push, never publishing, never signing with the public key.
+		#
+		# Matched against the release signing ASSIGNMENTS rather than a bare
+		# mention of the key: the file names the debug keystore in prose to say
+		# it must never be used here, and a substring test cannot tell a
+		# prohibition from a use. An earlier version of this contract could not,
+		# and failed on the sentence forbidding the thing it was checking for.
+		var debug_key_wired := RegEx.new()
+		debug_key_wired.compile(
+			"GODOT_ANDROID_KEYSTORE_RELEASE_(PATH|USER|PASSWORD):"
+			+ "[^\\n]*(debug\\.keystore|androiddebugkey)")
+		if debug_key_wired.search(workflow_text) != null:
+			_fail("Android release workflow signs with the public debug key")
+			return
+		if not workflow_text.contains("workflow_dispatch:") or \
+				workflow_text.contains("branches: [main]"):
+			_fail("Android release workflow must be manual dispatch only")
+			return
+		if not workflow_text.contains("vars.RELEASE_PACKAGE_ID") or \
+				not workflow_text.contains("com.example.*|*PLACEHOLDER*"):
+			_fail("Android release workflow does not refuse a placeholder identity")
+			return
+		_ok("Android release workflow is dispatch-only and refuses placeholders")
+		return
+	_fail("Android Release preset is missing")
 
 
 func _check_no_autoloads() -> void:
