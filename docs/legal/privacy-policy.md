@@ -21,7 +21,7 @@
 
 # Privacy Policy for Slingy Spider
 
-**Last updated: 5 August 2026**
+**Last updated: 6 August 2026**
 
 This policy explains what Slingy Spider ("the game") does with information on
 your device. It is written to be read, not to be survived.
@@ -37,13 +37,18 @@ advertising, no analytics, and no third-party tracking software in the game.
 The game saves your progress so it can carry on where you left off. That
 includes your settings, your best distances, which upgrades and cosmetics you
 own, your in-game currency balances, which regions you have reached, and a
-record of your recent runs.
+record of your recent runs (such as distance, time, speed, actions, run setup,
+and how the run ended).
 
 **All of this is stored only on your own device**, inside the private storage
 area Android gives the game. We cannot see it. It is not uploaded anywhere.
 
 If you uninstall the game, Android deletes that storage and the saved progress
 goes with it.
+
+The Run History screen lets you view this local record as text. If you choose
+**Copy JSON**, the game puts that visible record on your device clipboard so you
+can paste it where you choose. The game does not send it anywhere itself.
 
 ## What the game does not do
 
@@ -94,8 +99,11 @@ assumed:
 - `game/` contains **no** network API — no `HTTPRequest`, `HTTPClient`,
   `StreamPeer`, `PacketPeer`, `WebSocket`, or multiplayer class anywhere.
 - Every persistent write goes to `user://` — `player_settings.json`,
-  `player_progress.json`, `debug_test_profile.json` — which is Android's
-  app-private sandbox.
+  `player_progress.json`, `debug_test_profile.json`,
+  `run_record_ledger.json`, and the owner-requested diagnostic — which is
+  Android's app-private sandbox. The only way run evidence leaves that sandbox
+  in this build is the player's explicit **Copy JSON** action to the same
+  device's clipboard; there is no automatic export.
 - The only `https://` strings in game code are citation links in
   `spider_biology_catalog.gd`, shown as reference text.
 - `leaderboards_eligible` is a boolean on a local run settlement. There is no

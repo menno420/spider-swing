@@ -7,7 +7,19 @@
 
 ## Layers & import rules
 
-domain contains engine-independent value objects, commands, events, identifiers, and configuration contracts and imports no Godot-facing layer; simulation contains the fixed-step spider motor, web constraint, collision policy, and deterministic run model and imports domain only; application contains the run state machine, difficulty director, world stream orchestration, effects, score, and settlement and imports domain plus simulation; adapters contain Godot input, scenes, persistence, telemetry, and platform integration and import inward-facing contracts; presentation contains UI, camera, audio, VFX, and rendering, consumes application APIs and domain events, and never mutates authoritative simulation state directly.
+domain contains engine-independent value objects, commands, events,
+identifiers, configuration, settlement, and run-evidence schemas and imports no
+Godot-facing layer; simulation contains the fixed-step spider motor, web
+constraint, collision policy, and deterministic run model and imports domain
+only; application contains run/front-end state, deterministic course
+orchestration, effects, authoritative metric accumulation, and the single
+settlement-plus-record finalization and imports domain plus simulation; adapters
+contain Godot input, exclusive persistence, clipboard, and platform integration
+and import inward-facing contracts; presentation contains UI, camera, audio,
+VFX, and rendering, consumes application APIs and domain events, and never
+mutates authoritative simulation or persisted evidence directly. See
+[`technical/run-evidence.md`](technical/run-evidence.md) for the completed-run
+contract.
 
 | Layer | May import | Must NOT import |
 |---|---|---|

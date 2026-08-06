@@ -57,6 +57,16 @@ var _shop: Control
 var _creator: Control
 var _practice: Control
 var _campaign: Control
+var _run_history: Control
+var _run_history_scroll: ScrollContainer
+var _run_history_content: VBoxContainer
+var _run_history_lifetime: Label
+var _run_history_latest: Label
+var _run_history_recent: VBoxContainer
+var _run_history_export_text: TextEdit
+var _run_history_export_status: Label
+var _run_history_view_json: Button
+var _run_history_copy_json: Button
 var _debug_run_setup: Control
 var _debug_test_lab: Control
 var _field_guide: Control
@@ -168,6 +178,7 @@ func ensure_interface() -> void:
 	_build_creator()
 	_build_practice()
 	_build_campaign()
+	_build_run_history()
 	_build_debug_run_setup()
 	_build_debug_test_lab()
 	_build_field_guide()
@@ -612,7 +623,7 @@ func _build_play_modes_hub() -> void:
 	body.add_child(_section_label("CHOOSE A DIFFERENT WAY TO SWING"))
 	var routes := GridContainer.new()
 	routes.name = "PlayModesRouteGrid"
-	routes.columns = 3
+	routes.columns = 4
 	routes.add_theme_constant_override("h_separation", 16)
 	routes.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	body.add_child(routes)
@@ -628,10 +639,14 @@ func _build_play_modes_hub() -> void:
 		&"Creator", "COURSE LAB\nbuild a six-piece route", YELLOW)
 	creator.pressed.connect(_on_creator)
 	routes.add_child(creator)
+	var history := _hub_route_button(
+		&"RunHistory", "RUN HISTORY\nlocal evidence · JSON export", GREEN)
+	history.pressed.connect(_on_run_history)
+	routes.add_child(history)
 	_play_modes_status = _hub_status_panel(&"PlayModesHubStatus")
 	body.add_child(_play_modes_status)
 	body.add_child(_setting_description(
-		"Campaign awards stars. Practice and Course Lab are noncompetitive and never change Endless records."))
+		"Campaign awards stars. Practice and Course Lab are noncompetitive. Run History keeps local evidence separate from records and leaderboards."))
 
 
 func _build_guide_hub() -> void:
@@ -1279,6 +1294,76 @@ func _build_campaign() -> void:
 
 func _campaign_button_name(level_id: StringName) -> StringName:
 	return StringName("CampaignLevel_%s" % level_id)
+
+
+func _build_run_history() -> void:
+	_run_history = _full_screen(&"RunHistoryScreen")
+	var back := _button(&"RunHistoryBack", "‹  PLAY MODES", CYAN, 64.0)
+	back.pressed.connect(_on_play_modes_hub)
+	_place(back, _run_history, 0.025, 0.025, 0.17, 0.13)
+	var heading := _label("RUN HISTORY", 36, INK)
+	_place(heading, _run_history, 0.19, 0.025, 0.61, 0.13)
+	_run_history_view_json = _button(
+		&"RunHistoryViewJson", "VIEW JSON", ORANGE, 64.0)
+	_run_history_view_json.pressed.connect(_on_run_history_view_toggle)
+	_place(_run_history_view_json, _run_history, 0.66, 0.025, 0.81, 0.13)
+	_run_history_copy_json = _button(
+		&"RunHistoryCopyJson", "COPY JSON", GREEN, 64.0)
+	_run_history_copy_json.pressed.connect(_on_run_history_copy)
+	_place(_run_history_copy_json, _run_history, 0.825, 0.025, 0.975, 0.13)
+
+	var card := _panel(PANEL)
+	card.name = "RunHistoryWebPanel"
+	_place(card, _run_history, 0.04, 0.16, 0.96, 0.91)
+	_run_history_scroll = ScrollContainer.new()
+	_run_history_scroll.name = "RunHistoryScroll"
+	SpiderUiTheme.configure_touch_scroll(_run_history_scroll)
+	_fill_with_margin(_run_history_scroll, card, 16.0)
+	_run_history_content = VBoxContainer.new()
+	_run_history_content.name = "RunHistoryContent"
+	_run_history_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_run_history_content.add_theme_constant_override("separation", 12)
+	_run_history_scroll.add_child(_run_history_content)
+	_run_history_content.add_child(_section_label(
+		"LOCAL ONLY · LAST %d FULL RUNS" % RunRecordLedger.HISTORY_LIMIT))
+	_run_history_lifetime = _label("", 16, MUTED)
+	_run_history_lifetime.name = "RunHistoryLifetimeSummary"
+	_run_history_lifetime.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_run_history_lifetime.custom_minimum_size.y = 48.0
+	_run_history_content.add_child(_run_history_lifetime)
+	_run_history_content.add_child(_section_label("LATEST COMPLETED RUN"))
+	var latest_panel := _panel(PANEL_SOFT, 14, GREEN)
+	latest_panel.name = "RunHistoryLatestPanel"
+	latest_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_run_history_content.add_child(latest_panel)
+	_run_history_latest = _label("", 15, INK)
+	_run_history_latest.name = "RunHistoryLatestSummary"
+	_run_history_latest.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_run_history_latest.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	_run_history_latest.custom_minimum_size.y = 156.0
+	_fill_with_margin(_run_history_latest, latest_panel, 14.0)
+	_run_history_content.add_child(_section_label("RECENT RUNS · NEWEST FIRST"))
+	_run_history_recent = VBoxContainer.new()
+	_run_history_recent.name = "RunHistoryRecentList"
+	_run_history_recent.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_run_history_recent.add_theme_constant_override("separation", 8)
+	_run_history_content.add_child(_run_history_recent)
+
+	_run_history_export_text = TextEdit.new()
+	_run_history_export_text.name = "RunHistoryExportJson"
+	_run_history_export_text.editable = false
+	_run_history_export_text.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
+	_run_history_export_text.mouse_filter = Control.MOUSE_FILTER_STOP
+	_run_history_export_text.add_theme_font_size_override("font_size", 15)
+	_run_history_export_text.add_theme_color_override("font_color", INK)
+	_run_history_export_text.add_theme_color_override("background_color", DEEP)
+	_fill_with_margin(_run_history_export_text, card, 16.0)
+
+	_run_history_export_status = _label("", 14, YELLOW)
+	_run_history_export_status.name = "RunHistoryExportStatus"
+	_run_history_export_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_run_history_export_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_place(_run_history_export_status, _run_history, 0.06, 0.915, 0.94, 0.985)
 
 
 func _build_debug_run_setup() -> void:
@@ -2012,6 +2097,9 @@ func _render() -> void:
 	_campaign.visible = _state.screen == FrontEndState.Screen.CAMPAIGN
 	if _campaign.visible:
 		_refresh_campaign_buttons()
+	_run_history.visible = _state.screen == FrontEndState.Screen.RUN_HISTORY
+	if _run_history.visible:
+		_render_run_history()
 	_debug_run_setup.visible = \
 		_state.screen == FrontEndState.Screen.DEBUG_RUN_SETUP and \
 		_state.settings.show_debug_tools
@@ -2252,16 +2340,224 @@ func _render_hub_status() -> void:
 			pieces += 1
 	_play_modes_status.text = (
 		"CAMPAIGN  %d / %d stars   ·   PRACTICE  %d of %d regions reached"
-		+ "   ·   COURSE LAB  %d / %d pieces placed"
+		+ "   ·   COURSE LAB  %d / %d pieces placed\n"
+		+ "RUN HISTORY  %d completed run%s retained locally"
 	) % [
 		stars, levels.size(), reached, regions.size(),
 		pieces, progress.creator_pattern.size(),
+		_state.run_record_ledger.total_completed_recorded_runs,
+		"" if _state.run_record_ledger.total_completed_recorded_runs == 1 else "s",
 	]
 
 	_guide_hub_status.text = (
 		"HOW TO SWING  %d lessons, from the first anchor to recovery"
 		+ "   ·   FIELD GUIDE  %d spiders, each with its real animal and sources"
 	) % [FrontEndState.TUTORIAL_STEPS.size(), SpiderCatalog.ALL_IDS.size()]
+
+
+func _render_run_history() -> void:
+	var exporting := _state.run_history_export_visible
+	_run_history_scroll.visible = not exporting
+	_run_history_export_text.visible = exporting
+	_run_history_copy_json.visible = exporting
+	_run_history_view_json.text = "HISTORY" if exporting else "VIEW JSON"
+	_run_history_export_status.visible = exporting
+	_run_history_export_status.text = _state.run_history_export_status
+	if exporting:
+		var payload := _state.run_history_export_json()
+		if _run_history_export_text.text != payload:
+			_run_history_export_text.text = payload
+		return
+
+	var ledger := _state.run_record_ledger
+	var total_km := ledger.total_distance_travelled_pixels / (
+		CourseRegionCatalog.PIXELS_PER_METRE * 1000.0)
+	_run_history_lifetime.text = (
+		"%d completed run%s  ·  %s active play  ·  %.2f km travelled\n"
+		+ "COMPARABLE BESTS  Relaxed %s  ·  Standard %s  ·  Harsh %s"
+	) % [
+		ledger.total_completed_recorded_runs,
+		"" if ledger.total_completed_recorded_runs == 1 else "s",
+		_format_duration(ledger.total_active_duration_seconds),
+		total_km,
+		_format_optional_distance(ledger.best_distance_for_difficulty(
+			DifficultyCatalog.MODE_RELAXED)),
+		_format_optional_distance(ledger.best_distance_for_difficulty(
+			DifficultyCatalog.MODE_STANDARD)),
+		_format_optional_distance(ledger.best_distance_for_difficulty(
+			DifficultyCatalog.MODE_HARSH)),
+	]
+	var latest := _state.latest_run_record()
+	_run_history_latest.text = (
+		"No completed settlement-backed run has been recorded on this install."
+		if latest == null else _latest_run_text(latest)
+	)
+	for child: Node in _run_history_recent.get_children():
+		_run_history_recent.remove_child(child)
+		child.free()
+	var recent := _state.recent_run_records()
+	if recent.is_empty():
+		var empty := _label(
+			"Finish an Endless, Practice, Campaign, Course Lab, or classified replay run to create evidence.",
+			15,
+			MUTED,
+		)
+		empty.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_run_history_recent.add_child(empty)
+		return
+	for record: RunRecord in recent:
+		var panel := _panel(PANEL_SOFT, 12, _record_accent(record))
+		panel.name = "RunHistoryRecord%d" % record.lifetime_completed_run_ordinal
+		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_run_history_recent.add_child(panel)
+		var summary := _label(_recent_run_text(record), 14, INK)
+		summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		summary.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+		summary.custom_minimum_size.y = 96.0
+		_fill_with_margin(summary, panel, 11.0)
+
+
+func _latest_run_text(record: RunRecord) -> String:
+	var final_m := record.final_distance_pixels / \
+		CourseRegionCatalog.PIXELS_PER_METRE
+	var travelled_m := record.travelled_distance_pixels / \
+		CourseRegionCatalog.PIXELS_PER_METRE
+	var region := CourseRegionCatalog.region_for_id(record.final_region_id)
+	return (
+		"%s · %s · %s\n"
+		+ "FINAL %s m  ·  TRAVELLED %s m  ·  %s  ·  %s\n"
+		+ "FLIES %d  ·  %.2f per travelled km\n"
+		+ "SPEED %.1f m/s mean  ·  %.1f m/s max  ·  %.0f%% above reference\n"
+		+ "ACTIONS  Web %d  ·  Reel %d / %.1f s / empty %d  ·  Burst %d  ·  Dive %d  ·  Rescue %s\n"
+		+ "SPIDER %s  ·  DIFFICULTY %s  ·  PRESET %s  ·  SEED %d  ·  START %s m\n"
+		+ "UPGRADES %s\n"
+		+ "ELIGIBILITY rewards %s · records %s · leaderboard %s  ·  attempt %d · lifetime run %d\n"
+		+ "BUILD %s · Android code %d · %s · physics %d · %s"
+	) % [
+		str(record.configuration_kind).to_upper(),
+		str(record.terminal_outcome).to_upper(),
+		str(record.death_cause),
+		_grouped_metres(final_m),
+		_grouped_metres(travelled_m),
+		_format_duration(record.active_duration_seconds),
+		str(region.get("name", record.final_region_id)),
+		record.flies_collected,
+		record.flies_per_kilometre,
+		record.mean_forward_speed_pixels_per_second / \
+			CourseRegionCatalog.PIXELS_PER_METRE,
+		record.maximum_forward_speed_pixels_per_second / \
+			CourseRegionCatalog.PIXELS_PER_METRE,
+		record.above_reference_speed_share * 100.0,
+		record.successful_web_attachments,
+		record.reel_activations,
+		record.reel_held_seconds,
+		record.reel_empty_events,
+		record.burst_activations,
+		record.dive_activations,
+		"USED" if record.rescue_consumed else "unused",
+		str(record.spider_profile_id).to_upper(),
+		str(record.difficulty_id).to_upper(),
+		str(record.preset_id),
+		record.course_seed,
+		_grouped_metres(record.start_distance_pixels / \
+			CourseRegionCatalog.PIXELS_PER_METRE),
+		_upgrade_level_text(record),
+		_yes_no(record.rewards_eligible),
+		_yes_no(record.records_eligible),
+		_yes_no(record.leaderboards_eligible),
+		record.attempt_ordinal,
+		record.lifetime_completed_run_ordinal,
+		record.build_version,
+		record.android_version_code,
+		record.runtime_platform,
+		record.swing_config_schema_version,
+		record.trace_format,
+	]
+
+
+func _recent_run_text(record: RunRecord) -> String:
+	var final_m := record.final_distance_pixels / \
+		CourseRegionCatalog.PIXELS_PER_METRE
+	var travelled_m := record.travelled_distance_pixels / \
+		CourseRegionCatalog.PIXELS_PER_METRE
+	return (
+		"#%d  %s · %s · %s · %s\n"
+		+ "%s m final · %s m travelled · %s · %.1f / %.1f m/s mean/max · %d flies (%.2f/km)\n"
+		+ "Web %d · Reel %d (%.1f s, empty %d) · Burst %d · Dive %d · Rescue %s\n"
+		+ "%s · seed %d · start %s m · rewards %s / records %s / board %s"
+	) % [
+		record.lifetime_completed_run_ordinal,
+		str(record.configuration_kind).to_upper(),
+		str(record.difficulty_id).to_upper(),
+		str(record.spider_profile_id).to_upper(),
+		str(record.death_cause),
+		_grouped_metres(final_m),
+		_grouped_metres(travelled_m),
+		_format_duration(record.active_duration_seconds),
+		record.mean_forward_speed_pixels_per_second / \
+			CourseRegionCatalog.PIXELS_PER_METRE,
+		record.maximum_forward_speed_pixels_per_second / \
+			CourseRegionCatalog.PIXELS_PER_METRE,
+		record.flies_collected,
+		record.flies_per_kilometre,
+		record.successful_web_attachments,
+		record.reel_activations,
+		record.reel_held_seconds,
+		record.reel_empty_events,
+		record.burst_activations,
+		record.dive_activations,
+		"USED" if record.rescue_consumed else "unused",
+		record.build_version,
+		record.course_seed,
+		_grouped_metres(record.start_distance_pixels / \
+			CourseRegionCatalog.PIXELS_PER_METRE),
+		_yes_no(record.rewards_eligible),
+		_yes_no(record.records_eligible),
+		_yes_no(record.leaderboards_eligible),
+	]
+
+
+func _upgrade_level_text(record: RunRecord) -> String:
+	var labels: Array[String] = []
+	for item: Dictionary in SpiderCatalog.upgrades_for(record.spider_profile_id):
+		var upgrade_id := str(item["id"])
+		var short_id := upgrade_id.trim_prefix("%s_" % record.spider_profile_id)
+		labels.append("%s L%d" % [short_id, int(
+			record.resolved_upgrade_levels.get(upgrade_id, 0))])
+	return ", ".join(labels)
+
+
+func _record_accent(record: RunRecord) -> Color:
+	match record.configuration_kind:
+		&"standard":
+			return GREEN
+		&"campaign":
+			return ORANGE
+		&"trace_replay":
+			return YELLOW
+	return CYAN
+
+
+func _format_optional_distance(distance_pixels: float) -> String:
+	if distance_pixels <= 0.0:
+		return "—"
+	return "%s m" % _grouped_metres(
+		distance_pixels / CourseRegionCatalog.PIXELS_PER_METRE)
+
+
+func _format_duration(seconds: float) -> String:
+	var whole := maxi(0, roundi(seconds))
+	var hours := whole / 3600
+	var minutes := (whole % 3600) / 60
+	var remaining := whole % 60
+	return (
+		"%d:%02d:%02d" % [hours, minutes, remaining]
+		if hours > 0 else "%d:%02d" % [minutes, remaining]
+	)
+
+
+func _yes_no(value: bool) -> String:
+	return "yes" if value else "no"
 
 
 func _render_field_guide() -> void:
@@ -2618,6 +2914,25 @@ func _on_creator() -> void:
 func _on_practice() -> void:
 	if _state != null:
 		_state.show_practice()
+
+
+func _on_run_history() -> void:
+	if _state != null:
+		_state.show_run_history()
+
+
+func _on_run_history_view_toggle() -> void:
+	if _state == null:
+		return
+	if _state.run_history_export_visible:
+		_state.show_run_history_list()
+	else:
+		_state.show_run_history_export()
+
+
+func _on_run_history_copy() -> void:
+	if _state != null:
+		_state.request_run_history_export()
 
 
 func _on_difficulty(mode_id: StringName) -> void:

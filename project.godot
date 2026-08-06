@@ -9,7 +9,8 @@ config_version=5
 
 config/name="Spider Swing"
 config/description="Android-first 2D physics swing game. \"Spider Swing\" is an internal codename, not an approved release name — see docs/product/name-status.md."
-config/version="0.43.0-tutorial-clarity"
+config/version="0.44.0-run-evidence"
+config/android_version_code=65
 run/main_scene="res://game/bootstrap/main.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 

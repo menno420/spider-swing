@@ -15,7 +15,7 @@ live in [`player-preference research`](product/player-preference-research-2026-0
 External benchmarks and the verified zone audit live in
 [`upgrade-and-difficulty research`](product/upgrade-and-difficulty-research-2026-08-02.md).
 
-Build `0.43.0-tutorial-clarity` is current. Continuous drive is
+Build `0.44.0-run-evidence` is current. Continuous drive is
 zero; release, swing control, Reel, and pull timing earn speed; the former left
 kill line is a visible pursuing bird. `target_speed_at` remains a named
 reference. The bot still cannot tune the bird — model v4 pumps, but it sustains
@@ -39,8 +39,8 @@ without a reported regression.
   catch-up steps. No gameplay autoload singleton exists.
 - The app opens on Home. `FrontEndState` owns Home plus focused Spider, Play
   Modes, and Guide hubs; Garage, Shop, Tutorial, Course Lab, Region Practice,
-  Campaign, Field Guide, Settings, the compact debug-run launcher, and Advanced
-  Test Lab remain state-owned destinations. The bootstrap root alone wires and mounts
+  Campaign, Run History, Field Guide, Settings, the compact debug-run launcher,
+  and Advanced Test Lab remain state-owned destinations. The bootstrap root alone wires and mounts
   presentation, input, persistence, progression, and the application session.
 - The Guide tutorial has eight stable, single-goal lessons. Each page pairs
   three large numbered teaching points with the same numbered cues inside its
@@ -78,7 +78,14 @@ without a reported regression.
 - A separately versioned `DebugTestProfile` auto-saves the Test Lab working set
   and A/B/C comparison slots. Its resolved display values and sparse explicit
   overrides never enter `PlayerSettings` or `PlayerProgress`.
-- Build `0.43.0-tutorial-clarity` (Android version code 63, package
+- A separately versioned schema-1 `RunRecordLedger` retains the newest 100
+  settlement-backed records plus lifetime runs, active duration, travelled
+  distance, and comparable difficulty bests. Fixed ticks/events supply metrics;
+  every record keeps its build, seed, loadout, configuration, actions, outcome,
+  region, and eligibility. Play Modes → Run History exposes summaries and JSON.
+  It is local evidence, not analytics or a leaderboard entry; see
+  [`run evidence`](technical/run-evidence.md).
+- Build `0.44.0-run-evidence` (Android version code 65, package
   `com.menno420.spiderswing.dev`) retains the stable conventional public debug
   identity introduced by `0.19.0-depth-testing` in
   `.github/android/debug.keystore`. The workflow pins its file and certificate
@@ -378,8 +385,11 @@ without a reported regression.
   implementation. Generated SFX and the original haunted score now exist;
   zone ambience remains absent and retains per-file CC0 verification. Difficulty
   cannot alter physics or the music mix law.
-- No production signing or Google Play publishing. The stable debug key is not a
-  release credential and must never become one.
+- No production signing material is committed and repository workflows do not
+  publish automatically. The stable debug key is not a release credential and
+  must never become one. The owner has separately placed signed version code 64
+  on the inactive Google Play internal-testing track; source/debug code 65 is a
+  new build identity and is not a Play publication.
 
 ## What measurement has settled
 
@@ -509,10 +519,10 @@ this section carries only what is still owed.
   because a real share of testers will not enable installs from unknown sources.
   The plan, the channel structure and the reward rule are in
   [`run records and the tester programme`](ideas/run-records-and-tester-programme-2026-08-03.md);
-  its first engineering step is per-run stat retention, which is also what makes
-  two already-designed leaderboard categories enforceable at all. **Nothing there
-  is built yet**, and the data-posture fork (local-only versus designed for
-  upload) is still open.
+  its first engineering step — bounded, fully context-labelled per-run evidence
+  — is now built local-only with explicit manual JSON export. The wider tester
+  programme, consent/prompt design, automatic upload, account identity, and
+  leaderboard schema remain unimplemented owner/product forks.
 
 **Two device corrections are worth keeping here, because each overturned a
 passing test.** Bramble's first clearance claim was accepted by a static
@@ -527,6 +537,17 @@ accidental dives. Collision is untouched and diving to the floor is unchanged,
 so the Dive stays always available, which is its whole purpose.
 
 ## Recently shipped (newest first)
+
+- **2026-08-06 — Bounded local run evidence (0.44.0).** Settlement-backed runs
+  now finalize one schema-versioned `RunRecord` from active fixed ticks and
+  accepted events. Each keeps its authoritative settlement link and a separate
+  per-attempt ID, so repeat Campaign clears remain evidence without repeating
+  stars. `SaveRepository` retains the newest 100 records
+  plus fixed-size lifetime participation/best aggregates. Campaign, debug,
+  practice, Course Lab, and replay records are visibly classified; tutorial
+  practice remains settlement-free. Run History lives under Play Modes and
+  exposes readable latest/recent evidence plus selectable/copyable JSON. There
+  is no network, account, analytics SDK, upload queue, or leaderboard logic.
 
 - **2026-08-05 — The game is on Google Play's internal testing track.** A signed
   Android App Bundle, version code 64, built by `android-release.yml` and

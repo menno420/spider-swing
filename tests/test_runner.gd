@@ -7,15 +7,17 @@ const AudioPresentationSuite = preload(
 	"res://tests/unit/audio_presentation_tests.gd")
 const TutorialPracticeSuite = preload(
 	"res://tests/unit/tutorial_practice_tests.gd")
+const RunEvidenceSuite = preload(
+	"res://tests/unit/run_evidence_tests.gd")
 
 const MAIN_SCENE_PATH := "res://game/bootstrap/main.tscn"
 const EXPORT_PRESETS_PATH := "res://export_presets.cfg"
 const ANDROID_WORKFLOW_PATH := "res://.github/workflows/android-debug.yml"
 const ANDROID_RELEASE_WORKFLOW_PATH := \
 	"res://.github/workflows/android-release.yml"
-const BUILD_VERSION := "0.43.0-tutorial-clarity"
-const ANDROID_VERSION_CODE := 63
-const ANDROID_APP_NAME := "Spider Swing Tutorial Clarity (dev)"
+const BUILD_VERSION := "0.44.0-run-evidence"
+const ANDROID_VERSION_CODE := 65
+const ANDROID_APP_NAME := "Spider Swing Run Evidence (dev)"
 const DEBUG_KEYSTORE_PATH := "res://.github/android/debug.keystore"
 const DEBUG_KEYSTORE_SHA256 := \
 	"e9104672477e0238b6cc2f7d6b994c459e37f130cae06a37aff05001f101bbda"
@@ -28,7 +30,7 @@ const RELEASE_PLACEHOLDER_APP_NAME := "PLACEHOLDER SET BY WORKFLOW"
 const RELEASE_EXPORT_FORMAT_AAB := 1
 const RELEASE_MIN_SDK := "24"
 const RELEASE_TARGET_SDK := "36"
-const EXPECTED_CHECK_COUNT := 256
+const EXPECTED_CHECK_COUNT := 266
 const REQUIRED_INPUT_ACTIONS := [
 	"web_action", "reel_in", "burst_action", "pause", "restart_run",
 	"toggle_debug"]
@@ -58,6 +60,7 @@ func _initialize() -> void:
 	_check_simulation_lab()
 	_check_course_audit()
 	_check_course_pressure()
+	_check_run_evidence()
 	_check_economy()
 	_check_audio_presentation()
 	_check_mobile_hud_layout()
@@ -160,6 +163,8 @@ func _check_project_configuration() -> void:
 		"display/window/handheld/orientation", -1))
 	var build_version := str(ProjectSettings.get_setting(
 		"application/config/version", ""))
+	var android_version_code := int(ProjectSettings.get_setting(
+		"application/config/android_version_code", 0))
 	var mouse_from_touch := bool(ProjectSettings.get_setting(
 		"input_devices/pointing/emulate_mouse_from_touch", false))
 	var touch_from_mouse := bool(ProjectSettings.get_setting(
@@ -177,11 +182,15 @@ func _check_project_configuration() -> void:
 		_ok("touch emulation direction is explicit and adapter-arbitrated")
 	else:
 		_fail("touch emulation can duplicate or disable the mobile GUI path")
-	if build_version == BUILD_VERSION:
-		_ok("visible build identity is %s" % BUILD_VERSION)
+	if build_version == BUILD_VERSION and \
+			android_version_code == ANDROID_VERSION_CODE:
+		_ok("visible build identity is %s / Android %d" % [
+			BUILD_VERSION, ANDROID_VERSION_CODE])
 	else:
-		_fail("project build identity is %s but expected %s" % [
-			build_version, BUILD_VERSION])
+		_fail("project build identity is %s / Android %d but expected %s / %d" % [
+			build_version, android_version_code,
+			BUILD_VERSION, ANDROID_VERSION_CODE,
+		])
 
 
 func _check_android_preset() -> void:
@@ -461,6 +470,18 @@ func _check_course_pressure() -> void:
 		return
 	for failure: String in failures:
 		_fail("Course pressure curve — %s" % failure)
+
+
+func _check_run_evidence() -> void:
+	var result := RunEvidenceSuite.run()
+	var failures: PackedStringArray = result["failures"]
+	if failures.is_empty():
+		_passed += int(result["passed"])
+		print("  ✓ Local run evidence: %d metric, lifecycle, and UI contracts" %
+			int(result["passed"]))
+		return
+	for failure: String in failures:
+		_fail("Local run evidence — %s" % failure)
 
 
 func _check_difficulty() -> void:

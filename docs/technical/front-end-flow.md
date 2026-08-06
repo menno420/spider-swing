@@ -20,7 +20,7 @@ fills the landscape with two columns:
   front end**. A contract asserts that by comparing style-box luminance;
 - a **route rail** (`HomeRouteGrid`) — the four intentions, each carrying a live
   badge drawn from `PlayerProgress`: **Spider** (choose · style · improve),
-  **Play Modes** (campaign · practice · creator), **Guide** (learn controls ·
+  **Play Modes** (campaign · practice · creator · run history), **Guide** (learn controls ·
   meet spiders), and **Settings** (sound · motion · access);
 - **Debug Test Run** *(when Debug Tools is enabled)* — subordinate beneath the
   rail, a direct utility for quick noncompetitive launches; Advanced Test Lab is
@@ -46,8 +46,9 @@ two tensioned corner webs, six silk knots, and two cocoon forms behind controls;
 it never processes navigation or gameplay input. Buttons share an asymmetric
 cocoon silhouette. Garage and Shop
 derive their restrained border/title accent from the selected spider; Home,
-Settings, Tutorial, Campaign, Course Lab, Region Practice, Field Guide, and Test
-Run reuse the same material layer without changing their layout ownership.
+Settings, Tutorial, Campaign, Course Lab, Region Practice, Run History, Field
+Guide, and Test Run reuse the same material layer without changing their layout
+ownership.
 
 ### Field Guide
 
@@ -157,19 +158,40 @@ future work.
 
 ### Region Practice
 
-Standard runs unlock Bramble Canopy at 5000 m and Silk Hollow at 10000 m as
+Standard runs unlock Ancient Forest at 5000 m and Silk Hollow at 10000 m as
 soon as the player reaches those distances. Region Practice starts on the
 ordinary guided web inside an authored open checkpoint chunk at the correct
 late-game pace. It uses a newly seeded curated course order, but the same
 physics, collision, upgrades, route geometry, and input path as a standard run.
 
 Practice is deliberately non-competitive. Its persistent screen and in-run HUD
-state that it grants no flies, cannot update best distance, cannot unlock later
-checkpoints, and is ineligible for any eventual leaderboard. `RunSettlement`
-carries those eligibility flags as authoritative data rather than relying on
-presentation copy. Reaching a checkpoint in a standard run persists it through
+state that it grants no flies, cannot update competitive best distance, cannot
+unlock later checkpoints, and is ineligible for any eventual leaderboard.
+`RunSettlement` carries those eligibility flags as authoritative data rather
+than relying on presentation copy. A completed practice run still produces an
+explicitly classified local `RunRecord`, so its evidence cannot be mistaken for
+ordinary Play. Reaching a checkpoint in a standard run persists it through
 `ProgressionService`; schema-4 saves infer already-reached checkpoints once from
 their standard best distance.
+
+### Run History
+
+Run History belongs under Play Modes because it explains completed attempts
+across Endless, Campaign, Practice, Course Lab, and classified replay/debug
+runs; it is not another Home root. `FrontEndState` owns the destination, latest
+and newest-first record views, lifetime summary, JSON/list mode, and export
+payload. Presentation renders that state and cannot append, mutate, or persist a
+record.
+
+The list has one native `ScrollContainer`. It shows the newest 100 full records
+with context and eligibility visible, plus lifetime runs, active time, travelled
+distance, and comparable per-difficulty bests. **VIEW JSON** replaces the list
+with a selectable `TextEdit`; **COPY JSON** emits an application request that
+the composition root sends to `ClipboardAdapter`. Gameplay is not mounted on
+this screen, and every control consumes GUI input. The settled-frame
+`tools/run_history_layout_probe.gd` verifies both modes with 100 records at the
+strict 1040×480 size. See [`run-evidence.md`](run-evidence.md) for metric,
+schema, retention, and local-only contracts.
 
 ### Settings
 
@@ -210,8 +232,9 @@ for the selected spider, difficulty, preset, and owned/debug upgrade level, but
 persists a separate sparse set of manually overridden axes. Only that sparse set
 is applied after normal config resolution, so merely viewing or saving L40 can
 never flatten its progression bonuses. Starting or replaying one of these runs
-uses the practice/no-awards ownership path and cannot update flies, records,
-checkpoints, leaderboards, or `PlayerProgress`.
+uses the practice/no-awards ownership path and cannot update flies, competitive
+bests, checkpoints, leaderboards, or `PlayerProgress`; its local evidence stays
+explicitly classified.
 
 DEBUG availability is a player setting; world overlays are not. Every new run
 starts with collision outlines and web-target guides off. Their independent
@@ -223,8 +246,8 @@ versions lifetime/spendable flies, distance milestones, selected spider,
 profile upgrades, palettes, web variants, the saved creator pattern, and reached
 region checkpoints.
 `SaveRepository` is the exclusive persistent writer and performs a recoverable
-temp → primary rotation for settings, progression, and the separate Test Lab
-profile.
+temp → primary/backup rotation for settings, progression, the separate Test Lab
+profile, diagnostics, and the separately versioned bounded run-evidence ledger.
 Settings survive app restarts; invalid or corrupt values fall back safely.
 `SpiderUiTheme` supplies one Ancient-Forest-aligned bark, moss, sap, and silk
 skin to every screen, including panels, buttons, disabled/focus states, and
@@ -242,8 +265,9 @@ recording and on taller aspect ratios.
 
 - `FrontEndState` owns navigation, tutorial page and session-local completion
   state, settings validation,
-  Garage/Shop/Course Lab/Region Practice intent, Field Guide selection, compact
-  versus advanced debug launch intent, the Test Lab working set, and run requests.
+  Garage/Shop/Course Lab/Region Practice intent, Run History/list/export state,
+  Field Guide selection, compact versus advanced debug launch intent, the Test
+  Lab working set, and run requests.
 - `FrontEndView` renders state and forwards button intent.
 - `TutorialPreview` renders deterministic production-asset snapshots only; it
   owns no simulation, settlement, progression, or persistence state.
@@ -251,8 +275,8 @@ recording and on taller aspect ratios.
   `SwingLabSession` observes authoritative events and publishes progress.
 - `ProgressionService` applies each run settlement once and owns fly-funded
   upgrades, selections, creator edits, and milestone cosmetic unlocks.
-- `SaveRepository` exclusively reads and writes settings, progression, and the
-  debug-only Test Lab profile.
+- `SaveRepository` exclusively reads and writes settings, progression, the
+  debug-only Test Lab profile, diagnostics, and run evidence.
 - `main.gd` is the composition root: it mounts one surface at a time and wires
   the transition.
 - `SwingLabSession` remains the sole owner of authoritative run state.
@@ -288,6 +312,9 @@ No global manager or autoload is introduced.
 - invalid settings are rejected and valid changes emit once;
 - settings, progression, and Test Lab profiles encode/decode and actual atomic
   filesystem persistence round-trip;
+- Run History is state-routed through Play Modes, has one native list scroll
+  owner, makes context and eligibility visible, exports selectable local-only
+  JSON without direct persistence, and settles both views at 1040×480;
 - duplicate settlement rejection, the five-core/two-identity Shop structure,
   40-level caps and breakthroughs, proportional one-time migration,
   fly-funded upgrades, creator edits, custom body/Silk rails and preview,

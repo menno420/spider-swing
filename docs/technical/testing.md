@@ -89,7 +89,7 @@ Run directly:
 godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-210 checks, grouped so one subsystem failure never hides the rest:
+The exact declared checks, grouped so one subsystem failure never hides the rest:
 
 - engine, main-scene, input-action, 60 Hz, renderer/viewport, Android preset,
   inward-dependency, and no-autoload bootstrap contracts;
@@ -144,6 +144,11 @@ godot --headless --path . --script res://tests/test_runner.gd
   freezing any bot conclusion; five prove a committed trace reproduces through
   the real session, incompatible or unrelated JSON is refused, valid traces are
   catalogued, and the plain-JSON traces are included in Android exports;
+- local run-evidence contracts prove shared fixed-tick metric definitions,
+  accepted-action counts, one paired finalization, restart isolation,
+  Campaign/tutorial/replay classification, schema recovery, bounded eviction,
+  lifetime aggregates, duplicate rejection, optional-write progression safety,
+  state-owned history/export routing, and exclusive persistence ownership;
 - two economy contracts keep flies and Campaign stars in their declared lanes;
 - nine generated-audio contracts prove original/reproducible provenance, exact
   catalog parity, Android-sized PCM/headroom, core-event coverage, variant and
@@ -218,6 +223,17 @@ layout correct — autowrap on, horizontal expand set, a minimum height rather
 than a maximum, a real scroller for overflow. `front_end_flow_tests.gd` does
 exactly that for the Field Guide sections.
 
+Run History has a settled-frame probe for its maximum retained list and JSON
+view at the strict supported landscape size:
+
+```bash
+godot --headless --path . --script res://tools/run_history_layout_probe.gd
+```
+
+It displays the state-owned screen in a live `SubViewport`, waits four layout
+frames, and only then checks enclosure, touch-control floors, overflow, and the
+single native scroll owner at 1040×480.
+
 ## `tools/check_architecture.py`
 
 Enforces the inward dependency direction from
@@ -253,7 +269,7 @@ remain the only gates. See [simulation-lab.md](simulation-lab.md).
 | --- | --- | --- | --- |
 | `game-quality` | PRs, pushes to `main`, dispatch | **Yes** | `python3 tools/verify.py` passes on a clean runner with Godot 4.7.1. Uses no secrets. |
 | `substrate-gate` | PRs, pushes to `main` | **Yes** | Substrate doc/session hygiene, and runs `tools/verify.py` as its test step. Kit-owned. |
-| `android-debug` | pushes to `main`, dispatch | No | The project exports an installable debug APK. Uses no secrets. |
+| `android-debug` | gameplay/runtime PR paths, pushes to `main`, dispatch | No | The project exports an installable debug APK. Uses no secrets. |
 | `auto-merge-enabler` | PR events | No | Arms native auto-merge on agent PRs. Kit-owned. |
 | `branch-sweep` | schedule | No | Tidies merged agent branches. Kit-owned. |
 
