@@ -11,7 +11,11 @@ const SWING_LAB_SESSION := preload(
 	"res://game/application/swing_lab_session.gd")
 const PROGRESSION_SERVICE_SCRIPT := preload(
 	"res://game/application/progression_service.gd")
+const RUN_ATTEMPT_COUNTER_SCRIPT := preload(
+	"res://game/application/run_attempt_counter.gd")
 const INPUT_ROUTER := preload("res://game/adapters/input_router.gd")
+const CLIPBOARD_ADAPTER_SCRIPT := preload(
+	"res://game/adapters/clipboard_adapter.gd")
 const AUDIO_DIRECTOR := preload(
 	"res://game/presentation/scripts/audio_director.gd")
 const SMOKE_TEST_FLAG := "--smoke-test"
@@ -23,6 +27,9 @@ var _front_end_view: FrontEndView
 var _save_repository: SaveRepository
 var _progression_service: ProgressionService
 var _progress: PlayerProgress
+var _run_record_ledger: RunRecordLedger
+var _run_attempt_counter: RunAttemptCounter
+var _clipboard_adapter: ClipboardAdapter
 var _session: SwingLabSession
 var _input_router: InputRouter
 var _view: SwingLabView
@@ -34,7 +41,10 @@ var _active_tutorial_lesson_id: StringName = &""
 func _ready() -> void:
 	_save_repository = SAVE_REPOSITORY_SCRIPT.new() as SaveRepository
 	_progression_service = PROGRESSION_SERVICE_SCRIPT.new() as ProgressionService
+	_run_attempt_counter = RUN_ATTEMPT_COUNTER_SCRIPT.new() as RunAttemptCounter
+	_clipboard_adapter = CLIPBOARD_ADAPTER_SCRIPT.new() as ClipboardAdapter
 	_progress = _save_repository.load_progress()
+	_run_record_ledger = _save_repository.load_run_record_ledger()
 	var settings := _save_repository.load_settings()
 	var debug_test_profile := _save_repository.load_debug_test_profile(
 		settings.swing_preset)
@@ -61,11 +71,14 @@ func _ready() -> void:
 	_front_end_state.upgrade_purchase_requested.connect(_purchase_upgrade)
 	_front_end_state.creator_piece_requested.connect(_cycle_creator_piece)
 	_front_end_state.creator_clear_requested.connect(_clear_creator_pattern)
+	_front_end_state.run_history_export_requested.connect(
+		_copy_run_history_export)
 	_front_end_state.configure(
 		settings,
 		_progress,
 		_progression_service,
 		debug_test_profile,
+		_run_record_ledger,
 	)
 	var failures := _mount_front_end()
 	if is_smoke_test():
@@ -350,10 +363,12 @@ func _mount_swing_lab(
 	_session.event_published.connect(_view.present_event)
 	_session.event_published.connect(_input_router.present_simulation_event)
 	_session.event_published.connect(_audio_director.present_event)
-	_session.settlement_created.connect(_apply_settlement)
+	_session.run_finalized.connect(_apply_run_finalization)
+	_session.diagnostic_export_requested.connect(_save_diagnostic_export)
 	_session.checkpoint_reached.connect(_unlock_region_checkpoint)
 	_session.tutorial_practice_ended.connect(_finish_tutorial_practice)
 	_session.configure_progress(_progress, _progression_service)
+	_session.configure_attempt_counter(_run_attempt_counter)
 	_session.configure_creator_pattern(creator_pattern)
 	_session.configure_bird_debug_overrides(bird_debug_overrides)
 	_session.configure_run(
@@ -500,24 +515,58 @@ func _save_debug_test_profile(profile: DebugTestProfile) -> void:
 			"[spider-swing] Test Lab profile write failed; current session continues")
 
 
-func _apply_settlement(settlement: RunSettlement) -> void:
+func _apply_run_finalization(
+	settlement: RunSettlement,
+	record: RunRecord,
+) -> void:
 	var result := _progression_service.apply_settlement(_progress, settlement)
-	if not bool(result.get("applied", false)):
+	if bool(result.get("applied", false)):
+		if not _save_repository.save_progress(_progress):
+			printerr(
+				"[spider-swing] progress write failed; current session continues")
+		if _session != null:
+			_session.configure_progress(_progress)
+		_front_end_state.configure_progress(_progress)
+		var unlocked: PackedStringArray = result.get(
+			"unlocked", PackedStringArray())
+		if not unlocked.is_empty() and _session != null:
+			_session.event_published.emit(SimulationEvent.make(
+				SimulationEvent.Kind.FLY_COLLECTED,
+				Vector2.ZERO,
+				"Unlocked spider: %s" % unlocked[0],
+				{"unlocked": unlocked},
+			))
+
+	# Evidence is optional and deliberately follows the authoritative progression
+	# path. A failed evidence write can neither roll back nor re-apply settlement.
+	if record == null or record.settlement_id != settlement.settlement_id:
+		printerr("[spider-swing] run evidence rejected: settlement identity mismatch")
 		return
-	if not _save_repository.save_progress(_progress):
-		printerr("[spider-swing] progress write failed; current session continues")
+	if not _run_record_ledger.append_record(record):
+		return
+	if not _save_repository.save_run_record_ledger(_run_record_ledger):
+		printerr(
+			"[spider-swing] run evidence write failed; progression remains applied")
+	_front_end_state.configure_run_record_ledger(_run_record_ledger)
+
+
+func _save_diagnostic_export(payload: Dictionary) -> void:
+	if not _save_repository.save_diagnostic(payload):
+		printerr("[spider-swing] diagnostic write failed; current run continues")
+		return
 	if _session != null:
-		_session.configure_progress(_progress)
-	_front_end_state.configure_progress(_progress)
-	var unlocked: PackedStringArray = result.get(
-		"unlocked", PackedStringArray())
-	if not unlocked.is_empty() and _session != null:
 		_session.event_published.emit(SimulationEvent.make(
-			SimulationEvent.Kind.FLY_COLLECTED,
+			SimulationEvent.Kind.DIAGNOSTIC_EXPORTED,
 			Vector2.ZERO,
-			"Unlocked spider: %s" % unlocked[0],
-			{"unlocked": unlocked},
+			"Diagnostic saved",
+			{"path": _save_repository.diagnostic_absolute_path()},
 		))
+
+
+func _copy_run_history_export(payload: String) -> void:
+	var call_made := _clipboard_adapter != null and \
+		_clipboard_adapter.copy_text(payload)
+	_front_end_state.report_run_history_export_result(call_made)
 
 
 func _unlock_region_checkpoint(

@@ -1,1 +1,0 @@
-- `claude/run-evidence` · **Build the bounded local run-evidence ledger, history, and export** · game/domain, game/application, game/adapters, game/presentation, bootstrap, tests, docs, Android identity · 2026-08-06

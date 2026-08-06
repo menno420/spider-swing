@@ -21,6 +21,15 @@ outcome: open
 > favour of a Play Console testing track from the start. The remaining forks are
 > listed at the end, two of them owner-only.
 
+> **Promoted slice, 2026-08-06:** the bounded local-evidence portion of §1 and
+> sequence step 1 shipped through PR #172 as `0.44.0-run-evidence`. The canonical
+> implemented contract is [`../technical/run-evidence.md`](../technical/run-evidence.md):
+> one settlement-paired schema, 100 retained records, fixed-size lifetime
+> aggregates, a state-owned in-game history, and explicit manual JSON copy with
+> no transmission. This promotion does **not** approve or ship recruitment,
+> prompts, consent for remote collection, identity, automatic upload, tester
+> rewards, Discord work, or leaderboards; those forks remain here.
+
 ## Why these are one system
 
 The owner's ask for run stats — *"how many times someone used reel or burst, how
@@ -386,9 +395,10 @@ happen disengages faster than one that is told why.
 
 Ordered by what unblocks what, and by what is expensive to undo.
 
-1. **Run records, local only, fully context-labelled.** No network, no consent
-   requirement, no spend. Unblocks the stat-gated boards, the difficulty
-   questions and the upgrade questions simultaneously.
+1. ~~**Run records, local only, fully context-labelled.**~~ **Shipped in
+   `0.44.0-run-evidence` / PR #172.** No network, no remote consent flow, no
+   spend. The rich local schema remains explicitly separate from any future
+   leaderboard entry.
 2. **In-app closed prompts.** Cheap, and only useful once there are stats to
    compare the answers against.
 3. **Distribution — decided, and running in parallel.** The Play track is the
@@ -414,10 +424,10 @@ an agent and recorded.
    testers will not enable installs from unknown sources. Hand-delivered APKs
    are demoted to the version archive. This was the fork gating recruitment;
    recruitment is no longer waiting on a decision.
-2. **Data posture** — local-only with manual export, or design now for automatic
-   upload later? This changes the consent design, not merely the plumbing.
-   **Now the top open fork**, because §4 puts run records first and this decides
-   what they are built into.
+2. ~~**Data posture for the first evidence slice**~~ — **settled local-only with
+   manual JSON copy on 2026-08-06.** Whether any later version adds automatic
+   upload remains an owner-only fork and must reopen consent/privacy design
+   before implementation; this build contains no receiver or upload seam.
 3. **Board scope** — do run records get built to serve the narrow boards
    immediately, or to answer design questions first with boards following?
 

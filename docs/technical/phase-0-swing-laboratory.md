@@ -360,7 +360,7 @@ current mechanics continuation, use
 and its earned-speed specification. No new recording is expected; device-only
 questions require a playtest verdict.
 
-Install `0.43.0-tutorial-clarity` over `0.19.0-depth-testing` or any later
+Install `0.44.0-run-evidence` over `0.19.0-depth-testing` or any later
 stable-key build without uninstalling; both use the stable signer and the update
 should preserve the save.
 Only a device that never installed `0.19.0` or later needs the one final

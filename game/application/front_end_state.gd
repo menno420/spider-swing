@@ -40,6 +40,7 @@ signal web_variant_requested(web_variant: StringName)
 signal upgrade_purchase_requested(upgrade_id: StringName)
 signal creator_piece_requested(slot: int)
 signal creator_clear_requested
+signal run_history_export_requested(payload: String)
 
 enum Screen {
 	HOME,
@@ -56,6 +57,7 @@ enum Screen {
 	FIELD_GUIDE,
 	DEBUG_RUN_SETUP,
 	DEBUG_TEST_LAB,
+	RUN_HISTORY,
 }
 
 ## Stable, application-owned lessons. `mechanics` makes coverage checkable
@@ -226,6 +228,9 @@ var debug_run_upgrade_level: int = \
 var debug_bird_speed: float = SwingConfig.DEFAULT_BIRD_SPEED
 var debug_bird_acceleration: float = SwingConfig.DEFAULT_BIRD_ACCELERATION
 var debug_bird_start_offset: float = SwingConfig.DEFAULT_BIRD_START_OFFSET
+var run_record_ledger: RunRecordLedger = RunRecordLedger.defaults()
+var run_history_export_visible: bool = false
+var run_history_export_status: String = ""
 var _progression_service := ProgressionService.new()
 
 
@@ -234,6 +239,7 @@ func configure(
 	initial_progress: PlayerProgress = null,
 	progression_service: ProgressionService = null,
 	initial_debug_test_profile: DebugTestProfile = null,
+	initial_run_record_ledger: RunRecordLedger = null,
 ) -> void:
 	if progression_service != null:
 		_progression_service = progression_service
@@ -248,6 +254,11 @@ func configure(
 		if initial_debug_test_profile != null
 		else DebugTestProfile.defaults(settings.swing_preset)
 	)
+	run_record_ledger = (
+		initial_run_record_ledger.copy()
+		if initial_run_record_ledger != null
+		else RunRecordLedger.defaults()
+	)
 	_sync_debug_fields_from_profile()
 	_refresh_debug_test_baseline(false)
 	_sync_debug_fields_from_profile()
@@ -257,6 +268,8 @@ func configure(
 	screen = Screen.HOME
 	tutorial_index = 0
 	tutorial_practice_completed.clear()
+	run_history_export_visible = false
+	run_history_export_status = ""
 	changed.emit()
 
 
@@ -272,6 +285,7 @@ func show_spider_hub() -> void:
 
 func show_play_modes_hub() -> void:
 	screen = Screen.PLAY_MODES_HUB
+	run_history_export_visible = false
 	changed.emit()
 
 
@@ -349,6 +363,69 @@ func show_practice() -> void:
 
 func show_campaign() -> void:
 	screen = Screen.CAMPAIGN
+	changed.emit()
+
+
+func show_run_history() -> void:
+	screen = Screen.RUN_HISTORY
+	run_history_export_visible = false
+	run_history_export_status = ""
+	changed.emit()
+
+
+func show_run_history_export() -> void:
+	if screen != Screen.RUN_HISTORY:
+		return
+	run_history_export_visible = true
+	run_history_export_status = (
+		"Copy the JSON, then paste once to verify this device's clipboard."
+	)
+	changed.emit()
+
+
+func show_run_history_list() -> void:
+	if screen != Screen.RUN_HISTORY:
+		return
+	run_history_export_visible = false
+	run_history_export_status = ""
+	changed.emit()
+
+
+func configure_run_record_ledger(updated: RunRecordLedger) -> void:
+	run_record_ledger = (
+		updated.copy() if updated != null else RunRecordLedger.defaults())
+	changed.emit()
+
+
+func latest_run_record() -> RunRecord:
+	return run_record_ledger.latest_record()
+
+
+func recent_run_records() -> Array[RunRecord]:
+	return run_record_ledger.recent_records_newest_first()
+
+
+func run_history_export_json() -> String:
+	return JSON.stringify(run_record_ledger.export_dictionary(), "\t")
+
+
+func request_run_history_export() -> void:
+	if screen != Screen.RUN_HISTORY or not run_history_export_visible:
+		return
+	var payload := run_history_export_json()
+	run_history_export_status = "Copy requested — paste once to verify."
+	changed.emit()
+	run_history_export_requested.emit(payload)
+
+
+func report_run_history_export_result(platform_call_made: bool) -> void:
+	if screen != Screen.RUN_HISTORY:
+		return
+	run_history_export_status = (
+		"Copy requested — paste once to verify."
+		if platform_call_made
+		else "Clipboard unavailable here — select and copy the visible JSON."
+	)
 	changed.emit()
 
 

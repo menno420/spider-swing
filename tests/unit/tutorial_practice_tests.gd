@@ -207,7 +207,10 @@ static func _test_tutorial_death_creates_no_settlement(
 	var session := _configured_tutorial_session(&"reel")
 	var settlements: Array[RunSettlement] = []
 	var checkpoints: Array[StringName] = []
-	session.settlement_created.connect(func(value: RunSettlement) -> void:
+	session.run_finalized.connect(func(
+		value: RunSettlement,
+		_record: RunRecord,
+	) -> void:
 		settlements.append(value))
 	session.checkpoint_reached.connect(func(region_id: StringName, _distance: float) -> void:
 		checkpoints.append(region_id))

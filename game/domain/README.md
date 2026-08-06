@@ -16,7 +16,7 @@ expected; importing `game/simulation/`, `game/application/`, `game/adapters/`, o
 - `CourseGeometry`, the compact ceiling/guide/obstacle value crossing from the application stream into simulation.
 - `CourseRegionCatalog`, the stable 5000 m region/checkpoint identities shared
   by generation, saves, diagnostics, and UI.
-- `DomainEvent` values the simulation emits (GDD § 19.2).
+- `SimulationEvent` values the simulation emits (GDD § 19.2).
 - Stable content identifiers (GDD § 19.3): runtime logic refers to IDs, never to
   scene names or display text.
 - Versioned gameplay configuration contracts — the tunable-parameter set in
@@ -26,10 +26,14 @@ expected; importing `game/simulation/`, `game/application/`, `game/adapters/`, o
 - `RunSettlement` and its identity/eligibility flags, so idempotent standard and
   non-record practice settlement is expressible in one place (GDD § 15.1,
   § 20).
+- `RunRecord` and `RunRecordLedger`, separately schema-versioned local evidence
+  values. The record is paired to settlement identity; the ledger retains 100
+  full records plus fixed-size lifetime aggregates. Neither is a leaderboard
+  entry or a persistence writer.
 - `SpiderCatalog` profile and upgrade definitions. Profiles are modifiers over
   one `SwingConfig`; they do not fork the physics implementation. Every profile
-  instantiates one canonical five-track core plus two identity tracks, with 20
-  levels and deterministic breakthroughs at 5/10/15/20. `resolved_config()`
+  instantiates one canonical five-track core plus two identity tracks, with 40
+  levels and deterministic breakthroughs every fifth level. `resolved_config()`
   always begins from a fresh named preset before applying one profile and its
   upgrades, preventing repeated mount paths from compounding modifiers.
 - Versioned `PlayerProgress`, including spendable/lifetime flies, selections,

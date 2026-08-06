@@ -1661,7 +1661,10 @@ static func _test_debug_upgrade_overlay_never_persists(
 	session._reset_run()
 	var snapshot := session.current_snapshot()
 	var settlements: Array[RunSettlement] = []
-	session.settlement_created.connect(func(value: RunSettlement) -> void:
+	session.run_finalized.connect(func(
+		value: RunSettlement,
+		_record: RunRecord,
+	) -> void:
 		settlements.append(value))
 	session._emit_settlement(&"debug-overlay-test")
 	if snapshot.run_mode != SwingLabSession.RUN_PRACTICE or \

@@ -12,7 +12,7 @@
 
 ## Ownership model
 
-RunStateMachine owns run lifecycle transitions; SimulationWorld owns authoritative fixed-step state; InputRouter emits commands but never mutates simulation; WebController and WebConstraint own attachment and rope state; DifficultyDirector selects chunks while WorldStream owns spawned instances; CollisionPolicy owns the one authoritative outcome for every contact; EffectState owns power-up activation and expiry; ScoreSettlement creates one idempotent run settlement; ProgressionService applies validated settlements and purchases; SaveRepository exclusively owns persistent writes; Presentation consumes events and cannot grant rewards or alter simulation truth.
+RunStateMachine owns run lifecycle transitions; SimulationWorld owns authoritative fixed-step state; InputRouter emits commands but never mutates simulation; WebController and WebConstraint own attachment and rope state; CourseStream owns the deterministic geometry window; CollisionPolicy owns the one authoritative outcome for every contact; EffectState owns power-up activation and expiry; SwingLabSession owns fixed-step run orchestration and the single terminal `RunSettlement` + `RunRecord` finalization seam; RunMetricsAccumulator derives evidence only from authoritative ticks and accepted events; ProgressionService applies validated settlements and purchases; SaveRepository exclusively owns persistent writes, including the bounded run-evidence ledger; FrontEndState owns Run History navigation and export payloads; presentation consumes state/events and cannot grant rewards, mutate records, or alter simulation truth. The full evidence contract is [`technical/run-evidence.md`](technical/run-evidence.md).
 
 ## Ownership table
 

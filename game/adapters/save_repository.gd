@@ -2,26 +2,32 @@ extends RefCounted
 class_name SaveRepository
 ## Exclusive persistent writer for player-owned state.
 ##
-## Settings and progression share one versioned, recoverable write seam.
+## Settings, progression, debug setup, diagnostics, and run evidence share one
+## recoverable write seam.
 ## Presentation and application never write files directly.
 
 const SETTINGS_PATH := "user://player_settings.json"
 const PROGRESS_PATH := "user://player_progress.json"
 const DEBUG_TEST_PROFILE_PATH := "user://debug_test_profile.json"
+const RUN_RECORD_LEDGER_PATH := "user://run_record_ledger.json"
+const DIAGNOSTIC_PATH := "user://swing_lab_diagnostic.json"
 
 var _settings_path: String
 var _progress_path: String
 var _debug_test_profile_path: String
+var _run_record_ledger_path: String
 
 
 func _init(
 	settings_path: String = SETTINGS_PATH,
 	progress_path: String = PROGRESS_PATH,
 	debug_test_profile_path: String = DEBUG_TEST_PROFILE_PATH,
+	run_record_ledger_path: String = RUN_RECORD_LEDGER_PATH,
 ) -> void:
 	_settings_path = settings_path
 	_progress_path = progress_path
 	_debug_test_profile_path = debug_test_profile_path
+	_run_record_ledger_path = run_record_ledger_path
 
 
 func load_settings() -> PlayerSettings:
@@ -71,6 +77,35 @@ func save_debug_test_profile(profile: DebugTestProfile) -> bool:
 	)
 
 
+func load_run_record_ledger() -> RunRecordLedger:
+	for path: String in [
+		_run_record_ledger_path,
+		"%s.bak" % _run_record_ledger_path,
+	]:
+		var encoded := _read_dictionary(path)
+		if encoded.is_empty():
+			continue
+		var ledger := RunRecordLedger.from_dictionary(encoded)
+		if ledger != null:
+			return ledger
+	return RunRecordLedger.defaults()
+
+
+func save_run_record_ledger(ledger: RunRecordLedger) -> bool:
+	return _write_dictionary(
+		_run_record_ledger_path,
+		ledger.to_dictionary(),
+	)
+
+
+func save_diagnostic(payload: Dictionary) -> bool:
+	return _write_dictionary(DIAGNOSTIC_PATH, payload)
+
+
+func diagnostic_absolute_path() -> String:
+	return ProjectSettings.globalize_path(DIAGNOSTIC_PATH)
+
+
 func _write_dictionary(path: String, data: Dictionary) -> bool:
 	var temporary_path := "%s.tmp" % path
 	var backup_path := "%s.bak" % path
@@ -118,6 +153,15 @@ static func decode_debug_test_profile(
 			preset_name,
 		)
 	return DebugTestProfile.defaults(preset_name)
+
+
+static func decode_run_record_ledger(text: String) -> RunRecordLedger:
+	var parsed: Variant = JSON.parse_string(text)
+	if parsed is Dictionary:
+		var ledger := RunRecordLedger.from_dictionary(parsed as Dictionary)
+		if ledger != null:
+			return ledger
+	return RunRecordLedger.defaults()
 
 
 func _read_dictionary(path: String) -> Dictionary:

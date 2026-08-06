@@ -15,8 +15,6 @@ telemetry, platform integration.
 - **Save Repository** — the *exclusive* owner of persistent writes. Atomic,
   versioned, with a recovery path for interrupted writes and forward migrations
   (GDD § 20).
-- **Telemetry Adapter** — privacy-conscious balance and technical events, optional
-  and resilient offline (GDD § 22.3).
 - **Platform integration** — haptics, lifecycle/suspension handling.
 
 ## Rules
@@ -35,9 +33,14 @@ telemetry, platform integration.
   from `LabLayout` and converts accepted Reel/Burst events into distinct handheld
   haptics when the independent persisted setting is enabled. Its OVERLAYS controls emit presentation-diagnostic intent; they do not
   mutate simulation or course geometry.
-- `save_repository.gd` is the exclusive persistent writer. It currently stores
-  versioned PlayerSettings and PlayerProgress through a recoverable temp/backup
-  rotation; every future persistent system must extend this seam rather than
-  duplicate it.
+- `save_repository.gd` is the exclusive persistent writer. It stores versioned
+  PlayerSettings, PlayerProgress, DebugTestProfile, diagnostics, and the
+  independently versioned bounded RunRecordLedger through the shared
+  temp/primary/backup seam; every future persistent system must extend this seam
+  rather than duplicate it.
+- `clipboard_adapter.gd` owns the explicit platform clipboard call for the
+  owner-selected local JSON export. It makes no network call and does not claim
+  paste success from an API that supplies no acknowledgement.
 
-See ADR 0002 and `docs/technical/front-end-flow.md`.
+See ADR 0002, [`front-end-flow.md`](../../docs/technical/front-end-flow.md), and
+[`run-evidence.md`](../../docs/technical/run-evidence.md).

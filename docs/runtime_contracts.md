@@ -22,7 +22,7 @@ queue bounds, cache coherence.)
 
 ## Mutation seam
 
-Touch and UI input becomes buffered InputCommand values; fixed-step simulation consumes commands and produces authoritative state plus DomainEvent values; presentation, audio, haptics, and telemetry consume those events without mutating simulation; after death RunStateMachine requests one RunSettlement; ProgressionService validates and applies that settlement; SaveRepository performs one atomic versioned write. Collision callbacks, UI nodes, presentation code, and telemetry may never write currency, records, unlocks, or save files directly.
+Touch and UI input becomes buffered `InputCommand` values; fixed-step simulation consumes commands and produces authoritative state plus `SimulationEvent` values; presentation, audio, and haptics consume those facts without mutating simulation. `SwingLabSession` samples run metrics from the same active fixed ticks and accepted events, then emits one identity-paired `RunSettlement` + `RunRecord` from the existing terminal seam. The composition root applies progression first and asks `SaveRepository` to persist evidence second. Evidence failure is logged and may lose only optional run history; it cannot cancel, repeat, or corrupt settlement rewards, records, stars, unlocks, or settings. Collision callbacks, UI nodes, simulation, application state, and presentation may never write currency, evidence, unlocks, or save files directly. See [`technical/run-evidence.md`](technical/run-evidence.md).
 
 ## Failure modes
 

@@ -8,7 +8,8 @@ class_name SwingLabSession
 
 signal snapshot_published(snapshot: SimulationSnapshot)
 signal event_published(event: SimulationEvent)
-signal settlement_created(settlement: RunSettlement)
+signal run_finalized(settlement: RunSettlement, record: RunRecord)
+signal diagnostic_export_requested(payload: Dictionary)
 signal checkpoint_reached(region_id: StringName, distance_pixels: float)
 signal campaign_level_completed(level_id: StringName)
 signal tutorial_practice_ended(lesson_id: StringName, completed: bool)
@@ -36,6 +37,8 @@ var _run := RunStateMachine.new()
 var _effects := EffectState.new()
 var _progress := PlayerProgress.defaults()
 var _progression_service := ProgressionService.new()
+var _metrics := RunMetricsAccumulator.new()
+var _attempt_counter := RunAttemptCounter.new()
 var _creator_pattern: Array[StringName] = []
 var _run_mode: StringName = RUN_STANDARD
 var _start_distance_pixels: float = 0.0
@@ -51,6 +54,8 @@ var _difficulty_mode: StringName = DifficultyCatalog.MODE_STANDARD
 var _verbs_performed: Array[StringName] = []
 var _debug_start_active: bool = false
 var _debug_bird_overrides: Dictionary = {}
+var _debug_tuning_overrides: Dictionary = {}
+var _live_tuning_changed: bool = false
 var _course_seed: int = 1337
 var _course_seed_override: int = -1
 var _recording_seed: int = 1337
@@ -73,6 +78,8 @@ var _replaying: bool = false
 var _replay_commands: Array[Dictionary] = []
 var _replay_cursor: int = 0
 var _run_sequence: int = 0
+var _attempt_ordinal: int = 0
+var _attempt_input_source: StringName = &"human"
 var _settlement_emitted: bool = false
 var _session_id: String = "%d-%d" % [
 	Time.get_unix_time_from_system(),
@@ -95,6 +102,11 @@ func configure_progress(
 	_config = _resolved_config(_config.preset_name)
 	if is_inside_tree():
 		_world.config = _config
+
+
+func configure_attempt_counter(counter: RunAttemptCounter) -> void:
+	if counter != null:
+		_attempt_counter = counter
 
 
 func configure_creator_pattern(pattern: Array[StringName]) -> void:
@@ -137,6 +149,7 @@ func apply_debug_tuning_profile(values: Dictionary) -> void:
 		))
 		var safe_value := TuningCatalog.clamp_value(parameter, requested)
 		_config.set_tuning_value(parameter, safe_value)
+		_debug_tuning_overrides[str(parameter)] = safe_value
 		if parameter in BIRD_DEBUG_PARAMETERS:
 			_debug_bird_overrides[parameter] = safe_value
 	_world.config = _config
@@ -369,6 +382,8 @@ func set_tuning_parameter(parameter: StringName, value: float) -> void:
 
 func _apply_tuning_value(parameter: StringName, value: float) -> void:
 	var safe_value := TuningCatalog.clamp_value(parameter, value)
+	if _metrics.sampled_ticks() > 0:
+		_live_tuning_changed = true
 	if parameter == TuningCatalog.DEBUG_START_DISTANCE:
 		_start_distance_pixels = safe_value
 		_debug_start_active = true
@@ -387,6 +402,7 @@ func _apply_tuning_value(parameter: StringName, value: float) -> void:
 		return
 	if parameter in BIRD_DEBUG_PARAMETERS:
 		_debug_bird_overrides[parameter] = safe_value
+	_debug_tuning_overrides[str(parameter)] = safe_value
 	_config.set_tuning_value(parameter, safe_value)
 	_after_tuning_change(parameter)
 	_publish_snapshot()
@@ -614,17 +630,7 @@ func export_diagnostic() -> void:
 		],
 		"commands": _recorded_commands,
 	}
-	var path := "user://swing_lab_diagnostic.json"
-	var file := FileAccess.open(path, FileAccess.WRITE)
-	if file != null:
-		file.store_string(JSON.stringify(payload, "\t"))
-		file.close()
-		event_published.emit(SimulationEvent.make(
-			SimulationEvent.Kind.DIAGNOSTIC_EXPORTED,
-			_world.position,
-			"Diagnostic saved",
-			{"path": ProjectSettings.globalize_path(path)},
-		))
+	diagnostic_export_requested.emit(payload)
 
 
 func current_snapshot() -> SimulationSnapshot:
@@ -657,9 +663,16 @@ func _step_once() -> void:
 					_world.position.x,
 					_config.middle_hazard_start_distance,
 				))
+		_ensure_attempt_ordinal()
+		_metrics.observe_tick(
+			_world.velocity.x,
+			_config.target_speed_at(_world.distance_pixels),
+			_world.web.reel_active,
+		)
 		var events := _world.step(FIXED_DELTA)
 		_update_region_progress()
 		for event: SimulationEvent in events:
+			_metrics.observe_event(event)
 			if event.kind == SimulationEvent.Kind.BOOST_COLLECTED:
 				_effects.activate(
 					EffectState.BURST_FRENZY,
@@ -670,7 +683,9 @@ func _step_once() -> void:
 			if event.kind == SimulationEvent.Kind.DEATH_REQUESTED:
 				if _rescue_available and _config.rescue_life_enabled:
 					_rescue_available = false
-					event_published.emit(_world.rescue_after_death())
+					var rescue_event := _world.rescue_after_death()
+					_metrics.observe_event(rescue_event)
+					event_published.emit(rescue_event)
 					continue
 				var cause := StringName(event.data.get("cause", &"unknown"))
 				if not _run.request_death(cause, _config.death_confirmation_seconds):
@@ -722,6 +737,11 @@ func _reset_run(
 ) -> void:
 	_run.reset()
 	_run_sequence += 1
+	_attempt_input_source = &"trace_replay" if _replaying else &"human"
+	_attempt_ordinal = 0
+	_metrics.reset()
+	_live_tuning_changed = false
+	_verbs_performed.clear()
 	if rotate_course_seed:
 		_course_seed = _next_course_seed()
 	_settlement_emitted = false
@@ -982,13 +1002,14 @@ func _check_campaign_completion() -> void:
 		return
 	var level_id := _campaign_level_id
 	_settlement_emitted = true
-	settlement_created.emit(RunSettlement.campaign(
+	var settlement := RunSettlement.campaign(
 		CampaignCatalog.settlement_id(level_id),
 		_world.distance_pixels,
 		&"campaign_complete",
 		level_id,
 		_course_seed,
-	))
+	)
+	_finalize_run(settlement, &"campaign_complete")
 	campaign_level_completed.emit(level_id)
 
 
@@ -1014,7 +1035,109 @@ func _emit_settlement(cause: StringName) -> void:
 	# `create` sets all three eligibility flags together; Harsh needs records
 	# without a leaderboard slot, so the competitive one is set on its own.
 	settlement.leaderboards_eligible = _leaderboards_eligible()
-	settlement_created.emit(settlement)
+	_finalize_run(settlement, &"death")
+
+
+func _finalize_run(
+	settlement: RunSettlement,
+	terminal_outcome: StringName,
+) -> void:
+	_ensure_attempt_ordinal()
+	var context := _run_record_context()
+	context["record_id"] = "%s-evidence-%s-%d" % [
+		settlement.settlement_id,
+		_session_id,
+		_run_sequence,
+	]
+	var record := RunRecord.create(
+		settlement,
+		_metrics.result(),
+		context,
+		terminal_outcome,
+	)
+	run_finalized.emit(settlement, record)
+
+
+func _ensure_attempt_ordinal() -> void:
+	if _attempt_ordinal <= 0:
+		_attempt_ordinal = _attempt_counter.next_attempt()
+
+
+func _run_record_context() -> Dictionary:
+	var resolved := _progression_service.resolved_progress(_progress)
+	var upgrade_levels := {}
+	for item: Dictionary in SpiderCatalog.upgrades_for(
+		resolved.selected_spider_id,
+	):
+		var upgrade_id := StringName(item["id"])
+		upgrade_levels[str(upgrade_id)] = resolved.upgrade_level(upgrade_id)
+	return {
+		"build_version": str(ProjectSettings.get_setting(
+			"application/config/version", "unknown")),
+		"android_version_code": int(ProjectSettings.get_setting(
+			"application/config/android_version_code", 0)),
+		"runtime_platform": OS.get_name(),
+		"swing_config_schema_version": SwingConfig.SCHEMA_VERSION,
+		"trace_format": TraceCatalog.INPUT_TRACE_FORMAT,
+		"difficulty_id": str(_difficulty_mode),
+		"spider_profile_id": str(resolved.selected_spider_id),
+		"resolved_upgrade_levels": upgrade_levels,
+		"preset_id": str(_config.preset_name),
+		"attempt_ordinal": _attempt_ordinal,
+		"input_source": str(_attempt_input_source),
+		"configuration_kind": str(_configuration_kind()),
+		"configuration_details": _configuration_details(),
+	}
+
+
+func _configuration_kind() -> StringName:
+	if _attempt_input_source == &"trace_replay":
+		return &"trace_replay"
+	if _run_mode == RUN_CAMPAIGN:
+		return &"campaign"
+	if not _creator_pattern.is_empty():
+		return &"course_lab"
+	if _debug_start_active or \
+			_progression_service.debug_upgrade_overlay_enabled() or \
+			not _debug_bird_overrides.is_empty() or \
+			not _debug_tuning_overrides.is_empty():
+		return &"debug_test"
+	if _run_mode == RUN_PRACTICE:
+		return &"region_practice"
+	return &"standard"
+
+
+func _configuration_details() -> Dictionary:
+	var details := {}
+	if _debug_start_active:
+		details["debug_start_distance_pixels"] = _start_distance_pixels
+	var overlay := _progression_service.debug_upgrade_overlay_level()
+	if overlay >= 0:
+		details["debug_upgrade_overlay_level"] = overlay
+	if not _debug_bird_overrides.is_empty():
+		details["bird_overrides"] = _string_keyed_copy(_debug_bird_overrides)
+	if not _debug_tuning_overrides.is_empty():
+		details["tuning_overrides"] = \
+			_string_keyed_copy(_debug_tuning_overrides)
+	if _live_tuning_changed:
+		details["tuning_changed_during_run"] = true
+	if not _creator_pattern.is_empty():
+		var pattern: Array[String] = []
+		for piece: StringName in _creator_pattern:
+			pattern.append(str(piece))
+		details["creator_pattern"] = pattern
+	if not _campaign_level_id.is_empty():
+		details["campaign_level_id"] = str(_campaign_level_id)
+	if _attempt_input_source == &"trace_replay":
+		details["trace_format"] = TraceCatalog.INPUT_TRACE_FORMAT
+	return details
+
+
+func _string_keyed_copy(values: Dictionary) -> Dictionary:
+	var result := {}
+	for key: Variant in values:
+		result[str(key)] = values[key]
+	return result
 
 
 func _publish_snapshot() -> void:

@@ -22,8 +22,10 @@ endpoints; it does not drive physics (GDD § 17.2).
 
 - `front_end.tscn` + `front_end.gd` — responsive Home, Garage, mobile-scrollable
   seven-track Shop, Tutorial, Campaign, Course Lab, Region Practice, Field Guide,
-  Settings, compact Debug Test Run, and Advanced Test Lab surfaces bound to
-  application-owned state. The forest-web background and all selectors use
+  Settings, Run History, compact Debug Test Run, and Advanced Test Lab surfaces
+  bound to application-owned state. Run History renders a bounded latest/recent
+  list and selectable JSON owned by `FrontEndState`; it never persists or
+  mutates evidence. The forest-web background and all selectors use
   presentation state only.
 - `spider_ui_theme.gd` — one Ancient-Forest-aligned theme for panels, buttons,
   focus/disabled states, touch scroll configuration, descendant gesture

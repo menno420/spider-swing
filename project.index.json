@@ -10,7 +10,8 @@
         "docs/technical/adr/0002-simulation-and-event-boundaries.md",
         "docs/runtime_contracts.md",
         "docs/architecture.md",
-        "docs/technical/phase-0-swing-laboratory.md"
+        "docs/technical/phase-0-swing-laboratory.md",
+        "docs/technical/run-evidence.md"
       ],
       "source_roots": [
         "game/simulation/",
@@ -46,6 +47,7 @@
         "docs/runtime_contracts.md",
         "docs/technical/phase-0-swing-laboratory.md",
         "docs/technical/front-end-flow.md",
+        "docs/technical/run-evidence.md",
         "docs/product/deep-progression-direction.md"
       ],
       "source_roots": [
@@ -56,7 +58,8 @@
       "do_not_create": [
         "a second run lifecycle owner — RunStateMachine owns run transitions",
         "a chunk spawner inside DifficultyDirector — the director selects, WorldStream owns spawned instances",
-        "a second settlement path — ScoreSettlement creates exactly one idempotent RunSettlement per run",
+        "a second settlement path — SwingLabSession creates exactly one idempotent RunSettlement per run",
+        "a second run-evidence finalization or global analytics manager — SwingLabSession pairs RunRecord with its one RunSettlement seam",
         "a reward grant outside ProgressionService",
         "a direct persistence write — SaveRepository (adapters) exclusively owns persistent writes",
         "a parallel effect timer — EffectState owns power-up activation, refresh, and expiry",
@@ -83,7 +86,8 @@
         "docs/runtime_contracts.md",
         "docs/game-design/Spider-Swing-GDD-v2.0.md",
         "docs/technical/phase-0-swing-laboratory.md",
-        "docs/technical/front-end-flow.md"
+        "docs/technical/front-end-flow.md",
+        "docs/technical/run-evidence.md"
       ],
       "source_roots": [
         "game/adapters/",
@@ -93,6 +97,8 @@
       "do_not_create": [
         "a second input path — InputRouter converts touch/UI into buffered commands and never mutates simulation",
         "a second persistence writer — SaveRepository is the exclusive owner of persistent writes",
+        "a direct run-history or diagnostic write outside SaveRepository",
+        "a network, analytics, upload, account, or device-identity path for local run evidence",
         "a telemetry path that writes gameplay state; telemetry is read-only with respect to truth",
         "a dependency on game/presentation/ — adapters and presentation are equal-rank peers",
         "input action definitions outside project.godot's [input] section"
@@ -116,6 +122,7 @@
         "docs/game-design/Spider-Swing-GDD-v2.0.md",
         "docs/technical/phase-0-swing-laboratory.md",
         "docs/technical/front-end-flow.md",
+        "docs/technical/run-evidence.md",
         "docs/product/deep-progression-direction.md"
       ],
       "source_roots": [

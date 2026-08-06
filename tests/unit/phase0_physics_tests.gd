@@ -2597,7 +2597,10 @@ static func _test_checkpoint_practice_starts_safe_and_is_non_record(
 		session.free()
 		return 0
 	var settlements: Array[RunSettlement] = []
-	session.settlement_created.connect(func(value: RunSettlement) -> void:
+	session.run_finalized.connect(func(
+		value: RunSettlement,
+		_record: RunRecord,
+	) -> void:
 		settlements.append(value))
 	session._emit_settlement(&"test")
 	if settlements.size() != 1 or \
@@ -2666,7 +2669,10 @@ static func _test_debug_start_awards_nothing_and_sets_no_record(
 	session._world.distance_pixels = start_distance + 80000.0
 	session._update_region_progress()
 	var settlements: Array[RunSettlement] = []
-	session.settlement_created.connect(func(value: RunSettlement) -> void:
+	session.run_finalized.connect(func(
+		value: RunSettlement,
+		_record: RunRecord,
+	) -> void:
 		settlements.append(value))
 	session._emit_settlement(&"test")
 	if settlements.size() != 1 or settlements[0].rewards_eligible or \

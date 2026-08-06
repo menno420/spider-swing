@@ -455,6 +455,7 @@ func _summarize(
 	var totals := {
 		"flies": 0.0, "reel_empties": 0.0, "bursts": 0.0, "dives": 0.0,
 		"attaches": 0.0, "seconds": 0.0, "reel_time_s": 0.0,
+		"reel_activations": 0.0,
 		"reel_energy_spent": 0.0, "time_empty_s": 0.0, "save_bursts": 0.0,
 		"travelled_m": 0.0, "deaths": 0.0, "taps": 0.0,
 		"timed_anchor_attaches": 0.0, "sticky_attaches": 0.0,
@@ -464,6 +465,7 @@ func _summarize(
 		"mean_swing_arc_deg": 0.0, "mean_web_length_px": 0.0,
 		"mean_height_px": 0.0, "height_span_px": 0.0,
 		"mean_overspeed_ms": 0.0, "above_target_share": 0.0,
+		"mean_speed_ms": 0.0, "max_speed_ms": 0.0,
 		"died_with_burst": 0.0, "died_with_dive": 0.0,
 		"died_with_any_escape": 0.0, "died_attached": 0.0,
 	}
@@ -543,6 +545,7 @@ func _summarize(
 			else float(totals["flies"]) / total_km,
 		"mean_reel_empties": float(totals["reel_empties"]) / count,
 		"mean_reel_time_s": float(totals["reel_time_s"]) / count,
+		"mean_reel_activations": float(totals["reel_activations"]) / count,
 		"mean_reel_energy_spent": float(totals["reel_energy_spent"]) / count,
 		"mean_time_empty_s": float(totals["time_empty_s"]) / count,
 		"mean_bursts": float(totals["bursts"]) / count,
@@ -570,6 +573,8 @@ func _summarize(
 		"mean_web_length_px": float(totals["mean_web_length_px"]) / count,
 		"mean_height_px": float(totals["mean_height_px"]) / count,
 		"mean_overspeed_ms": float(totals["mean_overspeed_ms"]) / count,
+		"mean_speed_ms": float(totals["mean_speed_ms"]) / count,
+		"mean_max_speed_ms": float(totals["max_speed_ms"]) / count,
 		"died_with_burst_share": float(totals["died_with_burst"]) / count,
 		"died_with_dive_share": float(totals["died_with_dive"]) / count,
 		"died_with_any_escape_share":
@@ -631,7 +636,8 @@ func _print_summary(summary: Dictionary) -> void:
 		summary["died_with_dive_share"] * 100.0,
 		summary["died_with_any_escape_share"] * 100.0,
 		summary["died_attached_share"] * 100.0])
-	print("  own speed   %+.1f m/s vs the drive's floor · above it %.0f%% of the run" % [
+	print("  own speed   %.1f m/s mean · %.1f m/s mean max · %+.1f m/s vs floor · above it %.0f%%" % [
+		summary["mean_speed_ms"], summary["mean_max_speed_ms"],
 		summary["mean_overspeed_ms"], summary["above_target_share"] * 100.0])
 	print("  height      mean y %.0f px · vertical span %.0f px (lower y = higher up)" % [
 		summary["mean_height_px"], summary["height_span_px"]])
@@ -1288,19 +1294,14 @@ class RunDriver:
 	var reel_style: StringName = &"adaptive"
 	var save_bursts_enabled := true
 	var rescue_available := true
-	var rescue_used := false
 	var rescue_distance_m := 0.0
 	var chunk_index := -1
 	var sequence := 0
 	var pending: Array[Dictionary] = []
 	var wants_reel := false
-	var attaches := 0
-	var bursts := 0
 	var save_bursts := 0
-	var dives := 0
 	var taps := 0
-	var reel_empties := 0
-	var reel_ticks := 0
+	var evidence_metrics := RunMetricsAccumulator.new()
 	var empty_ticks := 0
 	var reel_energy_spent := 0.0
 	## Seconds of continuous reel kept in hand before spending, and the
@@ -1338,7 +1339,6 @@ class RunDriver:
 	## lives ON the floor is being carried by it; a style that lives above it
 	## is generating its own speed and would survive the floor's removal.
 	var overspeed_sum := 0.0
-	var above_target_ticks := 0
 	## What the run still had available at the moment it died. The owner's
 	## 2026-08-01 point: a person ends up somewhere they did not plan — high
 	## under a hanging obstacle, or low when one appears — and Dive/Burst are
@@ -1400,6 +1400,7 @@ class RunDriver:
 			config.opening_obstacle_scale_floor,
 		)
 		world.reset(config, stream.geometry(), start_offset_px)
+		evidence_metrics.reset()
 		# Late-game warp uses the same checkpoint-safe world reset and ordinary
 		# guided web as production practice mode.
 		world.begin_guided_opening()
@@ -1495,8 +1496,11 @@ class RunDriver:
 				attach_arc_open = false
 			var drive_target := config.target_speed_at(world.distance_pixels)
 			overspeed_sum += world.velocity.x - drive_target
-			if world.velocity.x > drive_target:
-				above_target_ticks += 1
+			evidence_metrics.observe_tick(
+				world.velocity.x,
+				drive_target,
+				world.web.reel_active,
+			)
 			height_sum += world.position.y
 			height_min = minf(height_min, world.position.y)
 			height_max = maxf(height_max, world.position.y)
@@ -1506,22 +1510,22 @@ class RunDriver:
 			var energy_before := world.web.reel_energy
 			var events := world.step(FIXED_DELTA)
 			if was_reeling:
-				reel_ticks += 1
 				reel_energy_spent += maxf(
 					0.0, energy_before - world.web.reel_energy)
 			if world.web.reel_energy <= 0.001:
 				empty_ticks += 1
 			for event: SimulationEvent in events:
+				evidence_metrics.observe_event(event)
 				match event.kind:
 					SimulationEvent.Kind.DEATH_REQUESTED:
 						if rescue_available:
 							rescue_available = false
-							rescue_used = true
 							rescue_distance_m = world.distance_pixels / \
 								PIXELS_PER_METRE
 							wants_reel = false
 							pending.clear()
-							world.rescue_after_death()
+							var rescue_event := world.rescue_after_death()
+							evidence_metrics.observe_event(rescue_event)
 							continue
 						cause = StringName(
 							event.data.get("cause", &"unknown"))
@@ -1535,7 +1539,6 @@ class RunDriver:
 							config.burst_frenzy_duration,
 						)
 					SimulationEvent.Kind.ATTACHED:
-						attaches += 1
 						attached_class = StringName(event.data.get(
 							"anchor_class", CourseGeometry.ANCHOR_FIXED))
 						attached_expiry_tick = -1
@@ -1562,12 +1565,6 @@ class RunDriver:
 						wants_reel = false
 						attached_class = CourseGeometry.ANCHOR_FIXED
 						attached_expiry_tick = -1
-					SimulationEvent.Kind.REEL_EMPTY:
-						reel_empties += 1
-					SimulationEvent.Kind.BURST_STARTED:
-						bursts += 1
-					SimulationEvent.Kind.DIVE_STARTED:
-						dives += 1
 			if finished:
 				return _result(cause, was_pulling)
 		return _result(cause, false)
@@ -1576,6 +1573,9 @@ class RunDriver:
 		var region := CourseRegionCatalog.region_for_distance(
 			world.distance_pixels)
 		var distance_m := world.distance_pixels / PIXELS_PER_METRE
+		var evidence := evidence_metrics.result()
+		var rescue_used := bool(evidence["rescue_consumed"])
+		var attaches := int(evidence["successful_web_attachments"])
 		# A rescued death is still a death the player made; counting only the
 		# terminal one would halve the rate wherever the rescue life is on.
 		var deaths := 0
@@ -1594,9 +1594,9 @@ class RunDriver:
 			"cause": str(cause),
 			"flies": world.run_flies,
 			"attaches": attaches,
-			"bursts": bursts,
+			"bursts": int(evidence["burst_activations"]),
 			"save_bursts": save_bursts,
-			"dives": dives,
+			"dives": int(evidence["dive_activations"]),
 			"taps": taps,
 			"taps_per_second": (
 				float(taps) / maxf(0.001, world.tick * FIXED_DELTA)),
@@ -1606,8 +1606,9 @@ class RunDriver:
 			"anchor_failures": anchor_failures,
 			"attach_searches": attach_searches,
 			"class_choices": class_choices,
-			"reel_empties": reel_empties,
-			"reel_time_s": reel_ticks * FIXED_DELTA,
+			"reel_empties": int(evidence["reel_empty_events"]),
+			"reel_activations": int(evidence["reel_activations"]),
+			"reel_time_s": float(evidence["reel_held_seconds"]),
 			"reel_energy_spent": reel_energy_spent,
 			"time_empty_s": empty_ticks * FIXED_DELTA,
 			"rescue_used": rescue_used,
@@ -1636,9 +1637,14 @@ class RunDriver:
 			"mean_overspeed_ms": (
 				(overspeed_sum / height_ticks) / PIXELS_PER_METRE
 				if height_ticks > 0 else 0.0),
-			"above_target_share": (
-				float(above_target_ticks) / height_ticks
-				if height_ticks > 0 else 0.0),
+			"mean_speed_ms": float(
+				evidence["mean_forward_speed_pixels_per_second"]
+			) / PIXELS_PER_METRE,
+			"max_speed_ms": float(
+				evidence["maximum_forward_speed_pixels_per_second"]
+			) / PIXELS_PER_METRE,
+			"above_target_share": float(
+				evidence["above_reference_speed_share"]),
 			"mean_height_px": (
 				height_sum / height_ticks if height_ticks > 0 else 0.0),
 			"height_span_px": (
