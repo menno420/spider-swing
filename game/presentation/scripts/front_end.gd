@@ -1340,7 +1340,7 @@ func _build_run_history() -> void:
 	_run_history_latest.name = "RunHistoryLatestSummary"
 	_run_history_latest.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_run_history_latest.vertical_alignment = VERTICAL_ALIGNMENT_TOP
-	_run_history_latest.custom_minimum_size.y = 156.0
+	_run_history_latest.custom_minimum_size.y = 178.0
 	_fill_with_margin(_run_history_latest, latest_panel, 14.0)
 	_run_history_content.add_child(_section_label("RECENT RUNS · NEWEST FIRST"))
 	_run_history_recent = VBoxContainer.new()
@@ -2374,7 +2374,8 @@ func _render_run_history() -> void:
 		CourseRegionCatalog.PIXELS_PER_METRE * 1000.0)
 	_run_history_lifetime.text = (
 		"%d completed run%s  ·  %s active play  ·  %.2f km travelled\n"
-		+ "COMPARABLE BESTS  Relaxed %s  ·  Standard %s  ·  Harsh %s"
+		+ "COMPARABLE BESTS  Relaxed %s  ·  Standard %s  ·  Harsh %s\n"
+		+ "FIRST-SESSION CHECKS  %d answer%s · %d eligible human run%s"
 	) % [
 		ledger.total_completed_recorded_runs,
 		"" if ledger.total_completed_recorded_runs == 1 else "s",
@@ -2386,6 +2387,10 @@ func _render_run_history() -> void:
 			DifficultyCatalog.MODE_STANDARD)),
 		_format_optional_distance(ledger.best_distance_for_difficulty(
 			DifficultyCatalog.MODE_HARSH)),
+		ledger.feedback_responses.size(),
+		"" if ledger.feedback_responses.size() == 1 else "s",
+		ledger.total_feedback_eligible_runs,
+		"" if ledger.total_feedback_eligible_runs == 1 else "s",
 	]
 	var latest := _state.latest_run_record()
 	_run_history_latest.text = (
@@ -2413,7 +2418,7 @@ func _render_run_history() -> void:
 		var summary := _label(_recent_run_text(record), 14, INK)
 		summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		summary.vertical_alignment = VERTICAL_ALIGNMENT_TOP
-		summary.custom_minimum_size.y = 96.0
+		summary.custom_minimum_size.y = 112.0
 		_fill_with_margin(summary, panel, 11.0)
 
 
@@ -2423,7 +2428,7 @@ func _latest_run_text(record: RunRecord) -> String:
 	var travelled_m := record.travelled_distance_pixels / \
 		CourseRegionCatalog.PIXELS_PER_METRE
 	var region := CourseRegionCatalog.region_for_id(record.final_region_id)
-	return (
+	var summary := (
 		"%s · %s · %s\n"
 		+ "FINAL %s m  ·  TRAVELLED %s m  ·  %s  ·  %s\n"
 		+ "FLIES %d  ·  %.2f per travelled km\n"
@@ -2473,6 +2478,7 @@ func _latest_run_text(record: RunRecord) -> String:
 		record.swing_config_schema_version,
 		record.trace_format,
 	]
+	return summary + _run_feedback_line(record.record_id)
 
 
 func _recent_run_text(record: RunRecord) -> String:
@@ -2480,7 +2486,7 @@ func _recent_run_text(record: RunRecord) -> String:
 		CourseRegionCatalog.PIXELS_PER_METRE
 	var travelled_m := record.travelled_distance_pixels / \
 		CourseRegionCatalog.PIXELS_PER_METRE
-	return (
+	var summary := (
 		"#%d  %s · %s · %s · %s\n"
 		+ "%s m final · %s m travelled · %s · %.1f / %.1f m/s mean/max · %d flies (%.2f/km)\n"
 		+ "Web %d · Reel %d (%.1f s, empty %d) · Burst %d · Dive %d · Rescue %s\n"
@@ -2515,6 +2521,20 @@ func _recent_run_text(record: RunRecord) -> String:
 		_yes_no(record.records_eligible),
 		_yes_no(record.leaderboards_eligible),
 	]
+	return summary + _run_feedback_line(record.record_id)
+
+
+func _run_feedback_line(record_id: String) -> String:
+	var response := _state.run_record_ledger.feedback_for_record(record_id)
+	if response == null:
+		return ""
+	var answer := (
+		"KNEW WHAT TO DO"
+		if response.answer_id == \
+			RunFeedbackResponse.ANSWER_KNEW_WHAT_TO_DO
+		else "NOT SURE WHAT TO DO"
+	)
+	return "\nFIRST-SESSION CHECK  %s" % answer
 
 
 func _upgrade_level_text(record: RunRecord) -> String:

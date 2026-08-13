@@ -19,6 +19,7 @@ static func run() -> Dictionary:
 	passed += _test_touch_mouse_emulation_produces_one_intent(failures)
 	passed += _test_device_tap_keeps_recovery_web_attached(failures)
 	passed += _test_menu_button_returns_without_world_tap(failures)
+	passed += _test_run_feedback_controls_own_dead_input_and_fit(failures)
 	passed += _test_debug_button_and_panel_controls(failures)
 	passed += _test_diagnostic_overlays_are_opt_in(failures)
 	passed += _test_debug_controls_are_large_and_direct(failures)
@@ -591,6 +592,102 @@ static func _test_menu_button_returns_without_world_tap(
 		router.free()
 		return 0
 	router.free()
+	return 1
+
+
+static func _test_run_feedback_controls_own_dead_input_and_fit(
+	failures: PackedStringArray,
+) -> int:
+	var size := Vector2(1040.0, 480.0)
+	var router := InputRouter.new()
+	router.install_touch_surface(size)
+	var view := SwingLabView.new()
+	var prompt := {
+		"record_id": "layout-feedback",
+		"question_id": str(
+			RunFeedbackResponse.QUESTION_DEATH_COMPREHENSION),
+		"eligible_run_ordinal": 2,
+		"eligible_run_limit": 3,
+		"question_line_one": RunFeedbackPromptPolicy.QUESTION_LINE_ONE,
+		"question_line_two": RunFeedbackPromptPolicy.QUESTION_LINE_TWO,
+		"yes_answer_id": str(
+			RunFeedbackResponse.ANSWER_KNEW_WHAT_TO_DO),
+		"yes_label": "YES — I KNEW",
+		"no_answer_id": str(
+			RunFeedbackResponse.ANSWER_NOT_SURE_WHAT_TO_DO),
+		"no_label": "NO — NOT SURE",
+	}
+	router.configure_run_feedback_prompt(prompt)
+	view.configure_run_feedback_prompt(prompt)
+	var dying := SimulationSnapshot.new()
+	dying.run_state = &"dying"
+	router.present_snapshot(dying)
+	view.present(dying)
+	if router.run_feedback_prompt_visible() or view.run_feedback_prompt_visible():
+		failures.append("first-session prompt appeared before authoritative DEAD state")
+		router.free()
+		view.free()
+		return 0
+	var dead := SimulationSnapshot.new()
+	dead.run_state = &"dead"
+	router.present_snapshot(dead)
+	view.present(dead)
+	var viewport := Rect2(Vector2.ZERO, size)
+	var panel := LabLayout.run_feedback_panel_rect(size)
+	for button_name: StringName in [
+		&"RunFeedbackYes", &"RunFeedbackNo", &"RunFeedbackSkip",
+	]:
+		var button := router.hud_button(button_name)
+		if button == null or not button.visible or \
+				button.mouse_filter != Control.MOUSE_FILTER_STOP or \
+				button.size.y < 48.0 or \
+				not panel.grow(0.5).encloses(_resolved_rect(button, size)):
+			failures.append("%s is clipped or does not own touch input" % button_name)
+			router.free()
+			view.free()
+			return 0
+	if not router.run_feedback_prompt_visible() or \
+			not view.run_feedback_prompt_visible() or \
+			not viewport.encloses(panel) or \
+			panel.intersects(LabLayout.menu_rect(size)):
+		failures.append("feedback panel is not enclosed or overlaps the Menu escape")
+		router.free()
+		view.free()
+		return 0
+	var world_taps: Array[Vector2] = []
+	var restarts := 0
+	var answers: Array[StringName] = []
+	router.web_tapped.connect(func(position: Vector2) -> void:
+		world_taps.append(position))
+	router.restart_requested.connect(func() -> void: restarts += 1)
+	router.run_feedback_answered.connect(func(
+		_record_id: String, _question_id: StringName, answer_id: StringName,
+	) -> void: answers.append(answer_id))
+	var mouse := InputEventMouseButton.new()
+	mouse.button_index = MOUSE_BUTTON_LEFT
+	mouse.pressed = true
+	mouse.position = Vector2(500.0, 430.0)
+	router._unhandled_input(mouse)
+	var restart := InputEventAction.new()
+	restart.action = &"restart_run"
+	restart.pressed = true
+	router._unhandled_input(restart)
+	router.hud_button(&"RunFeedbackYes").pressed.emit()
+	if not world_taps.is_empty() or restarts != 0 or \
+			answers != [RunFeedbackResponse.ANSWER_KNEW_WHAT_TO_DO]:
+		failures.append("feedback prompt leaked into world/restart input or lost its answer")
+		router.free()
+		view.free()
+		return 0
+	router.clear_run_feedback_prompt()
+	view.clear_run_feedback_prompt()
+	if router.run_feedback_prompt_visible() or view.run_feedback_prompt_visible():
+		failures.append("feedback controls remained active after answer/skip clear")
+		router.free()
+		view.free()
+		return 0
+	router.free()
+	view.free()
 	return 1
 
 

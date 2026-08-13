@@ -13,6 +13,12 @@ signal burst_requested
 signal burst_gesture(screen_position: Vector2)
 signal restart_requested
 signal menu_requested
+signal run_feedback_answered(
+	record_id: String,
+	question_id: StringName,
+	answer_id: StringName,
+)
+signal run_feedback_skipped(record_id: String, question_id: StringName)
 signal debug_toggle_requested
 signal collision_outlines_toggle_requested
 signal web_guides_toggle_requested
@@ -43,6 +49,13 @@ var _reel_button: Button
 var _burst_button: Button
 var _debug_button: Button
 var _menu_button: Button
+var _run_feedback_yes_button: Button
+var _run_feedback_no_button: Button
+var _run_feedback_skip_button: Button
+var _run_feedback_controls: Array[Control] = []
+var _run_feedback_prompt: Dictionary = {}
+var _run_feedback_visible: bool = false
+var _run_state: StringName = &"active"
 var _debug_start_distance_entry: LineEdit
 var _debug_controls: Array[Control] = []
 var _debug_always_controls: Array[Control] = []
@@ -62,13 +75,18 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	var keyboard_reel := Input.is_action_pressed("reel_in")
+	var keyboard_reel := not _run_feedback_visible and \
+		Input.is_action_pressed("reel_in")
 	if keyboard_reel != _keyboard_reel_active:
 		_keyboard_reel_active = keyboard_reel
 		_publish_reel_state()
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if _run_feedback_visible:
+		if event.is_action_pressed("ui_cancel"):
+			_request_menu()
+		return
 	if event is InputEventScreenTouch:
 		var touch := event as InputEventScreenTouch
 		if touch.pressed:
@@ -165,6 +183,25 @@ func install_touch_surface(
 		),
 	)
 	_debug_button.pressed.connect(_toggle_debug_from_touch)
+
+	_run_feedback_yes_button = _make_fixed_button(
+		&"RunFeedbackYes",
+		LabLayout.run_feedback_yes_rect(layout_size),
+	)
+	_run_feedback_yes_button.pressed.connect(_answer_run_feedback.bind(true))
+	_run_feedback_controls.append(_run_feedback_yes_button)
+	_run_feedback_no_button = _make_fixed_button(
+		&"RunFeedbackNo",
+		LabLayout.run_feedback_no_rect(layout_size),
+	)
+	_run_feedback_no_button.pressed.connect(_answer_run_feedback.bind(false))
+	_run_feedback_controls.append(_run_feedback_no_button)
+	_run_feedback_skip_button = _make_fixed_button(
+		&"RunFeedbackSkip",
+		LabLayout.run_feedback_skip_rect(layout_size),
+	)
+	_run_feedback_skip_button.pressed.connect(_skip_run_feedback)
+	_run_feedback_controls.append(_run_feedback_skip_button)
 
 	var panel_blocker := _make_fixed_button(
 		&"DebugPanelBlocker",
@@ -295,6 +332,7 @@ func install_touch_surface(
 		_register_category_control(tool_controls, utility)
 	_touch_surface.move_child(_debug_button, _touch_surface.get_child_count() - 1)
 	_set_debug_controls_visible(false)
+	_set_run_feedback_controls_visible(false)
 
 
 func hud_control(control_name: StringName) -> Control:
@@ -318,6 +356,9 @@ func configure_debug_controls(enabled: bool) -> void:
 
 
 func present_snapshot(snapshot: SimulationSnapshot) -> void:
+	_run_state = snapshot.run_state
+	_set_run_feedback_controls_visible(
+		not _run_feedback_prompt.is_empty() and _run_state == &"dead")
 	_debug_start_distance_pixels = snapshot.start_distance_pixels
 	if _debug_start_distance_entry != null and \
 			not _debug_start_distance_entry.has_focus() and \
@@ -329,6 +370,21 @@ func present_snapshot(snapshot: SimulationSnapshot) -> void:
 		_active_debug_category_index = snapshot.debug_category_index
 		if _debug_visible:
 			_set_debug_controls_visible(true)
+
+
+func configure_run_feedback_prompt(prompt: Dictionary) -> void:
+	_run_feedback_prompt = prompt.duplicate(true)
+	_set_run_feedback_controls_visible(
+		not _run_feedback_prompt.is_empty() and _run_state == &"dead")
+
+
+func clear_run_feedback_prompt() -> void:
+	_run_feedback_prompt.clear()
+	_set_run_feedback_controls_visible(false)
+
+
+func run_feedback_prompt_visible() -> bool:
+	return _run_feedback_visible
 
 
 func present_simulation_event(event: SimulationEvent) -> void:
@@ -494,12 +550,12 @@ func _toggle_debug_from_touch() -> void:
 
 func _set_debug_controls_visible(visible: bool) -> void:
 	if _reel_button != null:
-		_reel_button.disabled = visible
+		_reel_button.disabled = visible or _run_feedback_visible
 	if _burst_button != null:
-		_burst_button.disabled = visible
+		_burst_button.disabled = visible or _run_feedback_visible
 	for control: Control in _debug_controls:
 		control.visible = false
-	if not visible or not _debug_controls_enabled:
+	if not visible or not _debug_controls_enabled or _run_feedback_visible:
 		return
 	for control: Control in _debug_always_controls:
 		control.visible = true
@@ -509,6 +565,47 @@ func _set_debug_controls_visible(visible: bool) -> void:
 	)
 	for control: Control in active_controls:
 		control.visible = true
+
+
+func _set_run_feedback_controls_visible(visible: bool) -> void:
+	if visible == _run_feedback_visible and not _run_feedback_controls.is_empty():
+		for control: Control in _run_feedback_controls:
+			control.visible = visible
+		return
+	_run_feedback_visible = visible
+	if visible:
+		cancel_held_input()
+		if _debug_visible:
+			_debug_visible = false
+			_set_debug_controls_visible(false)
+	for control: Control in _run_feedback_controls:
+		control.visible = visible
+	if _reel_button != null:
+		_reel_button.disabled = visible or _debug_visible
+	if _burst_button != null:
+		_burst_button.disabled = visible or _debug_visible
+	if _debug_button != null:
+		_debug_button.disabled = visible
+
+
+func _answer_run_feedback(yes: bool) -> void:
+	if not _run_feedback_visible or _run_feedback_prompt.is_empty():
+		return
+	var answer_key := "yes_answer_id" if yes else "no_answer_id"
+	run_feedback_answered.emit(
+		str(_run_feedback_prompt.get("record_id", "")),
+		StringName(str(_run_feedback_prompt.get("question_id", ""))),
+		StringName(str(_run_feedback_prompt.get(answer_key, ""))),
+	)
+
+
+func _skip_run_feedback() -> void:
+	if not _run_feedback_visible or _run_feedback_prompt.is_empty():
+		return
+	run_feedback_skipped.emit(
+		str(_run_feedback_prompt.get("record_id", "")),
+		StringName(str(_run_feedback_prompt.get("question_id", ""))),
+	)
 
 
 func _request_menu() -> void:

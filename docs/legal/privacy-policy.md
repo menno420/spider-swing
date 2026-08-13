@@ -38,7 +38,9 @@ The game saves your progress so it can carry on where you left off. That
 includes your settings, your best distances, which upgrades and cosmetics you
 own, your in-game currency balances, which regions you have reached, and a
 record of your recent runs (such as distance, time, speed, actions, run setup,
-and how the run ended).
+and how the run ended). For the first few ordinary runs, it may also save your
+closed answer about whether you understood what to do differently after a run
+ended.
 
 **All of this is stored only on your own device**, inside the private storage
 area Android gives the game. We cannot see it. It is not uploaded anywhere.
@@ -100,7 +102,8 @@ assumed:
   `StreamPeer`, `PacketPeer`, `WebSocket`, or multiplayer class anywhere.
 - Every persistent write goes to `user://` — `player_settings.json`,
   `player_progress.json`, `debug_test_profile.json`,
-  `run_record_ledger.json`, and the owner-requested diagnostic — which is
+  `run_record_ledger.json` (including any paired closed first-session answers),
+  and the owner-requested diagnostic — which is
   Android's app-private sandbox. The only way run evidence leaves that sandbox
   in this build is the player's explicit **Copy JSON** action to the same
   device's clipboard; there is no automatic export.

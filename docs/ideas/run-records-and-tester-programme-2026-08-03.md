@@ -27,8 +27,14 @@ outcome: open
 > one settlement-paired schema, 100 retained records, fixed-size lifetime
 > aggregates, a state-owned in-game history, and explicit manual JSON copy with
 > no transmission. This promotion does **not** approve or ship recruitment,
-> prompts, consent for remote collection, identity, automatic upload, tester
+> consent for remote collection, identity, automatic upload, tester
 > rewards, Discord work, or leaderboards; those forks remain here.
+>
+> **Promoted slice, 2026-08-13:** the Wave-1 comprehension part of sequence step
+> 2 shipped through PR #176 as `0.45.0-run-feedback`. The first three ordinary
+> human deaths ask one closed understanding question; an answer is paired to the
+> exact local record and manual export. Fairness, free text, later waves, and all
+> transmission/recruitment/reward forks remain unapproved and unimplemented.
 
 ## Why these are one system
 
@@ -399,8 +405,10 @@ Ordered by what unblocks what, and by what is expensive to undo.
    `0.44.0-run-evidence` / PR #172.** No network, no remote consent flow, no
    spend. The rich local schema remains explicitly separate from any future
    leaderboard entry.
-2. **In-app closed prompts.** Cheap, and only useful once there are stats to
-   compare the answers against.
+2. **In-app closed prompts.** **Wave-1 comprehension shipped in
+   `0.45.0-run-feedback` / PR #176.** It asks one question over the first three
+   ordinary human deaths. Fairness and later assignment prompts remain later
+   waves, not additions to the same first session.
 3. **Distribution — decided, and running in parallel.** The Play track is the
    owner's own work and does not block steps 1 and 2, which is the best possible
    arrangement: the thing that gates recruitment is being built by the person who

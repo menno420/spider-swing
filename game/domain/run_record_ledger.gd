@@ -2,12 +2,14 @@ extends RefCounted
 class_name RunRecordLedger
 ## Versioned, bounded local history plus fixed-size lifetime aggregates.
 
-const SCHEMA_VERSION := 1
+const SCHEMA_VERSION := 2
 const HISTORY_LIMIT := 100
-const EXPORT_FORMAT := "spider-swing-local-run-evidence@1"
+const EXPORT_FORMAT := "spider-swing-local-run-evidence@2"
 
 var records: Array[RunRecord] = []
+var feedback_responses: Array[RunFeedbackResponse] = []
 var total_completed_recorded_runs: int = 0
+var total_feedback_eligible_runs: int = 0
 var total_active_duration_seconds: float = 0.0
 var total_distance_travelled_pixels: float = 0.0
 ## Only comparable, records-eligible, zero-start difficulty runs enter this
@@ -26,6 +28,8 @@ static func from_dictionary(data: Dictionary) -> RunRecordLedger:
 	var ledger := RunRecordLedger.new()
 	ledger.total_completed_recorded_runs = maxi(
 		0, int(data.get("total_completed_recorded_runs", 0)))
+	ledger.total_feedback_eligible_runs = maxi(
+		0, int(data.get("total_feedback_eligible_runs", 0)))
 	ledger.total_active_duration_seconds = _nonnegative_float(
 		data.get("total_active_duration_seconds", 0.0))
 	ledger.total_distance_travelled_pixels = _nonnegative_float(
@@ -49,6 +53,16 @@ static func from_dictionary(data: Dictionary) -> RunRecordLedger:
 			ledger.records.append(record)
 	while ledger.records.size() > HISTORY_LIMIT:
 		ledger.records.remove_at(0)
+	ledger._repair_feedback_eligibility(source_schema)
+	var raw_responses: Variant = data.get("feedback_responses", [])
+	if raw_responses is Array:
+		for raw_response: Variant in raw_responses:
+			if not raw_response is Dictionary:
+				continue
+			var response := RunFeedbackResponse.from_dictionary(
+				raw_response as Dictionary)
+			if response != null:
+				ledger.append_feedback_response(response)
 	# A hand-authored or partially migrated schema-1 document may omit lifetime
 	# aggregates. Derive the honest minimum from retained records once; persisted
 	# aggregate values otherwise survive rolling eviction unchanged.
@@ -65,12 +79,19 @@ func append_record(record: RunRecord) -> bool:
 		return false
 	total_completed_recorded_runs += 1
 	stored.lifetime_completed_run_ordinal = total_completed_recorded_runs
+	if stored.is_first_session_feedback_eligible():
+		total_feedback_eligible_runs += 1
+		stored.feedback_eligible_run_ordinal = total_feedback_eligible_runs
+	else:
+		stored.feedback_eligible_run_ordinal = 0
 	total_active_duration_seconds += stored.active_duration_seconds
 	total_distance_travelled_pixels += stored.travelled_distance_pixels
 	_update_best(stored)
 	records.append(stored)
 	while records.size() > HISTORY_LIMIT:
+		var evicted_id := records[0].record_id
 		records.remove_at(0)
+		_remove_feedback_for_record(evicted_id)
 	return true
 
 
@@ -79,6 +100,41 @@ func has_record(record_id: String) -> bool:
 		if record.record_id == record_id:
 			return true
 	return false
+
+
+func record_by_id(record_id: String) -> RunRecord:
+	for record: RunRecord in records:
+		if record.record_id == record_id:
+			return record.copy()
+	return null
+
+
+func append_feedback_response(response: RunFeedbackResponse) -> bool:
+	if response == null:
+		return false
+	var paired_record := record_by_id(response.record_id)
+	if paired_record == null or \
+			not paired_record.is_first_session_feedback_eligible() or \
+			paired_record.feedback_eligible_run_ordinal < 1 or \
+			paired_record.feedback_eligible_run_ordinal > \
+				RunFeedbackResponse.FIRST_SESSION_RUN_LIMIT:
+		return false
+	for stored: RunFeedbackResponse in feedback_responses:
+		if stored.record_id == response.record_id and \
+				stored.question_id == response.question_id:
+			return false
+	var copied := response.copy()
+	if copied == null:
+		return false
+	feedback_responses.append(copied)
+	return true
+
+
+func feedback_for_record(record_id: String) -> RunFeedbackResponse:
+	for response: RunFeedbackResponse in feedback_responses:
+		if response.record_id == record_id:
+			return response.copy()
+	return null
 
 
 func latest_record() -> RunRecord:
@@ -114,11 +170,16 @@ func to_dictionary() -> Dictionary:
 	var encoded: Array[Dictionary] = []
 	for record: RunRecord in records:
 		encoded.append(record.to_dictionary())
+	var encoded_responses: Array[Dictionary] = []
+	for response: RunFeedbackResponse in feedback_responses:
+		encoded_responses.append(response.to_dictionary())
 	return {
 		"schema_version": SCHEMA_VERSION,
 		"history_limit": HISTORY_LIMIT,
 		"records": encoded,
+		"feedback_responses": encoded_responses,
 		"total_completed_recorded_runs": total_completed_recorded_runs,
+		"total_feedback_eligible_runs": total_feedback_eligible_runs,
 		"total_active_duration_seconds": total_active_duration_seconds,
 		"total_distance_travelled_pixels": total_distance_travelled_pixels,
 		"best_distance_pixels_by_difficulty":
@@ -137,6 +198,35 @@ func _derive_lifetime_from_retained_records() -> void:
 		total_distance_travelled_pixels += record.travelled_distance_pixels
 		_update_best(record)
 	total_completed_recorded_runs = records.size()
+
+
+func _repair_feedback_eligibility(source_schema: int) -> void:
+	var eligible: Array[RunRecord] = []
+	for record: RunRecord in records:
+		if record.is_first_session_feedback_eligible():
+			eligible.append(record)
+		else:
+			record.feedback_eligible_run_ordinal = 0
+	if source_schema < 2:
+		total_feedback_eligible_runs = eligible.size()
+		for index in range(eligible.size()):
+			eligible[index].feedback_eligible_run_ordinal = index + 1
+		return
+	var start_ordinal := maxi(0, total_feedback_eligible_runs - eligible.size())
+	for index in range(eligible.size()):
+		var expected_minimum := start_ordinal + index + 1
+		if eligible[index].feedback_eligible_run_ordinal <= 0:
+			eligible[index].feedback_eligible_run_ordinal = expected_minimum
+		total_feedback_eligible_runs = maxi(
+			total_feedback_eligible_runs,
+			eligible[index].feedback_eligible_run_ordinal,
+		)
+
+
+func _remove_feedback_for_record(record_id: String) -> void:
+	for index in range(feedback_responses.size() - 1, -1, -1):
+		if feedback_responses[index].record_id == record_id:
+			feedback_responses.remove_at(index)
 
 
 func _update_best(record: RunRecord) -> void:

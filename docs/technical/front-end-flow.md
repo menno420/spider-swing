@@ -185,13 +185,20 @@ record.
 
 The list has one native `ScrollContainer`. It shows the newest 100 full records
 with context and eligibility visible, plus lifetime runs, active time, travelled
-distance, and comparable per-difficulty bests. **VIEW JSON** replaces the list
+distance, comparable per-difficulty bests, and paired first-session comprehension
+answers. **VIEW JSON** replaces the list
 with a selectable `TextEdit`; **COPY JSON** emits an application request that
 the composition root sends to `ClipboardAdapter`. Gameplay is not mounted on
 this screen, and every control consumes GUI input. The settled-frame
 `tools/run_history_layout_probe.gd` verifies both modes with 100 records at the
 strict 1040×480 size. See [`run-evidence.md`](run-evidence.md) for metric,
 schema, retention, and local-only contracts.
+
+During a run, the first-session prompt is a dead-state HUD surface rather than a
+new front-end route. `RunFeedbackPromptPolicy` decides eligibility from the
+accepted ledger record. `SwingLabView` draws the prompt while `InputRouter` owns
+the matching real yes/no/skip Controls; world taps and restart shortcuts are
+suppressed until one of those controls or Menu resolves the prompt.
 
 ### Settings
 

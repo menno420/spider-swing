@@ -15,7 +15,7 @@ live in [`player-preference research`](product/player-preference-research-2026-0
 External benchmarks and the verified zone audit live in
 [`upgrade-and-difficulty research`](product/upgrade-and-difficulty-research-2026-08-02.md).
 
-Build `0.44.0-run-evidence` is current. Continuous drive is
+Build `0.45.0-run-feedback` is current. Continuous drive is
 zero; release, swing control, Reel, and pull timing earn speed; the former left
 kill line is a visible pursuing bird. `target_speed_at` remains a named
 reference. The bot still cannot tune the bird — model v4 pumps, but it sustains
@@ -78,14 +78,14 @@ without a reported regression.
 - A separately versioned `DebugTestProfile` auto-saves the Test Lab working set
   and A/B/C comparison slots. Its resolved display values and sparse explicit
   overrides never enter `PlayerSettings` or `PlayerProgress`.
-- A separately versioned schema-1 `RunRecordLedger` retains the newest 100
-  settlement-backed records plus lifetime runs, active duration, travelled
-  distance, and comparable difficulty bests. Fixed ticks/events supply metrics;
-  every record keeps its build, seed, loadout, configuration, actions, outcome,
-  region, and eligibility. Play Modes → Run History exposes summaries and JSON.
-  It is local evidence, not analytics or a leaderboard entry; see
+- Schema-2 `RunRecordLedger` retains the newest 100 settlement-backed records,
+  lifetime run/time/distance/best aggregates, and paired answers for the first
+  three ordinary human deaths. Fixed ticks/events supply each record's build,
+  setup, actions, outcome, region, and eligibility; nonstandard/later runs are
+  prompt-ineligible. Run History exposes summaries and manual local-only JSON;
+  this is evidence, not analytics or a leaderboard — see
   [`run evidence`](technical/run-evidence.md).
-- Build `0.44.0-run-evidence` (Android version code 65, package
+- Build `0.45.0-run-feedback` (Android version code 66, package
   `com.menno420.spiderswing.dev`) retains the stable conventional public debug
   identity introduced by `0.19.0-depth-testing` in
   `.github/android/debug.keystore`. The workflow pins its file and certificate
@@ -519,10 +519,9 @@ this section carries only what is still owed.
   because a real share of testers will not enable installs from unknown sources.
   The plan, the channel structure and the reward rule are in
   [`run records and the tester programme`](ideas/run-records-and-tester-programme-2026-08-03.md);
-  its first engineering step — bounded, fully context-labelled per-run evidence
-  — is now built local-only with explicit manual JSON export. The wider tester
-  programme, consent/prompt design, automatic upload, account identity, and
-  leaderboard schema remain unimplemented owner/product forks.
+  bounded run evidence and its first-session comprehension prompt are now local
+  with manual JSON export. Later waves, recruitment, consent, upload, identity,
+  rewards, and leaderboards remain unimplemented owner/product forks.
 
 **Two device corrections are worth keeping here, because each overturned a
 passing test.** Bramble's first clearance claim was accepted by a static
@@ -538,16 +537,13 @@ so the Dive stays always available, which is its whole purpose.
 
 ## Recently shipped (newest first)
 
-- **2026-08-06 — Bounded local run evidence (0.44.0).** Settlement-backed runs
-  now finalize one schema-versioned `RunRecord` from active fixed ticks and
-  accepted events. Each keeps its authoritative settlement link and a separate
-  per-attempt ID, so repeat Campaign clears remain evidence without repeating
-  stars. `SaveRepository` retains the newest 100 records
-  plus fixed-size lifetime participation/best aggregates. Campaign, debug,
-  practice, Course Lab, and replay records are visibly classified; tutorial
-  practice remains settlement-free. Run History lives under Play Modes and
-  exposes readable latest/recent evidence plus selectable/copyable JSON. There
-  is no network, account, analytics SDK, upload queue, or leaderboard logic.
+- **2026-08-13 — Local run evidence and first-session feedback (0.44–0.45).**
+  Settlement-backed runs finalize one context-labelled record from fixed ticks
+  and accepted events; the newest 100 plus lifetime aggregates survive through
+  `SaveRepository`. The first three ordinary human deaths now ask one closed
+  comprehension question, paired to the exact record and manual schema-2
+  export. Nonstandard runs are classified but unprompted. There is no gameplay
+  tuning, network, identity, analytics, upload, reward, or leaderboard logic.
 
 - **2026-08-05 — The game is on Google Play's internal testing track.** A signed
   Android App Bundle, version code 64, built by `android-release.yml` and

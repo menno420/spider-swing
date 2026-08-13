@@ -2,7 +2,7 @@
 
 > **Status:** `binding`
 >
-> Contract for build `0.44.0-run-evidence`. This is local design evidence, not
+> Contract for build `0.45.0-run-feedback`. This is local design evidence, not
 > analytics and not a leaderboard schema.
 
 ## Purpose and boundary
@@ -47,6 +47,9 @@ InputCommand
 - `FrontEndState` owns Run History navigation and the export payload.
   `FrontEndView` only renders it. `ClipboardAdapter` makes the explicit platform
   clipboard call after the player selects **COPY JSON**.
+- `RunFeedbackPromptPolicy` is application-owned and pure. The composition root
+  offers its result to the drawing and GUI-input peers, then validates and saves
+  any response through the same optional evidence seam.
 
 Restart resets the accumulator before a new attempt. A main-owned
 `RunAttemptCounter` supplies ordinals across every run session in one app
@@ -90,7 +93,7 @@ identifier; the record does not group or relabel it.
 ## Record schema
 
 `RunRecord.SCHEMA_VERSION` is independent of settings and progression schemas.
-Schema 1 retains only fields with a current evidence or eligibility consumer:
+Schema 2 retains only fields with a current evidence or eligibility consumer:
 
 - identity: unique record ID, linked authoritative settlement ID, visible build,
   Android version code,
@@ -101,6 +104,8 @@ Schema 1 retains only fields with a current evidence or eligibility consumer:
   standard/Campaign/Region Practice/debug/Course Lab/replay kind, and sparse
   nonstandard details such as debug start, overlay, explicit bird/tuning
   overrides, creator pattern, Campaign level, or trace format;
+- first-session eligibility ordinal, assigned only to an ordinary zero-start
+  human death so the closed prompt stays bounded across launches;
 - performance and accepted actions using the definitions above;
 - outcome: terminal outcome, raw death/final cause, final region/distance,
   rescue use, flies, travelled-distance fly rate, and Campaign level ID.
@@ -131,9 +136,31 @@ Every path that already produces a `RunSettlement` may therefore produce one
 record. There is no presentation-triggered abandonment write and no reward path
 created for evidence.
 
+## First-session comprehension feedback
+
+After each of the first three ordinary human Relaxed/Standard/Harsh deaths on an
+install, the dead-state overlay asks one closed question:
+
+> When this run ended, did you know what you should have done differently?
+
+The player can answer **YES — I KNEW**, **NO — NOT SURE**, or **SKIP · RESTART**.
+The prompt waits for authoritative `DEAD`, and real `InputRouter` controls consume
+its taps before world input. Answer and skip both restart; only an answer writes
+evidence. Menu remains an escape and leaves the unanswered prompt unrecorded.
+
+`RunFeedbackResponse` schema 1 contains exactly `record_id`, versioned
+`question_id`, and closed `answer_id`. A ledger accepts at most one supported
+response per retained eligible record. Practice, debug, Campaign, Course Lab,
+replay, tutorial, abandonment, and runs after the first three are excluded. The
+first wave intentionally asks no fairness, cause-attribution, rating, or free-text
+question.
+
 ## Ledger, retention, and recovery
 
-`RunRecordLedger.SCHEMA_VERSION` is 1. It retains the newest 100 full records.
+`RunRecordLedger.SCHEMA_VERSION` is 2. It retains the newest 100 full records and
+their paired closed responses. Existing schema-1 records migrate forward by
+deriving honest retained first-session ordinals; no historical answer is
+invented. Evicting a record evicts its paired response.
 Appending a retained duplicate ID is rejected. Rolling eviction does not change
 the fixed-size lifetime aggregates:
 
@@ -141,7 +168,9 @@ the fixed-size lifetime aggregates:
 - active play duration;
 - travelled distance;
 - best comparable zero-start, human, records-eligible distance for each finite
-  difficulty mode.
+  difficulty mode;
+- total eligible ordinary human deaths, so the three-prompt cap survives rolling
+  history and app restarts.
 
 Recent ordering, latest-run display, and rates are derived from retained
 records. No speculative per-action lifetime totals are stored.
@@ -157,12 +186,13 @@ settings or progression documents.
 Open **Home → Play Modes → Run History**. The screen shows:
 
 - lifetime runs, active play time, travelled distance, and comparable bests;
+- first-session eligible-run and closed-answer counts;
 - a detailed latest-run summary;
 - newest-first retained records with explicit standard/practice/debug/Campaign/
-  replay context and eligibility;
+  replay context, eligibility, and any paired comprehension response;
 - **VIEW JSON**, which exposes a selectable local payload, and **COPY JSON**.
 
-Export format `spider-swing-local-run-evidence@1` wraps the complete retained
+Export format `spider-swing-local-run-evidence@2` wraps the complete retained
 ledger with `local_only: true` and `transmission: "none"`. Copy is an explicit
 player action. The platform API cannot acknowledge a successful Android paste,
 so the UI asks the player to paste once to verify; if clipboard access is

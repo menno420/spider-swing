@@ -19,6 +19,13 @@ func _run_probe() -> void:
 	var ledger := RunRecordLedger.defaults()
 	for index in range(RunRecordLedger.HISTORY_LIMIT):
 		ledger.append_record(_record(index))
+	var first := ledger.record_by_id("layout-0")
+	if first != null:
+		ledger.append_feedback_response(RunFeedbackResponse.create(
+			first.record_id,
+			RunFeedbackResponse.QUESTION_DEATH_COMPREHENSION,
+			RunFeedbackResponse.ANSWER_NOT_SURE_WHAT_TO_DO,
+		))
 	var state := FrontEndState.new()
 	state.configure(
 		PlayerSettings.defaults(), PlayerProgress.defaults(), null, null, ledger)
@@ -75,7 +82,7 @@ func _run_probe() -> void:
 
 	if failures.is_empty():
 		print(
-			"[run_history_layout_probe] PASS — 100 records and JSON export "
+		"[run_history_layout_probe] PASS — 100 records, paired feedback, and JSON export "
 			+ "resolved at 1040×480 after %d frames" % SETTLE_FRAMES)
 		quit(0)
 		return
@@ -96,9 +103,9 @@ func _record(index: int) -> RunRecord:
 		125000.0 + index * 10.0,
 		index % 9,
 		&"obstacle",
-		SwingLabSession.RUN_PRACTICE,
-		100000.0,
-		false,
+		SwingLabSession.RUN_STANDARD,
+		0.0,
+		true,
 		7000 + index,
 	)
 	return RunRecord.create(settlement, {
@@ -115,7 +122,7 @@ func _record(index: int) -> RunRecord:
 		"rescue_consumed": index % 2 == 0,
 	}, {
 		"build_version": "layout-probe",
-		"android_version_code": 65,
+		"android_version_code": 66,
 		"runtime_platform": "probe",
 		"swing_config_schema_version": SwingConfig.SCHEMA_VERSION,
 		"trace_format": TraceCatalog.INPUT_TRACE_FORMAT,
@@ -125,6 +132,6 @@ func _record(index: int) -> RunRecord:
 		"preset_id": str(SwingConfig.PRESET_BALANCED),
 		"attempt_ordinal": index + 1,
 		"input_source": "human",
-		"configuration_kind": "debug_test",
-		"configuration_details": {"debug_start_distance_pixels": 100000.0},
+		"configuration_kind": "standard",
+		"configuration_details": {},
 	})

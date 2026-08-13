@@ -13,6 +13,8 @@ const PROGRESSION_SERVICE_SCRIPT := preload(
 	"res://game/application/progression_service.gd")
 const RUN_ATTEMPT_COUNTER_SCRIPT := preload(
 	"res://game/application/run_attempt_counter.gd")
+const RUN_FEEDBACK_PROMPT_POLICY := preload(
+	"res://game/application/run_feedback_prompt_policy.gd")
 const INPUT_ROUTER := preload("res://game/adapters/input_router.gd")
 const CLIPBOARD_ADAPTER_SCRIPT := preload(
 	"res://game/adapters/clipboard_adapter.gd")
@@ -36,6 +38,7 @@ var _view: SwingLabView
 var _audio_director: AudioDirector
 var _active_run_is_debug_test: bool = false
 var _active_tutorial_lesson_id: StringName = &""
+var _pending_run_feedback_prompt: Dictionary = {}
 
 
 func _ready() -> void:
@@ -383,8 +386,10 @@ func _mount_swing_lab(
 	_input_router.reel_changed.connect(_session.set_reel_active)
 	_input_router.burst_requested.connect(_session.request_burst)
 	_input_router.burst_gesture.connect(_on_burst_gesture)
-	_input_router.restart_requested.connect(_session.request_restart)
+	_input_router.restart_requested.connect(_request_restart)
 	_input_router.menu_requested.connect(_return_to_menu)
+	_input_router.run_feedback_answered.connect(_record_run_feedback)
+	_input_router.run_feedback_skipped.connect(_skip_run_feedback)
 	_input_router.debug_toggle_requested.connect(_session.toggle_debug)
 	_input_router.collision_outlines_toggle_requested.connect(
 		_session.toggle_collision_outlines)
@@ -413,6 +418,8 @@ func _mount_swing_lab(
 	_audio_director.configure_effects(settings.effects_enabled)
 	_audio_director.configure_music_volume(settings.music_volume)
 	_input_router.configure_haptics(settings.haptics_enabled)
+	_input_router.clear_run_feedback_prompt()
+	_view.clear_run_feedback_prompt()
 	add_child(_view)
 	add_child(_session)
 	add_child(_input_router)
@@ -484,6 +491,7 @@ func _unmount_front_end() -> void:
 
 
 func _unmount_swing_lab() -> void:
+	_pending_run_feedback_prompt.clear()
 	if _input_router != null:
 		_input_router.cancel_held_input()
 		remove_child(_input_router)
@@ -548,6 +556,74 @@ func _apply_run_finalization(
 		printerr(
 			"[spider-swing] run evidence write failed; progression remains applied")
 	_front_end_state.configure_run_record_ledger(_run_record_ledger)
+	var stored := _run_record_ledger.record_by_id(record.record_id)
+	_stage_run_feedback_prompt(RUN_FEEDBACK_PROMPT_POLICY.prompt_for(
+		stored,
+		_run_record_ledger,
+	))
+
+
+func _stage_run_feedback_prompt(prompt: Dictionary) -> void:
+	_pending_run_feedback_prompt = prompt.duplicate(true)
+	if _input_router != null:
+		_input_router.configure_run_feedback_prompt(
+			_pending_run_feedback_prompt)
+	if _view != null:
+		_view.configure_run_feedback_prompt(_pending_run_feedback_prompt)
+
+
+func _clear_run_feedback_prompt() -> void:
+	_pending_run_feedback_prompt.clear()
+	if _input_router != null:
+		_input_router.clear_run_feedback_prompt()
+	if _view != null:
+		_view.clear_run_feedback_prompt()
+
+
+func _record_run_feedback(
+	record_id: String,
+	question_id: StringName,
+	answer_id: StringName,
+) -> void:
+	if _pending_run_feedback_prompt.is_empty() or \
+			record_id != str(_pending_run_feedback_prompt.get("record_id", "")) or \
+			question_id != StringName(str(
+				_pending_run_feedback_prompt.get("question_id", ""))):
+		return
+	var response := RunFeedbackResponse.create(
+		record_id,
+		question_id,
+		answer_id,
+	)
+	if response == null or \
+			not _run_record_ledger.append_feedback_response(response):
+		return
+	_clear_run_feedback_prompt()
+	if not _save_repository.save_run_record_ledger(_run_record_ledger):
+		printerr(
+			"[spider-swing] run feedback write failed; progression remains applied")
+	_front_end_state.configure_run_record_ledger(_run_record_ledger)
+	if _session != null:
+		_session.request_restart()
+
+
+func _skip_run_feedback(
+	record_id: String,
+	question_id: StringName,
+) -> void:
+	if _pending_run_feedback_prompt.is_empty() or \
+			record_id != str(_pending_run_feedback_prompt.get("record_id", "")) or \
+			question_id != StringName(str(
+				_pending_run_feedback_prompt.get("question_id", ""))):
+		return
+	_clear_run_feedback_prompt()
+	if _session != null:
+		_session.request_restart()
+
+
+func _request_restart() -> void:
+	if _session != null and _pending_run_feedback_prompt.is_empty():
+		_session.request_restart()
 
 
 func _save_diagnostic_export(payload: Dictionary) -> void:

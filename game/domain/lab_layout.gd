@@ -61,6 +61,43 @@ static func tutorial_coaching_rect(viewport_size: Vector2) -> Rect2:
 	)
 
 
+static func run_feedback_panel_rect(viewport_size: Vector2) -> Rect2:
+	var panel_size := Vector2(
+		clampf(viewport_size.x - 80.0, 620.0, 780.0),
+		clampf(viewport_size.y - 160.0, 280.0, 320.0),
+	)
+	return Rect2(
+		viewport_size * 0.5 - panel_size * 0.5 + Vector2(0.0, 10.0),
+		panel_size,
+	)
+
+
+static func run_feedback_yes_rect(viewport_size: Vector2) -> Rect2:
+	var panel := run_feedback_panel_rect(viewport_size)
+	var gap := 16.0
+	var width := (panel.size.x - 72.0 - gap) * 0.5
+	return Rect2(
+		panel.position + Vector2(36.0, 150.0),
+		Vector2(width, 56.0),
+	)
+
+
+static func run_feedback_no_rect(viewport_size: Vector2) -> Rect2:
+	var yes := run_feedback_yes_rect(viewport_size)
+	return Rect2(
+		Vector2(yes.end.x + 16.0, yes.position.y),
+		yes.size,
+	)
+
+
+static func run_feedback_skip_rect(viewport_size: Vector2) -> Rect2:
+	var panel := run_feedback_panel_rect(viewport_size)
+	return Rect2(
+		panel.position + Vector2(panel.size.x * 0.5 - 110.0, 222.0),
+		Vector2(220.0, 48.0),
+	)
+
+
 static func debug_toggle_rect(viewport_size: Vector2) -> Rect2:
 	return Rect2(viewport_size.x - 126.0, 24.0, 102.0, 56.0)
 

@@ -13,9 +13,12 @@ static func run() -> Dictionary:
 	passed += _test_session_finalizes_once_and_resets_attempt_metrics(failures)
 	passed += _test_campaign_tutorial_and_replay_classification(failures)
 	passed += _test_schema_round_trip_and_tolerant_decode(failures)
+	passed += _test_first_session_feedback_policy_and_exclusions(failures)
+	passed += _test_feedback_schema_migration_pairing_and_export(failures)
 	passed += _test_bounded_history_and_lifetime_aggregates(failures)
 	passed += _test_repository_defaults_round_trip_and_backup(failures)
 	passed += _test_evidence_failure_cannot_change_progression(failures)
+	passed += _test_feedback_persistence_and_restart_isolation(failures)
 	passed += _test_history_route_export_and_scroll_ownership(failures)
 	passed += _test_persistence_and_metric_ownership_are_single_seams(failures)
 	return {"passed": passed, "failures": failures}
@@ -88,7 +91,7 @@ static func _test_record_derives_travelled_outcome_and_context(
 		"rescue_consumed": true,
 	}, {
 		"build_version": "contract-build",
-		"android_version_code": 65,
+		"android_version_code": 66,
 		"runtime_platform": "Android",
 		"swing_config_schema_version": SwingConfig.SCHEMA_VERSION,
 		"trace_format": TraceCatalog.INPUT_TRACE_FORMAT,
@@ -328,7 +331,7 @@ static func _test_schema_round_trip_and_tolerant_decode(
 	encoded["future_optional_field"] = {"ignored": true}
 	var decoded := RunRecord.from_dictionary(encoded)
 	if decoded == null or decoded.to_dictionary() != original.to_dictionary():
-		failures.append("schema-1 record did not round-trip while ignoring unknown fields")
+		failures.append("current record did not round-trip while ignoring unknown fields")
 		return 0
 	var future := encoded.duplicate(true)
 	future["schema_version"] = RunRecord.SCHEMA_VERSION + 1
@@ -345,6 +348,100 @@ static func _test_schema_round_trip_and_tolerant_decode(
 	if ledger_round_trip == null or ledger_round_trip.records.size() != 1 or \
 			RunRecordLedger.from_dictionary(future_ledger) != null:
 		failures.append("ledger decoding is not tolerant within schema or safe for future schema")
+		return 0
+	return 1
+
+
+static func _test_first_session_feedback_policy_and_exclusions(
+	failures: PackedStringArray,
+) -> int:
+	var ledger := RunRecordLedger.defaults()
+	var practice := _sample_record("feedback-practice", 125000.0, 100000.0, false)
+	practice.configuration_kind = &"region_practice"
+	ledger.append_record(practice)
+	var debug := _sample_record("feedback-debug", 900000.0)
+	debug.configuration_kind = &"debug_test"
+	ledger.append_record(debug)
+	for index in range(4):
+		var id := "feedback-standard-%d" % index
+		if not ledger.append_record(_sample_record(id, 20000.0 + index)):
+			failures.append("eligible first-session run was not retained")
+			return 0
+		var stored := ledger.record_by_id(id)
+		var prompt := RunFeedbackPromptPolicy.prompt_for(stored, ledger)
+		if stored.feedback_eligible_run_ordinal != index + 1 or \
+				(index < 3 and prompt.is_empty()) or \
+				(index == 3 and not prompt.is_empty()):
+			failures.append("prompt policy did not select exactly the first three human runs")
+			return 0
+	if ledger.total_feedback_eligible_runs != 4 or \
+			ledger.record_by_id(practice.record_id).feedback_eligible_run_ordinal != 0 or \
+			ledger.record_by_id(debug.record_id).feedback_eligible_run_ordinal != 0:
+		failures.append("practice or debug evidence entered first-session eligibility")
+		return 0
+	var first := ledger.record_by_id("feedback-standard-0")
+	var response := RunFeedbackResponse.create(
+		first.record_id,
+		RunFeedbackResponse.QUESTION_DEATH_COMPREHENSION,
+		RunFeedbackResponse.ANSWER_KNEW_WHAT_TO_DO,
+	)
+	if not ledger.append_feedback_response(response) or \
+			not RunFeedbackPromptPolicy.prompt_for(first, ledger).is_empty():
+		failures.append("answered run remained promptable")
+		return 0
+	return 1
+
+
+static func _test_feedback_schema_migration_pairing_and_export(
+	failures: PackedStringArray,
+) -> int:
+	var original := RunRecordLedger.defaults()
+	original.append_record(_sample_record("migration-first", 21000.0))
+	original.append_record(_sample_record("migration-second", 22000.0))
+	var schema_one := original.to_dictionary()
+	schema_one["schema_version"] = 1
+	schema_one.erase("total_feedback_eligible_runs")
+	schema_one.erase("feedback_responses")
+	for encoded_record: Dictionary in schema_one["records"] as Array:
+		encoded_record["schema_version"] = 1
+		encoded_record.erase("feedback_eligible_run_ordinal")
+	var migrated := RunRecordLedger.from_dictionary(schema_one)
+	if migrated == null or migrated.total_feedback_eligible_runs != 2 or \
+			migrated.record_by_id("migration-first").feedback_eligible_run_ordinal != 1 or \
+			migrated.record_by_id("migration-second").feedback_eligible_run_ordinal != 2:
+		failures.append("schema-1 evidence did not migrate to honest prompt ordinals")
+		return 0
+	var response := RunFeedbackResponse.create(
+		"migration-first",
+		RunFeedbackResponse.QUESTION_DEATH_COMPREHENSION,
+		RunFeedbackResponse.ANSWER_NOT_SURE_WHAT_TO_DO,
+	)
+	var orphan := RunFeedbackResponse.create(
+		"missing-record",
+		RunFeedbackResponse.QUESTION_DEATH_COMPREHENSION,
+		RunFeedbackResponse.ANSWER_KNEW_WHAT_TO_DO,
+	)
+	if not migrated.append_feedback_response(response) or \
+			migrated.append_feedback_response(response) or \
+			migrated.append_feedback_response(orphan):
+		failures.append("feedback pairing accepted a duplicate or orphan response")
+		return 0
+	var restored := RunRecordLedger.from_dictionary(migrated.to_dictionary())
+	if restored == null:
+		failures.append("schema-2 feedback ledger did not decode")
+		return 0
+	var export_json := JSON.stringify(restored.export_dictionary())
+	if restored.feedback_for_record("migration-first") == null or \
+			not export_json.contains(RunRecordLedger.EXPORT_FORMAT) or \
+			not export_json.contains("not_sure_what_to_do") or \
+			not export_json.contains("\"transmission\":\"none\""):
+		failures.append("paired response did not survive schema-2 round-trip and export")
+		return 0
+	for index in range(RunRecordLedger.HISTORY_LIMIT):
+		migrated.append_record(_sample_record("eviction-%d" % index, 30000.0))
+	if migrated.has_record("migration-first") or \
+			migrated.feedback_for_record("migration-first") != null:
+		failures.append("evicted run left an orphaned feedback response")
 		return 0
 	return 1
 
@@ -461,6 +558,78 @@ static func _test_evidence_failure_cannot_change_progression(
 	_cleanup_repository_paths(paths)
 	if not safe:
 		failures.append("optional evidence failure changed or duplicated progression")
+		return 0
+	return 1
+
+
+static func _test_feedback_persistence_and_restart_isolation(
+	failures: PackedStringArray,
+) -> int:
+	var suffix := str(Time.get_ticks_usec())
+	var paths := {
+		"settings": "user://feedback_%s_settings.json" % suffix,
+		"progress": "user://feedback_%s_progress.json" % suffix,
+		"debug": "user://feedback_%s_debug.json" % suffix,
+		"ledger": "user://feedback_%s_ledger.json" % suffix,
+	}
+	_cleanup_repository_paths(paths)
+	var repository := SaveRepository.new(
+		paths["settings"], paths["progress"], paths["debug"], paths["ledger"])
+	var root := MAIN_SCRIPT.new()
+	root._save_repository = repository
+	root._progression_service = ProgressionService.new()
+	root._progress = PlayerProgress.defaults()
+	root._run_record_ledger = RunRecordLedger.defaults()
+	root._front_end_state = FrontEndState.new()
+	root._front_end_state.configure(
+		PlayerSettings.defaults(), root._progress, root._progression_service)
+	var settlement := RunSettlement.create(
+		"feedback-persisted", 24000.0, 5, &"obstacle")
+	root._apply_run_finalization(
+		settlement,
+		RunRecord.create(settlement, {}, _standard_context()),
+	)
+	var prompt := root._pending_run_feedback_prompt.duplicate(true)
+	root._record_run_feedback(
+		settlement.settlement_id,
+		RunFeedbackResponse.QUESTION_DEATH_COMPREHENSION,
+		&"invalid-answer",
+	)
+	if prompt.is_empty() or root._pending_run_feedback_prompt.is_empty():
+		failures.append("invalid answer dismissed the pending comprehension prompt")
+		root.free()
+		_cleanup_repository_paths(paths)
+		return 0
+	root._record_run_feedback(
+		settlement.settlement_id,
+		RunFeedbackResponse.QUESTION_DEATH_COMPREHENSION,
+		RunFeedbackResponse.ANSWER_KNEW_WHAT_TO_DO,
+	)
+	var restored := repository.load_run_record_ledger()
+	var progress_after_answer := root._progress.to_dictionary()
+	var second := RunSettlement.create(
+		"feedback-skipped", 25000.0, 3, &"bird")
+	root._apply_run_finalization(
+		second,
+		RunRecord.create(second, {}, _standard_context()),
+	)
+	root._skip_run_feedback(
+		second.settlement_id,
+		RunFeedbackResponse.QUESTION_DEATH_COMPREHENSION,
+	)
+	restored = repository.load_run_record_ledger()
+	var safe := root._pending_run_feedback_prompt.is_empty() and \
+		restored.has_record(second.settlement_id) and \
+		restored.feedback_for_record(settlement.settlement_id) != null and \
+		restored.feedback_for_record(second.settlement_id) == null and \
+		root._progress.total_flies == 8 and \
+		int(progress_after_answer.get("total_flies", -1)) == 5 and \
+		root._progress.applied_settlement_ids.count(settlement.settlement_id) == 1 and \
+		root._progress.applied_settlement_ids.count(second.settlement_id) == 1
+	root.free()
+	_cleanup_repository_paths(paths)
+	if not safe:
+		failures.append("feedback answer/skip changed progression or failed local persistence")
 		return 0
 	return 1
 
@@ -604,7 +773,7 @@ static func _sample_record(
 static func _standard_context() -> Dictionary:
 	return {
 		"build_version": "test-build",
-		"android_version_code": 65,
+		"android_version_code": 66,
 		"runtime_platform": "test",
 		"swing_config_schema_version": SwingConfig.SCHEMA_VERSION,
 		"trace_format": TraceCatalog.INPUT_TRACE_FORMAT,
