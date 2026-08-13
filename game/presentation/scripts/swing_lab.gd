@@ -69,6 +69,7 @@ var _region_banner_focus: String = ""
 var _region_visual_transition_from: StringName = \
 	CourseRegionCatalog.VISUAL_OLD_GROWTH
 var _region_visual_transition_remaining: float = 0.0
+var _run_feedback_prompt: Dictionary = {}
 
 
 func _ready() -> void:
@@ -151,6 +152,21 @@ func select_environment_theme(index: int) -> void:
 		EnvironmentThemeCatalog.count() - 1,
 	)
 	queue_redraw()
+
+
+func configure_run_feedback_prompt(prompt: Dictionary) -> void:
+	_run_feedback_prompt = prompt.duplicate(true)
+	queue_redraw()
+
+
+func clear_run_feedback_prompt() -> void:
+	_run_feedback_prompt.clear()
+	queue_redraw()
+
+
+func run_feedback_prompt_visible() -> bool:
+	return _snapshot != null and _snapshot.run_state == &"dead" and \
+		not _run_feedback_prompt.is_empty()
 
 
 func environment_theme_index() -> int:
@@ -1857,11 +1873,65 @@ func _draw_hud(size: Vector2) -> void:
 
 	if _snapshot.run_state != &"active":
 		draw_rect(Rect2(Vector2.ZERO, size), Color(0.02, 0.04, 0.06, 0.62))
-		var title := "FALLING…" if _snapshot.run_state == &"dying" else "RUN ENDED"
-		_draw_text(Vector2(size.x * 0.5 - 90.0, size.y * 0.43), title, 30, WEB)
-		if _snapshot.run_state == &"dead":
+		if run_feedback_prompt_visible():
+			_draw_run_feedback_prompt(size)
+		else:
+			var title := \
+				"FALLING…" if _snapshot.run_state == &"dying" else "RUN ENDED"
+			_draw_text(
+				Vector2(size.x * 0.5 - 90.0, size.y * 0.43), title, 30, WEB)
+		if _snapshot.run_state == &"dead" and \
+				not run_feedback_prompt_visible():
 			_draw_text(Vector2(size.x * 0.5 - 154.0, size.y * 0.5),
 				"Tap anywhere to restart", 22, CYAN)
+
+
+func _draw_run_feedback_prompt(size: Vector2) -> void:
+	var panel := LabLayout.run_feedback_panel_rect(size)
+	draw_rect(panel, Color(0.02, 0.07, 0.09, 0.98))
+	draw_rect(panel, CYAN, false, 3.0)
+	var ordinal := int(_run_feedback_prompt.get("eligible_run_ordinal", 0))
+	var limit := int(_run_feedback_prompt.get("eligible_run_limit", 0))
+	_draw_centered_text(
+		panel.position + Vector2(panel.size.x * 0.5, 34.0),
+		"QUICK CHECK · RUN %d OF %d" % [ordinal, limit],
+		16,
+		YELLOW,
+	)
+	_draw_centered_text(
+		panel.position + Vector2(panel.size.x * 0.5, 78.0),
+		str(_run_feedback_prompt.get("question_line_one", "")),
+		22,
+		WEB,
+	)
+	_draw_centered_text(
+		panel.position + Vector2(panel.size.x * 0.5, 108.0),
+		str(_run_feedback_prompt.get("question_line_two", "")),
+		22,
+		WEB,
+	)
+	_draw_button(
+		LabLayout.run_feedback_yes_rect(size),
+		str(_run_feedback_prompt.get("yes_label", "YES — I KNEW")),
+		true,
+	)
+	_draw_button(
+		LabLayout.run_feedback_no_rect(size),
+		str(_run_feedback_prompt.get("no_label", "NO — NOT SURE")),
+		false,
+	)
+	_draw_button(
+		LabLayout.run_feedback_skip_rect(size),
+		"SKIP · RESTART",
+		false,
+	)
+	_draw_centered_text(
+		panel.position + Vector2(panel.size.x * 0.5, panel.size.y - 18.0),
+		"LOCAL ONLY · INCLUDED IN MANUAL RUN HISTORY EXPORT",
+		12,
+		MUTED,
+	)
+	_draw_button(LabLayout.menu_rect(size), "MENU", false)
 
 
 func _draw_debug(size: Vector2) -> void:

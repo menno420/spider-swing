@@ -6,7 +6,7 @@ class_name RunRecord
 ## the authoritative facts needed to compare runs while leaving ranking and
 ## remote-trust policy deliberately undefined.
 
-const SCHEMA_VERSION := 1
+const SCHEMA_VERSION := 2
 
 var record_id: String = ""
 var settlement_id: String = ""
@@ -27,6 +27,9 @@ var records_eligible: bool = false
 var leaderboards_eligible: bool = false
 var attempt_ordinal: int = 0
 var lifetime_completed_run_ordinal: int = 0
+## Assigned by RunRecordLedger so first-session prompt policy survives restarts
+## and can distinguish the first three eligible human runs from later play.
+var feedback_eligible_run_ordinal: int = 0
 var input_source: StringName = &"human"
 var configuration_kind: StringName = &"standard"
 var configuration_details: Dictionary = {}
@@ -176,6 +179,8 @@ static func from_dictionary(data: Dictionary) -> RunRecord:
 	record.attempt_ordinal = maxi(0, int(data.get("attempt_ordinal", 0)))
 	record.lifetime_completed_run_ordinal = maxi(
 		0, int(data.get("lifetime_completed_run_ordinal", 0)))
+	record.feedback_eligible_run_ordinal = maxi(
+		0, int(data.get("feedback_eligible_run_ordinal", 0)))
 	record.input_source = StringName(str(data.get("input_source", "unknown")))
 	record.configuration_kind = StringName(str(data.get(
 		"configuration_kind", "unknown")))
@@ -223,6 +228,13 @@ func copy() -> RunRecord:
 	return RunRecord.from_dictionary(to_dictionary())
 
 
+func is_first_session_feedback_eligible() -> bool:
+	return records_eligible and input_source == &"human" and \
+		configuration_kind == &"standard" and terminal_outcome == &"death" and \
+		start_distance_pixels <= 0.001 and \
+		DifficultyCatalog.has_mode(difficulty_id)
+
+
 func to_dictionary() -> Dictionary:
 	return {
 		"schema_version": SCHEMA_VERSION,
@@ -245,6 +257,7 @@ func to_dictionary() -> Dictionary:
 		"leaderboards_eligible": leaderboards_eligible,
 		"attempt_ordinal": attempt_ordinal,
 		"lifetime_completed_run_ordinal": lifetime_completed_run_ordinal,
+		"feedback_eligible_run_ordinal": feedback_eligible_run_ordinal,
 		"input_source": str(input_source),
 		"configuration_kind": str(configuration_kind),
 		"configuration_details": configuration_details.duplicate(true),

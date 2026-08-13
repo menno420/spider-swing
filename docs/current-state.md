@@ -15,7 +15,7 @@ live in [`player-preference research`](product/player-preference-research-2026-0
 External benchmarks and the verified zone audit live in
 [`upgrade-and-difficulty research`](product/upgrade-and-difficulty-research-2026-08-02.md).
 
-Build `0.44.0-run-evidence` is current. Continuous drive is
+Build `0.45.0-run-feedback` is current. Continuous drive is
 zero; release, swing control, Reel, and pull timing earn speed; the former left
 kill line is a visible pursuing bird. `target_speed_at` remains a named
 reference. The bot still cannot tune the bird — model v4 pumps, but it sustains
@@ -78,14 +78,18 @@ without a reported regression.
 - A separately versioned `DebugTestProfile` auto-saves the Test Lab working set
   and A/B/C comparison slots. Its resolved display values and sparse explicit
   overrides never enter `PlayerSettings` or `PlayerProgress`.
-- A separately versioned schema-1 `RunRecordLedger` retains the newest 100
+- A separately versioned schema-2 `RunRecordLedger` retains the newest 100
   settlement-backed records plus lifetime runs, active duration, travelled
   distance, and comparable difficulty bests. Fixed ticks/events supply metrics;
   every record keeps its build, seed, loadout, configuration, actions, outcome,
-  region, and eligibility. Play Modes → Run History exposes summaries and JSON.
+  region, and eligibility. The first three ordinary human deaths also offer one
+  local closed comprehension question after authoritative `DEAD`; an answer is
+  paired to the exact record and appears in the same manual export. Debug,
+  Practice, Campaign, Course Lab, replay, later runs, and skipped prompts are
+  excluded. Play Modes → Run History exposes summaries and JSON.
   It is local evidence, not analytics or a leaderboard entry; see
   [`run evidence`](technical/run-evidence.md).
-- Build `0.44.0-run-evidence` (Android version code 65, package
+- Build `0.45.0-run-feedback` (Android version code 66, package
   `com.menno420.spiderswing.dev`) retains the stable conventional public debug
   identity introduced by `0.19.0-depth-testing` in
   `.github/android/debug.keystore`. The workflow pins its file and certificate
@@ -519,10 +523,11 @@ this section carries only what is still owed.
   because a real share of testers will not enable installs from unknown sources.
   The plan, the channel structure and the reward rule are in
   [`run records and the tester programme`](ideas/run-records-and-tester-programme-2026-08-03.md);
-  its first engineering step — bounded, fully context-labelled per-run evidence
-  — is now built local-only with explicit manual JSON export. The wider tester
-  programme, consent/prompt design, automatic upload, account identity, and
-  leaderboard schema remain unimplemented owner/product forks.
+  its first engineering steps — bounded context-labelled run evidence and one
+  local first-session comprehension prompt — are now built with explicit manual
+  JSON export. Fairness/free-text waves, recruitment, consent for transmission,
+  automatic upload, account identity, rewards, and leaderboard schema remain
+  unimplemented owner/product forks.
 
 **Two device corrections are worth keeping here, because each overturned a
 passing test.** Bramble's first clearance claim was accepted by a static
@@ -537,6 +542,13 @@ accidental dives. Collision is untouched and diving to the floor is unchanged,
 so the Dive stays always available, which is its whole purpose.
 
 ## Recently shipped (newest first)
+
+- **2026-08-13 — Paired first-session comprehension feedback (0.45.0).** The
+  first three ordinary human deaths offer one closed understanding question
+  after `DEAD`. Answers are local, paired to the exact retained run ID, visible
+  in Run History, and included in the manual schema-2 JSON export. Skip restarts
+  without inventing an answer. No gameplay value, fairness rating, free text,
+  identity, analytics, upload, recruitment, reward, or Play publication changed.
 
 - **2026-08-06 — Bounded local run evidence (0.44.0).** Settlement-backed runs
   now finalize one schema-versioned `RunRecord` from active fixed ticks and

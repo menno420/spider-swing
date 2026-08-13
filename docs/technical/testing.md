@@ -234,6 +234,15 @@ It displays the state-owned screen in a live `SubViewport`, waits four layout
 frames, and only then checks enclosure, touch-control floors, overflow, and the
 single native scroll owner at 1040×480.
 
+The synchronous mobile HUD contracts separately pin the first-session prompt's
+1040×480 shared geometry, 48 px control floor, `DEAD`-only visibility, and GUI
+ownership: its yes/no/skip controls cannot leak into world taps or restart.
+Its live settled-frame companion is:
+
+```bash
+godot --headless --path . --script res://tools/run_feedback_layout_probe.gd
+```
+
 ## `tools/check_architecture.py`
 
 Enforces the inward dependency direction from

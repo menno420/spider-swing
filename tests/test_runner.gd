@@ -15,9 +15,9 @@ const EXPORT_PRESETS_PATH := "res://export_presets.cfg"
 const ANDROID_WORKFLOW_PATH := "res://.github/workflows/android-debug.yml"
 const ANDROID_RELEASE_WORKFLOW_PATH := \
 	"res://.github/workflows/android-release.yml"
-const BUILD_VERSION := "0.44.0-run-evidence"
-const ANDROID_VERSION_CODE := 65
-const ANDROID_APP_NAME := "Spider Swing Run Evidence (dev)"
+const BUILD_VERSION := "0.45.0-run-feedback"
+const ANDROID_VERSION_CODE := 66
+const ANDROID_APP_NAME := "Spider Swing Run Feedback (dev)"
 const DEBUG_KEYSTORE_PATH := "res://.github/android/debug.keystore"
 const DEBUG_KEYSTORE_SHA256 := \
 	"e9104672477e0238b6cc2f7d6b994c459e37f130cae06a37aff05001f101bbda"
@@ -30,7 +30,7 @@ const RELEASE_PLACEHOLDER_APP_NAME := "PLACEHOLDER SET BY WORKFLOW"
 const RELEASE_EXPORT_FORMAT_AAB := 1
 const RELEASE_MIN_SDK := "24"
 const RELEASE_TARGET_SDK := "36"
-const EXPECTED_CHECK_COUNT := 266
+const EXPECTED_CHECK_COUNT := 270
 const REQUIRED_INPUT_ACTIONS := [
 	"web_action", "reel_in", "burst_action", "pause", "restart_run",
 	"toggle_debug"]
