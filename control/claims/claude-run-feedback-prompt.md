@@ -1,0 +1,1 @@
+- `claude/run-feedback-prompt` · **Pair first-session comprehension feedback with local run evidence** · game/domain run-evidence schema, application prompt policy, run HUD, persistence, tests and docs · 2026-08-13
