@@ -57,9 +57,11 @@ frontmatter keeps the score.
   — captured 2026-08-03 from a live owner session after the `0.39.0` playtest.
   Per-run stat retention plus a tester programme aimed at perspectives rather
   than recordings. The bounded local-record/history/manual-export slice shipped
-  in `0.44.0-run-evidence` / PR #172; the idea stays in the backlog because the
-  tester programme, any remote data posture, consent, identity, rewards, and
-  leaderboard entry design remain unimplemented owner/product forks.
+  in `0.44.0-run-evidence` / PR #172, and its first-three-run comprehension
+  prompt shipped in `0.45.0-run-feedback` / PR #176. The idea stays in the
+  backlog because later feedback waves, recruitment, any remote data posture,
+  consent, identity, rewards, and leaderboard entry design remain unimplemented
+  owner/product forks.
 
 **The 2026-08-01 owner-conversation batch.** Five linked ideas captured from a
 long live planning session. They interlock: the charter governs the events, the
