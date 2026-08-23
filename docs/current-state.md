@@ -555,13 +555,10 @@ so the Dive stays always available, which is its whole purpose.
   configured. The path to a shareable link runs through the store listing —
   see the [closed-test runbook](technical/play-closed-test-runbook.md) § 7.
 
-- **2026-08-23 — Internal install verified; closed-test package prepared.** The
-  owner confirmed the version-64 internal build works. A signed version-66 AAB,
-  three genuine 1920×1080 screenshots, an icon, a feature graphic, current
-  declaration answers, and an unpublished privacy page are ready for review.
-  The Play app remains a draft with its closed track inactive, so the required
-  12-testers-for-14-days clock has not started. The public contact identity and
-  external Console submission remain owner-controlled.
+- **2026-08-23 — Internal install verified; closed-test package prepared.**
+  Version 64 works. Signed version 66 and listing materials are ready; closed
+  testing has not started. Public contact identity and Console submission remain
+  owner-controlled.
 
 - **2026-08-04 — Tutorial orientation and teaching clarity (0.43.0).** The
   owner's first 1040×480 tutorial review replaced dense prose and tiny scene
