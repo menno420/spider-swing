@@ -14,10 +14,9 @@
 
 # **`Slingy Spider`** — 13 characters. **DECIDED 2026-08-05 (owner).**
 
-Set `RELEASE_APP_NAME` to `Slingy Spider`. The application ID is a separate,
-**permanent** decision and is no longer blocked by the name —
-`com.menno420.slingyspider` is the obvious candidate, but it is the owner's call
-and can never be changed after publishing.
+The live Play Console app and signed release workflow now use the permanent
+application ID **`com.menno420.slingyspider`**. Do not create a replacement app
+or change this package name.
 
 Exact-phrase search on Google Play returns **no app with this name**. Play's
 search parses "slingy" as swing/momentum and surfaces **Stickman Hook (100M+)**
@@ -28,49 +27,10 @@ three retracted objections, in [`name-status.md`](name-status.md).
 
 ---
 
-### The ruled-out predecessor, kept as the record
-
-**`Swingy Spider` is ruled out — do not ship it.**
-
-Verified 2026-08-05 by fetching the listings, not by search summary:
-
-| Conflict | Platform | Evidence |
-|---|---|---|
-| **Swingy Spider** by Garrett Goodwin | itch.io | [`goodwingames.itch.io/swingy-spider`](https://goodwingames.itch.io/swingy-spider) — HTTP 200, a 2D web-swinging game where you **eat flies and avoid enemy bugs** |
-| **Swingy Spider** by Tim Mendez | Amazon Appstore | [listing](https://www.amazon.com/Tim-Mendez-Swingy-Spider/dp/B017V0UL8M) — endless swing game, *swing from leaf to leaf*, leaderboards |
-
-Same name, same genre, same core loop. This is not a near-miss.
-
-**The wider finding is that the whole construction is unusable.** Every
-`[swing|sling] + spider` name sits in a namespace saturated by *Spider Swing*,
-*Spider Swinger*, *Spider Swing 3D*, *Slinging Spider* and *Spider Slingers* —
-and those titles have trained store search to return **urban superhero
-brawlers**. A calm physics game entering that space loses on algorithmic
-mismatch even where the exact string is free. GDD § 2.5 requires the name be
-store-searchable; no name of this shape can satisfy it.
-
-`Slingy Spider` was checked too: no exact store conflict, but it is one letter
-from **SLINKY** (live US trademark, reg. 1455493, genericised in speech), and it
-names the wrong mechanic — this is a pendulum, not a slingshot.
-
-**Researched candidates with no exact-match conflicts** (verified by independent
-search; ranked by a Deep Research pass that agreed on all verdicts):
-
-| Candidate | Chars | Notes |
-|---|---|---|
-| `Silken Pendulum` | 15 | Ranked first by both passes. Footprint is antique horology and poetry — non-competing, so the term is winnable. |
-| `Thread Momentum` | 15 | Literal about speed→momentum; keeps the miniature scale. |
-| `Tension Weaver` | 14 | Names the Reel-In skill directly. |
-| `Arcing Arachnid` | 15 | Clear on the arc; slightly on-the-nose. |
-
-**Owner is holding the decision** (2026-08-05) — `OQ-SWINGY-NAME` stays open.
-These are candidates, **not clearances**: web search shows what is indexed and
-is no substitute for a Play Console search under the owner's account or a
-trademark check.
-
-The store name can be revised later; the **application ID cannot**, so do not
-stall the ID decision on this. *(Whether a published store name is freely
-editable is believed yes and **not verified**.)*
+The historical name research, including why **Swingy Spider** was rejected, is
+kept in [`name-status.md`](name-status.md). It is background, not an open naming
+decision for this release. The only remaining owner judgment is whether to do a
+formal Benelux/EU trademark clearance before production publication.
 
 ## Short description — limit 80
 
@@ -145,14 +105,19 @@ your device.
 - **Does not mention leaderboards.** GDD § 2.4 lists global competitive
   leaderboards as a non-goal for the first release. Copy must not promise them.
 
-## Graphics — still to produce
+## Graphics — prepared for owner review
 
 | Asset | Spec | State |
 |---|---|---|
-| App icon | 512×512, 32-bit PNG **with** alpha, ≤1024 KB | **not produced** |
-| Feature graphic | 1024×500, JPEG or 24-bit PNG, **no** alpha | **not produced** |
-| Phone screenshots | ≥2 to publish; ≤8 per device type | **not produced** |
-| Games recommendation eligibility | ≥3 landscape 16:9 at ≥1920×1080 | **not produced** |
+| App icon | 512×512, 32-bit PNG **with** alpha, ≤1024 KB | **candidate ready** |
+| Feature graphic | 1024×500, JPEG or 24-bit PNG, **no** alpha | **candidate ready** |
+| Phone screenshots | ≥2 to publish; ≤8 per device type | **3 genuine candidates ready** |
+| Games recommendation eligibility | ≥3 landscape 16:9 at ≥1920×1080 | **minimum set ready** |
+
+The upload-sized files, original masters, genuine captures and provenance are
+in [`../../assets/source/play-store/README.md`](../../assets/source/play-store/README.md).
+They have not been uploaded. The icon, feature graphic and screenshot order all
+remain owner-review decisions.
 
 **The graphics are the differentiator here, not a formality.** Owner review of
 the category (2026-08-05) found store art across competing swinging games to be
@@ -176,5 +141,7 @@ estate produced three ATTACH buttons in a single frame. It is acceptable for the
 feature graphic; it must never be used for a screenshot implying "this is how it
 plays".
 
-The existing `android-debug` workflow already produces an installable APK on
-every push to `main`, which is the fastest route to real captures on a device.
+The current candidates were captured from the actual headed game at its native
+1280×720 viewport and resized without retouching to 1920×1080. Before production,
+replace them with signed-build device captures if the release presentation
+differs — most visibly, if its small debug build label is absent.
