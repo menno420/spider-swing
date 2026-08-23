@@ -82,7 +82,8 @@ version is released.
 
 ## Contact
 
-Questions about this policy: **[PUBLIC CONTACT EMAIL — OWNER TO CHOOSE]**
+Questions about this policy:
+**[slingy-spider-contact@googlegroups.com](mailto:slingy-spider-contact@googlegroups.com)**
 
 ## Publishable text ends
 
@@ -90,10 +91,9 @@ Questions about this policy: **[PUBLIC CONTACT EMAIL — OWNER TO CHOOSE]**
 
 ## Maintainer notes — not part of the published policy
 
-**Contact address.** Google Play requires a public contact email on the store
-listing. The owner has not yet chosen whether to use a dedicated public address,
-so the publishable text deliberately contains a visible placeholder. Replace it
-in both the policy page and Play Console before publication.
+**Contact address.** The dedicated Google Group address forwards every message
+to the owner while keeping membership and conversations private. Anyone on the
+internet may email it; it exposes no personal mailbox address.
 
 **Why it claims no collection.** Verified against the source on 2026-08-05, not
 assumed:
