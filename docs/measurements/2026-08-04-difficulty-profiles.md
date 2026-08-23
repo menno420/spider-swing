@@ -88,7 +88,7 @@ the same digest.
 
 The pre-change and post-change Standard audit over seeds 1000–1001 is exactly:
 
-`087252417d164e4d2521b917084c63a39fb9f5d100e7826001a5241dcf75704b`
+`10f99bfbb8d31484ddcb86f3f0fd95a3c58c0a2e2885c35cb019146e0f64419c`
 
 The extracted pattern sequence also stayed byte-identical before and after
 (`d79f1db019e8f4d885f433bcaa10116bfdcd8f0ef836a73e6126025d734b71d7`).
