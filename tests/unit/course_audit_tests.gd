@@ -64,7 +64,7 @@ const DIGEST_LAST_CHUNK := 156
 ## that behaviour moved, and the reason the constant exists at all is that no
 ## generator change may land looking like a no-op.
 const UNCHANGED_COURSE_DIGEST := \
-	"087252417d164e4d2521b917084c63a39fb9f5d100e7826001a5241dcf75704b"
+	"10f99bfbb8d31484ddcb86f3f0fd95a3c58c0a2e2885c35cb019146e0f64419c"
 
 ## Chunks the width and envelope contracts below walk. Wide enough to cross all
 ## three scoped regions, small enough that the suite still runs in seconds — the

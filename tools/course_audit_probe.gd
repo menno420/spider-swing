@@ -252,8 +252,8 @@ static func course_digest(
 
 ## Stable text for one polygon list.
 ##
-## Four decimals is far finer than any real change to authored geometry and
-## coarse enough that last-bit float noise cannot flip the digest on its own.
+## Thousandth-pixel integer quantisation is far finer than any real change to
+## authored geometry and avoids platform differences in float-to-text formatting.
 ##
 ## The leading `label count` line is always present, so an *empty* list still
 ## contributes — "no obstacles here" is a fact about the course and a digest that
@@ -267,7 +267,12 @@ static func _polygon_digest_text(
 	for polygon: PackedVector2Array in polygons:
 		text += label
 		for point: Vector2 in polygon:
-			text += " %.4f,%.4f" % [point.x, point.y]
+			# Integer quantisation avoids platform C-library differences in
+			# fixed-point float formatting while retaining sub-pixel sensitivity.
+			text += " %d,%d" % [
+				roundi(point.x * 1000.0),
+				roundi(point.y * 1000.0),
+			]
 		text += "\n"
 	return text
 
