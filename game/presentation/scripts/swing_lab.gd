@@ -1796,15 +1796,16 @@ func _draw_hud(size: Vector2) -> void:
 			15,
 			Color(CYAN, alpha),
 		)
-	_draw_text(
-		Vector2(30.0, size.y - 18.0),
-		"BUILD %s" % ProjectSettings.get_setting(
-			"application/config/version",
-			"unknown",
-		),
-		13,
-		MUTED,
-	)
+	if OS.is_debug_build():
+		_draw_text(
+			Vector2(30.0, size.y - 18.0),
+			"BUILD %s" % ProjectSettings.get_setting(
+				"application/config/version",
+				"unknown",
+			),
+			13,
+			MUTED,
+		)
 
 	if _show_debug_tools:
 		var debug_rect := LabLayout.debug_toggle_rect(size)

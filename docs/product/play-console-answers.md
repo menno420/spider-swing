@@ -7,7 +7,8 @@
 > certifying these, and a wrong declaration is a policy violation rather than a
 > typo. Verified against the source 2026-08-05.
 >
-> Answers describe **the build being uploaded**. See § "The leaderboard trigger".
+> Answers describe **the build being uploaded**. Source and the live Console
+> task set were rechecked 2026-08-23. See § "The leaderboard trigger".
 
 ## Data safety
 
@@ -78,14 +79,16 @@ audience matches the app's actual content and presentation.
 | Advertising ID | **No** | The game does not use one. Declaring "yes" wrongly triggers extra policy checks. |
 | Government apps | **No** | |
 | Financial features | **No** | Certify that none are offered. |
+| Health apps | **No** | No health feature, health data, medical claim, or health-related SDK exists. |
 | App access — is any part login-gated? | **All functionality available without special access** | No accounts exist. |
 | News app | **No** | |
 | COVID-19 contact tracing | **No** | |
 | Data deletion request URL | leave blank / n/a | Nothing is collected. |
 
-These last few were **not individually verified** against official pages — the
-research model cited a bare site root for them. The Console will show exactly
-what it wants; the answers above are what this build's behaviour supports.
+The live Console showed the current app-content task set on 2026-08-23. These
+answers are still owner certifications: read each Console wording before
+submitting, and stop if it describes a feature that has changed since this
+source check.
 
 ## The leaderboard trigger
 

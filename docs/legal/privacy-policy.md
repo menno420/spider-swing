@@ -21,7 +21,7 @@
 
 # Privacy Policy for Slingy Spider
 
-**Last updated: 6 August 2026**
+**Last updated: 23 August 2026**
 
 This policy explains what Slingy Spider ("the game") does with information on
 your device. It is written to be read, not to be survived.
@@ -82,7 +82,7 @@ version is released.
 
 ## Contact
 
-Questions about this policy: **mennovanhattum@gmail.com**
+Questions about this policy: **[PUBLIC CONTACT EMAIL — OWNER TO CHOOSE]**
 
 ## Publishable text ends
 
@@ -91,9 +91,9 @@ Questions about this policy: **mennovanhattum@gmail.com**
 ## Maintainer notes — not part of the published policy
 
 **Contact address.** Google Play requires a public contact email on the store
-listing regardless, so this address is public either way. Swap it for a
-dedicated one if you would rather keep your personal inbox off the listing —
-change it in both places.
+listing. The owner has not yet chosen whether to use a dedicated public address,
+so the publishable text deliberately contains a visible placeholder. Replace it
+in both the policy page and Play Console before publication.
 
 **Why it claims no collection.** Verified against the source on 2026-08-05, not
 assumed:

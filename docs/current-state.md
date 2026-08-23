@@ -95,13 +95,15 @@ without a reported regression.
   place and preserves saves; do not uninstall that stable-key build.
 - The committed key and its `androiddebugkey` / `android` / `android`
   credentials are public. It must **NEVER** be reused for Google Play, a release
-  build, production signing, or any signed distribution. Release signing remains
-  absent and the workflow never publishes.
+  build, production signing, or any signed distribution. Release signing
+  material remains outside the tree in owner-controlled GitHub secrets, and the
+  workflow never publishes.
 - A second preset, `Android Release`, builds the App Bundle Play requires of new
   apps (Gradle build, min/target SDK 24/36). Its identity is a committed
-  placeholder because a published applicationId is permanent;
-  `android-release.yml` is dispatch-only, substitutes owner-set variables, and
-  builds unsigned until an upload key exists. Never run end to end — see
+  placeholder because a published applicationId is permanent.
+  `android-release.yml` is dispatch-only, substitutes owner-set variables, signs
+  with the external upload key, and has run successfully through version code
+  66. It never uploads to Play — see
   [ADR 0005](technical/adr/0005-android-release-aab.md).
 
 **Traversal and deterministic course**
@@ -387,9 +389,9 @@ without a reported regression.
   cannot alter physics or the music mix law.
 - No production signing material is committed and repository workflows do not
   publish automatically. The stable debug key is not a release credential and
-  must never become one. The owner has separately placed signed version code 64
-  on the inactive Google Play internal-testing track; source/debug code 65 is a
-  new build identity and is not a Play publication.
+  must never become one. Signed version code 64 is active on Google Play's
+  internal-testing track and owner-confirmed working. Signed version code 66 is
+  prepared locally but has not been uploaded to Play.
 
 ## What measurement has settled
 
@@ -552,6 +554,14 @@ so the Dive stays always available, which is its whole purpose.
   store listing and no review, and the track sits inactive until testers are
   configured. The path to a shareable link runs through the store listing —
   see the [closed-test runbook](technical/play-closed-test-runbook.md) § 7.
+
+- **2026-08-23 — Internal install verified; closed-test package prepared.** The
+  owner confirmed the version-64 internal build works. A signed version-66 AAB,
+  three genuine 1920×1080 screenshots, an icon, a feature graphic, current
+  declaration answers, and an unpublished privacy page are ready for review.
+  The Play app remains a draft with its closed track inactive, so the required
+  12-testers-for-14-days clock has not started. The public contact identity and
+  external Console submission remain owner-controlled.
 
 - **2026-08-04 — Tutorial orientation and teaching clarity (0.43.0).** The
   owner's first 1040×480 tutorial review replaced dense prose and tiny scene

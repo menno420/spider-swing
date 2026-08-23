@@ -10,6 +10,26 @@
 > That clock cannot start until a build is downloadable, so every step here
 > exists to make a build downloadable sooner.
 
+## Live status — 23 August 2026
+
+| Milestone | Measured state |
+|---|---|
+| Developer account | Personal account verified; Android developer verification satisfied |
+| Play app | **Slingy Spider**, `com.menno420.slingyspider`, created as a draft |
+| Internal test | Active; version code **64** installed and owner-confirmed working |
+| Next signed bundle | Version code **66**, `0.45.0-run-feedback`, built and signed successfully by GitHub Actions |
+| Store package | Copy and five correctly sized visual candidates prepared; owner review pending |
+| App content | Source-supported answers prepared; Console dashboard still shows **0/11** tasks complete |
+| Privacy page | Readable local page prepared, not published; public contact email still needs owner choice |
+| Closed test | Inactive; zero opted-in testers, so the 12-testers-for-14-days clock has not started |
+
+The signed version-66 workflow artifact expires **27 August 2026**. A verified
+local copy is retained for upload; its AAB SHA-256 is
+`FE3B4E51F4BF7C4E74A27818B18688DD8BEE19A340169D6D7C73F0C0634A7FEC`.
+The current next move is owner approval of the public contact identity and the
+visual candidates, followed by completing the Console forms and uploading
+version 66 to a track. No part of that Console mutation is automatic.
+
 ## Why this is not "just upload the bundle"
 
 A release **cannot** be rolled out to a closed track until the store listing,
@@ -32,7 +52,7 @@ clock. Use it only to sanity-check that the bundle installs.
 Steps 1–3 are the ones that block everything else. Do them first even if the
 listing text is not final.
 
-### 1. Set the application ID and app name — permanent, five minutes
+### 1. Set the application ID and app name — complete
 
 `com.menno420.slingyspider` is the recommended identifier. It can **never** be
 changed or reused once published. It is invisible to players and does **not**
@@ -50,7 +70,7 @@ The store name is **decided — `Slingy Spider`** (see
 [`../product/name-status.md`](../product/name-status.md)) and can still be
 revised later if needed. The application ID cannot.
 
-### 2. Create the upload key — 15 minutes
+### 2. Create the upload key — complete
 
 Run `tools/make_upload_keystore.sh`. It generates the keystore, prints the exact
 base64 blob to paste, and never writes anything into the repository.
@@ -64,7 +84,7 @@ your laptop.** Losing it is recoverable — Play supports an upload-key reset
 ([answer/9842756](https://support.google.com/googleplay/android-developer/answer/9842756))
 — but recovering costs days you would rather spend on the clock.
 
-### 3. Build the bundle
+### 3. Build the bundle — complete for version 66
 
 Actions → `android-release` → Run workflow. It substitutes the values from step
 1, signs with the key from step 2, verifies the output is a real bundle, and
@@ -74,12 +94,12 @@ Console action.
 Set `version_code` to a positive integer that is unique and strictly increasing
 per upload. Play rejects a reused value.
 
-> **Honest gap:** this workflow has never run end to end. It could not — it
-> needed the variables from step 1. Expect the first run to want an adjustment,
-> most likely in the Android SDK/NDK package list. That is a ten-minute fix, not
-> a redesign, and it is better found now than at 2 a.m. before a submission.
+The workflow has now run end to end. Version 66 was signed with the configured
+upload key, targets SDK 36, and produced a valid App Bundle. A separate current
+source check confirmed no ads, billing, analytics, accounts, network APIs, or
+sensitive Android permissions.
 
-### 4. Create the app in Play Console
+### 4. Create the app in Play Console — complete
 
 Play Console → **Create app**. Observed on the live form, 2026-08-05:
 
@@ -148,7 +168,8 @@ for each, are in [`../product/play-console-answers.md`](../product/play-console-
   exempt. Today's honest answer is **no data collected**; see § below.
 - **Content rating (IARC)** — mandatory; without it the app cannot publish.
 - **Target audience and content** — mandatory.
-- Ads, government apps, financial features declarations — all "no".
+- Ads, government apps, financial features and health-app declarations — all
+  "no".
 
 ### 7. Closed testing track and testers
 

@@ -323,13 +323,14 @@ func _build_home() -> void:
 	_home_run_summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	identity_body.add_child(_home_run_summary)
 
-	var version := _label(
-		"BUILD %s" % ProjectSettings.get_setting(
-			"application/config/version", "unknown"),
-		13,
-		MUTED,
-	)
-	_place(version, _home, 0.05, 0.875, 0.35, 0.92)
+	if OS.is_debug_build():
+		var version := _label(
+			"BUILD %s" % ProjectSettings.get_setting(
+				"application/config/version", "unknown"),
+			13,
+			MUTED,
+		)
+		_place(version, _home, 0.05, 0.875, 0.35, 0.92)
 
 	var card := _panel(PANEL)
 	card.name = "HomeWebPanel"
