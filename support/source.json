@@ -1,0 +1,82 @@
+{
+  "_comment": [
+    "The CURATED half of the Spider Bot support feed. Hand-edited, in the repo",
+    "that owns the game, by whoever changes the game. tools/generate_support_feed.py",
+    "stamps the build identity onto it and writes the generated artifact that",
+    "Spider Bot actually reads.",
+    "",
+    "Why two files rather than one: the fastest-changing facts (build version,",
+    "Android version code) are read MECHANICALLY from project.godot, so they",
+    "cannot drift. Everything else is prose a person writes, and pretending a",
+    "regex could extract join steps from a runbook would make the generator a",
+    "second source of truth rather than a projection of this one.",
+    "",
+    "Edit this file, run `python3 tools/generate_support_feed.py`, commit both.",
+    "CI fails if the generated file does not match this one."
+  ],
+  "testing_state": "Slingy Spider is on Google Play's INTERNAL testing track. The closed test - the one that needs 12 testers opted in for 14 continuous days before the game can leave testing - has not started yet.",
+  "join_steps": [
+    "Check which Google account your phone's Play Store is signed in to. Use that same account for every step below - this is the one that catches almost everyone.",
+    "Join the Google Group linked in #start-here.",
+    "Wait a little while for the group membership to propagate, then open the opt-in page signed in to that same account and tap 'Become a tester'.",
+    "Install from the Play link the opt-in page shows you.",
+    "Post 'opted in' in #general. Menno checks the Play Console and hands out the Slingy Tester role by hand - it is never automatic."
+  ],
+  "known_issues": [],
+  "troubleshooting": [
+    {
+      "symptom": "'App not available' on the Play page",
+      "fix": "Almost always the wrong Google account, or the group join has not propagated yet. Check the account first, then give it a while and try again."
+    },
+    {
+      "symptom": "The opt-in page does not show a tester option",
+      "fix": "You are probably signed in as a different account than the Play Store uses. Sign out and back in with the Play Store's account."
+    }
+  ],
+  "facts": [
+    {
+      "name": "How it plays",
+      "value": "You are a small spider in an oversized world. Fire a line of silk, swing, and turn speed into momentum - release at the right moment and fly. Swinging is the whole game; everything else exists to make it feel good."
+    },
+    {
+      "name": "Finding the flow",
+      "value": "Good timing chains swings into faster, cleaner movement. Accelerate through the low point, ease toward the apex, release, and arc."
+    },
+    {
+      "name": "Reel",
+      "value": "Reel in your silk line to tighten a curve. It costs energy, so spend it where it counts."
+    },
+    {
+      "name": "The bird",
+      "value": "A pursuing bird enforces pace. It is what used to be a kill line on the left of the screen, made visible."
+    },
+    {
+      "name": "Fairness",
+      "value": "Obstacle layouts are seeded and fair, not random chaos - the same course rewards the same skill. Deaths are meant to be understandable, never arbitrary."
+    },
+    {
+      "name": "Flies and upgrades",
+      "value": "Catch flies mid-arc with the same silk you move with, and spend earnings on spiders and upgrades that trade one strength for another. Nothing sells power over other players."
+    },
+    {
+      "name": "Run History",
+      "value": "Home -> Play Modes -> Run History shows your last runs and lifetime totals, and COPY JSON exports them. Nothing is ever uploaded from the game; the export is yours to paste if you want a report to carry real numbers."
+    }
+  ],
+  "feedback_wanted": [
+    "Where the difficulty spikes, and roughly how far in - the game is still being tuned for exactly this.",
+    "Whether a death felt understandable or arbitrary.",
+    "Whether the Reel and the release timing feel like they answer you.",
+    "Anything that made you stop playing."
+  ],
+  "retention_rules": [
+    "Do not tap 'Leave the beta'.",
+    "Do not leave the Google Group.",
+    "Do not uninstall during the test.",
+    "Play a few times a week - Google checks real engagement, and the 14 days have to be continuous."
+  ],
+  "links": [
+    { "label": "Google Group (join first)", "url": "https://groups.google.com/g/slingy-spider-testers" },
+    { "label": "Opt-in page", "url": "https://play.google.com/apps/testing/com.menno420.slingyspider" }
+  ]
+}

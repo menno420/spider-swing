@@ -7,6 +7,10 @@ Runs, in order:
 
   1. regenerate the original gameplay SFX in a temporary directory and compare
      exact bytes
+  1b. tools/generate_support_feed.py --check -- the committed Spider Bot support
+     feed must match its curated source and this repo's build identity. Spider
+     Bot reads it over a raw URL, so a stale one means the bot tells testers
+     something this repository no longer says.
   2. tools/check_architecture.py --self-test, then the repository scan
   3. locate the Godot executable (GODOT_BIN, GODOT, GODOT4, then PATH)
   4. assert it reports the version pinned in .godot-version
@@ -273,11 +277,15 @@ def main(argv: list[str] | None = None) -> int:
     report = Report()
     checker = REPO_ROOT / "tools" / "check_architecture.py"
     audio_generator = REPO_ROOT / "tools" / "generate_audio_samples.py"
+    support_feed_generator = REPO_ROOT / "tools" / "generate_support_feed.py"
     if not checker.is_file():
         fail(f"missing {checker.relative_to(REPO_ROOT)}")
         return 1
     if not audio_generator.is_file():
         fail(f"missing {audio_generator.relative_to(REPO_ROOT)}")
+        return 1
+    if not support_feed_generator.is_file():
+        fail(f"missing {support_feed_generator.relative_to(REPO_ROOT)}")
         return 1
 
     # --- engine-independent checks -------------------------------------------
@@ -292,6 +300,18 @@ def main(argv: list[str] | None = None) -> int:
         "generated audio reproducibility", time.monotonic() - start
     )
     all_ok = ok
+
+    start = time.monotonic()
+    ok = run_step(
+        "spider-bot support feed",
+        [sys.executable, str(support_feed_generator), "--check"],
+        timeout=60,
+        cwd=REPO_ROOT,
+    )
+    (report.ok if ok else report.failed)(
+        "spider-bot support feed", time.monotonic() - start
+    )
+    all_ok = all_ok and ok
 
     start = time.monotonic()
     ok = run_step(
