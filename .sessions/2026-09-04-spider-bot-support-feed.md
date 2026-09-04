@@ -1,8 +1,17 @@
 # 2026-09-04 — the Spider Bot support feed: this repo publishes what the bot may say
 
-> **Status:** `in-progress` — branch `claude/spider-bot-support-feed-sthix0`,
-> born red. Flipped to `complete` as the deliberate LAST step, once both
-> required checks are green.
+> **Status:** `complete` — branch `claude/spider-bot-support-feed-sthix0`, born
+> red and flipped here as the deliberate last step. `game-quality` green;
+> `substrate-gate` was red only on this card's own hold and goes green with this
+> flip. Auto-merge is armed, so this commit is what lands it.
+>
+> **The consumer half is menno420/spider-bot#3**, which landed the reader,
+> the last-known-good fallback and the honest staleness banner. Two of Codex's
+> findings there were about THIS contract and are fixed on that side: the
+> consumer read label/value pairs by insertion order rather than by key name
+> (so the shape this generator emits was the contract by accident), and it
+> accepted `schema_version: true` as version 1. Nothing in this repo changed
+> for either — the producer was right; the reader was lenient.
 
 - **📊 Model:** opus-5 · xhigh · feature build
 - **📍 Venue:** cloud-container
