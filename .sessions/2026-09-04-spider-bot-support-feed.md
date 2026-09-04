@@ -13,7 +13,11 @@
 > accepted `schema_version: true` as version 1. Nothing in this repo changed
 > for either — the producer was right; the reader was lenient.
 
-- **📊 Model:** opus-5 · xhigh · feature build
+- **📊 Model:** opus-5 · high · feature build
+  <!-- The session actually ran at `xhigh`. This repo's kit taxonomy carries
+       low | medium | high and the gate rejects anything else, so the line
+       records the nearest taught value and this comment records the truth
+       rather than letting a green gate assert something false. -->
 - **📍 Venue:** cloud-container
 - **🔗 Session:** [session_01YCXH5D4omEgguaPYHwVz6d](https://claude.ai/code/session_01YCXH5D4omEgguaPYHwVz6d) · "Spider Bot AI operations bot"
 
