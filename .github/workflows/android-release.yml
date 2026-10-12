@@ -128,7 +128,7 @@ jobs:
         # target_sdk=36 in the release preset needs platforms;android-36.
         # build-tools provides apksigner/zipalign; the NDK is listed by Godot's
         # own Android export documentation for Gradle builds.
-        uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
+        uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
         with:
           packages: >-
             platform-tools
@@ -138,7 +138,7 @@ jobs:
             ndk;28.1.13356709
 
       - name: Install Godot ${{ env.GODOT_VERSION }} Standard with export templates
-        uses: chickensoft-games/setup-godot@f166999204a4f2722c6fe042fbaa3b3ea0d9c789 # v2.4.1
+        uses: chickensoft-games/setup-godot@ac93246ea68518a384c1c280a496e5989341f2f6 # v2.4.3
         with:
           version: 4.7.1
           use-dotnet: false
@@ -291,7 +291,7 @@ jobs:
           fi
 
       - name: Upload the release bundle
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ env.ARTIFACT_NAME }}
           path: ${{ env.AAB_PATH }}
