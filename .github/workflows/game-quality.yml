@@ -65,7 +65,7 @@ jobs:
           fi
 
       - name: Install Godot 4.7.1 Standard (no .NET)
-        uses: chickensoft-games/setup-godot@f166999204a4f2722c6fe042fbaa3b3ea0d9c789 # v2.4.1
+        uses: chickensoft-games/setup-godot@ac93246ea68518a384c1c280a496e5989341f2f6 # v2.4.3
         with:
           version: 4.7.1
           # Standard build: Spider Swing is GDScript-only (ADR 0001).
